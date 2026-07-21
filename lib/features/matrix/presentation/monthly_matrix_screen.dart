@@ -14,11 +14,52 @@ class MonthlyMatrixScreen extends ConsumerStatefulWidget {
 }
 
 class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
-  final DateTime _selectedMonth = DateTime.now();
+  DateTime _selectedMonth = DateTime.now();
+
+  Color _getStatusBgColor(String status) {
+    if (status.contains('GÖREV') || status.contains('NÖBET')) {
+      return AppColors.approvedGreen.withValues(alpha: 0.15);
+    } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
+      return Colors.grey.shade300;
+    } else if (status.contains('RAPOR') || status.contains('SEVK')) {
+      return AppColors.rejectedRed.withValues(alpha: 0.15);
+    } else if (status.contains('beklemede')) {
+      return AppColors.pendingYellow.withValues(alpha: 0.2);
+    }
+    return Colors.transparent;
+  }
+
+  Color _getStatusTextColor(String status) {
+    if (status.contains('GÖREV') || status.contains('NÖBET')) {
+      return AppColors.approvedGreen;
+    } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
+      return Colors.black87;
+    } else if (status.contains('RAPOR') || status.contains('SEVK')) {
+      return AppColors.rejectedRed;
+    } else if (status.contains('beklemede')) {
+      return Colors.orange.shade900;
+    }
+    return Colors.black45;
+  }
+
+  String _getAbbreviation(String status) {
+    if (status.contains('GÖREV')) return 'G';
+    if (status.contains('NÖBET')) return 'N';
+    if (status.contains('İZİN')) return 'İZ';
+    if (status.contains('İSTİRAHAT')) return 'İST';
+    if (status.contains('RAPOR')) return 'R';
+    if (status.contains('SEVK')) return 'S';
+    if (status.contains('beklemede')) return 'B';
+    return '-';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final yearMonthStr = DateFormat('yyyy-MM').format(_selectedMonth);
     final personnelAsync = ref.watch(allPersonnelProvider);
+    final matrixAsync = ref.watch(monthlyMatrixProvider(yearMonthStr));
+    final session = ref.watch(userSessionProvider);
+
     final daysInMonth =
         DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0).day;
 
@@ -29,15 +70,31 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.calendar_month),
+            tooltip: 'Ay Seç',
+            onPressed: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _selectedMonth,
+                firstDate: DateTime(2024),
+                lastDate: DateTime(2030),
+              );
+              if (picked != null) {
+                setState(() => _selectedMonth = picked);
+              }
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.file_download),
             tooltip: "Excel'e Aktar",
             onPressed: () {
               final personnel = personnelAsync.value ?? [];
+              final matrixData = matrixAsync.value ?? {};
               if (personnel.isEmpty) return;
 
               ExcelXmlGenerator.exportAndShareXml(
                 personnel: personnel,
-                matrixData: {},
+                matrixData: matrixData,
                 year: _selectedMonth.year,
                 month: _selectedMonth.month,
               );
@@ -46,12 +103,19 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
         ],
       ),
       body: personnelAsync.when(
-        data: (personnelList) {
+        data: (rawPersonnelList) {
+          // Role Filtering: If Commander, only show their squad's personnel
+          final personnelList = (session != null && !session.isAdmin && session.timId != null)
+              ? rawPersonnelList.where((p) => p.timId == session.timId).toList()
+              : rawPersonnelList;
+
           if (personnelList.isEmpty) {
             return const Center(
-              child: Text('Matris oluşturmak için önce personel ekleyiniz.'),
+              child: Text('Gösterilecek kayıtlı personel bulunmuyor.'),
             );
           }
+
+          final matrixData = matrixAsync.value ?? {};
 
           return SingleChildScrollView(
             scrollDirection: Axis.vertical,
@@ -136,25 +200,32 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
 
                           // Status Grid Rows
                           ...personnelList.map((p) {
+                            final pStatusMap = matrixData[p.id] ?? {};
+
                             return SizedBox(
                               height: 48,
                               child: Row(
                                 children: List.generate(daysInMonth, (dIndex) {
+                                  final day = dIndex + 1;
+                                  final status = pStatusMap[day] ?? '';
+                                  final bgColor = _getStatusBgColor(status);
+                                  final textColor = _getStatusTextColor(status);
+                                  final label = _getAbbreviation(status);
+
                                   return Container(
                                     width: 48,
                                     margin: const EdgeInsets.all(2),
                                     decoration: BoxDecoration(
-                                      color: AppColors.approvedGreen
-                                          .withValues(alpha: 0.15),
+                                      color: bgColor,
                                       borderRadius: BorderRadius.circular(4),
                                       border: Border.all(color: Colors.black12),
                                     ),
                                     alignment: Alignment.center,
-                                    child: const Text(
-                                      'G',
+                                    child: Text(
+                                      label,
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: AppColors.approvedGreen,
+                                        color: textColor,
                                       ),
                                     ),
                                   );
