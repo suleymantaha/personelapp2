@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personelapp2/features/activity/presentation/activity_archive_screen.dart';
 import 'package:personelapp2/features/activity/presentation/activity_form_screen.dart';
 import 'package:personelapp2/features/activity/presentation/pending_approvals_screen.dart';
 import 'package:personelapp2/features/auth/presentation/login_screen.dart';
@@ -34,5 +35,10 @@ final appRouter = GoRouter(
       path: '/monthly-matrix',
       builder: (context, state) => const MonthlyMatrixScreen(),
     ),
+    GoRoute(
+      path: '/activity-archive',
+      builder: (context, state) => const ActivityArchiveScreen(),
+    ),
   ],
 );
+

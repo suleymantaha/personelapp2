@@ -143,6 +143,13 @@ class DashboardScreen extends ConsumerWidget {
                   color: AppColors.pendingYellow,
                   onTap: () => context.push('/pending-approvals'),
                 ),
+                _MenuCard(
+                  icon: Icons.inventory_2,
+                  title: 'Faaliyet Arşivi',
+                  subtitle: 'Arama ve Silme',
+                  color: Colors.brown.shade700,
+                  onTap: () => context.push('/activity-archive'),
+                ),
               ],
             ),
           ],
