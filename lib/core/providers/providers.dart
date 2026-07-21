@@ -48,6 +48,11 @@ final allSquadsProvider = StreamProvider<List<TimTableData>>((ref) {
   return ref.watch(personnelRepositoryProvider).watchAllSquads();
 });
 
+final allCommandersProvider = StreamProvider<List<KullaniciTableData>>((ref) {
+  return ref.watch(personnelRepositoryProvider).watchAllCommanders();
+});
+
+
 /// Pending Assignments Provider (for Dashboard Alert Badge)
 final pendingAssignmentsProvider =
     StreamProvider<List<FaaliyetPersonelAtamaTableData>>((ref) {

@@ -163,6 +163,36 @@ class PersonnelRepository {
     });
   }
 
+  /// List all Tim Komutanı accounts
+  Stream<List<KullaniciTableData>> watchAllCommanders() {
+    return (db.select(db.kullaniciTable)
+          ..where((tbl) => tbl.rol.equals('tim_komutani')))
+        .watch();
+  }
+
+  /// Reassign or revoke a Tim Komutanı's squad authority
+  Future<void> assignCommanderToSquad({
+    required int userId,
+    required int? timId,
+  }) async {
+    await db.transaction(() async {
+      // 1. Update user's timId
+      await (db.update(db.kullaniciTable)..where((tbl) => tbl.id.equals(userId)))
+          .write(KullaniciTableCompanion(timId: Value(timId)));
+
+      // 2. If assigning to a squad, update timKomutaniId on timTable
+      if (timId != null) {
+        await (db.update(db.timTable)..where((tbl) => tbl.id.equals(timId)))
+            .write(TimTableCompanion(timKomutaniId: Value(userId)));
+      } else {
+        // Clear squad commander link if revoked
+        await (db.update(db.timTable)
+              ..where((tbl) => tbl.timKomutaniId.equals(userId)))
+            .write(const TimTableCompanion(timKomutaniId: Value(null)));
+      }
+    });
+  }
+
   Future<int> deleteSquad(int id) {
     return (db.delete(db.timTable)..where((tbl) => tbl.id.equals(id))).go();
   }
