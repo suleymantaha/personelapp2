@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
@@ -133,6 +132,95 @@ class _PersonnelManagementScreenState
     );
   }
 
+  void _showCommanderDelegationDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Tim Komutanı Yetki Devri / Atama'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Consumer(
+              builder: (context, ref, child) {
+                final commandersAsync = ref.watch(allCommandersProvider);
+                final squadsAsync = ref.watch(allSquadsProvider);
+
+                return commandersAsync.when(
+                  data: (commanders) {
+                    if (commanders.isEmpty) {
+                      return const Text('Kayıtlı Tim Komutanı hesabı bulunamadı.');
+                    }
+
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: commanders.length,
+                      itemBuilder: (context, index) {
+                        final cmd = commanders[index];
+                        return squadsAsync.when(
+                          data: (squads) {
+                            return Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Komutan: ${cmd.kullaniciAdi}',
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    DropdownButtonFormField<int?>(
+                                      initialValue: cmd.timId,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Atanan Tim',
+                                        isDense: true,
+                                      ),
+                                      items: [
+                                        const DropdownMenuItem<int?>(
+                                          value: null,
+                                          child: Text('BOŞTA / Yetkisiz', style: TextStyle(color: Colors.red)),
+                                        ),
+                                        ...squads.map((s) => DropdownMenuItem<int?>(
+                                              value: s.id,
+                                              child: Text(s.timAdi),
+                                            )),
+                                      ],
+                                      onChanged: (newTimId) async {
+                                        final repo = ref.read(personnelRepositoryProvider);
+                                        await repo.assignCommanderToSquad(
+                                          userId: cmd.id,
+                                          timId: newTimId,
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                          loading: () => const LinearProgressIndicator(),
+                          error: (err, st) => Text('Hata: $err'),
+                        );
+                      },
+                    );
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (err, st) => Text('Hata: $err'),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('KAPAT'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showAddSquadDialog() {
     final squadNameController = TextEditingController();
     final commanderUserController = TextEditingController();
@@ -216,6 +304,9 @@ class _PersonnelManagementScreenState
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(userSessionProvider);
+    final isAdmin = session?.isAdmin ?? true;
+
     final personnelAsync = ref.watch(allPersonnelProvider);
     final squadsAsync = ref.watch(allSquadsProvider);
 
@@ -223,18 +314,27 @@ class _PersonnelManagementScreenState
       appBar: AppBar(
         title: const Text('Personel & Tim Yönetimi'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.group_add),
-            tooltip: 'Tim Ekle',
-            onPressed: _showAddSquadDialog,
-          ),
+          if (isAdmin) ...[
+            IconButton(
+              icon: const Icon(Icons.manage_accounts),
+              tooltip: 'Komutan Yetki Devri',
+              onPressed: _showCommanderDelegationDialog,
+            ),
+            IconButton(
+              icon: const Icon(Icons.group_add),
+              tooltip: 'Tim Ekle',
+              onPressed: _showAddSquadDialog,
+            ),
+          ],
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddPersonnelDialog,
-        icon: const Icon(Icons.person_add),
-        label: const Text('PERSONEL EKLE'),
-      ),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton.extended(
+              onPressed: _showAddPersonnelDialog,
+              icon: const Icon(Icons.person_add),
+              label: const Text('PERSONEL EKLE'),
+            )
+          : null,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -282,11 +382,16 @@ class _PersonnelManagementScreenState
             const SizedBox(height: 8),
 
             personnelAsync.when(
-              data: (personnelList) {
+              data: (rawPersonnelList) {
+                // If Commander, filter by their squad
+                final personnelList = (!isAdmin && session?.timId != null)
+                    ? rawPersonnelList.where((p) => p.timId == session?.timId).toList()
+                    : rawPersonnelList;
+
                 if (personnelList.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.all(16),
-                    child: Text('Kayıtlı personel yok. Aşağıdaki butondan yeni personel ekleyebilirsiniz.'),
+                    child: Text('Görüntülenecek personel kaydı yok.'),
                   );
                 }
 
@@ -310,13 +415,15 @@ class _PersonnelManagementScreenState
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text('Birlik: ${p.birlik} | Kayıt: ${p.kayitTarihi}'),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: AppColors.rejectedRed),
-                          onPressed: () async {
-                            final repo = ref.read(personnelRepositoryProvider);
-                            await repo.deletePersonnel(p.id);
-                          },
-                        ),
+                        trailing: isAdmin
+                            ? IconButton(
+                                icon: const Icon(Icons.delete, color: AppColors.rejectedRed),
+                                onPressed: () async {
+                                  final repo = ref.read(personnelRepositoryProvider);
+                                  await repo.deletePersonnel(p.id);
+                                },
+                              )
+                            : null,
                       ),
                     );
                   },
