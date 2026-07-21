@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
+import 'package:personelapp2/features/matrix/data/matrix_repository.dart';
 import 'package:personelapp2/features/personnel/data/personnel_repository.dart';
+
 
 /// Database Instance Provider
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -51,3 +53,13 @@ final pendingAssignmentsProvider =
     StreamProvider<List<FaaliyetPersonelAtamaTableData>>((ref) {
   return ref.watch(activityRepositoryProvider).watchPendingAssignments();
 });
+
+/// Matrix Repository & Monthly Matrix Provider
+final matrixRepositoryProvider = Provider<MatrixRepository>((ref) {
+  return MatrixRepository(ref.watch(databaseProvider));
+});
+
+final monthlyMatrixProvider = StreamProvider.family<Map<int, Map<int, String>>, String>((ref, yearMonth) {
+  return ref.watch(matrixRepositoryProvider).watchMonthlyMatrix(yearMonth);
+});
+
