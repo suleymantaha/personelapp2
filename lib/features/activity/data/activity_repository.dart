@@ -14,10 +14,9 @@ class ActivityRepository {
 
   /// Watch pending duty assignments
   Stream<List<FaaliyetPersonelAtamaTableData>> watchPendingAssignments() {
-    return (db.select(db.faaliyetPersonelAtamaTable)
-          ..where(
-            (tbl) => tbl.durum.equals(AssignmentStatus.beklemede),
-          ))
+    return (db.select(db.faaliyetPersonelAtamaTable)..where(
+          (tbl) => tbl.durum.equals(AssignmentStatus.beklemede),
+        ))
         .watch();
   }
 
@@ -32,14 +31,13 @@ class ActivityRepository {
           db.faaliyetPersonelAtamaTable.faaliyetId,
         ),
       ),
-    ])
-      ..where(db.gunlukFaaliyetTable.tarih.equals(dateStr));
+    ])..where(db.gunlukFaaliyetTable.tarih.equals(dateStr));
 
     return query.watch().map(
-          (rows) => rows
-              .map((row) => row.readTable(db.faaliyetPersonelAtamaTable))
-              .toList(),
-        );
+      (rows) => rows
+          .map((row) => row.readTable(db.faaliyetPersonelAtamaTable))
+          .toList(),
+    );
   }
 
   /// Save daily activity and perform smart conflict evaluation for each assigned personnel
@@ -51,7 +49,9 @@ class ActivityRepository {
   }) async {
     return db.transaction(() async {
       // 1. Create activity record
-      final actId = await db.into(db.gunlukFaaliyetTable).insert(
+      final actId = await db
+          .into(db.gunlukFaaliyetTable)
+          .insert(
             GunlukFaaliyetTableCompanion.insert(
               faaliyetAdi: faaliyetAdi,
               tarih: tarih,
@@ -110,7 +110,9 @@ class ActivityRepository {
           existingAssignments: existingAssignments,
         );
 
-        await db.into(db.faaliyetPersonelAtamaTable).insert(
+        await db
+            .into(db.faaliyetPersonelAtamaTable)
+            .insert(
               FaaliyetPersonelAtamaTableCompanion.insert(
                 faaliyetId: actId,
                 personelId: pId,
@@ -139,7 +141,9 @@ class ActivityRepository {
     required String raporBitis,
     String? aciklama,
   }) {
-    return db.into(db.raporKayitTable).insert(
+    return db
+        .into(db.raporKayitTable)
+        .insert(
           RaporKayitTableCompanion.insert(
             personelId: personelId,
             raporBaslangic: raporBaslangic,

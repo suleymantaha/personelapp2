@@ -14,7 +14,7 @@ class MonthlyMatrixScreen extends ConsumerStatefulWidget {
 }
 
 class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
-  DateTime _selectedMonth = DateTime.now();
+  final DateTime _selectedMonth = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -53,126 +53,122 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
             );
           }
 
-          return Row(
-            children: [
-              // Sticky Left Column (Personnel Names)
-              SizedBox(
-                width: 160,
-                child: Column(
-                  children: [
-                    Container(
-                      height: 40,
-                      color: AppColors.militaryOlive,
-                      alignment: Alignment.center,
-                      child: const Text(
-                        'Personel',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+          return SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Sticky Left Column (Personnel Names)
+                SizedBox(
+                  width: 160,
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 40,
+                        color: AppColors.militaryOlive,
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Personel',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: personnelList.length,
-                        itemBuilder: (context, index) {
-                          final p = personnelList[index];
-                          return Container(
-                            height: 48,
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            alignment: Alignment.centerLeft,
-                            decoration: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(color: Colors.grey.shade300),
-                                right: BorderSide(color: Colors.grey.shade400),
-                              ),
+                      ...personnelList.map((p) {
+                        return Container(
+                          height: 48,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          alignment: Alignment.centerLeft,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.grey.shade300),
+                              right: BorderSide(color: Colors.grey.shade400),
                             ),
-                            child: Text(
-                              '${p.rutbe} ${p.adSoyad}',
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                          ),
+                          child: Text(
+                            '${p.rutbe} ${p.adSoyad}',
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                 ),
-              ),
 
-              // Horizontally Scrollable Days Grid (1 to 31)
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SizedBox(
-                    width: daysInMonth * 48.0,
-                    child: Column(
-                      children: [
-                        // Days Header Row
-                        Container(
-                          height: 40,
-                          color: AppColors.militaryOlive.withValues(alpha: 0.9),
-                          child: Row(
-                            children: List.generate(daysInMonth, (index) {
-                              return Container(
-                                width: 48,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    right: BorderSide(color: Colors.white24),
+                // Horizontally Scrollable Days Grid (1 to 31)
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: daysInMonth * 48.0,
+                      child: Column(
+                        children: [
+                          // Days Header Row
+                          Container(
+                            height: 40,
+                            color: AppColors.militaryOlive.withValues(alpha: 0.9),
+                            child: Row(
+                              children: List.generate(daysInMonth, (index) {
+                                return Container(
+                                  width: 48,
+                                  alignment: Alignment.center,
+                                  decoration: const BoxDecoration(
+                                    border: Border(
+                                      right: BorderSide(color: Colors.white24),
+                                    ),
                                   ),
-                                ),
-                                child: Text(
-                                  '${index + 1}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                                  child: Text(
+                                    '${index + 1}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              );
-                            }),
+                                );
+                              }),
+                            ),
                           ),
-                        ),
 
-                        // Status Grid Rows
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: personnelList.length,
-                            itemBuilder: (context, pIndex) {
-                              return SizedBox(
-                                height: 48,
-                                child: Row(
-                                  children: List.generate(daysInMonth, (dIndex) {
-                                    // Default status representation cell
-                                    return Container(
-                                      width: 48,
-                                      margin: const EdgeInsets.all(2),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.approvedGreen.withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(color: Colors.black12),
+                          // Status Grid Rows
+                          ...personnelList.map((p) {
+                            return SizedBox(
+                              height: 48,
+                              child: Row(
+                                children: List.generate(daysInMonth, (dIndex) {
+                                  return Container(
+                                    width: 48,
+                                    margin: const EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.approvedGreen
+                                          .withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(color: Colors.black12),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      'G',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.approvedGreen,
                                       ),
-                                      alignment: Alignment.center,
-                                      child: const Text(
-                                        'G',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.approvedGreen,
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+                                    ),
+                                  );
+                                }),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
