@@ -28,7 +28,7 @@ class ActivityRepository {
     final query = db.select(db.faaliyetPersonelAtamaTable).join([
       innerJoin(
         db.gunlukFaaliyetTable,
-        db.gunlukFaaliyetTable.id.equalsExpr(
+        db.gunlukFaaliyetTable.id.equalsExp(
           db.faaliyetPersonelAtamaTable.faaliyetId,
         ),
       ),
@@ -78,7 +78,7 @@ class ActivityRepository {
       final query = db.select(db.faaliyetPersonelAtamaTable).join([
         innerJoin(
           db.gunlukFaaliyetTable,
-          db.gunlukFaaliyetTable.id.equalsExpr(
+          db.gunlukFaaliyetTable.id.equalsExp(
             db.faaliyetPersonelAtamaTable.faaliyetId,
           ),
         ),
