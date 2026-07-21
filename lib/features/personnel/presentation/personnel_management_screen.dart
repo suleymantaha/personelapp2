@@ -135,14 +135,44 @@ class _PersonnelManagementScreenState
 
   void _showAddSquadDialog() {
     final squadNameController = TextEditingController();
+    final commanderUserController = TextEditingController();
+    final commanderPassController = TextEditingController();
+
     showDialog<void>(
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Yeni Tim Oluştur'),
-          content: TextField(
-            controller: squadNameController,
-            decoration: const InputDecoration(labelText: 'Tim Adı (Örn: 1. Asayiş Timi)'),
+          title: const Text('Yeni Tim & Komutan Hesabı Oluştur'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: squadNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Tim Adı (Örn: 1. Asayiş Timi)',
+                    prefixIcon: Icon(Icons.shield),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: commanderUserController,
+                  decoration: const InputDecoration(
+                    labelText: 'Tim Komutanı Kullanıcı Adı',
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: commanderPassController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Tim Komutanı Şifre',
+                    prefixIcon: Icon(Icons.lock),
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -152,13 +182,27 @@ class _PersonnelManagementScreenState
             ElevatedButton(
               onPressed: () async {
                 final name = squadNameController.text.trim();
+                final cUser = commanderUserController.text.trim();
+                final cPass = commanderPassController.text.trim();
+
                 if (name.isEmpty) return;
 
                 final repo = ref.read(personnelRepositoryProvider);
-                await repo.addSquad(
-                  timAdi: name,
-                  olusturmaTarihi: DateFormat('yyyy-MM-dd').format(DateTime.now()),
-                );
+                final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+                if (cUser.isNotEmpty && cPass.isNotEmpty) {
+                  await repo.addSquadWithCommander(
+                    timAdi: name,
+                    olusturmaTarihi: today,
+                    komutanKullaniciAdi: cUser,
+                    komutanSifre: cPass,
+                  );
+                } else {
+                  await repo.addSquad(
+                    timAdi: name,
+                    olusturmaTarihi: today,
+                  );
+                }
 
                 if (mounted) Navigator.of(ctx).pop();
               },

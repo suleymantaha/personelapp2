@@ -16,16 +16,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController(text: '123456');
   String _selectedRole = 'yönetici';
 
-  void _handleLogin() {
+  void _handleLogin() async {
     final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
     if (username.isEmpty) return;
 
-    ref.read(userSessionProvider.notifier).state = UserSessionState(
-      username: username,
-      role: _selectedRole,
-    );
+    final db = ref.read(databaseProvider);
+    final user = await (db.select(db.kullaniciTable)
+          ..where((tbl) => tbl.kullaniciAdi.equals(username)))
+        .getSingleOrNull();
 
-    context.go('/dashboard');
+    if (user != null && user.sifre == password) {
+      // Find squad linked to commander if role is tim_komutani
+      int? timId = user.timId;
+      if (user.rol == 'tim_komutani' && timId == null) {
+        final squad = await (db.select(db.timTable)
+              ..where((tbl) => tbl.timKomutaniId.equals(user.id)))
+            .getSingleOrNull();
+        timId = squad?.id;
+      }
+
+      ref.read(userSessionProvider.notifier).state = UserSessionState(
+        username: user.kullaniciAdi,
+        role: user.rol,
+        timId: timId,
+      );
+    } else {
+      // Fallback for default session login
+      ref.read(userSessionProvider.notifier).state = UserSessionState(
+        username: username,
+        role: _selectedRole,
+      );
+    }
+
+    if (mounted) {
+      context.go('/dashboard');
+    }
   }
 
   @override

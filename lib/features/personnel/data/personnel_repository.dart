@@ -136,6 +136,33 @@ class PersonnelRepository {
         );
   }
 
+  Future<int> addSquadWithCommander({
+    required String timAdi,
+    required String olusturmaTarihi,
+    required String komutanKullaniciAdi,
+    required String komutanSifre,
+  }) async {
+    return db.transaction(() async {
+      // 1. Create commander user account
+      final userId = await db.into(db.kullaniciTable).insert(
+            KullaniciTableCompanion.insert(
+              kullaniciAdi: komutanKullaniciAdi,
+              sifre: komutanSifre,
+              rol: 'tim_komutani',
+            ),
+          );
+
+      // 2. Create squad linked to commander user
+      return db.into(db.timTable).insert(
+            TimTableCompanion.insert(
+              timAdi: timAdi,
+              olusturmaTarihi: olusturmaTarihi,
+              timKomutaniId: Value(userId),
+            ),
+          );
+    });
+  }
+
   Future<int> deleteSquad(int id) {
     return (db.delete(db.timTable)..where((tbl) => tbl.id.equals(id))).go();
   }
