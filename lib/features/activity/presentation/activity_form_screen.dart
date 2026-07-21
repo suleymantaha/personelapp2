@@ -64,6 +64,9 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(userSessionProvider);
+    final isAdmin = session?.isAdmin ?? true;
+
     final personnelAsync = ref.watch(allPersonnelProvider);
     final dateFormatted = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
@@ -107,18 +110,37 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
             ),
             const SizedBox(height: 24),
 
-            const Text(
-              'Personel Görevlendirme Listesi (Kıdem Sırasına Göre)',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              isAdmin
+                  ? 'Tüm Birlik Personel Görevlendirme Listesi'
+                  : 'Tim Personel Görevlendirme Listesi',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
 
             personnelAsync.when(
-              data: (personnelList) {
+              data: (rawPersonnelList) {
+                // If Commander, strictly filter by their squad
+                final personnelList = (!isAdmin && session?.timId != null)
+                    ? rawPersonnelList.where((p) => p.timId == session?.timId).toList()
+                    : (!isAdmin && session?.timId == null)
+                        ? <PersonelTableData>[]
+                        : rawPersonnelList;
+
+                if (!isAdmin && session?.timId == null) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      'Henüz bir time atamadınız. Lütfen yöneticinizle (Admin) iletişime geçiniz.',
+                      style: TextStyle(color: AppColors.rejectedRed, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                }
+
                 if (personnelList.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.all(16),
-                    child: Text('Kayıtlı personel bulunamadı. Lütfen önce personel ekleyin.'),
+                    child: Text('Görevlendirilecek kayıtlı personel bulunamadı.'),
                   );
                 }
 

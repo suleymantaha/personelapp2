@@ -84,6 +84,9 @@ class _ActivityCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(userSessionProvider);
+    final isAdmin = session?.isAdmin ?? true;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
@@ -100,41 +103,43 @@ class _ActivityCard extends ConsumerWidget {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text('Tarih: ${activity.tarih} | Oluşturan: ${activity.olusturanKullanici}'),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, color: AppColors.rejectedRed),
-          tooltip: 'Faaliyeti Sil',
-          onPressed: () async {
-            final confirm = await showDialog<bool>(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: const Text('Faaliyeti Sil'),
-                content: Text(
-                  '${activity.faaliyetAdi} (${activity.tarih}) faaliyet kaydı silinecektir. Emin misiniz?',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(ctx).pop(false),
-                    child: const Text('İPTAL'),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.rejectedRed,
+        trailing: isAdmin
+            ? IconButton(
+                icon: const Icon(Icons.delete_outline, color: AppColors.rejectedRed),
+                tooltip: 'Faaliyeti Sil',
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Faaliyeti Sil'),
+                      content: Text(
+                        '${activity.faaliyetAdi} (${activity.tarih}) faaliyet kaydı silinecektir. Emin misiniz?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: const Text('İPTAL'),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.rejectedRed,
+                          ),
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          child: const Text('SİL'),
+                        ),
+                      ],
                     ),
-                    onPressed: () => Navigator.of(ctx).pop(true),
-                    child: const Text('SİL'),
-                  ),
-                ],
-              ),
-            );
+                  );
 
-            if (confirm == true) {
-              final db = ref.read(databaseProvider);
-              await (db.delete(db.gunlukFaaliyetTable)
-                    ..where((tbl) => tbl.id.equals(activity.id)))
-                  .go();
-            }
-          },
-        ),
+                  if (confirm == true) {
+                    final db = ref.read(databaseProvider);
+                    await (db.delete(db.gunlukFaaliyetTable)
+                          ..where((tbl) => tbl.id.equals(activity.id)))
+                        .go();
+                  }
+                },
+              )
+            : null,
         children: [
           _AssignmentDetails(activityId: activity.id, dateStr: activity.tarih),
         ],

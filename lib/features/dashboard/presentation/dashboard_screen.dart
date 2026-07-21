@@ -10,6 +10,7 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(userSessionProvider);
+    final isAdmin = session?.isAdmin ?? true;
     final pendingAsync = ref.watch(pendingAssignmentsProvider);
 
     return Scaffold(
@@ -53,7 +54,7 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          'Rol: ${session?.isAdmin ?? true ? "Birlik Yöneticisi" : "Tim Komutanı"}',
+                          'Rol: ${isAdmin ? "Birlik Yöneticisi (Admin)" : "Tim Komutanı"}',
                           style: const TextStyle(color: Colors.black54),
                         ),
                       ],
@@ -64,42 +65,43 @@ class DashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // Pending Approvals Warning Banner
-            pendingAsync.when(
-              data: (pendingList) {
-                if (pendingList.isEmpty) return const SizedBox.shrink();
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Card(
-                    color: Colors.red.shade50,
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(color: Colors.red.shade400),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      leading: const Icon(Icons.warning_amber_rounded,
-                          color: AppColors.rejectedRed, size: 32),
-                      title: Text(
-                        '${pendingList.length} Görevlendirmede Çakışma / Rapor Var!',
-                        style: const TextStyle(
-                          color: AppColors.rejectedRed,
-                          fontWeight: FontWeight.bold,
+            // Pending Approvals Warning Banner (Admin Only)
+            if (isAdmin)
+              pendingAsync.when(
+                data: (pendingList) {
+                  if (pendingList.isEmpty) return const SizedBox.shrink();
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    child: Card(
+                      color: Colors.red.shade50,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.red.shade400),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: const Icon(Icons.warning_amber_rounded,
+                            color: AppColors.rejectedRed, size: 32),
+                        title: Text(
+                          '${pendingList.length} Görevlendirmede Çakışma / Rapor Var!',
+                          style: const TextStyle(
+                            color: AppColors.rejectedRed,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
+                        subtitle: const Text(
+                          'Onaylamak veya reddetmek için dokunun.',
+                          style: TextStyle(color: Colors.black87),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios,
+                            size: 16, color: AppColors.rejectedRed),
+                        onTap: () => context.push('/pending-approvals'),
                       ),
-                      subtitle: const Text(
-                        'Onaylamak veya reddetmek için dokunun.',
-                        style: TextStyle(color: Colors.black87),
-                      ),
-                      trailing: const Icon(Icons.arrow_forward_ios,
-                          size: 16, color: AppColors.rejectedRed),
-                      onTap: () => context.push('/pending-approvals'),
                     ),
-                  ),
-                );
-              },
-              loading: () => const SizedBox.shrink(),
-              error: (err, st) => const SizedBox.shrink(),
-            ),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (err, st) => const SizedBox.shrink(),
+              ),
 
             const Text(
               'İşlemler',
@@ -132,21 +134,22 @@ class DashboardScreen extends ConsumerWidget {
                 _MenuCard(
                   icon: Icons.people_alt,
                   title: 'Personel & Tim',
-                  subtitle: 'Kayıt ve Yetki',
+                  subtitle: isAdmin ? 'Kayıt ve Yetki' : 'Kadro Durumu',
                   color: Colors.blueGrey.shade700,
                   onTap: () => context.push('/personnel-management'),
                 ),
-                _MenuCard(
-                  icon: Icons.assignment_turned_in,
-                  title: 'Bekleyen Onaylar',
-                  subtitle: 'Çakışma denetimi',
-                  color: AppColors.pendingYellow,
-                  onTap: () => context.push('/pending-approvals'),
-                ),
+                if (isAdmin)
+                  _MenuCard(
+                    icon: Icons.assignment_turned_in,
+                    title: 'Bekleyen Onaylar',
+                    subtitle: 'Çakışma denetimi',
+                    color: AppColors.pendingYellow,
+                    onTap: () => context.push('/pending-approvals'),
+                  ),
                 _MenuCard(
                   icon: Icons.inventory_2,
                   title: 'Faaliyet Arşivi',
-                  subtitle: 'Arama ve Silme',
+                  subtitle: 'Arama ve İnceleme',
                   color: Colors.brown.shade700,
                   onTap: () => context.push('/activity-archive'),
                 ),
