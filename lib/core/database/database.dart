@@ -15,6 +15,7 @@ part 'database.g.dart';
   GunlukFaaliyetTable,
   FaaliyetPersonelAtamaTable,
   RaporKayitTable,
+  TimUyelikGecmisiTable,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());

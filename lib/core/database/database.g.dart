@@ -2242,6 +2242,359 @@ class RaporKayitTableCompanion extends UpdateCompanion<RaporKayitTableData> {
   }
 }
 
+class $TimUyelikGecmisiTableTable extends TimUyelikGecmisiTable
+    with TableInfo<$TimUyelikGecmisiTableTable, TimUyelikGecmisiTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TimUyelikGecmisiTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _personelIdMeta = const VerificationMeta(
+    'personelId',
+  );
+  @override
+  late final GeneratedColumn<int> personelId = GeneratedColumn<int>(
+    'personel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _timIdMeta = const VerificationMeta('timId');
+  @override
+  late final GeneratedColumn<int> timId = GeneratedColumn<int>(
+    'tim_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES tim_table (id)',
+    ),
+  );
+  static const VerificationMeta _tarihMeta = const VerificationMeta('tarih');
+  @override
+  late final GeneratedColumn<String> tarih = GeneratedColumn<String>(
+    'tarih',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _islemMeta = const VerificationMeta('islem');
+  @override
+  late final GeneratedColumn<String> islem = GeneratedColumn<String>(
+    'islem',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, personelId, timId, tarih, islem];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tim_uyelik_gecmisi_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TimUyelikGecmisiTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('personel_id')) {
+      context.handle(
+        _personelIdMeta,
+        personelId.isAcceptableOrUnknown(data['personel_id']!, _personelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_personelIdMeta);
+    }
+    if (data.containsKey('tim_id')) {
+      context.handle(
+        _timIdMeta,
+        timId.isAcceptableOrUnknown(data['tim_id']!, _timIdMeta),
+      );
+    }
+    if (data.containsKey('tarih')) {
+      context.handle(
+        _tarihMeta,
+        tarih.isAcceptableOrUnknown(data['tarih']!, _tarihMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tarihMeta);
+    }
+    if (data.containsKey('islem')) {
+      context.handle(
+        _islemMeta,
+        islem.isAcceptableOrUnknown(data['islem']!, _islemMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_islemMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TimUyelikGecmisiTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TimUyelikGecmisiTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      personelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}personel_id'],
+      )!,
+      timId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tim_id'],
+      ),
+      tarih: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tarih'],
+      )!,
+      islem: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}islem'],
+      )!,
+    );
+  }
+
+  @override
+  $TimUyelikGecmisiTableTable createAlias(String alias) {
+    return $TimUyelikGecmisiTableTable(attachedDatabase, alias);
+  }
+}
+
+class TimUyelikGecmisiTableData extends DataClass
+    implements Insertable<TimUyelikGecmisiTableData> {
+  final int id;
+  final int personelId;
+  final int? timId;
+  final String tarih;
+  final String islem;
+  const TimUyelikGecmisiTableData({
+    required this.id,
+    required this.personelId,
+    this.timId,
+    required this.tarih,
+    required this.islem,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['personel_id'] = Variable<int>(personelId);
+    if (!nullToAbsent || timId != null) {
+      map['tim_id'] = Variable<int>(timId);
+    }
+    map['tarih'] = Variable<String>(tarih);
+    map['islem'] = Variable<String>(islem);
+    return map;
+  }
+
+  TimUyelikGecmisiTableCompanion toCompanion(bool nullToAbsent) {
+    return TimUyelikGecmisiTableCompanion(
+      id: Value(id),
+      personelId: Value(personelId),
+      timId: timId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(timId),
+      tarih: Value(tarih),
+      islem: Value(islem),
+    );
+  }
+
+  factory TimUyelikGecmisiTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TimUyelikGecmisiTableData(
+      id: serializer.fromJson<int>(json['id']),
+      personelId: serializer.fromJson<int>(json['personelId']),
+      timId: serializer.fromJson<int?>(json['timId']),
+      tarih: serializer.fromJson<String>(json['tarih']),
+      islem: serializer.fromJson<String>(json['islem']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'personelId': serializer.toJson<int>(personelId),
+      'timId': serializer.toJson<int?>(timId),
+      'tarih': serializer.toJson<String>(tarih),
+      'islem': serializer.toJson<String>(islem),
+    };
+  }
+
+  TimUyelikGecmisiTableData copyWith({
+    int? id,
+    int? personelId,
+    Value<int?> timId = const Value.absent(),
+    String? tarih,
+    String? islem,
+  }) => TimUyelikGecmisiTableData(
+    id: id ?? this.id,
+    personelId: personelId ?? this.personelId,
+    timId: timId.present ? timId.value : this.timId,
+    tarih: tarih ?? this.tarih,
+    islem: islem ?? this.islem,
+  );
+  TimUyelikGecmisiTableData copyWithCompanion(
+    TimUyelikGecmisiTableCompanion data,
+  ) {
+    return TimUyelikGecmisiTableData(
+      id: data.id.present ? data.id.value : this.id,
+      personelId: data.personelId.present
+          ? data.personelId.value
+          : this.personelId,
+      timId: data.timId.present ? data.timId.value : this.timId,
+      tarih: data.tarih.present ? data.tarih.value : this.tarih,
+      islem: data.islem.present ? data.islem.value : this.islem,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TimUyelikGecmisiTableData(')
+          ..write('id: $id, ')
+          ..write('personelId: $personelId, ')
+          ..write('timId: $timId, ')
+          ..write('tarih: $tarih, ')
+          ..write('islem: $islem')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, personelId, timId, tarih, islem);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TimUyelikGecmisiTableData &&
+          other.id == this.id &&
+          other.personelId == this.personelId &&
+          other.timId == this.timId &&
+          other.tarih == this.tarih &&
+          other.islem == this.islem);
+}
+
+class TimUyelikGecmisiTableCompanion
+    extends UpdateCompanion<TimUyelikGecmisiTableData> {
+  final Value<int> id;
+  final Value<int> personelId;
+  final Value<int?> timId;
+  final Value<String> tarih;
+  final Value<String> islem;
+  const TimUyelikGecmisiTableCompanion({
+    this.id = const Value.absent(),
+    this.personelId = const Value.absent(),
+    this.timId = const Value.absent(),
+    this.tarih = const Value.absent(),
+    this.islem = const Value.absent(),
+  });
+  TimUyelikGecmisiTableCompanion.insert({
+    this.id = const Value.absent(),
+    required int personelId,
+    this.timId = const Value.absent(),
+    required String tarih,
+    required String islem,
+  }) : personelId = Value(personelId),
+       tarih = Value(tarih),
+       islem = Value(islem);
+  static Insertable<TimUyelikGecmisiTableData> custom({
+    Expression<int>? id,
+    Expression<int>? personelId,
+    Expression<int>? timId,
+    Expression<String>? tarih,
+    Expression<String>? islem,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (personelId != null) 'personel_id': personelId,
+      if (timId != null) 'tim_id': timId,
+      if (tarih != null) 'tarih': tarih,
+      if (islem != null) 'islem': islem,
+    });
+  }
+
+  TimUyelikGecmisiTableCompanion copyWith({
+    Value<int>? id,
+    Value<int>? personelId,
+    Value<int?>? timId,
+    Value<String>? tarih,
+    Value<String>? islem,
+  }) {
+    return TimUyelikGecmisiTableCompanion(
+      id: id ?? this.id,
+      personelId: personelId ?? this.personelId,
+      timId: timId ?? this.timId,
+      tarih: tarih ?? this.tarih,
+      islem: islem ?? this.islem,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (personelId.present) {
+      map['personel_id'] = Variable<int>(personelId.value);
+    }
+    if (timId.present) {
+      map['tim_id'] = Variable<int>(timId.value);
+    }
+    if (tarih.present) {
+      map['tarih'] = Variable<String>(tarih.value);
+    }
+    if (islem.present) {
+      map['islem'] = Variable<String>(islem.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TimUyelikGecmisiTableCompanion(')
+          ..write('id: $id, ')
+          ..write('personelId: $personelId, ')
+          ..write('timId: $timId, ')
+          ..write('tarih: $tarih, ')
+          ..write('islem: $islem')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2255,6 +2608,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $RaporKayitTableTable raporKayitTable = $RaporKayitTableTable(
     this,
   );
+  late final $TimUyelikGecmisiTableTable timUyelikGecmisiTable =
+      $TimUyelikGecmisiTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2266,6 +2621,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     gunlukFaaliyetTable,
     faaliyetPersonelAtamaTable,
     raporKayitTable,
+    timUyelikGecmisiTable,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2369,6 +2725,31 @@ final class $$TimTableTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<
+    $TimUyelikGecmisiTableTable,
+    List<TimUyelikGecmisiTableData>
+  >
+  _timUyelikGecmisiTableRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.timUyelikGecmisiTable,
+        aliasName: 'tim_table__id__tim_uyelik_gecmisi_table__tim_id',
+      );
+
+  $$TimUyelikGecmisiTableTableProcessedTableManager
+  get timUyelikGecmisiTableRefs {
+    final manager = $$TimUyelikGecmisiTableTableTableManager(
+      $_db,
+      $_db.timUyelikGecmisiTable,
+    ).filter((f) => f.timId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _timUyelikGecmisiTableRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$TimTableTableFilterComposer
@@ -2465,6 +2846,32 @@ class $$TimTableTableFilterComposer
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<bool> timUyelikGecmisiTableRefs(
+    Expression<bool> Function($$TimUyelikGecmisiTableTableFilterComposer f) f,
+  ) {
+    final $$TimUyelikGecmisiTableTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.timUyelikGecmisiTable,
+          getReferencedColumn: (t) => t.timId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$TimUyelikGecmisiTableTableFilterComposer(
+                $db: $db,
+                $table: $db.timUyelikGecmisiTable,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -2609,6 +3016,32 @@ class $$TimTableTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> timUyelikGecmisiTableRefs<T extends Object>(
+    Expression<T> Function($$TimUyelikGecmisiTableTableAnnotationComposer a) f,
+  ) {
+    final $$TimUyelikGecmisiTableTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.timUyelikGecmisiTable,
+          getReferencedColumn: (t) => t.timId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$TimUyelikGecmisiTableTableAnnotationComposer(
+                $db: $db,
+                $table: $db.timUyelikGecmisiTable,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$TimTableTableTableManager
@@ -2628,6 +3061,7 @@ class $$TimTableTableTableManager
             bool timKomutaniId,
             bool kullaniciTableRefs,
             bool personelTableRefs,
+            bool timUyelikGecmisiTableRefs,
           })
         > {
   $$TimTableTableTableManager(_$AppDatabase db, $TimTableTable table)
@@ -2678,12 +3112,14 @@ class $$TimTableTableTableManager
                 timKomutaniId = false,
                 kullaniciTableRefs = false,
                 personelTableRefs = false,
+                timUyelikGecmisiTableRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (kullaniciTableRefs) db.kullaniciTable,
                     if (personelTableRefs) db.personelTable,
+                    if (timUyelikGecmisiTableRefs) db.timUyelikGecmisiTable,
                   ],
                   addJoins:
                       <
@@ -2761,6 +3197,27 @@ class $$TimTableTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (timUyelikGecmisiTableRefs)
+                        await $_getPrefetchedData<
+                          TimTableData,
+                          $TimTableTable,
+                          TimUyelikGecmisiTableData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TimTableTableReferences
+                              ._timUyelikGecmisiTableRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TimTableTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).timUyelikGecmisiTableRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.timId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -2785,6 +3242,7 @@ typedef $$TimTableTableProcessedTableManager =
         bool timKomutaniId,
         bool kullaniciTableRefs,
         bool personelTableRefs,
+        bool timUyelikGecmisiTableRefs,
       })
     >;
 typedef $$KullaniciTableTableCreateCompanionBuilder =
@@ -4872,6 +5330,341 @@ typedef $$RaporKayitTableTableProcessedTableManager =
       RaporKayitTableData,
       PrefetchHooks Function({bool personelId})
     >;
+typedef $$TimUyelikGecmisiTableTableCreateCompanionBuilder =
+    TimUyelikGecmisiTableCompanion Function({
+      Value<int> id,
+      required int personelId,
+      Value<int?> timId,
+      required String tarih,
+      required String islem,
+    });
+typedef $$TimUyelikGecmisiTableTableUpdateCompanionBuilder =
+    TimUyelikGecmisiTableCompanion Function({
+      Value<int> id,
+      Value<int> personelId,
+      Value<int?> timId,
+      Value<String> tarih,
+      Value<String> islem,
+    });
+
+final class $$TimUyelikGecmisiTableTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $TimUyelikGecmisiTableTable,
+          TimUyelikGecmisiTableData
+        > {
+  $$TimUyelikGecmisiTableTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TimTableTable _timIdTable(_$AppDatabase db) => db.timTable
+      .createAlias('tim_uyelik_gecmisi_table__tim_id__tim_table__id');
+
+  $$TimTableTableProcessedTableManager? get timId {
+    final $_column = $_itemColumn<int>('tim_id');
+    if ($_column == null) return null;
+    final manager = $$TimTableTableTableManager(
+      $_db,
+      $_db.timTable,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_timIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TimUyelikGecmisiTableTableFilterComposer
+    extends Composer<_$AppDatabase, $TimUyelikGecmisiTableTable> {
+  $$TimUyelikGecmisiTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get personelId => $composableBuilder(
+    column: $table.personelId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tarih => $composableBuilder(
+    column: $table.tarih,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get islem => $composableBuilder(
+    column: $table.islem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TimTableTableFilterComposer get timId {
+    final $$TimTableTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.timId,
+      referencedTable: $db.timTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TimTableTableFilterComposer(
+            $db: $db,
+            $table: $db.timTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TimUyelikGecmisiTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $TimUyelikGecmisiTableTable> {
+  $$TimUyelikGecmisiTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get personelId => $composableBuilder(
+    column: $table.personelId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tarih => $composableBuilder(
+    column: $table.tarih,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get islem => $composableBuilder(
+    column: $table.islem,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TimTableTableOrderingComposer get timId {
+    final $$TimTableTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.timId,
+      referencedTable: $db.timTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TimTableTableOrderingComposer(
+            $db: $db,
+            $table: $db.timTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TimUyelikGecmisiTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TimUyelikGecmisiTableTable> {
+  $$TimUyelikGecmisiTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get personelId => $composableBuilder(
+    column: $table.personelId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get tarih =>
+      $composableBuilder(column: $table.tarih, builder: (column) => column);
+
+  GeneratedColumn<String> get islem =>
+      $composableBuilder(column: $table.islem, builder: (column) => column);
+
+  $$TimTableTableAnnotationComposer get timId {
+    final $$TimTableTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.timId,
+      referencedTable: $db.timTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TimTableTableAnnotationComposer(
+            $db: $db,
+            $table: $db.timTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TimUyelikGecmisiTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TimUyelikGecmisiTableTable,
+          TimUyelikGecmisiTableData,
+          $$TimUyelikGecmisiTableTableFilterComposer,
+          $$TimUyelikGecmisiTableTableOrderingComposer,
+          $$TimUyelikGecmisiTableTableAnnotationComposer,
+          $$TimUyelikGecmisiTableTableCreateCompanionBuilder,
+          $$TimUyelikGecmisiTableTableUpdateCompanionBuilder,
+          (TimUyelikGecmisiTableData, $$TimUyelikGecmisiTableTableReferences),
+          TimUyelikGecmisiTableData,
+          PrefetchHooks Function({bool timId})
+        > {
+  $$TimUyelikGecmisiTableTableTableManager(
+    _$AppDatabase db,
+    $TimUyelikGecmisiTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TimUyelikGecmisiTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$TimUyelikGecmisiTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$TimUyelikGecmisiTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> personelId = const Value.absent(),
+                Value<int?> timId = const Value.absent(),
+                Value<String> tarih = const Value.absent(),
+                Value<String> islem = const Value.absent(),
+              }) => TimUyelikGecmisiTableCompanion(
+                id: id,
+                personelId: personelId,
+                timId: timId,
+                tarih: tarih,
+                islem: islem,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int personelId,
+                Value<int?> timId = const Value.absent(),
+                required String tarih,
+                required String islem,
+              }) => TimUyelikGecmisiTableCompanion.insert(
+                id: id,
+                personelId: personelId,
+                timId: timId,
+                tarih: tarih,
+                islem: islem,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TimUyelikGecmisiTableTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({timId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (timId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.timId,
+                                referencedTable:
+                                    $$TimUyelikGecmisiTableTableReferences
+                                        ._timIdTable(db),
+                                referencedColumn:
+                                    $$TimUyelikGecmisiTableTableReferences
+                                        ._timIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TimUyelikGecmisiTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TimUyelikGecmisiTableTable,
+      TimUyelikGecmisiTableData,
+      $$TimUyelikGecmisiTableTableFilterComposer,
+      $$TimUyelikGecmisiTableTableOrderingComposer,
+      $$TimUyelikGecmisiTableTableAnnotationComposer,
+      $$TimUyelikGecmisiTableTableCreateCompanionBuilder,
+      $$TimUyelikGecmisiTableTableUpdateCompanionBuilder,
+      (TimUyelikGecmisiTableData, $$TimUyelikGecmisiTableTableReferences),
+      TimUyelikGecmisiTableData,
+      PrefetchHooks Function({bool timId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4892,4 +5685,6 @@ class $AppDatabaseManager {
       );
   $$RaporKayitTableTableTableManager get raporKayitTable =>
       $$RaporKayitTableTableTableManager(_db, _db.raporKayitTable);
+  $$TimUyelikGecmisiTableTableTableManager get timUyelikGecmisiTable =>
+      $$TimUyelikGecmisiTableTableTableManager(_db, _db.timUyelikGecmisiTable);
 }

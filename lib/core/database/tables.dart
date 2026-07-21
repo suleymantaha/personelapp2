@@ -59,3 +59,13 @@ class RaporKayitTable extends Table {
   TextColumn get raporBitis => text()(); // YYYY-AA-DD
   TextColumn get aciklama => text().nullable()();
 }
+
+/// 7. Tim Üyelik Geçmişi Tablosu
+class TimUyelikGecmisiTable extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get personelId => integer()();
+  IntColumn get timId => integer().nullable().references(TimTable, #id)();
+  TextColumn get tarih => text()(); // YYYY-AA-DD
+  TextColumn get islem => text()(); // 'eklendi', 'çıkarıldı'
+}
+
