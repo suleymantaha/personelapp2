@@ -3,9 +3,9 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
 class ActivityRepository {
-  final AppDatabase db;
-
   ActivityRepository(this.db);
+
+  final AppDatabase db;
 
   /// Watch all activities
   Stream<List<GunlukFaaliyetTableData>> watchAllActivities() {
@@ -40,12 +40,40 @@ class ActivityRepository {
     );
   }
 
+  /// Watch all activities for a specific team/squad
+  Stream<List<GunlukFaaliyetTableData>> watchActivitiesForTeam(int timId) {
+    final query = db.select(db.gunlukFaaliyetTable).join([
+      innerJoin(
+        db.faaliyetPersonelAtamaTable,
+        db.faaliyetPersonelAtamaTable.faaliyetId.equalsExp(
+          db.gunlukFaaliyetTable.id,
+        ),
+      ),
+      innerJoin(
+        db.personelTable,
+        db.personelTable.id.equalsExp(
+          db.faaliyetPersonelAtamaTable.personelId,
+        ),
+      ),
+    ])..where(db.personelTable.timId.equals(timId));
+
+    return query.watch().map((rows) {
+      final map = <int, GunlukFaaliyetTableData>{};
+      for (final row in rows) {
+        final act = row.readTable(db.gunlukFaaliyetTable);
+        map[act.id] = act;
+      }
+      return map.values.toList();
+    });
+  }
+
   /// Save daily activity and perform smart conflict evaluation for each assigned personnel
   Future<int> createActivityWithAssignments({
     required String faaliyetAdi,
     required String tarih,
     required String olusturanKullanici,
     required List<Map<String, dynamic>> personnelAssignments,
+    bool isCommander = false,
   }) async {
     return db.transaction(() async {
       // 1. Create activity record
@@ -103,12 +131,17 @@ class ActivityRepository {
         final pId = item['personelId'] as int;
         final gorev = item['gorevVeyaIzin'] as String;
 
-        final evaluatedStatus = ConflictChecker.evaluateAssignmentStatus(
+        var evaluatedStatus = ConflictChecker.evaluateAssignmentStatus(
           personelId: pId,
           targetDate: tarih,
           reports: domainReports,
           existingAssignments: existingAssignments,
         );
+
+        // If submitted by Tim Komutanı, force status to 'beklemede' for Admin Approval
+        if (isCommander) {
+          evaluatedStatus = AssignmentStatus.beklemede;
+        }
 
         await db
             .into(db.faaliyetPersonelAtamaTable)
@@ -125,6 +158,36 @@ class ActivityRepository {
 
       return actId;
     });
+  }
+
+  /// Approve all pending assignments for a specific activity
+  Future<int> approveAllAssignmentsForActivity(int activityId) async {
+    return (db.update(db.faaliyetPersonelAtamaTable)
+          ..where(
+            (tbl) =>
+                tbl.faaliyetId.equals(activityId) &
+                tbl.durum.equals(AssignmentStatus.beklemede),
+          ))
+        .write(
+          const FaaliyetPersonelAtamaTableCompanion(
+            durum: Value(AssignmentStatus.onaylandi),
+          ),
+        );
+  }
+
+  /// Reject all pending assignments for a specific activity
+  Future<int> rejectAllAssignmentsForActivity(int activityId) async {
+    return (db.update(db.faaliyetPersonelAtamaTable)
+          ..where(
+            (tbl) =>
+                tbl.faaliyetId.equals(activityId) &
+                tbl.durum.equals(AssignmentStatus.beklemede),
+          ))
+        .write(
+          const FaaliyetPersonelAtamaTableCompanion(
+            durum: Value(AssignmentStatus.reddedildi),
+          ),
+        );
   }
 
   /// Approve or Reject a pending assignment

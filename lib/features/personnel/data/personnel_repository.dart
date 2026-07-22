@@ -3,18 +3,17 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 
 class PersonnelRepository {
-  final AppDatabase db;
-
   PersonnelRepository(this.db);
+
+  final AppDatabase db;
 
   /// Return all personnel sorted by rank weight (seniority)
   Stream<List<PersonelTableData>> watchAllPersonnelSorted() {
     return db.select(db.personelTable).watch().map((list) {
-      final sorted = List<PersonelTableData>.from(list);
-      sorted.sort(
-        (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
-      );
-      return sorted;
+      return List<PersonelTableData>.from(list)
+        ..sort(
+          (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
+        );
     });
   }
 
@@ -23,11 +22,10 @@ class PersonnelRepository {
     return (db.select(db.personelTable)..where((tbl) => tbl.timId.equals(timId)))
         .watch()
         .map((list) {
-      final sorted = List<PersonelTableData>.from(list);
-      sorted.sort(
-        (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
-      );
-      return sorted;
+      return List<PersonelTableData>.from(list)
+        ..sort(
+          (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
+        );
     });
   }
 
@@ -140,14 +138,13 @@ class PersonnelRepository {
     required String timAdi,
     required String olusturmaTarihi,
     required String komutanKullaniciAdi,
-    required String komutanSifre,
   }) async {
     return db.transaction(() async {
-      // 1. Create commander user account
+      // 1. Create commander user account with pending password setup
       final userId = await db.into(db.kullaniciTable).insert(
             KullaniciTableCompanion.insert(
               kullaniciAdi: komutanKullaniciAdi,
-              sifre: komutanSifre,
+              sifre: const Value(''),
               rol: 'tim_komutani',
             ),
           );
@@ -161,6 +158,32 @@ class PersonnelRepository {
             ),
           );
     });
+  }
+
+  /// Create a new user account with pending password
+  Future<int> createUserAccount({
+    required String kullaniciAdi,
+    required String rol,
+    int? timId,
+  }) {
+    return db.into(db.kullaniciTable).insert(
+          KullaniciTableCompanion.insert(
+            kullaniciAdi: kullaniciAdi,
+            sifre: const Value(''),
+            rol: rol,
+            timId: Value(timId),
+          ),
+        );
+  }
+
+  /// Update password for a specific user
+  Future<int> updateUserPassword({
+    required String kullaniciAdi,
+    required String newPassword,
+  }) {
+    return (db.update(db.kullaniciTable)
+          ..where((tbl) => tbl.kullaniciAdi.equals(kullaniciAdi)))
+        .write(KullaniciTableCompanion(sifre: Value(newPassword)));
   }
 
   /// List all Tim Komutanı accounts
@@ -195,5 +218,48 @@ class PersonnelRepository {
 
   Future<int> deleteSquad(int id) {
     return (db.delete(db.timTable)..where((tbl) => tbl.id.equals(id))).go();
+  }
+
+  /// Assign a personnel as commander of a squad by creating/updating user account
+  Future<void> assignPersonnelAsCommander({
+    required String kullaniciAdi,
+    required int timId,
+    required int personnelId,
+  }) async {
+    await db.transaction(() async {
+      // 1. Assign personnel to squad
+      await (db.update(db.personelTable)
+            ..where((tbl) => tbl.id.equals(personnelId)))
+          .write(PersonelTableCompanion(timId: Value(timId)));
+
+      // 2. Check if user already exists
+      final existingUser = await (db.select(db.kullaniciTable)
+            ..where((tbl) => tbl.kullaniciAdi.equals(kullaniciAdi)))
+          .getSingleOrNull();
+
+      int userId;
+      if (existingUser != null) {
+        userId = existingUser.id;
+        await (db.update(db.kullaniciTable)
+              ..where((tbl) => tbl.id.equals(userId)))
+            .write(KullaniciTableCompanion(
+          rol: const Value('tim_komutani'),
+          timId: Value(timId),
+        ));
+      } else {
+        userId = await db.into(db.kullaniciTable).insert(
+              KullaniciTableCompanion.insert(
+                kullaniciAdi: kullaniciAdi,
+                sifre: const Value(''),
+                rol: 'tim_komutani',
+                timId: Value(timId),
+              ),
+            );
+      }
+
+      // 3. Update squad commander ID
+      await (db.update(db.timTable)..where((tbl) => tbl.id.equals(timId)))
+          .write(TimTableCompanion(timKomutaniId: Value(userId)));
+    });
   }
 }

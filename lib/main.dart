@@ -6,7 +6,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('tr_TR', null);
+  await initializeDateFormatting('tr_TR');
 
   runApp(
     const ProviderScope(

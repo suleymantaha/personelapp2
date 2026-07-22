@@ -7,22 +7,26 @@ class AssignmentStatus {
 
 /// Duty or leave types
 class DutyOrLeaveType {
+  static const String heybetKomutani = 'HEYBET KOMUTANI';
+  static const String nobSb = 'NÖB. SB.';
+  static const String mebsNob = 'MEBS NÖB.';
+  static const String garajNob = 'GARAJ NÖB.';
+  static const String ttzaNob = 'TTZA NÖB.';
+  static const String kuleNob = 'KULE NÖB.';
+  static const String hazirKita = 'HAZIR KITA';
+  static const String guluskur = 'GÜLÜŞKÜR';
+  static const String heybet = 'HEYBET';
   static const String gorevli = 'GÖREVLİ';
   static const String nobetci = 'NÖBETÇİ';
   static const String izinli = 'İZİNLİ';
   static const String istirahatli = 'İSTİRAHATLİ';
   static const String raporlu = 'RAPORLU';
   static const String sevk = 'SEVK';
+  static const String diger = 'DİĞER';
 }
 
 /// Simplified Report Data Model for Domain Logic
 class PersonnelReport {
-  final int id;
-  final int personelId;
-  final String raporBaslangic; // YYYY-MM-DD
-  final String raporBitis; // YYYY-MM-DD
-  final String? aciklama;
-
   const PersonnelReport({
     required this.id,
     required this.personelId,
@@ -30,6 +34,12 @@ class PersonnelReport {
     required this.raporBitis,
     this.aciklama,
   });
+
+  final int id;
+  final int personelId;
+  final String raporBaslangic; // YYYY-MM-DD
+  final String raporBitis; // YYYY-MM-DD
+  final String? aciklama;
 
   bool coversDate(String dateStr) {
     return dateStr.compareTo(raporBaslangic) >= 0 &&
@@ -39,13 +49,6 @@ class PersonnelReport {
 
 /// Simplified Existing Duty Assignment for Domain Logic
 class ExistingDutyAssignment {
-  final int id;
-  final int faaliyetId;
-  final int personelId;
-  final String tarih; // YYYY-MM-DD
-  final String gorevVeyaIzin;
-  final String durum; // 'onaylandi', 'beklemede', 'reddedildi'
-
   const ExistingDutyAssignment({
     required this.id,
     required this.faaliyetId,
@@ -54,6 +57,13 @@ class ExistingDutyAssignment {
     required this.gorevVeyaIzin,
     required this.durum,
   });
+
+  final int id;
+  final int faaliyetId;
+  final int personelId;
+  final String tarih; // YYYY-MM-DD
+  final String gorevVeyaIzin;
+  final String durum; // 'onaylandi', 'beklemede', 'reddedildi'
 }
 
 /// Conflict Checker Domain Logic

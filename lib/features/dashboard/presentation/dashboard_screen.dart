@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,65 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
+
+  Future<void> _showChangePasswordDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String username,
+  ) async {
+    final passCtrl = TextEditingController();
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Şifremi Değiştir'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Kullanıcı: $username', style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: passCtrl,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Yeni Şifreniz',
+                  prefixIcon: Icon(Icons.lock),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('İPTAL'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final newPass = passCtrl.text.trim();
+                if (newPass.length >= 4) {
+                  final repo = ref.read(personnelRepositoryProvider);
+                  await repo.updateUserPassword(
+                    kullaniciAdi: username,
+                    newPassword: newPass,
+                  );
+                  if (ctx.mounted) {
+                    Navigator.of(ctx).pop();
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      const SnackBar(
+                        content: Text('Şifreniz başarıyla güncellendi!'),
+                        backgroundColor: AppColors.approvedGreen,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('GÜNCELLE'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,21 +104,36 @@ class DashboardScreen extends ConsumerWidget {
                       child: Icon(Icons.person, color: Colors.white),
                     ),
                     const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Hoş Geldiniz, ${session?.username ?? 'Kullanıcı'}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Hoş Geldiniz, ${session?.username ?? 'Kullanıcı'}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Rol: ${isAdmin ? "Birlik Yöneticisi (Admin)" : "Tim Komutanı"}',
-                          style: const TextStyle(color: Colors.black54),
-                        ),
-                      ],
+                          Text(
+                            'Rol: ${isAdmin ? "Birlik Yöneticisi (Admin)" : "Tim Komutanı"}',
+                            style: const TextStyle(color: Colors.black54),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.key, color: AppColors.militaryOlive),
+                      tooltip: 'Şifremi Değiştir',
+                      onPressed: () {
+                        unawaited(
+                          _showChangePasswordDialog(
+                            context,
+                            ref,
+                            session?.username ?? '',
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -138,7 +214,14 @@ class DashboardScreen extends ConsumerWidget {
                   color: Colors.blueGrey.shade700,
                   onTap: () => context.push('/personnel-management'),
                 ),
-                if (isAdmin)
+                if (isAdmin) ...[
+                  _MenuCard(
+                    icon: Icons.group_add,
+                    title: 'Yeni Tim Ekle',
+                    subtitle: 'Tim & Komutan Ekle',
+                    color: Colors.teal.shade700,
+                    onTap: () => context.push('/personnel-management'),
+                  ),
                   _MenuCard(
                     icon: Icons.assignment_turned_in,
                     title: 'Bekleyen Onaylar',
@@ -146,6 +229,7 @@ class DashboardScreen extends ConsumerWidget {
                     color: AppColors.pendingYellow,
                     onTap: () => context.push('/pending-approvals'),
                   ),
+                ],
                 _MenuCard(
                   icon: Icons.inventory_2,
                   title: 'Faaliyet Arşivi',
@@ -163,12 +247,6 @@ class DashboardScreen extends ConsumerWidget {
 }
 
 class _MenuCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color color;
-  final VoidCallback onTap;
-
   const _MenuCard({
     required this.icon,
     required this.title,
@@ -176,6 +254,12 @@ class _MenuCard extends StatelessWidget {
     required this.color,
     required this.onTap,
   });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {

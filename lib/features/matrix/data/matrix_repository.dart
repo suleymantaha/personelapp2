@@ -1,11 +1,9 @@
-import 'package:drift/drift.dart';
 import 'package:personelapp2/core/database/database.dart';
-import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
 class MatrixRepository {
-  final AppDatabase db;
-
   MatrixRepository(this.db);
+
+  final AppDatabase db;
 
   /// Returns a stream mapping personnelId to a map of (dayNumber -> dutyStatusString) for a given yearMonth ("YYYY-MM").
   Stream<Map<int, Map<int, String>>> watchMonthlyMatrix(String yearMonth) {
@@ -21,7 +19,7 @@ class MatrixRepository {
           .where((act) => act.tarih.startsWith(yearMonth))
           .toList();
 
-      final actIdToDate = {for (var act in monthActivities) act.id: act.tarih};
+      final actIdToDate = {for (final act in monthActivities) act.id: act.tarih};
       final targetActIds = actIdToDate.keys.toSet();
 
       // Filter assignments for target activities

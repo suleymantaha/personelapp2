@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 
@@ -16,7 +17,104 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController(text: '123456');
   String _selectedRole = 'yönetici';
 
-  void _handleLogin() async {
+  Future<void> _showPasswordCreationDialog(String username, KullaniciTableData user) async {
+    final pass1Ctrl = TextEditingController();
+    final pass2Ctrl = TextEditingController();
+    String? errorText;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return AlertDialog(
+              title: const Text('İlk Giriş: Parola Belirleyin'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Sayın $username, hesabınız için yeni bir parola belirleyiniz.',
+                    style: const TextStyle(fontSize: 13, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: pass1Ctrl,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Yeni Parola',
+                      prefixIcon: Icon(Icons.lock_outline),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: pass2Ctrl,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Yeni Parola (Tekrar)',
+                      prefixIcon: Icon(Icons.lock_reset),
+                    ),
+                  ),
+                  if (errorText != null) ...[
+                    const SizedBox(height: 8),
+                    Text(errorText!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                  ],
+                ],
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () async {
+                    final p1 = pass1Ctrl.text.trim();
+                    final p2 = pass2Ctrl.text.trim();
+
+                    if (p1.isEmpty || p1.length < 4) {
+                      setDialogState(() => errorText = 'Parola en az 4 karakter olmalıdır.');
+                      return;
+                    }
+                    if (p1 != p2) {
+                      setDialogState(() => errorText = 'Parolalar eşleşmiyor!');
+                      return;
+                    }
+
+                    final repo = ref.read(personnelRepositoryProvider);
+                    await repo.updateUserPassword(kullaniciAdi: username, newPassword: p1);
+
+                    if (ctx.mounted) Navigator.of(ctx).pop();
+
+                    await _loginUserSession(user);
+                  },
+                  child: const Text('PAROLAYI KAYDET VE GİRİŞ YAP'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _loginUserSession(KullaniciTableData user) async {
+    final db = ref.read(databaseProvider);
+    var timId = user.timId;
+    if (user.rol == 'tim_komutani' && timId == null) {
+      final squad = await (db.select(db.timTable)
+            ..where((tbl) => tbl.timKomutaniId.equals(user.id)))
+          .getSingleOrNull();
+      timId = squad?.id;
+    }
+
+    ref.read(userSessionProvider.notifier).state = UserSessionState(
+      username: user.kullaniciAdi,
+      role: user.rol,
+      timId: timId,
+    );
+
+    if (mounted) {
+      context.go('/dashboard');
+    }
+  }
+
+  Future<void> _handleLogin() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
     if (username.isEmpty) return;
@@ -26,31 +124,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ..where((tbl) => tbl.kullaniciAdi.equals(username)))
         .getSingleOrNull();
 
-    if (user != null && user.sifre == password) {
-      // Find squad linked to commander if role is tim_komutani
-      int? timId = user.timId;
-      if (user.rol == 'tim_komutani' && timId == null) {
-        final squad = await (db.select(db.timTable)
-              ..where((tbl) => tbl.timKomutaniId.equals(user.id)))
-            .getSingleOrNull();
-        timId = squad?.id;
+    if (user != null) {
+      if (user.sifre.isEmpty) {
+        // First-time login: Password not set yet
+        await _showPasswordCreationDialog(username, user);
+        return;
       }
 
-      ref.read(userSessionProvider.notifier).state = UserSessionState(
-        username: user.kullaniciAdi,
-        role: user.rol,
-        timId: timId,
-      );
+      if (user.sifre == password) {
+        await _loginUserSession(user);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Geçersiz kullanıcı adı veya parola!')),
+          );
+        }
+      }
     } else {
-      // Fallback for default session login
-      ref.read(userSessionProvider.notifier).state = UserSessionState(
-        username: username,
-        role: _selectedRole,
-      );
-    }
-
-    if (mounted) {
-      context.go('/dashboard');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Geçersiz kullanıcı adı veya parola!')),
+        );
+      }
     }
   }
 
@@ -108,7 +203,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _selectedRole,
+                    initialValue: _selectedRole,
                     decoration: const InputDecoration(
                       labelText: 'Kullanıcı Rolü',
                       prefixIcon: Icon(Icons.badge),

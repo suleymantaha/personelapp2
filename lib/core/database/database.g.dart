@@ -360,7 +360,8 @@ class $KullaniciTableTable extends KullaniciTable
     aliasedName,
     false,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
   );
   static const VerificationMeta _rolMeta = const VerificationMeta('rol');
   @override
@@ -416,8 +417,6 @@ class $KullaniciTableTable extends KullaniciTable
         _sifreMeta,
         sifre.isAcceptableOrUnknown(data['sifre']!, _sifreMeta),
       );
-    } else if (isInserting) {
-      context.missing(_sifreMeta);
     }
     if (data.containsKey('rol')) {
       context.handle(
@@ -601,11 +600,10 @@ class KullaniciTableCompanion extends UpdateCompanion<KullaniciTableData> {
   KullaniciTableCompanion.insert({
     this.id = const Value.absent(),
     required String kullaniciAdi,
-    required String sifre,
+    this.sifre = const Value.absent(),
     required String rol,
     this.timId = const Value.absent(),
   }) : kullaniciAdi = Value(kullaniciAdi),
-       sifre = Value(sifre),
        rol = Value(rol);
   static Insertable<KullaniciTableData> custom({
     Expression<int>? id,
@@ -3249,7 +3247,7 @@ typedef $$KullaniciTableTableCreateCompanionBuilder =
     KullaniciTableCompanion Function({
       Value<int> id,
       required String kullaniciAdi,
-      required String sifre,
+      Value<String> sifre,
       required String rol,
       Value<int?> timId,
     });
@@ -3560,7 +3558,7 @@ class $$KullaniciTableTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String kullaniciAdi,
-                required String sifre,
+                Value<String> sifre = const Value.absent(),
                 required String rol,
                 Value<int?> timId = const Value.absent(),
               }) => KullaniciTableCompanion.insert(

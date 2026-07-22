@@ -67,10 +67,7 @@ class ExcelXmlGenerator {
       ..writeln('  </Style>')
       ..writeln(' </Styles>')
       ..writeln(' <Worksheet ss:Name="Aylık Faaliyet Matrisi">')
-      ..writeln('  <Table>');
-
-    // Header Row
-    buffer
+      ..writeln('  <Table>')
       ..writeln('   <Row>')
       ..writeln('    <Cell ss:StyleID="Header"><Data ss:Type="String">S.No</Data></Cell>')
       ..writeln('    <Cell ss:StyleID="Header"><Data ss:Type="String">Rütbesi ve Adı Soyadı</Data></Cell>');
@@ -144,15 +141,10 @@ class ExcelXmlGenerator {
     await file.writeAsString(xmlContent);
 
     await SharePlus.instance.share(
-      [XFile(file.path)],
-      text: 'Jandarma Görev Takip - Aylık Faaliyet Matrisi Excel Çıktısı',
+      ShareParams(
+        files: [XFile(file.path)],
+        text: 'Jandarma Görev Takip - Aylık Faaliyet Matrisi Excel Çıktısı',
+      ),
     );
-  }
-}
-
-class SharePlus {
-  static final SharePlus instance = SharePlus();
-  Future<void> share(List<XFile> files, {String? text}) {
-    return Share.shareXFiles(files, text: text);
   }
 }

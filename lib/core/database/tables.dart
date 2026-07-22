@@ -4,7 +4,7 @@ import 'package:drift/drift.dart';
 class KullaniciTable extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get kullaniciAdi => text().unique()();
-  TextColumn get sifre => text()();
+  TextColumn get sifre => text().withDefault(const Constant(''))();
   TextColumn get rol => text()(); // 'yönetici' veya 'tim_komutani'
   IntColumn get timId => integer().nullable().references(TimTable, #id)();
 }
@@ -68,4 +68,3 @@ class TimUyelikGecmisiTable extends Table {
   TextColumn get tarih => text()(); // YYYY-AA-DD
   TextColumn get islem => text()(); // 'eklendi', 'çıkarıldı'
 }
-

@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -25,8 +26,8 @@ void main() {
     // 2. Insert User
     final userId = await db.into(db.kullaniciTable).insert(
           KullaniciTableCompanion.insert(
-            kullaniciAdi: 'admin',
-            sifre: '123456',
+            kullaniciAdi: 'admin_test',
+            sifre: const Value('123456'),
             rol: 'yönetici',
           ),
         );

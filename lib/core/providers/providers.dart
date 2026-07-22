@@ -23,15 +23,15 @@ final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
 
 /// Current Logged-in User Session State
 class UserSessionState {
-  final String username;
-  final String role; // 'yönetici' veya 'tim_komutani'
-  final int? timId;
-
   const UserSessionState({
     required this.username,
     required this.role,
     this.timId,
   });
+
+  final String username;
+  final String role; // 'yönetici' veya 'tim_komutani'
+  final int? timId;
 
   bool get isAdmin => role == 'yönetici';
 }
@@ -59,12 +59,27 @@ final pendingAssignmentsProvider =
   return ref.watch(activityRepositoryProvider).watchPendingAssignments();
 });
 
+/// Role-Filtered Activities Stream Provider
+final filteredActivitiesProvider =
+    StreamProvider<List<GunlukFaaliyetTableData>>((ref) {
+  final session = ref.watch(userSessionProvider);
+  final repo = ref.watch(activityRepositoryProvider);
+
+  if (session != null && !session.isAdmin && session.timId != null) {
+    return repo.watchActivitiesForTeam(session.timId!);
+  }
+  return repo.watchAllActivities();
+});
+
+
 /// Matrix Repository & Monthly Matrix Provider
 final matrixRepositoryProvider = Provider<MatrixRepository>((ref) {
   return MatrixRepository(ref.watch(databaseProvider));
 });
 
-final monthlyMatrixProvider = StreamProvider.family<Map<int, Map<int, String>>, String>((ref, yearMonth) {
+final StreamProviderFamily<Map<int, Map<int, String>>, String>
+    monthlyMatrixProvider =
+    StreamProvider.family<Map<int, Map<int, String>>, String>(
+        (ref, yearMonth) {
   return ref.watch(matrixRepositoryProvider).watchMonthlyMatrix(yearMonth);
 });
-

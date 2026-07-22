@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/matrix/services/excel_xml_generator.dart';
@@ -92,11 +93,13 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
               final matrixData = matrixAsync.value ?? {};
               if (personnel.isEmpty) return;
 
-              ExcelXmlGenerator.exportAndShareXml(
-                personnel: personnel,
-                matrixData: matrixData,
-                year: _selectedMonth.year,
-                month: _selectedMonth.month,
+              unawaited(
+                ExcelXmlGenerator.exportAndShareXml(
+                  personnel: personnel,
+                  matrixData: matrixData,
+                  year: _selectedMonth.year,
+                  month: _selectedMonth.month,
+                ),
               );
             },
           ),
@@ -118,7 +121,6 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
           final matrixData = matrixAsync.value ?? {};
 
           return SingleChildScrollView(
-            scrollDirection: Axis.vertical,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

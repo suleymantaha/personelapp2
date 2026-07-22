@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personelapp2/features/activity/presentation/activity_archive_screen.dart';
 import 'package:personelapp2/features/activity/presentation/activity_form_screen.dart';
@@ -41,4 +40,3 @@ final appRouter = GoRouter(
     ),
   ],
 );
-
