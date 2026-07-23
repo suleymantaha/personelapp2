@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/utils/password_hasher.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 
 class PersonnelRepository {
@@ -181,9 +182,10 @@ class PersonnelRepository {
     required String kullaniciAdi,
     required String newPassword,
   }) {
+    final hashedPassword = PasswordHasher.hashPassword(newPassword);
     return (db.update(db.kullaniciTable)
           ..where((tbl) => tbl.kullaniciAdi.equals(kullaniciAdi)))
-        .write(KullaniciTableCompanion(sifre: Value(newPassword)));
+        .write(KullaniciTableCompanion(sifre: Value(hashedPassword)));
   }
 
   /// List all Tim Komutanı accounts

@@ -7,9 +7,23 @@ class ActivityRepository {
 
   final AppDatabase db;
 
-  /// Watch all activities
-  Stream<List<GunlukFaaliyetTableData>> watchAllActivities() {
-    return db.select(db.gunlukFaaliyetTable).watch();
+  /// Watch activities with optional date range filter and pagination
+  Stream<List<GunlukFaaliyetTableData>> watchAllActivities({
+    int limit = 100,
+    int offset = 0,
+    String? startDate,
+    String? endDate,
+  }) {
+    final query = db.select(db.gunlukFaaliyetTable);
+    if (startDate != null) {
+      query.where((tbl) => tbl.tarih.isBiggerOrEqualValue(startDate));
+    }
+    if (endDate != null) {
+      query.where((tbl) => tbl.tarih.isSmallerOrEqualValue(endDate));
+    }
+    query.orderBy([(tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.desc)]);
+    query.limit(limit, offset: offset);
+    return query.watch();
   }
 
   /// Watch pending duty assignments

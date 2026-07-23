@@ -42,7 +42,7 @@ class $TimTableTable extends TimTable
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES kullanici_table (id)',
+      'REFERENCES kullanici_table (id) ON DELETE SET NULL',
     ),
   );
   static const VerificationMeta _olusturmaTarihiMeta = const VerificationMeta(
@@ -381,7 +381,7 @@ class $KullaniciTableTable extends KullaniciTable
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES tim_table (id)',
+      'REFERENCES tim_table (id) ON DELETE SET NULL',
     ),
   );
   @override
@@ -728,7 +728,7 @@ class $PersonelTableTable extends PersonelTable
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES tim_table (id)',
+      'REFERENCES tim_table (id) ON DELETE SET NULL',
     ),
   );
   static const VerificationMeta _kayitTarihiMeta = const VerificationMeta(
@@ -2623,6 +2623,27 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'kullanici_table',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('tim_table', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tim_table',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('kullanici_table', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tim_table',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('personel_table', kind: UpdateKind.update)],
+    ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
         'gunluk_faaliyet_table',

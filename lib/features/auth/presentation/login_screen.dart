@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/utils/password_hasher.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -13,8 +14,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _usernameController = TextEditingController(text: 'admin');
-  final _passwordController = TextEditingController(text: '123456');
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
   String _selectedRole = 'yönetici';
 
   Future<void> _showPasswordCreationDialog(String username, KullaniciTableData user) async {
@@ -131,7 +132,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         return;
       }
 
-      if (user.sifre == password) {
+      if (PasswordHasher.verifyPassword(password, user.sifre)) {
         await _loginUserSession(user);
       } else {
         if (mounted) {

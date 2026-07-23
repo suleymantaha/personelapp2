@@ -6,7 +6,8 @@ class KullaniciTable extends Table {
   TextColumn get kullaniciAdi => text().unique()();
   TextColumn get sifre => text().withDefault(const Constant(''))();
   TextColumn get rol => text()(); // 'yönetici' veya 'tim_komutani'
-  IntColumn get timId => integer().nullable().references(TimTable, #id)();
+  IntColumn get timId =>
+      integer().nullable().references(TimTable, #id, onDelete: KeyAction.setNull)();
 }
 
 /// 2. Tim Tablosu
@@ -14,7 +15,7 @@ class TimTable extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get timAdi => text()();
   IntColumn get timKomutaniId =>
-      integer().nullable().references(KullaniciTable, #id)();
+      integer().nullable().references(KullaniciTable, #id, onDelete: KeyAction.setNull)();
   TextColumn get olusturmaTarihi => text()();
 }
 
@@ -24,7 +25,8 @@ class PersonelTable extends Table {
   TextColumn get adSoyad => text()();
   TextColumn get rutbe => text()();
   TextColumn get birlik => text()();
-  IntColumn get timId => integer().nullable().references(TimTable, #id)();
+  IntColumn get timId =>
+      integer().nullable().references(TimTable, #id, onDelete: KeyAction.setNull)();
   TextColumn get kayitTarihi => text()();
 }
 

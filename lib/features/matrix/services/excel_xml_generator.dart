@@ -122,6 +122,25 @@ class ExcelXmlGenerator {
     return buffer.toString();
   }
 
+  /// Cleans up old exported XML/XLS files in temporary directory to prevent cache bloat
+  static Future<void> cleanOldExports() async {
+    try {
+      final dir = await getTemporaryDirectory();
+      if (await dir.exists()) {
+        final files = dir.listSync();
+        final now = DateTime.now();
+        for (final entity in files) {
+          if (entity is File && (entity.path.endsWith('.xls') || entity.path.endsWith('.xml'))) {
+            final stat = await entity.stat();
+            if (now.difference(stat.modified).inDays >= 1) {
+              await entity.delete();
+            }
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
   /// Exports XML content to a temporary .xls file and launches native share intent
   static Future<void> exportAndShareXml({
     required List<PersonelTableData> personnel,
@@ -129,6 +148,8 @@ class ExcelXmlGenerator {
     required int year,
     required int month,
   }) async {
+    await cleanOldExports();
+
     final xmlContent = generateXml(
       personnel: personnel,
       matrixData: matrixData,
