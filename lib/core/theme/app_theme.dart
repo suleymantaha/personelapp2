@@ -69,4 +69,57 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData get darkMilitaryTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: const Color(0xFF12160F),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.militaryOlive,
+        brightness: Brightness.dark,
+        primary: AppColors.accentKhaki,
+        secondary: AppColors.militaryOlive,
+        surface: const Color(0xFF1E2419),
+        surfaceContainerHighest: const Color(0xFF2A3423),
+      ),
+      appBarTheme: const AppBarTheme(
+        centerTitle: true,
+        backgroundColor: Color(0xFF1E2419),
+        foregroundColor: Colors.white,
+        elevation: 2,
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
+      cardTheme: CardThemeData(
+        color: const Color(0xFF21281B),
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.militaryOlive,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.militaryOlive,
+        foregroundColor: Colors.white,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.accentKhaki, width: 2),
+        ),
+      ),
+    );
+  }
 }

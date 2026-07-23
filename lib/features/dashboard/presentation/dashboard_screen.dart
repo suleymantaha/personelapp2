@@ -68,6 +68,95 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
+  void _showSettingsBottomSheet(
+    BuildContext context,
+    WidgetRef ref,
+    String username,
+    bool isAdmin,
+  ) {
+    unawaited(
+      showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final themeMode = ref.watch(themeModeProvider);
+            final isDarkMode = themeMode == ThemeMode.dark;
+
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade400,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: AppColors.militaryOlive,
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
+                      title: Text(
+                        'Hesap: $username',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        isAdmin ? 'Rol: Birlik Yöneticisi (Admin)' : 'Rol: Tim Komutanı',
+                      ),
+                    ),
+                    const Divider(),
+                    SwitchListTile(
+                      secondary: Icon(
+                        isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                        color: AppColors.militaryOlive,
+                      ),
+                      title: const Text('Koyu Mod (Dark Theme)'),
+                      subtitle: Text(isDarkMode ? 'Aktif' : 'Pasif'),
+                      value: isDarkMode,
+                      onChanged: (value) {
+                        ref.read(themeModeProvider.notifier).state =
+                            value ? ThemeMode.dark : ThemeMode.light;
+                        setSheetState(() {});
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.key, color: AppColors.militaryOlive),
+                      title: const Text('Şifremi Değiştir'),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        unawaited(_showChangePasswordDialog(context, ref, username));
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.logout, color: Colors.red),
+                      title: const Text('Çıkış Yap', style: TextStyle(color: Colors.red)),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        ref.read(userSessionProvider.notifier).state = null;
+                        context.go('/login');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(userSessionProvider);
@@ -76,28 +165,17 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Jandarma Görev Kontrol Paneli'),
+        title: const Text('Jandarma Görev Paneli'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.key),
-            tooltip: 'Şifre Değiştir',
-            onPressed: () {
-              unawaited(
-                _showChangePasswordDialog(
-                  context,
-                  ref,
-                  session?.username ?? '',
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Çıkış Yap',
-            onPressed: () {
-              ref.read(userSessionProvider.notifier).state = null;
-              context.go('/login');
-            },
+            icon: const Icon(Icons.settings),
+            tooltip: 'Ayarlar',
+            onPressed: () => _showSettingsBottomSheet(
+              context,
+              ref,
+              session?.username ?? 'Kullanıcı',
+              isAdmin,
+            ),
           ),
         ],
       ),

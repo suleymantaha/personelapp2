@@ -4,6 +4,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:personelapp2/core/navigation/app_router.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 
+import 'package:personelapp2/core/providers/providers.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('tr_TR');
@@ -15,15 +17,19 @@ void main() async {
   );
 }
 
-class PersonelApp extends StatelessWidget {
+class PersonelApp extends ConsumerWidget {
   const PersonelApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp.router(
       title: 'Jandarma Görev Takip Uygulaması',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.militaryTheme,
+      darkTheme: AppTheme.darkMilitaryTheme,
+      themeMode: themeMode,
       routerConfig: appRouter,
     );
   }

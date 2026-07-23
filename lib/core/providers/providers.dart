@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
@@ -38,6 +39,9 @@ class UserSessionState {
 
 final userSessionProvider =
     StateProvider<UserSessionState?>((ref) => null);
+
+/// Dynamic Theme Mode Provider (System / Light / Dark)
+final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
 
 /// Personnel Stream Providers
 final allPersonnelProvider = StreamProvider<List<PersonelTableData>>((ref) {
