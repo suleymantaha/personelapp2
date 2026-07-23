@@ -79,7 +79,21 @@ class DashboardScreen extends ConsumerWidget {
         title: const Text('Jandarma Görev Kontrol Paneli'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.key),
+            tooltip: 'Şifre Değiştir',
+            onPressed: () {
+              unawaited(
+                _showChangePasswordDialog(
+                  context,
+                  ref,
+                  session?.username ?? '',
+                ),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: 'Çıkış Yap',
             onPressed: () {
               ref.read(userSessionProvider.notifier).state = null;
               context.go('/login');
@@ -92,54 +106,6 @@ class DashboardScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User Header Card
-            Card(
-              color: AppColors.lightOlive,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      backgroundColor: AppColors.militaryOlive,
-                      child: Icon(Icons.person, color: Colors.white),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hoş Geldiniz, ${session?.username ?? 'Kullanıcı'}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            'Rol: ${isAdmin ? "Birlik Yöneticisi (Admin)" : "Tim Komutanı"}',
-                            style: const TextStyle(color: Colors.black54),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.key, color: AppColors.militaryOlive),
-                      tooltip: 'Şifremi Değiştir',
-                      onPressed: () {
-                        unawaited(
-                          _showChangePasswordDialog(
-                            context,
-                            ref,
-                            session?.username ?? '',
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
 
             // Pending Approvals Warning Banner (Admin Only)
             if (isAdmin)
