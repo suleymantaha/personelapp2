@@ -18,30 +18,38 @@ class MonthlyMatrixScreen extends ConsumerStatefulWidget {
 class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
   DateTime _selectedMonth = DateTime.now();
 
-  Color _getStatusBgColor(String status) {
+  Color _getStatusBgColor(String status, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (status.contains('GÖREV') || status.contains('NÖBET')) {
-      return AppColors.approvedGreen.withValues(alpha: 0.15);
+      return isDark
+          ? const Color(0xFF1B4D24)
+          : AppColors.approvedGreen.withValues(alpha: 0.15);
     } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
-      return Colors.grey.shade300;
+      return isDark ? const Color(0xFF2C3942) : Colors.grey.shade300;
     } else if (status.contains('RAPOR') || status.contains('SEVK')) {
-      return AppColors.rejectedRed.withValues(alpha: 0.15);
+      return isDark
+          ? const Color(0xFF4A1919)
+          : AppColors.rejectedRed.withValues(alpha: 0.15);
     } else if (status.contains('beklemede')) {
-      return AppColors.pendingYellow.withValues(alpha: 0.2);
+      return isDark
+          ? const Color(0xFF4A3710)
+          : AppColors.pendingYellow.withValues(alpha: 0.2);
     }
-    return Colors.transparent;
+    return isDark ? const Color(0xFF161E14) : Colors.transparent;
   }
 
-  Color _getStatusTextColor(String status) {
+  Color _getStatusTextColor(String status, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (status.contains('GÖREV') || status.contains('NÖBET')) {
-      return AppColors.approvedGreen;
+      return isDark ? const Color(0xFF81C784) : AppColors.approvedGreen;
     } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
-      return Colors.black87;
+      return isDark ? const Color(0xFFCFD8DC) : Colors.black87;
     } else if (status.contains('RAPOR') || status.contains('SEVK')) {
-      return AppColors.rejectedRed;
+      return isDark ? const Color(0xFFE57373) : AppColors.rejectedRed;
     } else if (status.contains('beklemede')) {
-      return Colors.orange.shade900;
+      return isDark ? const Color(0xFFFFD54F) : Colors.orange.shade900;
     }
-    return Colors.black45;
+    return isDark ? Colors.white38 : Colors.black45;
   }
 
   String _getAbbreviation(String status) {
@@ -511,8 +519,8 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                 children: List.generate(daysInMonth, (dIndex) {
                                   final day = dIndex + 1;
                                   final status = pStatusMap[day] ?? '';
-                                  final bgColor = _getStatusBgColor(status);
-                                  final textColor = _getStatusTextColor(status);
+                                  final bgColor = _getStatusBgColor(status, context);
+                                  final textColor = _getStatusTextColor(status, context);
                                   final label = _getAbbreviation(status);
 
                                   final isToday =

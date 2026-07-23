@@ -74,33 +74,48 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color(0xFF12160F),
+      scaffoldBackgroundColor: const Color(0xFF0F1410), // Deep Tactical Obsidian
+      dividerColor: const Color(0xFF2C3B29),
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.militaryOlive,
         brightness: Brightness.dark,
-        primary: AppColors.accentKhaki,
-        secondary: AppColors.militaryOlive,
-        surface: const Color(0xFF1E2419),
-        surfaceContainerHighest: const Color(0xFF2A3423),
+        primary: const Color(0xFF768D5D),
+        secondary: AppColors.accentKhaki,
+        surface: const Color(0xFF192117),
+        surfaceContainerHighest: const Color(0xFF243021),
       ),
       appBarTheme: const AppBarTheme(
         centerTitle: true,
-        backgroundColor: Color(0xFF1E2419),
+        backgroundColor: Color(0xFF161D15),
         foregroundColor: Colors.white,
         elevation: 2,
         iconTheme: IconThemeData(color: Colors.white),
       ),
       cardTheme: CardThemeData(
-        color: const Color(0xFF21281B),
-        elevation: 2,
+        color: const Color(0xFF1F291D),
+        elevation: 3,
+        shadowColor: Colors.black45,
         shape: RoundedRectangleBorder(
+          side: const BorderSide(color: Color(0xFF2C3B29), width: 1),
           borderRadius: BorderRadius.circular(12),
         ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: const Color(0xFF192117),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFF2C3B29)),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Color(0xFF192117),
+        modalBackgroundColor: Color(0xFF192117),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.militaryOlive,
           foregroundColor: Colors.white,
+          elevation: 2,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -112,8 +127,15 @@ class AppTheme {
         foregroundColor: Colors.white,
       ),
       inputDecorationTheme: InputDecorationTheme(
+        fillColor: const Color(0xFF141B13),
+        filled: true,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF2C3B29)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF2C3B29)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
