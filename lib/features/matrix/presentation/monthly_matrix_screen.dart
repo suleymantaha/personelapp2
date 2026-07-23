@@ -334,83 +334,112 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Sticky Left Column (Personnel Names)
+                // Sticky Left Column (Personnel Names with Sıra No)
                 SizedBox(
-                  width: 150,
+                  width: 165,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Personnel Header Cell
                       Container(
-                        width: double.infinity,
                         height: 40,
-                        color: AppColors.militaryOlive,
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 2,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.militaryOlive,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
                         alignment: Alignment.center,
                         child: const Text(
-                          'Personel',
+                          'S.N. | Personel',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                            fontSize: 12,
                           ),
                         ),
                       ),
-                      // Personnel Data Rows
+                      // Personnel Data Rows (Bounded Rounded Boxes matching status grid)
                       ...personnelList.asMap().entries.map((entry) {
                         final index = entry.key;
                         final p = entry.value;
-                        final isEven = index.isEven;
+                        final rowNumber = index + 1;
 
-                        return Container(
-                          width: double.infinity,
+                        return SizedBox(
                           height: 48,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isEven
-                                ? Theme.of(context).cardColor
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .surfaceContainerHighest
-                                    .withValues(alpha: 0.3),
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Theme.of(context)
-                                    .dividerColor
-                                    .withValues(alpha: 0.25),
-                              ),
-                              right: const BorderSide(
-                                color: AppColors.militaryOlive,
-                                width: 2,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 2,
+                              vertical: 2,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).cardColor,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: AppColors.militaryOlive.withValues(
+                                  alpha: 0.35,
+                                ),
+                                width: 1.2,
                               ),
                             ),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                p.rutbe,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.militaryOlive,
+                            child: Row(
+                              children: [
+                                // Sıra No Badge
+                                Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.militaryOlive,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    '$rowNumber',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                p.adSoyad,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                                const SizedBox(width: 6),
+                                // Rank & Name
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        p.rutbe,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.militaryOlive,
+                                        ),
+                                      ),
+                                      Text(
+                                        p.adSoyad,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       }),
