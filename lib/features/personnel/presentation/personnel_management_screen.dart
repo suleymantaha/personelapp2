@@ -125,7 +125,7 @@ class _PersonnelManagementScreenState
                     final repo = ref.read(personnelRepositoryProvider);
                     await repo.addPersonnel(
                       adSoyad: name,
-                      rutbe: finalRank.isEmpty ? 'ER' : finalRank,
+                      rutbe: finalRank.isEmpty ? 'J.Er' : finalRank,
                       birlik: unitController.text.trim(),
                       timId: selectedSquadId,
                       kayitTarihi: DateFormat('yyyy-MM-dd').format(DateTime.now()),
@@ -146,8 +146,9 @@ class _PersonnelManagementScreenState
   Future<void> _showEditPersonnelDialog(PersonelTableData p) async {
     final nameController = TextEditingController(text: p.adSoyad);
     final unitController = TextEditingController(text: p.birlik);
-    var selectedRank = kAskeriRutbeler.contains(p.rutbe) ? p.rutbe : 'DİĞER / ÖZEL RÜTBE';
-    final customRankController = TextEditingController(text: kAskeriRutbeler.contains(p.rutbe) ? '' : p.rutbe);
+    final normalizedRutbe = normalizeRank(p.rutbe);
+    var selectedRank = kAskeriRutbeler.contains(normalizedRutbe) ? normalizedRutbe : 'DİĞER / ÖZEL RÜTBE';
+    final customRankController = TextEditingController(text: kAskeriRutbeler.contains(normalizedRutbe) ? '' : p.rutbe);
     var selectedSquadId = p.timId;
 
     await showDialog<void>(
@@ -184,7 +185,10 @@ class _PersonnelManagementScreenState
                       const SizedBox(height: 12),
                       TextField(
                         controller: customRankController,
-                        decoration: const InputDecoration(labelText: 'Özel Rütbe Adı'),
+                        decoration: const InputDecoration(
+                          labelText: 'Özel Rütbe Giriniz',
+                          hintText: 'Örn: Sivil Sanatkar',
+                        ),
                       ),
                     ],
                     const SizedBox(height: 12),
@@ -197,23 +201,25 @@ class _PersonnelManagementScreenState
                       data: (squads) {
                         return DropdownButtonFormField<int?>(
                           initialValue: selectedSquadId,
-                          decoration: const InputDecoration(labelText: 'Tim Ataması'),
+                          decoration: const InputDecoration(labelText: 'Tim'),
                           items: [
                             const DropdownMenuItem<int?>(
-                              child: Text('BOŞTA (Kadro Dışı)', style: TextStyle(color: Colors.red)),
+                              child: Text('Timsiz (Bağımsız)'),
                             ),
-                            ...squads.map((s) => DropdownMenuItem<int?>(
-                                  value: s.id,
-                                  child: Text(s.timAdi),
-                                )),
+                            ...squads.map((s) {
+                              return DropdownMenuItem<int?>(
+                                value: s.id,
+                                child: Text(s.timAdi),
+                              );
+                            }),
                           ],
                           onChanged: (val) {
                             setDialogState(() => selectedSquadId = val);
                           },
                         );
                       },
-                      loading: () => const LinearProgressIndicator(),
-                      error: (err, st) => Text('Hata: $err'),
+                      loading: () => const CircularProgressIndicator(),
+                      error: (err, stack) => Text('Timler yüklenemedi: $err'),
                     ),
                   ],
                 ),
@@ -226,7 +232,12 @@ class _PersonnelManagementScreenState
                 ElevatedButton(
                   onPressed: () async {
                     final name = nameController.text.trim();
-                    if (name.isEmpty) return;
+                    if (name.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Lütfen isim giriniz.')),
+                      );
+                      return;
+                    }
 
                     final finalRank = (selectedRank == 'DİĞER / ÖZEL RÜTBE')
                         ? customRankController.text.trim()
@@ -235,7 +246,7 @@ class _PersonnelManagementScreenState
                     final repo = ref.read(personnelRepositoryProvider);
                     final updated = p.copyWith(
                       adSoyad: name,
-                      rutbe: finalRank.isEmpty ? 'ER' : finalRank,
+                      rutbe: finalRank.isEmpty ? 'J.Er' : finalRank,
                       birlik: unitController.text.trim(),
                       timId: Value(selectedSquadId),
                     );

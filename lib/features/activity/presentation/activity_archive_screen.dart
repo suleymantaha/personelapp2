@@ -541,15 +541,7 @@ class _AssignmentDetails extends ConsumerWidget {
       }).toList();
     }
 
-    if (filteredAssignments.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16),
-        child: Text(
-          'Bu faaliyette seçilen tim için görevlendirilmiş personel kaydı bulunmuyor.',
-          style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
-        ),
-      );
-    }
+    final existingPersonnelIds = assignments.map((a) => a.personelId).toSet();
 
     final rosterRows = <MilitaryRosterRow>[];
     for (var i = 0; i < filteredAssignments.length; i++) {
@@ -575,73 +567,196 @@ class _AssignmentDetails extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ...filteredAssignments.map((atama) {
-            final p = pMap[atama.personelId];
-            final displayName = p != null ? '${p.rutbe} ${p.adSoyad}' : 'Personel #${atama.personelId}';
-            final birlikInfo = p?.birlik ?? '';
-            final digerNote = atama.aciklama ?? '';
-
-            final isPending = atama.durum == AssignmentStatus.beklemede;
-            final isApproved = atama.durum == AssignmentStatus.onaylandi;
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '$displayName ${birlikInfo.isNotEmpty ? "($birlikInfo)" : ""}',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                        ),
-                        if (digerNote.isNotEmpty)
-                          Text(
-                            'Not: $digerNote',
-                            style: const TextStyle(fontSize: 11, color: Colors.grey),
-                          ),
-                      ],
-                    ),
-                  ),
-                  Chip(
-                    label: Text(
-                      '${atama.gorevVeyaIzin} • ${atama.durum.toUpperCase()}',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: isApproved
-                            ? AppColors.approvedGreen
-                            : (isPending ? Colors.orange.shade900 : AppColors.rejectedRed),
-                      ),
-                    ),
-                    backgroundColor: isApproved
-                        ? AppColors.approvedGreen.withValues(alpha: 0.12)
-                        : (isPending ? AppColors.pendingYellow.withValues(alpha: 0.3) : AppColors.rejectedRed.withValues(alpha: 0.12)),
-                  ),
-                  if (isAdmin && isPending) ...[
-                    const SizedBox(width: 4),
-                    IconButton(
-                      icon: const Icon(Icons.check_circle, color: AppColors.approvedGreen, size: 22),
-                      tooltip: 'Onayla',
-                      onPressed: () async {
-                        final repo = ref.read(activityRepositoryProvider);
-                        await repo.updateAssignmentStatus(atama.id, AssignmentStatus.onaylandi);
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.cancel, color: AppColors.rejectedRed, size: 22),
-                      tooltip: 'Reddet',
-                      onPressed: () async {
-                        final repo = ref.read(activityRepositoryProvider);
-                        await repo.updateAssignmentStatus(atama.id, AssignmentStatus.reddedildi);
-                      },
-                    ),
-                  ],
-                ],
+          // Top Action: Add single personnel to activity
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.militaryOlive,
               ),
-            );
-          }),
+              icon: const Icon(Icons.person_add_alt_1, size: 18),
+              label: const Text(
+                '+ Faaliyete Personel Ekle',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              ),
+              onPressed: () async {
+                final added = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => _AddPersonnelToActivityDialog(
+                    activity: activity,
+                    isAdmin: isAdmin,
+                    existingPersonnelIds: existingPersonnelIds,
+                  ),
+                );
+                if (added == true && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isAdmin
+                            ? 'Personel faaliyete eklendi.'
+                            : 'Personel eklendi, Admin onayına gönderildi.',
+                      ),
+                      backgroundColor: isAdmin ? AppColors.approvedGreen : AppColors.pendingYellow,
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
+          const SizedBox(height: 4),
+
+          if (filteredAssignments.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Text(
+                'Bu faaliyette seçilen tim için görevlendirilmiş personel kaydı bulunmuyor.',
+                style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+              ),
+            )
+          else
+            ...filteredAssignments.map((atama) {
+              final p = pMap[atama.personelId];
+              final displayName = p != null ? '${p.rutbe} ${p.adSoyad}' : 'Personel #${atama.personelId}';
+              final birlikInfo = p?.birlik ?? '';
+              final digerNote = atama.aciklama ?? '';
+
+              final isPending = atama.durum == AssignmentStatus.beklemede;
+              final isApproved = atama.durum == AssignmentStatus.onaylandi;
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$displayName ${birlikInfo.isNotEmpty ? "($birlikInfo)" : ""}',
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            ),
+                            if (digerNote.isNotEmpty)
+                              Text(
+                                'Not: $digerNote',
+                                style: const TextStyle(fontSize: 11, color: Colors.grey),
+                              ),
+                          ],
+                        ),
+                      ),
+                      Chip(
+                        label: Text(
+                          '${atama.gorevVeyaIzin} • ${atama.durum.toUpperCase()}',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: isApproved
+                                ? AppColors.approvedGreen
+                                : (isPending ? Colors.orange.shade900 : AppColors.rejectedRed),
+                          ),
+                        ),
+                        backgroundColor: isApproved
+                            ? AppColors.approvedGreen.withValues(alpha: 0.12)
+                            : (isPending ? AppColors.pendingYellow.withValues(alpha: 0.3) : AppColors.rejectedRed.withValues(alpha: 0.12)),
+                      ),
+                      const SizedBox(width: 4),
+
+                      // Edit Single Duty Button
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, color: Colors.blueAccent, size: 20),
+                        tooltip: 'Görevi / Notu Düzenle',
+                        onPressed: () async {
+                          final updated = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => _EditAssignmentDialog(
+                              assignment: atama,
+                              personnelName: displayName,
+                              isAdmin: isAdmin,
+                            ),
+                          );
+                          if (updated == true && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isAdmin
+                                      ? 'Görev güncellendi.'
+                                      : 'Görev değişikliği kaydedildi, Admin onayına gönderildi.',
+                                ),
+                                backgroundColor: isAdmin ? AppColors.approvedGreen : AppColors.pendingYellow,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+
+                      // Delete Single Duty Button
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: AppColors.rejectedRed, size: 20),
+                        tooltip: 'Personeli Görevden Çıkar',
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Personeli Görevden Çıkar'),
+                              content: Text(
+                                '$displayName adlı personel ${activity.faaliyetAdi} faaliyetinden çıkarılacaktır. Emin misiniz?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(ctx).pop(false),
+                                  child: const Text('İPTAL'),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.rejectedRed),
+                                  onPressed: () => Navigator.of(ctx).pop(true),
+                                  child: const Text('ÇIKAR'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm == true) {
+                            final repo = ref.read(activityRepositoryProvider);
+                            await repo.deleteAssignment(atama.id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('$displayName faaliyetten çıkarıldı.')),
+                              );
+                            }
+                          }
+                        },
+                      ),
+
+                      // Admin Approve / Reject buttons for pending
+                      if (isAdmin && isPending) ...[
+                        IconButton(
+                          icon: const Icon(Icons.check_circle, color: AppColors.approvedGreen, size: 22),
+                          tooltip: 'Onayla',
+                          onPressed: () async {
+                            final repo = ref.read(activityRepositoryProvider);
+                            await repo.updateAssignmentStatus(atama.id, AssignmentStatus.onaylandi);
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.cancel, color: AppColors.rejectedRed, size: 22),
+                          tooltip: 'Reddet',
+                          onPressed: () async {
+                            final repo = ref.read(activityRepositoryProvider);
+                            await repo.updateAssignmentStatus(atama.id, AssignmentStatus.reddedildi);
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }),
           const Divider(height: 24),
           Row(
             children: [
@@ -684,6 +799,258 @@ class _AssignmentDetails extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Dialog to edit an individual personnel's duty and note
+class _EditAssignmentDialog extends ConsumerStatefulWidget {
+  const _EditAssignmentDialog({
+    required this.assignment,
+    required this.personnelName,
+    required this.isAdmin,
+  });
+
+  final FaaliyetPersonelAtamaTableData assignment;
+  final String personnelName;
+  final bool isAdmin;
+
+  @override
+  ConsumerState<_EditAssignmentDialog> createState() => _EditAssignmentDialogState();
+}
+
+class _EditAssignmentDialogState extends ConsumerState<_EditAssignmentDialog> {
+  late String _selectedDuty;
+  late TextEditingController _noteController;
+
+  static const availableDuties = [
+    DutyOrLeaveType.heybetKomutani,
+    DutyOrLeaveType.nobSb,
+    DutyOrLeaveType.mebsNob,
+    DutyOrLeaveType.garajNob,
+    DutyOrLeaveType.ttzaNob,
+    DutyOrLeaveType.kuleNob,
+    DutyOrLeaveType.hazirKita,
+    DutyOrLeaveType.guluskur,
+    DutyOrLeaveType.heybet,
+    DutyOrLeaveType.gorevli,
+    DutyOrLeaveType.nobetci,
+    DutyOrLeaveType.izinli,
+    DutyOrLeaveType.istirahatli,
+    DutyOrLeaveType.raporlu,
+    DutyOrLeaveType.sevk,
+    DutyOrLeaveType.diger,
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDuty = availableDuties.contains(widget.assignment.gorevVeyaIzin)
+        ? widget.assignment.gorevVeyaIzin
+        : DutyOrLeaveType.gorevli;
+    _noteController = TextEditingController(text: widget.assignment.aciklama ?? '');
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Görev Değişikliği: ${widget.personnelName}'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DropdownButtonFormField<String>(
+              initialValue: _selectedDuty,
+              isExpanded: true,
+              decoration: const InputDecoration(labelText: 'Görev / İzin Türü'),
+              items: availableDuties.map((d) {
+                return DropdownMenuItem(value: d, child: Text(d));
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) setState(() => _selectedDuty = val);
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _noteController,
+              decoration: const InputDecoration(
+                labelText: 'Açıklama / Not (İsteğe Bağlı)',
+                hintText: 'Örn: Gece nöbeti, özel devriye vb.',
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('İPTAL'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.militaryOlive),
+          onPressed: () async {
+            final repo = ref.read(activityRepositoryProvider);
+            final note = _noteController.text.trim();
+            final newStatus = widget.isAdmin ? AssignmentStatus.onaylandi : AssignmentStatus.beklemede;
+            await repo.updateAssignmentDetails(
+              assignmentId: widget.assignment.id,
+              gorevVeyaIzin: _selectedDuty,
+              aciklama: note.isNotEmpty ? note : null,
+              newStatus: newStatus,
+            );
+            if (context.mounted) {
+              Navigator.of(context).pop(true);
+            }
+          },
+          child: const Text('KAYDET'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Dialog to add a single personnel to an existing activity
+class _AddPersonnelToActivityDialog extends ConsumerStatefulWidget {
+  const _AddPersonnelToActivityDialog({
+    required this.activity,
+    required this.isAdmin,
+    required this.existingPersonnelIds,
+  });
+
+  final GunlukFaaliyetTableData activity;
+  final bool isAdmin;
+  final Set<int> existingPersonnelIds;
+
+  @override
+  ConsumerState<_AddPersonnelToActivityDialog> createState() => _AddPersonnelToActivityDialogState();
+}
+
+class _AddPersonnelToActivityDialogState extends ConsumerState<_AddPersonnelToActivityDialog> {
+  int? _selectedPersonnelId;
+  String _selectedDuty = DutyOrLeaveType.gorevli;
+  final _noteController = TextEditingController();
+
+  static const availableDuties = [
+    DutyOrLeaveType.heybetKomutani,
+    DutyOrLeaveType.nobSb,
+    DutyOrLeaveType.mebsNob,
+    DutyOrLeaveType.garajNob,
+    DutyOrLeaveType.ttzaNob,
+    DutyOrLeaveType.kuleNob,
+    DutyOrLeaveType.hazirKita,
+    DutyOrLeaveType.guluskur,
+    DutyOrLeaveType.heybet,
+    DutyOrLeaveType.gorevli,
+    DutyOrLeaveType.nobetci,
+    DutyOrLeaveType.izinli,
+    DutyOrLeaveType.istirahatli,
+    DutyOrLeaveType.raporlu,
+    DutyOrLeaveType.sevk,
+    DutyOrLeaveType.diger,
+  ];
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final allPersonnelAsync = ref.watch(allPersonnelProvider);
+    final session = ref.watch(userSessionProvider);
+
+    final allPersonnel = allPersonnelAsync.value ?? [];
+    // Filter out personnel already in this activity
+    var candidatePersonnel = allPersonnel.where((p) => !widget.existingPersonnelIds.contains(p.id)).toList();
+
+    // If Tim Komutanı, filter personnel by squad
+    if (!widget.isAdmin && session?.timId != null) {
+      candidatePersonnel = candidatePersonnel.where((p) => p.timId == session!.timId).toList();
+    }
+
+    return AlertDialog(
+      title: Text('${widget.activity.faaliyetAdi} - Personel Ekle'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (candidatePersonnel.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Text('Eklenebilecek personel bulunamadı (Tüm personel eklenmiş olabilir).'),
+              )
+            else ...[
+              DropdownButtonFormField<int>(
+                initialValue: _selectedPersonnelId,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Personel Seçiniz'),
+                items: candidatePersonnel.map((p) {
+                  return DropdownMenuItem<int>(
+                    value: p.id,
+                    child: Text('${p.rutbe} ${p.adSoyad} (${p.birlik})'),
+                  );
+                }).toList(),
+                onChanged: (val) => setState(() => _selectedPersonnelId = val),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedDuty,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Görev / İzin Türü'),
+                items: availableDuties.map((d) {
+                  return DropdownMenuItem(value: d, child: Text(d));
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedDuty = val);
+                },
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _noteController,
+                decoration: const InputDecoration(
+                  labelText: 'Açıklama / Not (İsteğe Bağlı)',
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('İPTAL'),
+        ),
+        if (candidatePersonnel.isNotEmpty)
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.militaryOlive),
+            onPressed: _selectedPersonnelId == null
+                ? null
+                : () async {
+                    final repo = ref.read(activityRepositoryProvider);
+                    final note = _noteController.text.trim();
+                    await repo.addSingleAssignment(
+                      faaliyetId: widget.activity.id,
+                      personelId: _selectedPersonnelId!,
+                      gorevVeyaIzin: _selectedDuty,
+                      aciklama: note.isNotEmpty ? note : null,
+                      tarih: widget.activity.tarih,
+                      isCommander: !widget.isAdmin,
+                    );
+                    if (context.mounted) {
+                      Navigator.of(context).pop(true);
+                    }
+                  },
+            child: const Text('EKLE'),
+          ),
+      ],
     );
   }
 }

@@ -48,12 +48,16 @@ class MilitaryRosterExporter {
     required String tarih,
     required List<MilitaryRosterRow> rows,
   }) {
-    final titleHeader = escapeXml('$faaliyetAdi İSİM LİSTESİ - $tarih'.toUpperCase());
+    final titleHeader = escapeXml(
+      '$faaliyetAdi İSİM LİSTESİ - $tarih'.toUpperCase(),
+    );
 
     final buffer = StringBuffer()
       ..writeln('<?xml version="1.0" encoding="utf-8"?>')
       ..writeln('<?mso-application progid="Excel.Sheet"?>')
-      ..writeln('<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"')
+      ..writeln(
+        '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"',
+      )
       ..writeln(' xmlns:o="urn:schemas-microsoft-com:office:office"')
       ..writeln(' xmlns:x="urn:schemas-microsoft-com:office:excel"')
       ..writeln(' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"')
@@ -61,45 +65,77 @@ class MilitaryRosterExporter {
       ..writeln(' <Styles>')
       ..writeln('  <Style ss:ID="Default" ss:Name="Normal">')
       ..writeln('   <Alignment ss:Vertical="Center"/>')
-      ..writeln('   <Font ss:FontName="Calibri" ss:Size="11" ss:Color="#000000"/>')
+      ..writeln(
+        '   <Font ss:FontName="Calibri" ss:Size="11" ss:Color="#000000"/>',
+      )
       ..writeln('  </Style>')
       ..writeln('  <Style ss:ID="MainTitle">')
       ..writeln('   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>')
-      ..writeln('   <Font ss:FontName="Calibri" ss:Size="13" ss:Bold="1" ss:Color="#1B365D"/>')
+      ..writeln(
+        '   <Font ss:FontName="Calibri" ss:Size="13" ss:Bold="1" ss:Color="#1B365D"/>',
+      )
       ..writeln('   <Interior ss:Color="#E8EEF5" ss:Pattern="Solid"/>')
       ..writeln('  </Style>')
       ..writeln('  <Style ss:ID="SubTitle">')
       ..writeln('   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>')
-      ..writeln('   <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#2D5A27"/>')
+      ..writeln(
+        '   <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#2D5A27"/>',
+      )
       ..writeln('   <Interior ss:Color="#F0F4EF" ss:Pattern="Solid"/>')
       ..writeln('  </Style>')
       ..writeln('  <Style ss:ID="TableHeader">')
       ..writeln('   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>')
-      ..writeln('   <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#000000"/>')
+      ..writeln(
+        '   <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#000000"/>',
+      )
       ..writeln('   <Interior ss:Color="#D9D9D9" ss:Pattern="Solid"/>')
       ..writeln('   <Borders>')
-      ..writeln('    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>')
-      ..writeln('    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>')
-      ..writeln('    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>')
-      ..writeln('    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>')
+      ..writeln(
+        '    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>',
+      )
       ..writeln('   </Borders>')
       ..writeln('  </Style>')
       ..writeln('  <Style ss:ID="DataCellCenter">')
       ..writeln('   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>')
       ..writeln('   <Borders>')
-      ..writeln('    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
-      ..writeln('    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
-      ..writeln('    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
-      ..writeln('    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
+      ..writeln(
+        '    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
       ..writeln('   </Borders>')
       ..writeln('  </Style>')
       ..writeln('  <Style ss:ID="DataCellLeft">')
       ..writeln('   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>')
       ..writeln('   <Borders>')
-      ..writeln('    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
-      ..writeln('    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
-      ..writeln('    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
-      ..writeln('    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
+      ..writeln(
+        '    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
       ..writeln('   </Borders>')
       ..writeln('  </Style>')
       ..writeln(' </Styles>')
@@ -112,28 +148,50 @@ class MilitaryRosterExporter {
       ..writeln('   <Column ss:Width="160"/>') // DİĞER
       // Title Row
       ..writeln('   <Row ss:Height="26">')
-      ..writeln('    <Cell ss:MergeAcross="4" ss:StyleID="MainTitle"><Data ss:Type="String">$titleHeader</Data></Cell>')
+      ..writeln(
+        '    <Cell ss:MergeAcross="4" ss:StyleID="MainTitle"><Data ss:Type="String">$titleHeader</Data></Cell>',
+      )
       ..writeln('   </Row>')
       // Empty spacing row
       ..writeln('   <Row ss:Height="10"/>')
       // Column Header Row
       ..writeln('   <Row ss:Height="22">')
-      ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">S. NU</Data></Cell>')
-      ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">BİRLİĞİ</Data></Cell>')
-      ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">RÜTBE</Data></Cell>')
-      ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">ADI SOYADI</Data></Cell>')
-      ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">DİĞER</Data></Cell>')
+      ..writeln(
+        '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">S. NU</Data></Cell>',
+      )
+      ..writeln(
+        '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">BİRLİĞİ</Data></Cell>',
+      )
+      ..writeln(
+        '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">RÜTBE</Data></Cell>',
+      )
+      ..writeln(
+        '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">ADI SOYADI</Data></Cell>',
+      )
+      ..writeln(
+        '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">DİĞER</Data></Cell>',
+      )
       ..writeln('   </Row>');
 
     // Data Rows
     for (final r in rows) {
       buffer
         ..writeln('   <Row ss:Height="20">')
-        ..writeln('    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="Number">${r.sNu}</Data></Cell>')
-        ..writeln('    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.birligi)}</Data></Cell>')
-        ..writeln('    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.rutbe)}</Data></Cell>')
-        ..writeln('    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.adSoyad)}</Data></Cell>')
-        ..writeln('    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>')
+        ..writeln(
+          '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="Number">${r.sNu}</Data></Cell>',
+        )
+        ..writeln(
+          '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.birligi)}</Data></Cell>',
+        )
+        ..writeln(
+          '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.rutbe)}</Data></Cell>',
+        )
+        ..writeln(
+          '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.adSoyad)}</Data></Cell>',
+        )
+        ..writeln(
+          '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>',
+        )
         ..writeln('   </Row>');
     }
 
@@ -155,7 +213,9 @@ class MilitaryRosterExporter {
     final buffer = StringBuffer()
       ..writeln('<?xml version="1.0" encoding="utf-8"?>')
       ..writeln('<?mso-application progid="Excel.Sheet"?>')
-      ..writeln('<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"')
+      ..writeln(
+        '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"',
+      )
       ..writeln(' xmlns:o="urn:schemas-microsoft-com:office:office"')
       ..writeln(' xmlns:x="urn:schemas-microsoft-com:office:excel"')
       ..writeln(' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"')
@@ -163,45 +223,77 @@ class MilitaryRosterExporter {
       ..writeln(' <Styles>')
       ..writeln('  <Style ss:ID="Default" ss:Name="Normal">')
       ..writeln('   <Alignment ss:Vertical="Center"/>')
-      ..writeln('   <Font ss:FontName="Calibri" ss:Size="11" ss:Color="#000000"/>')
+      ..writeln(
+        '   <Font ss:FontName="Calibri" ss:Size="11" ss:Color="#000000"/>',
+      )
       ..writeln('  </Style>')
       ..writeln('  <Style ss:ID="MainTitle">')
       ..writeln('   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>')
-      ..writeln('   <Font ss:FontName="Calibri" ss:Size="14" ss:Bold="1" ss:Color="#1B365D"/>')
+      ..writeln(
+        '   <Font ss:FontName="Calibri" ss:Size="14" ss:Bold="1" ss:Color="#1B365D"/>',
+      )
       ..writeln('   <Interior ss:Color="#E8EEF5" ss:Pattern="Solid"/>')
       ..writeln('  </Style>')
       ..writeln('  <Style ss:ID="SectionHeader">')
       ..writeln('   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>')
-      ..writeln('   <Font ss:FontName="Calibri" ss:Size="12" ss:Bold="1" ss:Color="#2D5A27"/>')
+      ..writeln(
+        '   <Font ss:FontName="Calibri" ss:Size="12" ss:Bold="1" ss:Color="#2D5A27"/>',
+      )
       ..writeln('   <Interior ss:Color="#E2EFCB" ss:Pattern="Solid"/>')
       ..writeln('  </Style>')
       ..writeln('  <Style ss:ID="TableHeader">')
       ..writeln('   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>')
-      ..writeln('   <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#000000"/>')
+      ..writeln(
+        '   <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#000000"/>',
+      )
       ..writeln('   <Interior ss:Color="#D9D9D9" ss:Pattern="Solid"/>')
       ..writeln('   <Borders>')
-      ..writeln('    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>')
-      ..writeln('    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>')
-      ..writeln('    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>')
-      ..writeln('    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>')
+      ..writeln(
+        '    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>',
+      )
       ..writeln('   </Borders>')
       ..writeln('  </Style>')
       ..writeln('  <Style ss:ID="DataCellCenter">')
       ..writeln('   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>')
       ..writeln('   <Borders>')
-      ..writeln('    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
-      ..writeln('    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
-      ..writeln('    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
-      ..writeln('    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
+      ..writeln(
+        '    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
       ..writeln('   </Borders>')
       ..writeln('  </Style>')
       ..writeln('  <Style ss:ID="DataCellLeft">')
       ..writeln('   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>')
       ..writeln('   <Borders>')
-      ..writeln('    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
-      ..writeln('    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
-      ..writeln('    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
-      ..writeln('    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>')
+      ..writeln(
+        '    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
       ..writeln('   </Borders>')
       ..writeln('  </Style>')
       ..writeln(' </Styles>');
@@ -216,33 +308,59 @@ class MilitaryRosterExporter {
       ..writeln('   <Column ss:Width="180"/>')
       ..writeln('   <Column ss:Width="160"/>')
       ..writeln('   <Row ss:Height="28">')
-      ..writeln('    <Cell ss:MergeAcross="4" ss:StyleID="MainTitle"><Data ss:Type="String">$mainHeader</Data></Cell>')
+      ..writeln(
+        '    <Cell ss:MergeAcross="4" ss:StyleID="MainTitle"><Data ss:Type="String">$mainHeader</Data></Cell>',
+      )
       ..writeln('   </Row>')
       ..writeln('   <Row ss:Height="12"/>');
 
     var globalNu = 1;
     for (final act in activities) {
-      final actHeader = escapeXml('GÖREV: ${act.faaliyetAdi.toUpperCase()} (Tarih: ${act.tarih} | Oluşturan: ${act.olusturanKullanici})');
+      final actHeader = escapeXml(
+        'GÖREV: ${act.faaliyetAdi.toUpperCase()} (Tarih: ${act.tarih} | Oluşturan: ${act.olusturanKullanici})',
+      );
       buffer
         ..writeln('   <Row ss:Height="24">')
-        ..writeln('    <Cell ss:MergeAcross="4" ss:StyleID="SectionHeader"><Data ss:Type="String">$actHeader</Data></Cell>')
+        ..writeln(
+          '    <Cell ss:MergeAcross="4" ss:StyleID="SectionHeader"><Data ss:Type="String">$actHeader</Data></Cell>',
+        )
         ..writeln('   </Row>')
         ..writeln('   <Row ss:Height="22">')
-        ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">S. NU</Data></Cell>')
-        ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">BİRLİĞİ</Data></Cell>')
-        ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">RÜTBE</Data></Cell>')
-        ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">ADI SOYADI</Data></Cell>')
-        ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">GÖREV / AÇIKLAMA</Data></Cell>')
+        ..writeln(
+          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">S. NU</Data></Cell>',
+        )
+        ..writeln(
+          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">BİRLİĞİ</Data></Cell>',
+        )
+        ..writeln(
+          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">RÜTBE</Data></Cell>',
+        )
+        ..writeln(
+          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">ADI SOYADI</Data></Cell>',
+        )
+        ..writeln(
+          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">GÖREV / AÇIKLAMA</Data></Cell>',
+        )
         ..writeln('   </Row>');
 
       for (final r in act.rows) {
         buffer
           ..writeln('   <Row ss:Height="20">')
-          ..writeln('    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="Number">${globalNu++}</Data></Cell>')
-          ..writeln('    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.birligi)}</Data></Cell>')
-          ..writeln('    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.rutbe)}</Data></Cell>')
-          ..writeln('    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.adSoyad)}</Data></Cell>')
-          ..writeln('    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>')
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="Number">${globalNu++}</Data></Cell>',
+          )
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.birligi)}</Data></Cell>',
+          )
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.rutbe)}</Data></Cell>',
+          )
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.adSoyad)}</Data></Cell>',
+          )
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>',
+          )
           ..writeln('   </Row>');
       }
 
@@ -253,13 +371,16 @@ class MilitaryRosterExporter {
       ..writeln('  </Table>')
       ..writeln(' </Worksheet>');
 
-
     // 2. Individual Worksheets per Activity
     var sheetIdx = 1;
     for (final act in activities) {
       final rawSheetName = '${sheetIdx++}. ${act.faaliyetAdi}';
-      final cleanSheetName = escapeXml(rawSheetName.length > 30 ? rawSheetName.substring(0, 30) : rawSheetName);
-      final titleHeader = escapeXml('${act.faaliyetAdi} İSİM LİSTESİ - ${act.tarih}'.toUpperCase());
+      final cleanSheetName = escapeXml(
+        rawSheetName.length > 30 ? rawSheetName.substring(0, 30) : rawSheetName,
+      );
+      final titleHeader = escapeXml(
+        '${act.faaliyetAdi} İSİM LİSTESİ - ${act.tarih}'.toUpperCase(),
+      );
 
       buffer
         ..writeln(' <Worksheet ss:Name="$cleanSheetName">')
@@ -270,25 +391,47 @@ class MilitaryRosterExporter {
         ..writeln('   <Column ss:Width="180"/>')
         ..writeln('   <Column ss:Width="160"/>')
         ..writeln('   <Row ss:Height="26">')
-        ..writeln('    <Cell ss:MergeAcross="4" ss:StyleID="MainTitle"><Data ss:Type="String">$titleHeader</Data></Cell>')
+        ..writeln(
+          '    <Cell ss:MergeAcross="4" ss:StyleID="MainTitle"><Data ss:Type="String">$titleHeader</Data></Cell>',
+        )
         ..writeln('   </Row>')
         ..writeln('   <Row ss:Height="10"/>')
         ..writeln('   <Row ss:Height="22">')
-        ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">S. NU</Data></Cell>')
-        ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">BİRLİĞİ</Data></Cell>')
-        ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">RÜTBE</Data></Cell>')
-        ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">ADI SOYADI</Data></Cell>')
-        ..writeln('    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">DİĞER</Data></Cell>')
+        ..writeln(
+          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">S. NU</Data></Cell>',
+        )
+        ..writeln(
+          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">BİRLİĞİ</Data></Cell>',
+        )
+        ..writeln(
+          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">RÜTBE</Data></Cell>',
+        )
+        ..writeln(
+          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">ADI SOYADI</Data></Cell>',
+        )
+        ..writeln(
+          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">DİĞER</Data></Cell>',
+        )
         ..writeln('   </Row>');
 
       for (final r in act.rows) {
         buffer
           ..writeln('   <Row ss:Height="20">')
-          ..writeln('    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="Number">${r.sNu}</Data></Cell>')
-          ..writeln('    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.birligi)}</Data></Cell>')
-          ..writeln('    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.rutbe)}</Data></Cell>')
-          ..writeln('    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.adSoyad)}</Data></Cell>')
-          ..writeln('    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>')
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="Number">${r.sNu}</Data></Cell>',
+          )
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.birligi)}</Data></Cell>',
+          )
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.rutbe)}</Data></Cell>',
+          )
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.adSoyad)}</Data></Cell>',
+          )
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>',
+          )
           ..writeln('   </Row>');
       }
 
@@ -313,9 +456,11 @@ class MilitaryRosterExporter {
       ..writeln(titleHeader)
       ..writeln('==============================================')
       ..writeln(
-          'S.NU | BİRLİĞİ          | RÜTBE        | ADI SOYADI            | DİĞER')
+        'S.NU | BİRLİĞİ          | RÜTBE        | ADI SOYADI            | DİĞER',
+      )
       ..writeln(
-          '----------------------------------------------------------------------');
+        '----------------------------------------------------------------------',
+      );
 
     for (final r in rows) {
       final sNuStr = r.sNu.toString().padRight(4);
@@ -393,4 +538,3 @@ class MilitaryRosterExporter {
     );
   }
 }
-

@@ -11,7 +11,8 @@ class MonthlyMatrixScreen extends ConsumerStatefulWidget {
   const MonthlyMatrixScreen({super.key});
 
   @override
-  ConsumerState<MonthlyMatrixScreen> createState() => _MonthlyMatrixScreenState();
+  ConsumerState<MonthlyMatrixScreen> createState() =>
+      _MonthlyMatrixScreenState();
 }
 
 class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
@@ -54,6 +55,178 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
     return '-';
   }
 
+  Future<void> _selectMonthYear(BuildContext context) async {
+    var tempYear = _selectedMonth.year;
+    var tempMonth = _selectedMonth.month;
+
+    final months = [
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık',
+    ];
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              titlePadding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Tarih Seçin',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.militaryOlive.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.chevron_left, size: 20),
+                          constraints: const BoxConstraints(),
+                          padding: const EdgeInsets.all(4),
+                          onPressed: () => setDialogState(() => tempYear--),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Text(
+                            '$tempYear',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.militaryOlive,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.chevron_right, size: 20),
+                          constraints: const BoxConstraints(),
+                          padding: const EdgeInsets.all(4),
+                          onPressed: () => setDialogState(() => tempYear++),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: 320,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Divider(),
+                    const SizedBox(height: 12),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            childAspectRatio: 2.2,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
+                          ),
+                      itemCount: 12,
+                      itemBuilder: (context, index) {
+                        final isSelected = (index + 1) == tempMonth;
+                        return InkWell(
+                          onTap: () {
+                            setDialogState(() => tempMonth = index + 1);
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.militaryOlive
+                                  : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.militaryOlive
+                                    : Colors.grey.shade300,
+                                width: isSelected ? 2 : 1,
+                              ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: AppColors.militaryOlive
+                                            .withValues(alpha: 0.3),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Text(
+                              months[index],
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.black87,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('İptal'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _selectedMonth = DateTime(tempYear, tempMonth, 1);
+                    });
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.militaryOlive,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('Tamam'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final yearMonthStr = DateFormat('yyyy-MM').format(_selectedMonth);
@@ -61,29 +234,65 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
     final matrixAsync = ref.watch(monthlyMatrixProvider(yearMonthStr));
     final session = ref.watch(userSessionProvider);
 
-    final daysInMonth =
-        DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0).day;
+    final daysInMonth = DateTime(
+      _selectedMonth.year,
+      _selectedMonth.month + 1,
+      0,
+    ).day;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Aylık Matris (${DateFormat('MMMM yyyy', 'tr_TR').format(_selectedMonth)})',
+        title: InkWell(
+          onTap: () => _selectMonthYear(context),
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  DateFormat('MMMM yyyy', 'tr_TR').format(_selectedMonth),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Icon(Icons.arrow_drop_down, size: 20),
+              ],
+            ),
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.calendar_month),
-            tooltip: 'Ay Seç',
-            onPressed: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: _selectedMonth,
-                firstDate: DateTime(2024),
-                lastDate: DateTime(2030),
-              );
-              if (picked != null) {
-                setState(() => _selectedMonth = picked);
-              }
+            icon: const Icon(Icons.chevron_left),
+            tooltip: 'Önceki Ay',
+            onPressed: () {
+              setState(() {
+                _selectedMonth = DateTime(
+                  _selectedMonth.year,
+                  _selectedMonth.month - 1,
+                  1,
+                );
+              });
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            tooltip: 'Sonraki Ay',
+            onPressed: () {
+              setState(() {
+                _selectedMonth = DateTime(
+                  _selectedMonth.year,
+                  _selectedMonth.month + 1,
+                  1,
+                );
+              });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.calendar_month),
+            tooltip: 'Ay/Yıl Seç',
+            onPressed: () => _selectMonthYear(context),
           ),
           IconButton(
             icon: const Icon(Icons.file_download),
@@ -108,7 +317,8 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
       body: personnelAsync.when(
         data: (rawPersonnelList) {
           // Role Filtering: If Commander, only show their squad's personnel
-          final personnelList = (session != null && !session.isAdmin && session.timId != null)
+          final personnelList =
+              (session != null && !session.isAdmin && session.timId != null)
               ? rawPersonnelList.where((p) => p.timId == session.timId).toList()
               : rawPersonnelList;
 
@@ -177,22 +387,43 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                           // Days Header Row
                           Container(
                             height: 40,
-                            color: AppColors.militaryOlive.withValues(alpha: 0.9),
+                            color: AppColors.militaryOlive.withValues(
+                              alpha: 0.1,
+                            ),
                             child: Row(
                               children: List.generate(daysInMonth, (index) {
-                                return Container(
+                                final isTodayHeader =
+                                    DateTime.now().year ==
+                                        _selectedMonth.year &&
+                                    DateTime.now().month ==
+                                        _selectedMonth.month &&
+                                    DateTime.now().day == (index + 1);
+
+                                return SizedBox(
                                   width: 48,
-                                  alignment: Alignment.center,
-                                  decoration: const BoxDecoration(
-                                    border: Border(
-                                      right: BorderSide(color: Colors.white24),
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                      vertical: 4,
                                     ),
-                                  ),
-                                  child: Text(
-                                    '${index + 1}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.militaryOlive,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: isTodayHeader
+                                            ? Colors.amber
+                                            : AppColors.militaryOlive,
+                                        width: isTodayHeader ? 2.0 : 1.0,
+                                      ),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      '${index + 1}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
                                     ),
                                   ),
                                 );
@@ -214,20 +445,36 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                   final textColor = _getStatusTextColor(status);
                                   final label = _getAbbreviation(status);
 
-                                  return Container(
+                                  final isToday =
+                                      DateTime.now().year ==
+                                          _selectedMonth.year &&
+                                      DateTime.now().month ==
+                                          _selectedMonth.month &&
+                                      DateTime.now().day == day;
+
+                                  return SizedBox(
                                     width: 48,
-                                    margin: const EdgeInsets.all(2),
-                                    decoration: BoxDecoration(
-                                      color: bgColor,
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(color: Colors.black12),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      label,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: textColor,
+                                    child: Container(
+                                      margin: const EdgeInsets.all(2),
+                                      decoration: BoxDecoration(
+                                        color: bgColor,
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: isToday
+                                              ? AppColors.militaryOlive
+                                              : AppColors.militaryOlive
+                                                    .withValues(alpha: 0.35),
+                                          width: isToday ? 2.0 : 1.2,
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        label,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: textColor,
+                                        ),
                                       ),
                                     ),
                                   );
