@@ -16,7 +16,6 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  String _selectedRole = 'yönetici';
 
   Future<void> _showPasswordCreationDialog(String username, KullaniciTableData user) async {
     final pass1Ctrl = TextEditingController();
@@ -201,29 +200,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       labelText: 'Şifre',
                       prefixIcon: Icon(Icons.lock),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedRole,
-                    decoration: const InputDecoration(
-                      labelText: 'Kullanıcı Rolü',
-                      prefixIcon: Icon(Icons.badge),
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'yönetici',
-                        child: Text('Birlik Yöneticisi (Admin)'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'tim_komutani',
-                        child: Text('Tim Komutanı'),
-                      ),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() => _selectedRole = val);
-                      }
-                    },
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
