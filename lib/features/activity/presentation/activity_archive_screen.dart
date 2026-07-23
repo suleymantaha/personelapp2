@@ -7,6 +7,7 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
+import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 
 class ActivityArchiveScreen extends ConsumerStatefulWidget {
   const ActivityArchiveScreen({super.key});
@@ -926,10 +927,10 @@ class _AssignmentDetails extends ConsumerWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  icon: const Icon(Icons.share, size: 16),
+                  icon: const Icon(Icons.share, size: 15),
                   label: const Text(
-                    'Metin İsim Listesi',
-                    style: TextStyle(fontSize: 12),
+                    'Metin Listesi',
+                    style: TextStyle(fontSize: 11),
                   ),
                   onPressed: () {
                     unawaited(
@@ -942,21 +943,44 @@ class _AssignmentDetails extends ConsumerWidget {
                   },
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.militaryOlive,
                     foregroundColor: Colors.white,
                   ),
-                  icon: const Icon(Icons.table_chart, size: 16),
+                  icon: const Icon(Icons.table_chart, size: 15),
                   label: const Text(
-                    'Resmi Excel Al',
-                    style: TextStyle(fontSize: 12),
+                    'Excel Al',
+                    style: TextStyle(fontSize: 11),
                   ),
                   onPressed: () {
                     unawaited(
                       MilitaryRosterExporter.shareExcelRoster(
+                        faaliyetAdi: activity.faaliyetAdi,
+                        tarih: activity.tarih,
+                        rows: rosterRows,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1B365D),
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: const Icon(Icons.picture_as_pdf, size: 15),
+                  label: const Text(
+                    'PDF / Yazdır',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                  onPressed: () {
+                    unawaited(
+                      PdfRosterExporter.sharePdfRoster(
                         faaliyetAdi: activity.faaliyetAdi,
                         tarih: activity.tarih,
                         rows: rosterRows,
