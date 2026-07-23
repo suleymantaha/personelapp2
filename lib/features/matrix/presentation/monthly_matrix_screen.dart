@@ -419,6 +419,15 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
+                                        p.adSoyad,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
                                         p.rutbe,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -426,15 +435,6 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                           fontSize: 9.5,
                                           fontWeight: FontWeight.bold,
                                           color: AppColors.militaryOlive,
-                                        ),
-                                      ),
-                                      Text(
-                                        p.adSoyad,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     ],
