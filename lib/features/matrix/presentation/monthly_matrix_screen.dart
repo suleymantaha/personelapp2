@@ -338,9 +338,11 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                 SizedBox(
                   width: 150,
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Personnel Header Cell
                       Container(
+                        width: double.infinity,
                         height: 40,
                         color: AppColors.militaryOlive,
                         alignment: Alignment.center,
@@ -360,6 +362,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                         final isEven = index.isEven;
 
                         return Container(
+                          width: double.infinity,
                           height: 48,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
