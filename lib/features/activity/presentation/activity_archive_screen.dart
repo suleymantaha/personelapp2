@@ -691,11 +691,16 @@ class _AssignmentDetails extends ConsumerWidget {
           else
             ...filteredAssignments.map((atama) {
               final p = pMap[atama.personelId];
-              final displayName = p != null
-                  ? '${p.rutbe} ${p.adSoyad}'
-                  : 'Personel #${atama.personelId}';
+              final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
+              final rutbeText = p?.rutbe ?? '';
               final birlikInfo = p?.birlik ?? '';
+              final subInfo = [
+                if (rutbeText.isNotEmpty) rutbeText,
+                if (birlikInfo.isNotEmpty) birlikInfo,
+              ].join(' • ');
               final digerNote = atama.aciklama ?? '';
+              final displayName =
+                  rutbeText.isNotEmpty ? '$rutbeText $nameText' : nameText;
 
               final isPending = atama.durum == AssignmentStatus.beklemede;
               final isApproved = atama.durum == AssignmentStatus.onaylandi;
@@ -719,24 +724,24 @@ class _AssignmentDetails extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    // Personnel Rank, Name and Squad
+                    // Personnel Name (Top) & Rank / Squad (Bottom)
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            displayName,
+                            nameText,
                             style: const TextStyle(
-                              fontSize: 13,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          if (birlikInfo.isNotEmpty)
+                          if (subInfo.isNotEmpty)
                             Text(
-                              birlikInfo,
+                              subInfo,
                               style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey.shade600,
+                                fontSize: 12,
+                                color: Colors.grey.shade700,
                               ),
                             ),
                           if (digerNote.isNotEmpty)
