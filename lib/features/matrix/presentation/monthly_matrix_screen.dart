@@ -336,40 +336,29 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
               children: [
                 // Sticky Left Column (Personnel Names)
                 SizedBox(
-                  width: 170,
+                  width: 150,
                   child: Column(
                     children: [
+                      // Personnel Header Cell
                       Container(
                         height: 40,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.militaryOlive,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(8),
+                        color: AppColors.militaryOlive,
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Personel',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
                           ),
-                          border: Border(
-                            right: BorderSide(
-                              color: Colors.white.withValues(alpha: 0.3),
-                            ),
-                          ),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        child: const Row(
-                          children: [
-                            Icon(Icons.people_alt, size: 16, color: Colors.white),
-                            SizedBox(width: 6),
-                            Text(
-                              'Personel Kadrosu',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
                         ),
                       ),
-                      ...personnelList.map((p) {
+                      // Personnel Data Rows
+                      ...personnelList.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final p = entry.value;
+                        final isEven = index.isEven;
+
                         return Container(
                           height: 48,
                           padding: const EdgeInsets.symmetric(
@@ -377,16 +366,21 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
+                            color: isEven
+                                ? Theme.of(context).cardColor
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest
+                                    .withValues(alpha: 0.3),
                             border: Border(
                               bottom: BorderSide(
                                 color: Theme.of(context)
                                     .dividerColor
-                                    .withValues(alpha: 0.4),
+                                    .withValues(alpha: 0.25),
                               ),
                               right: const BorderSide(
                                 color: AppColors.militaryOlive,
-                                width: 1.5,
+                                width: 2,
                               ),
                             ),
                           ),
@@ -394,40 +388,23 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 1,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.militaryOlive.withValues(
-                                    alpha: 0.15,
-                                  ),
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                                child: Text(
-                                  p.rutbe,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.militaryOlive,
-                                  ),
+                              Text(
+                                p.rutbe,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.militaryOlive,
                                 ),
                               ),
-                              const SizedBox(height: 2),
                               Text(
                                 p.adSoyad,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.color,
                                 ),
                               ),
                             ],
@@ -446,20 +423,19 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                       width: daysInMonth * 48.0,
                       child: Column(
                         children: [
-                          // Days Header Row
+                          // Days Header Row (Solid Military Olive Bar)
                           Container(
                             height: 40,
-                            color: AppColors.militaryOlive.withValues(
-                              alpha: 0.1,
-                            ),
+                            color: AppColors.militaryOlive,
                             child: Row(
                               children: List.generate(daysInMonth, (index) {
+                                final dayNum = index + 1;
                                 final isTodayHeader =
                                     DateTime.now().year ==
                                         _selectedMonth.year &&
                                     DateTime.now().month ==
                                         _selectedMonth.month &&
-                                    DateTime.now().day == (index + 1);
+                                    DateTime.now().day == dayNum;
 
                                 return SizedBox(
                                   width: 48,
@@ -469,20 +445,18 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.militaryOlive,
+                                      color: isTodayHeader
+                                          ? Colors.amber.shade700
+                                          : AppColors.darkOlive,
                                       borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(
-                                        color: isTodayHeader
-                                            ? Colors.amber
-                                            : AppColors.militaryOlive,
-                                        width: isTodayHeader ? 2.0 : 1.0,
-                                      ),
                                     ),
                                     alignment: Alignment.center,
                                     child: Text(
-                                      '${index + 1}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      '$dayNum',
+                                      style: TextStyle(
+                                        color: isTodayHeader
+                                            ? Colors.black
+                                            : Colors.white,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
                                       ),
@@ -494,7 +468,8 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                           ),
 
                           // Status Grid Rows
-                          ...personnelList.map((p) {
+                          ...personnelList.asMap().entries.map((entry) {
+                            final p = entry.value;
                             final pStatusMap = matrixData[p.id] ?? {};
 
                             return SizedBox(
