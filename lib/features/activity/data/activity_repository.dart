@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
@@ -14,6 +15,9 @@ class ActivityRepository {
     String? startDate,
     String? endDate,
   }) {
+    // Auto-clean duplicates in background
+    unawaited(consolidateDuplicateActivities());
+
     final query = db.select(db.gunlukFaaliyetTable);
     if (startDate != null) {
       query.where((tbl) => tbl.tarih.isBiggerOrEqualValue(startDate));
@@ -24,6 +28,53 @@ class ActivityRepository {
     query.orderBy([(tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.desc)]);
     query.limit(limit, offset: offset);
     return query.watch();
+  }
+
+  /// Merges duplicate activity entries for the same date and cleans up orphaned duplicates
+  Future<void> consolidateDuplicateActivities() async {
+    await db.transaction(() async {
+      final allActs = await (db.select(db.gunlukFaaliyetTable)
+            ..orderBy([(tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.asc)]))
+          .get();
+
+      final seenDates = <String, int>{};
+      for (final act in allActs) {
+        if (seenDates.containsKey(act.tarih)) {
+          final primaryId = seenDates[act.tarih]!;
+          final duplicateId = act.id;
+
+          final dupAssignments = await (db.select(db.faaliyetPersonelAtamaTable)
+                ..where((tbl) => tbl.faaliyetId.equals(duplicateId)))
+              .get();
+
+          for (final atama in dupAssignments) {
+            final existsInPrimary = await (db.select(db.faaliyetPersonelAtamaTable)
+                  ..where((tbl) =>
+                      tbl.faaliyetId.equals(primaryId) &
+                      tbl.personelId.equals(atama.personelId)))
+                .getSingleOrNull();
+
+            if (existsInPrimary == null) {
+              await (db.update(db.faaliyetPersonelAtamaTable)
+                    ..where((tbl) => tbl.id.equals(atama.id)))
+                  .write(FaaliyetPersonelAtamaTableCompanion(
+                faaliyetId: Value(primaryId),
+              ));
+            } else {
+              await (db.delete(db.faaliyetPersonelAtamaTable)
+                    ..where((tbl) => tbl.id.equals(atama.id)))
+                  .go();
+            }
+          }
+
+          await (db.delete(db.gunlukFaaliyetTable)
+                ..where((tbl) => tbl.id.equals(duplicateId)))
+              .go();
+        } else {
+          seenDates[act.tarih] = act.id;
+        }
+      }
+    });
   }
 
   /// Watch pending duty assignments
@@ -90,17 +141,33 @@ class ActivityRepository {
     bool isCommander = false,
   }) async {
     return db.transaction(() async {
-      // 1. Create activity record
-      final actId = await db
-          .into(db.gunlukFaaliyetTable)
-          .insert(
-            GunlukFaaliyetTableCompanion.insert(
-              faaliyetAdi: faaliyetAdi,
-              tarih: tarih,
-              olusturanKullanici: olusturanKullanici,
-              olusturmaTarihi: DateTime.now().toIso8601String(),
-            ),
-          );
+      // 1. Check if an activity record already exists for this date
+      final existingActs = await (db.select(db.gunlukFaaliyetTable)
+            ..where((tbl) => tbl.tarih.equals(tarih)))
+          .get();
+
+      int actId;
+      if (existingActs.isNotEmpty) {
+        actId = existingActs.first.id;
+        // Optionally update activity title if needed
+        await (db.update(db.gunlukFaaliyetTable)
+              ..where((tbl) => tbl.id.equals(actId)))
+            .write(
+          GunlukFaaliyetTableCompanion(
+            faaliyetAdi: Value(faaliyetAdi),
+            olusturanKullanici: Value(olusturanKullanici),
+          ),
+        );
+      } else {
+        actId = await db.into(db.gunlukFaaliyetTable).insert(
+              GunlukFaaliyetTableCompanion.insert(
+                faaliyetAdi: faaliyetAdi,
+                tarih: tarih,
+                olusturanKullanici: olusturanKullanici,
+                olusturmaTarihi: DateTime.now().toIso8601String(),
+              ),
+            );
+      }
 
       // Fetch active reports
       final rawReports = await db.select(db.raporKayitTable).get();
@@ -140,7 +207,7 @@ class ActivityRepository {
         );
       }).toList();
 
-      // 2. Evaluate and insert each assignment
+      // 2. Evaluate and upsert each assignment
       for (final item in personnelAssignments) {
         final pId = item['personelId'] as int;
         final gorev = item['gorevVeyaIzin'] as String;
@@ -157,17 +224,35 @@ class ActivityRepository {
           evaluatedStatus = AssignmentStatus.beklemede;
         }
 
-        await db
-            .into(db.faaliyetPersonelAtamaTable)
-            .insert(
-              FaaliyetPersonelAtamaTableCompanion.insert(
-                faaliyetId: actId,
-                personelId: pId,
-                gorevVeyaIzin: gorev,
-                durum: evaluatedStatus,
-                aciklama: Value(item['aciklama'] as String?),
-              ),
-            );
+        // Check if assignment already exists for this activity & personnel
+        final currentAssignment = await (db.select(db.faaliyetPersonelAtamaTable)
+              ..where(
+                (tbl) =>
+                    tbl.faaliyetId.equals(actId) & tbl.personelId.equals(pId),
+              ))
+            .getSingleOrNull();
+
+        if (currentAssignment != null) {
+          await (db.update(db.faaliyetPersonelAtamaTable)
+                ..where((tbl) => tbl.id.equals(currentAssignment.id)))
+              .write(
+            FaaliyetPersonelAtamaTableCompanion(
+              gorevVeyaIzin: Value(gorev),
+              durum: Value(evaluatedStatus),
+              aciklama: Value(item['aciklama'] as String?),
+            ),
+          );
+        } else {
+          await db.into(db.faaliyetPersonelAtamaTable).insert(
+                FaaliyetPersonelAtamaTableCompanion.insert(
+                  faaliyetId: actId,
+                  personelId: pId,
+                  gorevVeyaIzin: gorev,
+                  durum: evaluatedStatus,
+                  aciklama: Value(item['aciklama'] as String?),
+                ),
+              );
+        }
       }
 
       return actId;
