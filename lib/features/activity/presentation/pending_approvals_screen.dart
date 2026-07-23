@@ -10,6 +10,10 @@ class PendingApprovalsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingAsync = ref.watch(pendingAssignmentsProvider);
+    final personnelAsync = ref.watch(allPersonnelProvider);
+
+    final personnelList = personnelAsync.value ?? [];
+    final pMap = {for (final p in personnelList) p.id: p};
 
     return Scaffold(
       appBar: AppBar(
@@ -31,6 +35,13 @@ class PendingApprovalsScreen extends ConsumerWidget {
             itemCount: pendingList.length,
             itemBuilder: (context, index) {
               final atama = pendingList[index];
+              final p = pMap[atama.personelId];
+              final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
+              final rutbeText = p?.rutbe ?? '';
+              final birlikInfo = p?.birlik ?? '';
+              final fullPersonName = rutbeText.isNotEmpty ? '$rutbeText $nameText' : nameText;
+              final squadInfo = birlikInfo.isNotEmpty ? ' ($birlikInfo)' : '';
+
               return Card(
                 elevation: 3,
                 margin: const EdgeInsets.only(bottom: 12),
@@ -47,18 +58,63 @@ class PendingApprovalsScreen extends ConsumerWidget {
                         children: [
                           const Icon(Icons.warning, color: AppColors.pendingYellow),
                           const SizedBox(width: 8),
-                          Text(
-                            'Görevlendirme #${atama.id} (ÇAKIŞMA VAR)',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                          Expanded(
+                            child: Text(
+                              'Görevlendirme #${atama.id} (ÇAKIŞMA VAR)',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Text('Personel ID: ${atama.personelId}'),
-                      Text('Talep Edilen Görev: ${atama.gorevVeyaIzin}'),
+                      const SizedBox(height: 10),
+                      RichText(
+                        text: TextSpan(
+                          style: const TextStyle(color: Colors.black87, fontSize: 14),
+                          children: [
+                            const TextSpan(
+                              text: 'Personel: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                              text: '$fullPersonName$squadInfo',
+                              style: const TextStyle(
+                                color: AppColors.militaryOlive,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      RichText(
+                        text: TextSpan(
+                          style: const TextStyle(color: Colors.black87, fontSize: 14),
+                          children: [
+                            const TextSpan(
+                              text: 'Talep Edilen Görev: ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                              text: atama.gorevVeyaIzin,
+                              style: const TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (atama.aciklama != null && atama.aciklama!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'Açıklama: ${atama.aciklama}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
