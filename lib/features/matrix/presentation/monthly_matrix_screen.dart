@@ -340,24 +340,26 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Personnel Header Cell
-                      Container(
-                        height: 40,
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 2,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.militaryOlive,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'S.N. | Personel',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                      // Personnel Header Cell (Height 48 to match Days Header)
+                      SizedBox(
+                        height: 48,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 2,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.militaryOlive,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'S.N. | Personel',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),
@@ -455,10 +457,9 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                       width: daysInMonth * 48.0,
                       child: Column(
                         children: [
-                          // Days Header Row (Solid Military Olive Bar)
-                          Container(
-                            height: 40,
-                            color: AppColors.militaryOlive,
+                          // Days Header Row (Height 48 to match Personnel Header)
+                          SizedBox(
+                            height: 48,
                             child: Row(
                               children: List.generate(daysInMonth, (index) {
                                 final dayNum = index + 1;
