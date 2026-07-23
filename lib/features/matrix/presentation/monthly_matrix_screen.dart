@@ -336,39 +336,101 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
               children: [
                 // Sticky Left Column (Personnel Names)
                 SizedBox(
-                  width: 160,
+                  width: 170,
                   child: Column(
                     children: [
                       Container(
                         height: 40,
-                        color: AppColors.militaryOlive,
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'Personel',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.militaryOlive,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(8),
                           ),
+                          border: Border(
+                            right: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.3),
+                            ),
+                          ),
+                        ),
+                        alignment: Alignment.centerLeft,
+                        child: const Row(
+                          children: [
+                            Icon(Icons.people_alt, size: 16, color: Colors.white),
+                            SizedBox(width: 6),
+                            Text(
+                              'Personel Kadrosu',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       ...personnelList.map((p) {
                         return Container(
                           height: 48,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
                             border: Border(
-                              bottom: BorderSide(color: Colors.grey.shade300),
-                              right: BorderSide(color: Colors.grey.shade400),
+                              bottom: BorderSide(
+                                color: Theme.of(context)
+                                    .dividerColor
+                                    .withValues(alpha: 0.4),
+                              ),
+                              right: const BorderSide(
+                                color: AppColors.militaryOlive,
+                                width: 1.5,
+                              ),
                             ),
                           ),
-                          child: Text(
-                            '${p.rutbe} ${p.adSoyad}',
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 1,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.militaryOlive.withValues(
+                                    alpha: 0.15,
+                                  ),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                child: Text(
+                                  p.rutbe,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.militaryOlive,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                p.adSoyad,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.color,
+                                ),
+                              ),
+                            ],
                           ),
                         );
                       }),
