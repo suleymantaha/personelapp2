@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
 class ActivityFormScreen extends ConsumerStatefulWidget {
@@ -199,6 +200,10 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: sortedTimIds.map((timId) {
                           final members = grouped[timId]!;
+                          // Sort members by Rank Seniority (Subay > Astsubay > Uzman > Er)
+                          members.sort((a, b) =>
+                              getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)));
+
                           final squadName = timId == null
                               ? 'Timsiz / Diğer Personeller'
                               : (squadMap[timId] ?? 'Bilinmeyen Tim');
@@ -219,23 +224,86 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                   color: AppColors.militaryOlive,
                                 ),
                               ),
-                              trailing: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.militaryOlive,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  '${members.length} Personel',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  PopupMenuButton<String>(
+                                    icon: const Icon(
+                                      Icons.bolt,
+                                      color: AppColors.militaryOlive,
+                                      size: 22,
+                                    ),
+                                    tooltip: 'Time Toplu Görev Ata',
+                                    onSelected: (duty) {
+                                      setState(() {
+                                        for (final p in members) {
+                                          if (duty == 'CLEAR') {
+                                            _assignments.remove(p.id);
+                                          } else {
+                                            _assignments[p.id] = duty;
+                                          }
+                                        }
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            duty == 'CLEAR'
+                                                ? '$squadName görevleri temizlendi.'
+                                                : '$squadName personelinin tümüne "$duty" atandı.',
+                                          ),
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
+                                    },
+                                    itemBuilder: (ctx) => [
+                                      const PopupMenuItem(
+                                        enabled: false,
+                                        child: Text(
+                                          '⚡ TIME TOPLU GÖREV ATA',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                            color: AppColors.militaryOlive,
+                                          ),
+                                        ),
+                                      ),
+                                      const PopupMenuDivider(),
+                                      ...generalDuties.map(
+                                        (d) => PopupMenuItem<String>(
+                                          value: d,
+                                          child: Text('Tümüne "$d" Ata'),
+                                        ),
+                                      ),
+                                      const PopupMenuDivider(),
+                                      const PopupMenuItem<String>(
+                                        value: 'CLEAR',
+                                        child: Text(
+                                          'Görevleri Sıfırla',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.militaryOlive,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      '${members.length} Personel',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                               children: [
                                 const Divider(
@@ -347,7 +415,10 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                   );
                 }
 
-                // If not admin (Team Commander), render a flat list (their own team)
+                // If not admin (Team Commander), render a flat list (their own team sorted by rank weight)
+                personnelList.sort((a, b) =>
+                    getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)));
+
                 return ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
