@@ -14,8 +14,6 @@ class ActivityFormScreen extends ConsumerStatefulWidget {
 }
 
 class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
-  String? _selectedActivityName;
-  final _customActivityNameController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
 
   // Maps personelId to selected DutyType
@@ -23,27 +21,9 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
   // Maps personelId to custom notes
   final Map<int, String> _notes = {};
 
-  @override
-  void dispose() {
-    _customActivityNameController.dispose();
-    super.dispose();
-  }
-
   Future<void> _submitActivity() async {
-    if (_selectedActivityName == null || _selectedActivityName!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen Faaliyet / Devriye Adı seçiniz.')),
-      );
-      return;
-    }
-
-    final name = _selectedActivityName == 'DİĞER'
-        ? (_customActivityNameController.text.trim().isNotEmpty
-              ? _customActivityNameController.text.trim()
-              : 'DİĞER')
-        : _selectedActivityName!;
-
     final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    final name = 'Günlük Faaliyet ($dateStr)';
     final userSession = ref.read(userSessionProvider);
 
     final payload = _assignments.entries.where((e) => e.value.isNotEmpty).map((
@@ -154,39 +134,6 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Fixed Activity / Patrol Name Dropdown
-            DropdownButtonFormField<String>(
-              initialValue: _selectedActivityName,
-              hint: const Text('SEÇİNİZ'),
-              decoration: const InputDecoration(
-                labelText: 'Faaliyet / Devriye Adı',
-                prefixIcon: Icon(Icons.local_police),
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: 'HAZIR KITA',
-                  child: Text('HAZIR KITA'),
-                ),
-                DropdownMenuItem(value: 'GÜLÜŞKÜR', child: Text('GÜLÜŞKÜR')),
-                DropdownMenuItem(value: 'GÖREV', child: Text('GÖREV')),
-                DropdownMenuItem(value: 'DİĞER', child: Text('DİĞER')),
-              ],
-              onChanged: (val) {
-                setState(() => _selectedActivityName = val);
-              },
-            ),
-            if (_selectedActivityName == 'DİĞER') ...[
-              const SizedBox(height: 10),
-              TextField(
-                controller: _customActivityNameController,
-                decoration: const InputDecoration(
-                  hintText: 'Açıklama / Faaliyet Adı Giriniz...',
-                  prefixIcon: Icon(Icons.edit_note),
-                ),
-              ),
-            ],
-            const SizedBox(height: 24),
 
             Text(
               isAdmin
