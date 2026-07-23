@@ -23,6 +23,18 @@ class DutyOrLeaveType {
   static const String raporlu = 'RAPORLU';
   static const String sevk = 'SEVK';
   static const String diger = 'DİĞER';
+
+  /// Returns true if the assignment is an active operational duty, false if it is a non-duty status (leave, rest, report, referral).
+  static bool isOperationalDuty(String dutyOrLeave) {
+    final d = dutyOrLeave.toUpperCase().trim();
+    if (d.contains('İZİN') ||
+        d.contains('İSTİRAHAT') ||
+        d.contains('RAPOR') ||
+        d.contains('SEVK')) {
+      return false;
+    }
+    return true;
+  }
 }
 
 /// Simplified Report Data Model for Domain Logic

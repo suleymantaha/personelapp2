@@ -54,5 +54,15 @@ void main() {
 
       expect(status, equals(AssignmentStatus.beklemede));
     });
+
+    test('isOperationalDuty should return false for leave, rest, report, referral and true for active duties', () {
+      expect(DutyOrLeaveType.isOperationalDuty('İZİNLİ'), isFalse);
+      expect(DutyOrLeaveType.isOperationalDuty('İSTİRAHATLİ'), isFalse);
+      expect(DutyOrLeaveType.isOperationalDuty('RAPORLU'), isFalse);
+      expect(DutyOrLeaveType.isOperationalDuty('SEVK'), isFalse);
+      expect(DutyOrLeaveType.isOperationalDuty('HAZIR KITA'), isTrue);
+      expect(DutyOrLeaveType.isOperationalDuty('GÜLÜŞKÜR'), isTrue);
+      expect(DutyOrLeaveType.isOperationalDuty('NÖBETÇİ'), isTrue);
+    });
   });
 }

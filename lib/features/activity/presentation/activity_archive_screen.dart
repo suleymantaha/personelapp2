@@ -41,8 +41,14 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
           .get();
 
       final rosterRows = <MilitaryRosterRow>[];
+      var sNuCounter = 1;
       for (var i = 0; i < assignments.length; i++) {
         final atama = assignments[i];
+        // Exclude off-duty statuses (İzinli, İstirahatli, Raporlu, Sevk) from shared roster
+        if (!DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin)) {
+          continue;
+        }
+
         final p = pMap[atama.personelId];
         final rutbe = p?.rutbe ?? '';
         final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
@@ -50,7 +56,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         final digerNote = atama.aciklama ?? atama.gorevVeyaIzin;
 
         rosterRows.add(MilitaryRosterRow(
-          sNu: i + 1,
+          sNu: sNuCounter++,
           birligi: birligi,
           rutbe: rutbe,
           adSoyad: adSoyad,
@@ -544,8 +550,14 @@ class _AssignmentDetails extends ConsumerWidget {
     final existingPersonnelIds = assignments.map((a) => a.personelId).toSet();
 
     final rosterRows = <MilitaryRosterRow>[];
+    var sNuCounter = 1;
     for (var i = 0; i < filteredAssignments.length; i++) {
       final atama = filteredAssignments[i];
+      // Exclude off-duty statuses (İzinli, İstirahatli, Raporlu, Sevk) from shared roster
+      if (!DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin)) {
+        continue;
+      }
+
       final p = pMap[atama.personelId];
       final rutbe = p?.rutbe ?? '';
       final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
@@ -553,7 +565,7 @@ class _AssignmentDetails extends ConsumerWidget {
       final digerNote = atama.aciklama ?? atama.gorevVeyaIzin;
 
       rosterRows.add(MilitaryRosterRow(
-        sNu: i + 1,
+        sNu: sNuCounter++,
         birligi: birligi,
         rutbe: rutbe,
         adSoyad: adSoyad,
