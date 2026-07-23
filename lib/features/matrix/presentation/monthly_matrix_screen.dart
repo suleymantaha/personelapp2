@@ -53,12 +53,17 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
   }
 
   String _getAbbreviation(String status) {
-    if (status.contains('GÖREV')) return 'G';
-    if (status.contains('NÖBET')) return 'N';
+    if (status.contains('GÖREV') ||
+        status.contains('NÖBET') ||
+        status.contains('HAZIR KITA') ||
+        status.contains('GÜLÜŞKÜR') ||
+        status.contains('HEYBET')) {
+      return 'X';
+    }
     if (status.contains('İZİN')) return 'İZ';
     if (status.contains('İSTİRAHAT')) return 'İST';
-    if (status.contains('RAPOR')) return 'R';
-    if (status.contains('SEVK')) return 'S';
+    if (status.contains('RAPOR')) return 'RAP';
+    if (status.contains('SEVK')) return 'SVK';
     if (status.contains('beklemede')) return 'B';
     return '-';
   }

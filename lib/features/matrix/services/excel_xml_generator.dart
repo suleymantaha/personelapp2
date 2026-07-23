@@ -122,21 +122,36 @@ class ExcelXmlGenerator {
 
       for (var day = 1; day <= daysInMonth; day++) {
         final status = pStatusMap[day] ?? '-';
-        final escapedStatus = escapeXml(status);
 
+        var cellText = '-';
         var styleId = '';
-        if (status.contains('GÖREV') || status.contains('NÖBET')) {
+
+        if (status.contains('GÖREV') ||
+            status.contains('NÖBET') ||
+            status.contains('HAZIR KITA') ||
+            status.contains('GÜLÜŞKÜR') ||
+            status.contains('HEYBET')) {
+          cellText = 'X';
           styleId = ' ss:StyleID="GÖREVLİ"';
-        } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
+        } else if (status.contains('İZİN')) {
+          cellText = 'İZ';
           styleId = ' ss:StyleID="İZİNLİ"';
-        } else if (status.contains('RAPOR') || status.contains('SEVK')) {
+        } else if (status.contains('İSTİRAHAT')) {
+          cellText = 'İST';
+          styleId = ' ss:StyleID="İZİNLİ"';
+        } else if (status.contains('RAPOR')) {
+          cellText = 'RAP';
+          styleId = ' ss:StyleID="RAPORLU"';
+        } else if (status.contains('SEVK')) {
+          cellText = 'SVK';
           styleId = ' ss:StyleID="RAPORLU"';
         } else if (status.contains('beklemede')) {
+          cellText = 'B';
           styleId = ' ss:StyleID="BEKLEYEN"';
         }
 
         buffer.writeln(
-          '    <Cell$styleId><Data ss:Type="String">$escapedStatus</Data></Cell>',
+          '    <Cell$styleId><Data ss:Type="String">${escapeXml(cellText)}</Data></Cell>',
         );
       }
       buffer.writeln('   </Row>');
