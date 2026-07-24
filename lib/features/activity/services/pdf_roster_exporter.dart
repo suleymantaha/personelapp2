@@ -14,7 +14,23 @@ class PdfRosterExporter {
     required String tarih,
     required List<MilitaryRosterRow> rows,
   }) async {
-    final pdf = pw.Document();
+    pw.Font? font;
+    pw.Font? boldFont;
+    try {
+      font = await PdfGoogleFonts.robotoRegular();
+      boldFont = await PdfGoogleFonts.robotoBold();
+    } on Exception catch (_) {
+      // Fallback if offline
+    }
+
+    final pdf = pw.Document(
+      theme: font != null && boldFont != null
+          ? pw.ThemeData.withFont(
+              base: font,
+              bold: boldFont,
+            )
+          : null,
+    );
 
     // Filter out non-operational duties (İzinli, İstirahatli, Raporlu, Sevk)
     final filteredRows = rows
@@ -27,7 +43,7 @@ class PdfRosterExporter {
       pw.Page(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(24),
-        build: (pw.Context context) {
+        build: (context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.stretch,
             children: [
@@ -36,12 +52,12 @@ class PdfRosterExporter {
                 padding: const pw.EdgeInsets.all(10),
                 decoration: pw.BoxDecoration(
                   color: PdfColors.grey200,
-                  border: pw.Border.all(color: PdfColors.black, width: 1),
+                  border: pw.Border.all(),
                 ),
                 child: pw.Center(
                   child: pw.Text(
                     titleText,
-                    style: pw.TextStyle(
+                    style: const pw.TextStyle(
                       fontSize: 14,
                       fontWeight: pw.FontWeight.bold,
                     ),
@@ -52,8 +68,8 @@ class PdfRosterExporter {
 
               // Roster Table
               pw.TableHelper.fromTextArray(
-                border: pw.TableBorder.all(color: PdfColors.black, width: 0.8),
-                headerStyle: pw.TextStyle(
+                border: pw.TableBorder.all(width: 0.8),
+                headerStyle: const pw.TextStyle(
                   fontSize: 10,
                   fontWeight: pw.FontWeight.bold,
                 ),
@@ -85,6 +101,33 @@ class PdfRosterExporter {
                     r.diger,
                   ];
                 }),
+              ),
+              pw.SizedBox(height: 12),
+
+              // Summary Box (GÖREV VE MEVCUT ÖZETİ)
+              pw.Container(
+                padding: const pw.EdgeInsets.all(8),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(width: 0.8),
+                  color: PdfColors.grey100,
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      'GÖREV VE MEVCUT ÖZETİ',
+                      style: pw.TextStyle(
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      'Görevdeki Personel Sayısı: ${filteredRows.length} Personel',
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                  ],
+                ),
               ),
               pw.SizedBox(height: 16),
 
@@ -156,7 +199,7 @@ class PdfRosterExporter {
     );
 
     await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
+      onLayout: (format) async => pdf.save(),
       name: '${faaliyetAdi}_$tarih.pdf',
     );
   }

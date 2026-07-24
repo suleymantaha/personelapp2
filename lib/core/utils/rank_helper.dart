@@ -24,11 +24,31 @@ String normalizeRank(String rawRutbe) {
   final trimmed = rawRutbe.trim();
   if (kAskeriRutbeler.contains(trimmed)) return trimmed;
 
-  // Harf büyüklüğü veya boşluk farkı varsa listedeki birebir karşılığını bulur
-  final upper = trimmed.toUpperCase();
+  final upper = trimmed.toUpperCase().replaceAll(' ', '').replaceAll('.', '');
   for (final rank in kAskeriRutbeler) {
-    if (rank.toUpperCase() == upper) return rank;
+    final rankUpper = rank.toUpperCase().replaceAll(' ', '').replaceAll('.', '');
+    if (rankUpper == upper || rankUpper.replaceFirst('J', '') == upper) {
+      return rank;
+    }
   }
+
+  // Fallback matching without 'J'
+  if (upper.contains('ALB')) return 'J.Alb.';
+  if (upper.contains('YRB')) return 'J.Yrb.';
+  if (upper.contains('BNB')) return 'J.Bnb.';
+  if (upper.contains('YZB') || upper.contains('YÜZBAŞI')) return 'J.Yzb.';
+  if (upper.contains('ÜTĞM')) return 'J.Ütğm.';
+  if (upper.contains('TĞM') || upper.contains('TEĞMEN')) return 'J.Tğm.';
+  if (upper.contains('ASTĞM')) return 'J.Astğm.';
+  if (upper.contains('KDBÇVŞ')) return 'J.Asb.Kd.Bçvş.';
+  if (upper.contains('BÇVŞ')) return 'J.Asb.Bçvş.';
+  if (upper.contains('KDÜÇVŞ')) return 'J.Asb.Kd.Üçvş.';
+  if (upper.contains('ÜÇVŞ')) return 'J.Asb.Üçvş.';
+  if (upper.contains('KDÇVŞ')) return 'J.Asb.Kd.Çvş.';
+  if (upper.contains('ASB') || upper.contains('ASTSB')) return 'J.Asb.Çvş.';
+  if (upper.contains('UZM')) return 'J.Uzm.Çvş.';
+  if (upper.contains('SÖZER')) return 'J.Söz.Er';
+  if (upper == 'ER') return 'J.Er';
 
   return trimmed;
 }

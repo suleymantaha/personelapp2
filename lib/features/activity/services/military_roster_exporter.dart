@@ -173,26 +173,103 @@ class MilitaryRosterExporter {
       )
       ..writeln('   </Row>');
 
-    // Data Rows
-    for (final r in rows) {
-      buffer
-        ..writeln('   <Row ss:Height="20">')
-        ..writeln(
+    // Data Rows with Vertical Birlik Merging
+    var i = 0;
+    while (i < rows.length) {
+      final currentBirlik = rows[i].birligi;
+      var mergeCount = 0;
+
+      // Count consecutive rows with same Birlik
+      while (i + mergeCount + 1 < rows.length &&
+          rows[i + mergeCount + 1].birligi == currentBirlik) {
+        mergeCount++;
+      }
+
+      for (var j = 0; j <= mergeCount; j++) {
+        final r = rows[i + j];
+        buffer.writeln('   <Row ss:Height="20">');
+        buffer.writeln(
           '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="Number">${r.sNu}</Data></Cell>',
-        )
-        ..writeln(
-          '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.birligi)}</Data></Cell>',
-        )
-        ..writeln(
+        );
+
+        if (j == 0) {
+          final mergeAttr =
+              mergeCount > 0 ? ' ss:MergeDown="$mergeCount"' : '';
+          buffer.writeln(
+            '    <Cell$mergeAttr ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.birligi)}</Data></Cell>',
+          );
+        }
+
+        buffer.writeln(
           '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.rutbe)}</Data></Cell>',
-        )
-        ..writeln(
+        );
+        buffer.writeln(
           '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.adSoyad)}</Data></Cell>',
-        )
-        ..writeln(
+        );
+        buffer.writeln(
           '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>',
-        )
-        ..writeln('   </Row>');
+        );
+        buffer.writeln('   </Row>');
+      }
+
+      i += mergeCount + 1;
+    }
+
+    // Calculate Summary Totals matching modTekTimSecim.bas
+    var subayCount = 0;
+    var astsubayCount = 0;
+    var uzmJCount = 0;
+    var uzmErbasCount = 0;
+    var erCount = 0;
+
+    for (final r in rows) {
+      final rutbeUpper = r.rutbe.toUpperCase();
+      if (rutbeUpper.contains('ÜTĞM') ||
+          rutbeUpper.contains('TĞM') ||
+          rutbeUpper.contains('YZB') ||
+          rutbeUpper.contains('BŞB') ||
+          rutbeUpper.contains('ALBY') ||
+          rutbeUpper.contains('SB')) {
+        subayCount++;
+      } else if (rutbeUpper.contains('ASB') || rutbeUpper.contains('ASTSB')) {
+        astsubayCount++;
+      } else if (rutbeUpper.contains('UZM.J') || rutbeUpper.contains('UZM. J')) {
+        uzmJCount++;
+      } else if (rutbeUpper.contains('UZM') || rutbeUpper.contains('ÇVŞ')) {
+        uzmErbasCount++;
+      } else {
+        erCount++;
+      }
+    }
+
+    final totalCount = rows.length;
+
+    // Spacing Row
+    buffer.writeln('   <Row ss:Height="12"/>');
+
+    // Summary Section Header
+    buffer.writeln('   <Row ss:Height="22">');
+    buffer.writeln(
+      '    <Cell ss:MergeAcross="4" ss:StyleID="SubTitle"><Data ss:Type="String">GÖREV VE MEVCUT ÖZETİ</Data></Cell>',
+    );
+    buffer.writeln('   </Row>');
+
+    // Summary Table Data
+    final summaryItems = [
+      if (subayCount > 0) 'Subay: $subayCount',
+      if (astsubayCount > 0) 'Astsubay: $astsubayCount',
+      if (uzmJCount > 0) 'Uzman Jandarma: $uzmJCount',
+      if (uzmErbasCount > 0) 'Uzman Erbaş: $uzmErbasCount',
+      if (erCount > 0) 'Er / Erbaş: $erCount',
+      'TOPLAM MEVCUT: $totalCount',
+    ];
+
+    for (final item in summaryItems) {
+      buffer.writeln('   <Row ss:Height="18">');
+      buffer.writeln(
+        '    <Cell ss:MergeAcross="4" ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(item)}</Data></Cell>',
+      );
+      buffer.writeln('   </Row>');
     }
 
     buffer
@@ -296,10 +373,9 @@ class MilitaryRosterExporter {
       )
       ..writeln('   </Borders>')
       ..writeln('  </Style>')
-      ..writeln(' </Styles>');
+      ..writeln(' </Styles>')
 
     // 1. Consolidated Worksheet (GENEL İCMAL LİSTESİ)
-    buffer
       ..writeln(' <Worksheet ss:Name="GENEL İCMAL LİSTESİ">')
       ..writeln('  <Table>')
       ..writeln('   <Column ss:Width="45"/>')
