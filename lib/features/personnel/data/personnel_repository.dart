@@ -118,27 +118,29 @@ class PersonnelRepository {
 
   Future<void> ensureDefaultSquads() async {
     final existingSquads = await db.select(db.timTable).get();
-    if (existingSquads.isEmpty) {
-      final defaultSquads = [
-        'K.H',
-        "1'inci Bl. K.H",
-        '1-B Timi',
-        '2-B Timi',
-        '3-B Timi',
-        '4-B Timi',
-        "2'nci Bl. K.H",
-        '5-B Timi',
-        '6-B Timi',
-        '7-B Timi',
-        '8-B Timi',
-        "3'üncü Bl. K.H",
-        '9-B Timi',
-        '10-B Timi',
-        '11-B Timi',
-        '12-B Timi',
-      ];
-      final nowStr = DateTime.now().toIso8601String();
-      for (final name in defaultSquads) {
+    final existingNames = existingSquads.map((s) => s.timAdi.trim()).toSet();
+
+    final defaultSquads = [
+      'K.H',
+      "1'inci Bl. K.H",
+      '1-B Timi',
+      '2-B Timi',
+      '3-B Timi',
+      '4-B Timi',
+      "2'nci Bl. K.H",
+      '5-B Timi',
+      '6-B Timi',
+      '7-B Timi',
+      '8-B Timi',
+      "3'üncü Bl. K.H",
+      '9-B Timi',
+      '10-B Timi',
+      '11-B Timi',
+      '12-B Timi',
+    ];
+    final nowStr = DateTime.now().toIso8601String();
+    for (final name in defaultSquads) {
+      if (!existingNames.contains(name)) {
         await db.into(db.timTable).insert(
               TimTableCompanion.insert(
                 timAdi: name,

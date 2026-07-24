@@ -50,32 +50,34 @@ class AppDatabase extends _$AppDatabase {
           );
         }
 
-        // Seed 12 default squads matching modTekTimSecim.bas structure
+        // Seed default 16 squads if any are missing
         final existingSquads = await select(timTable).get();
-        if (existingSquads.isEmpty) {
-          final defaultSquads = [
-            'K.H',
-            '1\'inci Bl. K.H',
-            '1-B Timi',
-            '2-B Timi',
-            '3-B Timi',
-            '4-B Timi',
-            '2\'nci Bl. K.H',
-            '5-B Timi',
-            '6-B Timi',
-            '7-B Timi',
-            '8-B Timi',
-            '3\'üncü Bl. K.H',
-            '9-B Timi',
-            '10-B Timi',
-            '11-B Timi',
-            '12-B Timi',
-          ];
-          for (final name in defaultSquads) {
+        final existingNames = existingSquads.map((s) => s.timAdi.trim()).toSet();
+        final defaultSquads = [
+          'K.H',
+          "1'inci Bl. K.H",
+          '1-B Timi',
+          '2-B Timi',
+          '3-B Timi',
+          '4-B Timi',
+          "2'nci Bl. K.H",
+          '5-B Timi',
+          '6-B Timi',
+          '7-B Timi',
+          '8-B Timi',
+          "3'üncü Bl. K.H",
+          '9-B Timi',
+          '10-B Timi',
+          '11-B Timi',
+          '12-B Timi',
+        ];
+        final nowStr = DateTime.now().toIso8601String();
+        for (final name in defaultSquads) {
+          if (!existingNames.contains(name)) {
             await into(timTable).insert(
               TimTableCompanion.insert(
                 timAdi: name,
-                olusturmaTarihi: DateTime.now().toIso8601String(),
+                olusturmaTarihi: nowStr,
               ),
             );
           }
