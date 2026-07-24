@@ -31,9 +31,9 @@ class _PersonnelManagementScreenState
 
   Future<void> _showAddPersonnelDialog() async {
     final nameController = TextEditingController();
-    final unitController = TextEditingController(text: 'Asayiş Timi');
+    final unitController = TextEditingController();
     final customRankController = TextEditingController();
-    var selectedRank = kAskeriRutbeler.first;
+    String? selectedRank;
     int? selectedSquadId;
 
     await showDialog<void>(
@@ -56,14 +56,13 @@ class _PersonnelManagementScreenState
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: selectedRank,
-                      decoration: const InputDecoration(labelText: 'Rütbe'),
+                      hint: const Text('Rütbe Seçiniz...'),
+                      decoration: const InputDecoration(labelText: 'Rütbe *'),
                       items: kAskeriRutbeler.map((r) {
                         return DropdownMenuItem(value: r, child: Text(r));
                       }).toList(),
                       onChanged: (val) {
-                        if (val != null) {
-                          setDialogState(() => selectedRank = val);
-                        }
+                        setDialogState(() => selectedRank = val);
                       },
                     ),
                     if (selectedRank == 'DİĞER / ÖZEL RÜTBE') ...[
@@ -173,17 +172,41 @@ class _PersonnelManagementScreenState
                 ElevatedButton(
                   onPressed: () async {
                     final name = nameController.text.trim();
-                    if (name.isEmpty) return;
+                    if (name.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Lütfen ad soyad giriniz.')),
+                      );
+                      return;
+                    }
+
+                    if (selectedRank == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Lütfen rütbe seçiniz.')),
+                      );
+                      return;
+                    }
 
                     final finalRank = (selectedRank == 'DİĞER / ÖZEL RÜTBE')
                         ? customRankController.text.trim()
-                        : selectedRank;
+                        : selectedRank!;
+
+                    var birlik = unitController.text.trim();
+                    if (birlik.isEmpty && selectedSquadId != null) {
+                      final squads = squadsAsync.valueOrNull ?? [];
+                      final match = squads.where((s) => s.id == selectedSquadId).firstOrNull;
+                      if (match != null) {
+                        birlik = MilitaryStructureHelper.getBolukName(match.timAdi);
+                      }
+                    }
+                    if (birlik.isEmpty) {
+                      birlik = 'Asayiş Timi';
+                    }
 
                     final repo = ref.read(personnelRepositoryProvider);
                     await repo.addPersonnel(
                       adSoyad: name,
                       rutbe: finalRank.isEmpty ? 'J.Er' : finalRank,
-                      birlik: unitController.text.trim(),
+                      birlik: birlik,
                       timId: selectedSquadId,
                       kayitTarihi: DateFormat('yyyy-MM-dd').format(DateTime.now()),
                     );
