@@ -54,14 +54,18 @@ class AppDatabase extends _$AppDatabase {
         final existingSquads = await select(timTable).get();
         if (existingSquads.isEmpty) {
           final defaultSquads = [
+            'K.H',
+            '1\'inci Bl. K.H',
             '1-B Timi',
             '2-B Timi',
             '3-B Timi',
             '4-B Timi',
+            '2\'nci Bl. K.H',
             '5-B Timi',
             '6-B Timi',
             '7-B Timi',
             '8-B Timi',
+            '3\'üncü Bl. K.H',
             '9-B Timi',
             '10-B Timi',
             '11-B Timi',
