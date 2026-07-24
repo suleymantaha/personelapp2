@@ -13,6 +13,7 @@ const List<String> kAskeriRutbeler = [
   'J.Asb.Üçvş.',
   'J.Asb.Kd.Çvş.',
   'J.Asb.Çvş.',
+  'J.Uzm.J.',
   'J.Uzm.Çvş.',
   'J.Söz.Er',
   'J.Er',
@@ -46,6 +47,7 @@ String normalizeRank(String rawRutbe) {
   if (upper.contains('ÜÇVŞ')) return 'J.Asb.Üçvş.';
   if (upper.contains('KDÇVŞ')) return 'J.Asb.Kd.Çvş.';
   if (upper.contains('ASB') || upper.contains('ASTSB')) return 'J.Asb.Çvş.';
+  if (upper.contains('UZMJ') || upper.contains('UZM.J') || upper == 'UZMJANDARMA') return 'J.Uzm.J.';
   if (upper.contains('UZM')) return 'J.Uzm.Çvş.';
   if (upper.contains('SÖZER')) return 'J.Söz.Er';
   if (upper == 'ER') return 'J.Er';
