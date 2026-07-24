@@ -88,10 +88,16 @@ class _PersonnelManagementScreenState
                                 style: TextStyle(color: context.rejectedColor),
                               ),
                             ),
-                            ...squads.map((s) => DropdownMenuItem<int?>(
-                                  value: s.id,
-                                  child: Text(s.timAdi),
-                                )),
+                            ...squads.map((s) {
+                              final boluk = MilitaryStructureHelper.getBolukName(s.timAdi);
+                              final display = (boluk != s.timAdi && boluk.isNotEmpty)
+                                  ? '${s.timAdi}  ($boluk)'
+                                  : s.timAdi;
+                              return DropdownMenuItem<int?>(
+                                value: s.id,
+                                child: Text(display),
+                              );
+                            }),
                           ],
                           onChanged: (val) {
                             setDialogState(() {
@@ -252,9 +258,13 @@ class _PersonnelManagementScreenState
                               child: Text('Timsiz (Bağımsız)'),
                             ),
                             ...squads.map((s) {
+                              final boluk = MilitaryStructureHelper.getBolukName(s.timAdi);
+                              final display = (boluk != s.timAdi && boluk.isNotEmpty)
+                                  ? '${s.timAdi}  ($boluk)'
+                                  : s.timAdi;
                               return DropdownMenuItem<int?>(
                                 value: s.id,
-                                child: Text(s.timAdi),
+                                child: Text(display),
                               );
                             }),
                           ],
