@@ -93,9 +93,11 @@ class PdfRosterExporter {
                 ],
                 data: List<List<String>>.generate(filteredRows.length, (i) {
                   final r = filteredRows[i];
+                  final showBirlik =
+                      (i == 0 || filteredRows[i - 1].birligi != r.birligi);
                   return [
                     (i + 1).toString(),
-                    r.birligi,
+                    showBirlik ? r.birligi : '',
                     r.rutbe,
                     r.adSoyad,
                     r.diger,
@@ -104,7 +106,7 @@ class PdfRosterExporter {
               ),
               pw.SizedBox(height: 12),
 
-              // Summary Box (GÖREV VE MEVCUT ÖZETİ)
+              // Summary Box (GÖREV VE MEVCUT ÖZETİ) matching modTekTimSecim.bas
               pw.Container(
                 padding: const pw.EdgeInsets.all(8),
                 decoration: pw.BoxDecoration(
@@ -123,7 +125,11 @@ class PdfRosterExporter {
                     ),
                     pw.SizedBox(height: 4),
                     pw.Text(
-                      'Görevdeki Personel Sayısı: ${filteredRows.length} Personel',
+                      'Astsubay: ${filteredRows.where((r) => r.rutbe.contains('ASB') || r.rutbe.contains('ASTSB')).length}  •  '
+                      'Uzman Jandarma: ${filteredRows.where((r) => r.rutbe.contains('UZM.J')).length}  •  '
+                      'Uzman Erbaş: ${filteredRows.where((r) => r.rutbe.contains('UZM') && !r.rutbe.contains('UZM.J')).length}  •  '
+                      'Er/Söz.Er: ${filteredRows.where((r) => r.rutbe.contains('ER')).length}  •  '
+                      'TOPLAM MEVCUT: ${filteredRows.length} Personel',
                       style: const pw.TextStyle(fontSize: 9),
                     ),
                   ],

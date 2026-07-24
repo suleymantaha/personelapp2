@@ -6,6 +6,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
@@ -135,7 +136,6 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         ],
       ),
       body: ResponsiveCenter(
-        maxWidth: 1200,
         padding: EdgeInsets.zero,
         child: Column(
         children: [
@@ -145,15 +145,15 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.militaryOlive, AppColors.darkOlive],
+              gradient: LinearGradient(
+                colors: [context.headerBg, context.headerBgSecondary],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
+                  color: Colors.black.withValues(alpha: context.isDarkMode ? 0.4 : 0.15),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -211,13 +211,13 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.pendingYellow,
+                          color: context.pendingColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           '$pendingCount Onay Bekliyor',
                           style: const TextStyle(
-                            color: AppColors.textPrimaryLight,
+                            color: Colors.black87,
                             fontWeight: FontWeight.bold,
                             fontSize: 11,
                           ),
@@ -243,18 +243,15 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accentKhaki,
-                          foregroundColor: Colors.white,
+                          backgroundColor: context.accentOrOlive,
+                          foregroundColor: context.onAccentOrOlive,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                           elevation: 3,
                         ),
-                        icon: const Icon(
-                          Icons.file_download,
-                          color: Colors.white,
-                        ),
+                        icon: const Icon(Icons.file_download),
                         label: Text(
                           dateFilterStr != null
                               ? "$dateFilterStr TARİHLİ FAALİYETLERİ TEK EXCEL'E AKTAR"
@@ -270,7 +267,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                     );
                   },
                   loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                 ),
               ],
             ),
@@ -288,7 +285,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                       prefixIcon: const Icon(Icons.search, size: 20),
                       contentPadding: const EdgeInsets.symmetric(vertical: 10),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: context.colorScheme.surfaceContainerHighest,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -313,7 +310,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                   ChoiceChip(
                     label: const Text('Tüm Timler'),
                     selected: _selectedSquadFilter == null,
-                    selectedColor: AppColors.militaryOlive,
+                    selectedColor: context.accentOrOlive,
                     labelStyle: TextStyle(
                       color: _selectedSquadFilter == null
                           ? Colors.white
@@ -331,7 +328,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                       child: ChoiceChip(
                         label: Text(sq.timAdi),
                         selected: isSel,
-                        selectedColor: AppColors.militaryOlive,
+                        selectedColor: context.accentOrOlive,
                         labelStyle: TextStyle(
                           color: isSel ? Colors.white : context.textPrimary,
                           fontWeight: FontWeight.bold,
@@ -430,17 +427,17 @@ class _ActivityCard extends ConsumerWidget {
           (a) => a.durum == AssignmentStatus.reddedildi,
         );
 
-        String statusLabel = 'ONAYLANDI';
-        Color statusColor = AppColors.approvedGreen;
-        IconData statusIcon = Icons.check_circle_outline;
+        var statusLabel = 'ONAYLANDI';
+        var statusColor = context.approvedColor;
+        var statusIcon = Icons.check_circle_outline;
 
         if (hasPending) {
           statusLabel = 'ADMIN ONAYI BEKLİYOR';
-          statusColor = AppColors.pendingYellow;
+          statusColor = context.pendingColor;
           statusIcon = Icons.hourglass_top;
         } else if (hasRejected) {
           statusLabel = 'ÇAKIŞMA / RED';
-          statusColor = AppColors.rejectedRed;
+          statusColor = context.rejectedColor;
           statusIcon = Icons.cancel_outlined;
         }
 
@@ -503,9 +500,9 @@ class _ActivityCard extends ConsumerWidget {
                     children: [
                       if (hasPending)
                         IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.done_all,
-                            color: AppColors.approvedGreen,
+                            color: context.approvedColor,
                           ),
                           tooltip: 'Tümünü Onayla',
                           onPressed: () async {
@@ -515,20 +512,20 @@ class _ActivityCard extends ConsumerWidget {
                             );
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
+                                SnackBar(
+                                  content: const Text(
                                     'Faaliyet atamaları onaylandı!',
                                   ),
-                                  backgroundColor: AppColors.approvedGreen,
+                                  backgroundColor: context.approvedColor,
                                 ),
                               );
                             }
                           },
                         ),
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.delete_outline,
-                          color: AppColors.rejectedRed,
+                          color: context.rejectedColor,
                         ),
                         tooltip: 'Faaliyeti Sil',
                         onPressed: () async {
@@ -546,7 +543,7 @@ class _ActivityCard extends ConsumerWidget {
                                 ),
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.rejectedRed,
+                                    backgroundColor: context.rejectedColor,
                                   ),
                                   onPressed: () => Navigator.of(ctx).pop(true),
                                   child: const Text('SİL'),
@@ -609,34 +606,51 @@ class _AssignmentDetails extends ConsumerWidget {
 
     final existingPersonnelIds = assignments.map((a) => a.personelId).toSet();
 
-    final rosterRows = <MilitaryRosterRow>[];
-    var sNuCounter = 1;
-    for (var i = 0; i < filteredAssignments.length; i++) {
-      final atama = filteredAssignments[i];
-      // Exclude off-duty statuses (İzinli, İstirahatli, Raporlu, Sevk) from shared roster
-      if (!DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin)) {
-        continue;
-      }
+    final operationalAssignments = filteredAssignments.where((atama) {
+      return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
+    }).toList();
 
+    // Sort assignments strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
+    operationalAssignments.sort((a, b) {
+      final pA = pMap[a.personelId];
+      final pB = pMap[b.personelId];
+      final weightA = getRankWeight(pA?.rutbe ?? '');
+      final weightB = getRankWeight(pB?.rutbe ?? '');
+      if (weightA != weightB) return weightA.compareTo(weightB);
+      final birlikA = pA?.birlik ?? '';
+      final birlikB = pB?.birlik ?? '';
+      if (birlikA != birlikB) return birlikA.compareTo(birlikB);
+      return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
+    });
+
+    final rosterRows = <MilitaryRosterRow>[];
+    for (var i = 0; i < operationalAssignments.length; i++) {
+      final atama = operationalAssignments[i];
       final p = pMap[atama.personelId];
       final rutbe = p?.rutbe ?? '';
       final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
-      final birligi = p?.birlik ?? 'Birlik';
-      final digerNote = atama.aciklama ?? atama.gorevVeyaIzin;
+      final birligi = (p?.birlik != null && p!.birlik.isNotEmpty)
+          ? p.birlik
+          : 'Asayiş Timi';
+
+      var digerText = atama.gorevVeyaIzin;
+      if (atama.aciklama != null && atama.aciklama!.isNotEmpty) {
+        digerText = '$digerText (${atama.aciklama})';
+      }
 
       rosterRows.add(
         MilitaryRosterRow(
-          sNu: sNuCounter++,
+          sNu: i + 1,
           birligi: birligi,
           rutbe: rutbe,
           adSoyad: adSoyad,
-          diger: '$digerNote (${atama.durum})',
+          diger: digerText,
         ),
       );
     }
 
     return Container(
-      color: const Color(0xFFFAFBF8),
+      color: context.colorScheme.surfaceContainerHighest,
       padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -646,7 +660,7 @@ class _AssignmentDetails extends ConsumerWidget {
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.militaryOlive,
+                foregroundColor: context.accentOrOlive,
               ),
               icon: const Icon(Icons.person_add_alt_1, size: 18),
               label: const Text(
@@ -671,8 +685,8 @@ class _AssignmentDetails extends ConsumerWidget {
                             : 'Personel eklendi, Admin onayına gönderildi.',
                       ),
                       backgroundColor: isAdmin
-                          ? AppColors.approvedGreen
-                          : AppColors.pendingYellow,
+                          ? context.approvedColor
+                          : context.pendingColor,
                     ),
                   );
                 }
@@ -751,10 +765,10 @@ class _AssignmentDetails extends ConsumerWidget {
                           if (digerNote.isNotEmpty)
                             Text(
                               'Not: $digerNote',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontStyle: FontStyle.italic,
-                                color: AppColors.militaryOlive,
+                                color: context.accentOrOlive,
                               ),
                             ),
                         ],
@@ -770,14 +784,12 @@ class _AssignmentDetails extends ConsumerWidget {
                       ),
                       decoration: BoxDecoration(
                         color: isApproved
-                            ? AppColors.approvedGreen.withValues(alpha: 0.12)
+                            ? context.approvedColor.withValues(alpha: 0.12)
                             : (isPending
-                                  ? AppColors.pendingYellow.withValues(
+                                  ? context.pendingColor.withValues(
                                       alpha: 0.25,
                                     )
-                                  : AppColors.rejectedRed.withValues(
-                                      alpha: 0.12,
-                                    )),
+                                  : context.rejectedBgColor),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -788,10 +800,10 @@ class _AssignmentDetails extends ConsumerWidget {
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: isApproved
-                              ? AppColors.approvedGreen
+                              ? context.approvedColor
                               : (isPending
-                                    ? AppColors.pendingYellow
-                                    : AppColors.rejectedRed),
+                                    ? context.pendingColor
+                                    : context.rejectedColor),
                         ),
                       ),
                     ),
@@ -799,9 +811,9 @@ class _AssignmentDetails extends ConsumerWidget {
 
                     // Action Icons (Compact)
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.edit_outlined,
-                        color: AppColors.cardBlueGrey,
+                        color: context.blueGreyColor,
                         size: 18,
                       ),
                       padding: const EdgeInsets.all(4),
@@ -825,8 +837,8 @@ class _AssignmentDetails extends ConsumerWidget {
                                     : 'Görev değişikliği kaydedildi, Admin onayına gönderildi.',
                               ),
                               backgroundColor: isAdmin
-                                  ? AppColors.approvedGreen
-                                  : AppColors.pendingYellow,
+                                  ? context.approvedColor
+                                  : context.pendingColor,
                             ),
                           );
                         }
@@ -835,9 +847,9 @@ class _AssignmentDetails extends ConsumerWidget {
                     const SizedBox(width: 4),
 
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.delete_outline,
-                        color: AppColors.rejectedRed,
+                        color: context.rejectedColor,
                         size: 18,
                       ),
                       padding: const EdgeInsets.all(4),
@@ -858,7 +870,7 @@ class _AssignmentDetails extends ConsumerWidget {
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.rejectedRed,
+                                  backgroundColor: context.rejectedColor,
                                 ),
                                 onPressed: () => Navigator.of(ctx).pop(true),
                                 child: const Text('ÇIKAR'),
@@ -886,9 +898,9 @@ class _AssignmentDetails extends ConsumerWidget {
                     if (isAdmin && isPending) ...[
                       const SizedBox(width: 4),
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.check_circle,
-                          color: AppColors.approvedGreen,
+                          color: context.approvedColor,
                           size: 20,
                         ),
                         padding: const EdgeInsets.all(4),
@@ -904,9 +916,9 @@ class _AssignmentDetails extends ConsumerWidget {
                       ),
                       const SizedBox(width: 2),
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.cancel,
-                          color: AppColors.rejectedRed,
+                          color: context.rejectedColor,
                           size: 20,
                         ),
                         padding: const EdgeInsets.all(4),
@@ -950,8 +962,8 @@ class _AssignmentDetails extends ConsumerWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.militaryOlive,
-                    foregroundColor: Colors.white,
+                    backgroundColor: context.accentOrOlive,
+                    foregroundColor: context.onAccentOrOlive,
                   ),
                   icon: const Icon(Icons.table_chart, size: 15),
                   label: const Text(
@@ -973,7 +985,7 @@ class _AssignmentDetails extends ConsumerWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1B365D),
+                    backgroundColor: context.pdfButtonBg,
                     foregroundColor: Colors.white,
                   ),
                   icon: const Icon(Icons.picture_as_pdf, size: 15),
@@ -1021,7 +1033,7 @@ class _EditAssignmentDialogState extends ConsumerState<_EditAssignmentDialog> {
   late String _selectedDuty;
   late TextEditingController _noteController;
 
-  static const availableDuties = [
+  static const List<String> availableDuties = [
     DutyOrLeaveType.heybetKomutani,
     DutyOrLeaveType.nobSb,
     DutyOrLeaveType.mebsNob,
@@ -1095,7 +1107,8 @@ class _EditAssignmentDialogState extends ConsumerState<_EditAssignmentDialog> {
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.militaryOlive,
+            backgroundColor: context.accentOrOlive,
+            foregroundColor: context.onAccentOrOlive,
           ),
           onPressed: () async {
             final repo = ref.read(activityRepositoryProvider);
@@ -1143,7 +1156,7 @@ class _AddPersonnelToActivityDialogState
   String _selectedDuty = DutyOrLeaveType.gorevli;
   final _noteController = TextEditingController();
 
-  static const availableDuties = [
+  static const List<String> availableDuties = [
     DutyOrLeaveType.heybetKomutani,
     DutyOrLeaveType.nobSb,
     DutyOrLeaveType.mebsNob,
@@ -1247,7 +1260,8 @@ class _AddPersonnelToActivityDialogState
         if (candidatePersonnel.isNotEmpty)
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.militaryOlive,
+              backgroundColor: context.accentOrOlive,
+              foregroundColor: context.onAccentOrOlive,
             ),
             onPressed: _selectedPersonnelId == null
                 ? null
