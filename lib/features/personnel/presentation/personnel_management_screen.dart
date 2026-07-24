@@ -6,6 +6,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 
 class PersonnelManagementScreen extends ConsumerStatefulWidget {
@@ -74,12 +75,6 @@ class _PersonnelManagementScreenState
                         ),
                       ),
                     ],
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: unitController,
-                      decoration: const InputDecoration(labelText: 'Birlik'),
-                    ),
-                    const SizedBox(height: 12),
                     squadsAsync.when(
                       data: (squads) {
                         return DropdownButtonFormField<int?>(
@@ -87,10 +82,10 @@ class _PersonnelManagementScreenState
                           decoration:
                               const InputDecoration(labelText: 'Tim Ataması'),
                           items: [
-                            const DropdownMenuItem<int?>(
+                            DropdownMenuItem<int?>(
                               child: Text(
                                 'BOŞTA (Kadro Dışı)',
-                                style: TextStyle(color: AppColors.rejectedRed),
+                                style: TextStyle(color: context.rejectedColor),
                               ),
                             ),
                             ...squads.map((s) => DropdownMenuItem<int?>(
@@ -99,12 +94,67 @@ class _PersonnelManagementScreenState
                                 )),
                           ],
                           onChanged: (val) {
-                            setDialogState(() => selectedSquadId = val);
+                            setDialogState(() {
+                              selectedSquadId = val;
+                              if (val != null) {
+                                final s = squads.firstWhere(
+                                  (element) => element.id == val,
+                                );
+                                unitController.text =
+                                    MilitaryStructureHelper.getBolukName(
+                                  s.timAdi,
+                                );
+                              }
+                            });
                           },
                         );
                       },
                       loading: () => const LinearProgressIndicator(),
                       error: (err, st) => Text('Hata: $err'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: unitController,
+                      decoration: InputDecoration(
+                        labelText: 'Birlik',
+                        hintText: 'Örn: 1\'inci Bl. veya K.H',
+                        suffixIcon: PopupMenuButton<String>(
+                          icon: const Icon(Icons.arrow_drop_down),
+                          onSelected: (val) {
+                            setDialogState(() => unitController.text = val);
+                          },
+                          itemBuilder: (ctx) => [
+                            const PopupMenuItem(
+                              value: "1'inci Bl.",
+                              child: Text("1'inci Bl."),
+                            ),
+                            const PopupMenuItem(
+                              value: "2'nci Bl.",
+                              child: Text("2'nci Bl."),
+                            ),
+                            const PopupMenuItem(
+                              value: "3'üncü Bl.",
+                              child: Text("3'üncü Bl."),
+                            ),
+                            const PopupMenuItem(
+                              value: "1'inci Bl. K.H",
+                              child: Text("1'inci Bl. K.H"),
+                            ),
+                            const PopupMenuItem(
+                              value: "2'nci Bl. K.H",
+                              child: Text("2'nci Bl. K.H"),
+                            ),
+                            const PopupMenuItem(
+                              value: "3'üncü Bl. K.H",
+                              child: Text("3'üncü Bl. K.H"),
+                            ),
+                            const PopupMenuItem(
+                              value: "K.H",
+                              child: Text("K.H"),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -192,12 +242,6 @@ class _PersonnelManagementScreenState
                         ),
                       ),
                     ],
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: unitController,
-                      decoration: const InputDecoration(labelText: 'Birlik'),
-                    ),
-                    const SizedBox(height: 12),
                     squadsAsync.when(
                       data: (squads) {
                         return DropdownButtonFormField<int?>(
@@ -215,12 +259,67 @@ class _PersonnelManagementScreenState
                             }),
                           ],
                           onChanged: (val) {
-                            setDialogState(() => selectedSquadId = val);
+                            setDialogState(() {
+                              selectedSquadId = val;
+                              if (val != null) {
+                                final s = squads.firstWhere(
+                                  (element) => element.id == val,
+                                );
+                                unitController.text =
+                                    MilitaryStructureHelper.getBolukName(
+                                  s.timAdi,
+                                );
+                              }
+                            });
                           },
                         );
                       },
                       loading: () => const CircularProgressIndicator(),
                       error: (err, stack) => Text('Timler yüklenemedi: $err'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: unitController,
+                      decoration: InputDecoration(
+                        labelText: 'Birlik',
+                        hintText: 'Örn: 1\'inci Bl. veya K.H',
+                        suffixIcon: PopupMenuButton<String>(
+                          icon: const Icon(Icons.arrow_drop_down),
+                          onSelected: (val) {
+                            setDialogState(() => unitController.text = val);
+                          },
+                          itemBuilder: (ctx) => [
+                            const PopupMenuItem(
+                              value: "1'inci Bl.",
+                              child: Text("1'inci Bl."),
+                            ),
+                            const PopupMenuItem(
+                              value: "2'nci Bl.",
+                              child: Text("2'nci Bl."),
+                            ),
+                            const PopupMenuItem(
+                              value: "3'üncü Bl.",
+                              child: Text("3'üncü Bl."),
+                            ),
+                            const PopupMenuItem(
+                              value: "1'inci Bl. K.H",
+                              child: Text("1'inci Bl. K.H"),
+                            ),
+                            const PopupMenuItem(
+                              value: "2'nci Bl. K.H",
+                              child: Text("2'nci Bl. K.H"),
+                            ),
+                            const PopupMenuItem(
+                              value: "3'üncü Bl. K.H",
+                              child: Text("3'üncü Bl. K.H"),
+                            ),
+                            const PopupMenuItem(
+                              value: "K.H",
+                              child: Text("K.H"),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -341,7 +440,7 @@ class _PersonnelManagementScreenState
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.militaryOlive,
+                    backgroundColor: context.accentOrOlive,
                     foregroundColor: Colors.white,
                   ),
                   onPressed: () async {
@@ -365,7 +464,7 @@ class _PersonnelManagementScreenState
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('${p.adSoyad} Tim Komutanı olarak yetkilendirildi!'),
-                          backgroundColor: AppColors.approvedGreen,
+                          backgroundColor: context.approvedColor,
                         ),
                       );
                     }
@@ -424,8 +523,11 @@ class _PersonnelManagementScreenState
                                         isDense: true,
                                       ),
                                       items: [
-                                        const DropdownMenuItem<int?>(
-                                          child: Text('BOŞTA / Yetkisiz', style: TextStyle(color: AppColors.rejectedRed)),
+                                        DropdownMenuItem<int?>(
+                                          child: Text(
+                                            'BOŞTA / Yetkisiz',
+                                            style: TextStyle(color: context.rejectedColor),
+                                          ),
                                         ),
                                         ...squads.map((s) => DropdownMenuItem<int?>(
                                               value: s.id,
@@ -627,7 +729,6 @@ class _PersonnelManagementScreenState
           : null,
       body: SingleChildScrollView(
         child: ResponsiveCenter(
-          maxWidth: 1200,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -691,7 +792,7 @@ class _PersonnelManagementScreenState
                             onSelected: (selected) {
                               setState(() => _selectedFilterTimId = null);
                             },
-                            selectedColor: AppColors.militaryOlive,
+                            selectedColor: context.accentOrOlive,
                             labelStyle: TextStyle(
                               color: _selectedFilterTimId == null ? Colors.white : context.textPrimary,
                               fontWeight: _selectedFilterTimId == null ? FontWeight.bold : FontWeight.normal,
@@ -706,7 +807,7 @@ class _PersonnelManagementScreenState
                               avatar: Icon(
                                 Icons.shield,
                                 size: 16,
-                                color: isSelected ? Colors.white : AppColors.militaryOlive,
+                                color: isSelected ? Colors.white : context.accentOrOlive,
                               ),
                               label: Text(sq.timAdi),
                               selected: isSelected,
@@ -715,7 +816,7 @@ class _PersonnelManagementScreenState
                                   _selectedFilterTimId = selected ? sq.id : null;
                                 });
                               },
-                              selectedColor: AppColors.militaryOlive,
+                              selectedColor: context.accentOrOlive,
                               labelStyle: TextStyle(
                                 color: isSelected ? Colors.white : context.textPrimary,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -729,7 +830,9 @@ class _PersonnelManagementScreenState
                             avatar: Icon(
                               Icons.person_off,
                               size: 16,
-                              color: _selectedFilterTimId == -1 ? Colors.white : AppColors.rejectedRed,
+                              color: _selectedFilterTimId == -1
+                                  ? Colors.white
+                                  : context.rejectedColor,
                             ),
                             label: const Text('Boşta / Kadro Dışı'),
                             selected: _selectedFilterTimId == -1,
@@ -738,7 +841,7 @@ class _PersonnelManagementScreenState
                                 _selectedFilterTimId = selected ? -1 : null;
                               });
                             },
-                            selectedColor: AppColors.rejectedRed,
+                            selectedColor: context.rejectedBorderColor,
                             labelStyle: TextStyle(
                               color: _selectedFilterTimId == -1 ? Colors.white : context.textPrimary,
                               fontWeight: _selectedFilterTimId == -1 ? FontWeight.bold : FontWeight.normal,
@@ -760,21 +863,21 @@ class _PersonnelManagementScreenState
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: AppColors.lightOlive,
+                      color: context.squadBadgeBg,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.militaryOlive.withValues(alpha: 0.3)),
+                      border: Border.all(color: context.cardBorderColor),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.shield, color: AppColors.darkOlive, size: 22),
+                        Icon(Icons.shield, color: context.squadBadgeText, size: 22),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             'Yetkili Olduğunuz Tim: $timName',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.darkOlive,
+                              color: context.squadBadgeText,
                             ),
                           ),
                         ),
@@ -836,12 +939,12 @@ class _PersonnelManagementScreenState
                           'Personel Listesi (${personnelList.length} Kişi)',
                           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                         ),
-                        const Text(
+                        Text(
                           'Kıdem Sıralı',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.militaryOlive,
+                            color: context.accentOrOlive,
                           ),
                         ),
                       ],
@@ -875,11 +978,11 @@ class _PersonnelManagementScreenState
                             ),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: AppColors.militaryOlive,
+                                backgroundColor: context.accentOrOlive,
                                 child: Text(
                                   '${index + 1}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: context.onAccentOrOlive,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -896,15 +999,15 @@ class _PersonnelManagementScreenState
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: AppColors.lightOlive,
+                                        color: context.squadBadgeBg,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
                                         squadName,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w600,
-                                          color: AppColors.darkOlive,
+                                          color: context.squadBadgeText,
                                         ),
                                       ),
                                     )
@@ -912,17 +1015,15 @@ class _PersonnelManagementScreenState
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: context.isDarkMode
-                                            ? AppColors.warningBackgroundDark
-                                            : AppColors.warningBackgroundLight,
+                                        color: context.rejectedBgColor,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: const Text(
+                                      child: Text(
                                         'Kadro Dışı',
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w600,
-                                          color: AppColors.rejectedRed,
+                                          color: context.rejectedColor,
                                         ),
                                       ),
                                     ),
@@ -956,7 +1057,7 @@ class _PersonnelManagementScreenState
                                                 ),
                                                 ElevatedButton(
                                                   style: ElevatedButton.styleFrom(
-                                                    backgroundColor: AppColors.rejectedRed,
+                                                    backgroundColor: context.rejectedColor,
                                                   ),
                                                   onPressed: () => Navigator.of(ctx).pop(true),
                                                   child: const Text('SİL'),
@@ -971,34 +1072,47 @@ class _PersonnelManagementScreenState
                                         }
                                       },
                                       itemBuilder: (context) => [
-                                        const PopupMenuItem(
+                                        PopupMenuItem(
                                           value: 'edit',
                                           child: Row(
                                             children: [
-                                              Icon(Icons.edit, size: 20, color: AppColors.cardBlueGrey),
-                                              SizedBox(width: 8),
-                                              Text('Düzenle / Tim Değiştir'),
+                                              Icon(
+                                                Icons.edit,
+                                                size: 20,
+                                                color: context.blueGreyColor,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              const Text('Düzenle / Tim Değiştir'),
                                             ],
                                           ),
                                         ),
-                                        const PopupMenuItem(
+                                        PopupMenuItem(
                                           value: 'commander',
                                           child: Row(
                                             children: [
-                                              Icon(Icons.star, size: 20, color: AppColors.pendingYellow),
-                                              SizedBox(width: 8),
-                                              Text('Tim Komutanı Yap / Yetki Ver'),
+                                              Icon(Icons.star, size: 20, color: context.pendingColor),
+                                              const SizedBox(width: 8),
+                                              const Text('Tim Komutanı Yap / Yetki Ver'),
                                             ],
                                           ),
                                         ),
                                         const PopupMenuDivider(),
-                                        const PopupMenuItem(
+                                        PopupMenuItem(
                                           value: 'delete',
                                           child: Row(
                                             children: [
-                                              Icon(Icons.delete_outline, size: 20, color: AppColors.rejectedRed),
-                                              SizedBox(width: 8),
-                                              Text('Personeli Sil', style: TextStyle(color: AppColors.rejectedRed)),
+                                              Icon(
+                                                Icons.delete_outline,
+                                                size: 20,
+                                                color: context.rejectedColor,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Personeli Sil',
+                                                style: TextStyle(
+                                                  color: context.rejectedColor,
+                                                ),
+                                              ),
                                             ],
                                           ),
                                         ),
