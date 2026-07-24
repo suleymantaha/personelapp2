@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
@@ -104,7 +105,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
     final personnelList = personnelAsync.value ?? [];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F0),
+      backgroundColor: context.colorScheme.surface,
       appBar: AppBar(
         title: Text(
           isAdmin ? 'Faaliyet Arşivi & Onay Merkezi' : 'Tim Faaliyet Arşivi',
@@ -133,7 +134,10 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: ResponsiveCenter(
+        maxWidth: 1200,
+        padding: EdgeInsets.zero,
+        child: Column(
         children: [
           // Header Metrics Card & Master Excel Button
           Container(
@@ -142,7 +146,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF2D5A27), Color(0xFF1B365D)],
+                colors: [AppColors.militaryOlive, AppColors.darkOlive],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -213,7 +217,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                         child: Text(
                           '$pendingCount Onay Bekliyor',
                           style: const TextStyle(
-                            color: Colors.black,
+                            color: AppColors.textPrimaryLight,
                             fontWeight: FontWeight.bold,
                             fontSize: 11,
                           ),
@@ -239,10 +243,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(
-                            0xFFD4AF37,
-                          ), // Military Gold
-                          foregroundColor: Colors.black87,
+                          backgroundColor: AppColors.accentKhaki,
+                          foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -251,7 +253,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                         ),
                         icon: const Icon(
                           Icons.file_download,
-                          color: Colors.black87,
+                          color: Colors.white,
                         ),
                         label: Text(
                           dateFilterStr != null
@@ -315,7 +317,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                     labelStyle: TextStyle(
                       color: _selectedSquadFilter == null
                           ? Colors.white
-                          : Colors.black87,
+                          : context.textPrimary,
                       fontWeight: FontWeight.bold,
                     ),
                     onSelected: (_) =>
@@ -331,7 +333,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                         selected: isSel,
                         selectedColor: AppColors.militaryOlive,
                         labelStyle: TextStyle(
-                          color: isSel ? Colors.white : Colors.black87,
+                          color: isSel ? Colors.white : context.textPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                         onSelected: (_) =>
@@ -366,10 +368,10 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                 }).toList();
 
                 if (filtered.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
                       'Aradığınız kriterlere uygun faaliyet kaydı bulunamadı.',
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                      style: TextStyle(color: context.textSecondary, fontSize: 14),
                     ),
                   );
                 }
@@ -395,7 +397,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 }
 
@@ -492,7 +495,7 @@ class _ActivityCard extends ConsumerWidget {
             ),
             subtitle: Text(
               '${activity.tarih} • Yazan: ${activity.olusturanKullanici}',
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+              style: TextStyle(fontSize: 12, color: context.textSecondary),
             ),
             trailing: isAdmin
                 ? Row(
@@ -679,13 +682,13 @@ class _AssignmentDetails extends ConsumerWidget {
           const SizedBox(height: 4),
 
           if (filteredAssignments.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
               child: Text(
                 'Bu faaliyette seçilen tim için görevlendirilmiş personel kaydı bulunmuyor.',
                 style: TextStyle(
                   fontStyle: FontStyle.italic,
-                  color: Colors.grey,
+                  color: context.textSecondary,
                 ),
               ),
             )
@@ -713,7 +716,7 @@ class _AssignmentDetails extends ConsumerWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.colorScheme.surface,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
@@ -742,7 +745,7 @@ class _AssignmentDetails extends ConsumerWidget {
                               subInfo,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey.shade700,
+                                color: context.textSecondary,
                               ),
                             ),
                           if (digerNote.isNotEmpty)
@@ -787,7 +790,7 @@ class _AssignmentDetails extends ConsumerWidget {
                           color: isApproved
                               ? AppColors.approvedGreen
                               : (isPending
-                                    ? Colors.orange.shade900
+                                    ? AppColors.pendingYellow
                                     : AppColors.rejectedRed),
                         ),
                       ),
@@ -798,7 +801,7 @@ class _AssignmentDetails extends ConsumerWidget {
                     IconButton(
                       icon: const Icon(
                         Icons.edit_outlined,
-                        color: Colors.blueAccent,
+                        color: AppColors.cardBlueGrey,
                         size: 18,
                       ),
                       padding: const EdgeInsets.all(4),

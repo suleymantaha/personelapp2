@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 
 class PersonnelManagementScreen extends ConsumerStatefulWidget {
@@ -89,7 +90,7 @@ class _PersonnelManagementScreenState
                             const DropdownMenuItem<int?>(
                               child: Text(
                                 'BOŞTA (Kadro Dışı)',
-                                style: TextStyle(color: Colors.red),
+                                style: TextStyle(color: AppColors.rejectedRed),
                               ),
                             ),
                             ...squads.map((s) => DropdownMenuItem<int?>(
@@ -293,9 +294,9 @@ class _PersonnelManagementScreenState
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Bu personeli bir Time Komutan olarak atayabilir ve giriş yetkisi verebilirsiniz.',
-                      style: TextStyle(fontSize: 13, color: Colors.black87),
+                      style: TextStyle(fontSize: 13, color: context.textPrimary),
                     ),
                     const SizedBox(height: 16),
                     TextField(
@@ -326,9 +327,9 @@ class _PersonnelManagementScreenState
                       error: (err, st) => Text('Hata: $err'),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       '💡 Personel ilk girişinde kendi parolasını belirleyecektir.',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                      style: TextStyle(fontSize: 12, color: context.textSecondary),
                     ),
                   ],
                 ),
@@ -424,7 +425,7 @@ class _PersonnelManagementScreenState
                                       ),
                                       items: [
                                         const DropdownMenuItem<int?>(
-                                          child: Text('BOŞTA / Yetkisiz', style: TextStyle(color: Colors.red)),
+                                          child: Text('BOŞTA / Yetkisiz', style: TextStyle(color: AppColors.rejectedRed)),
                                         ),
                                         ...squads.map((s) => DropdownMenuItem<int?>(
                                               value: s.id,
@@ -477,9 +478,9 @@ class _PersonnelManagementScreenState
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           '💡 Şifre istenmez. Kullanıcı ilk girişinde kendi parolasını belirler.',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          style: TextStyle(fontSize: 12, color: context.textSecondary),
                         ),
                       ],
                     ),
@@ -546,9 +547,9 @@ class _PersonnelManagementScreenState
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   '💡 Atanan Tim Komutanı ilk girişinde kendi parolasını belirleyecektir.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(fontSize: 12, color: context.textSecondary),
                 ),
               ],
             ),
@@ -625,10 +626,11 @@ class _PersonnelManagementScreenState
             )
           : null,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: ResponsiveCenter(
+          maxWidth: 1200,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // 1. Search Bar
             TextField(
               controller: _searchController,
@@ -648,7 +650,7 @@ class _PersonnelManagementScreenState
                   borderRadius: BorderRadius.circular(12),
                 ),
                 filled: true,
-                fillColor: Colors.grey.shade100,
+                fillColor: context.colorScheme.surfaceContainerHighest,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
               onChanged: (val) {
@@ -691,7 +693,7 @@ class _PersonnelManagementScreenState
                             },
                             selectedColor: AppColors.militaryOlive,
                             labelStyle: TextStyle(
-                              color: _selectedFilterTimId == null ? Colors.white : Colors.black87,
+                              color: _selectedFilterTimId == null ? Colors.white : context.textPrimary,
                               fontWeight: _selectedFilterTimId == null ? FontWeight.bold : FontWeight.normal,
                             ),
                           ),
@@ -715,7 +717,7 @@ class _PersonnelManagementScreenState
                               },
                               selectedColor: AppColors.militaryOlive,
                               labelStyle: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black87,
+                                color: isSelected ? Colors.white : context.textPrimary,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                               ),
                             ),
@@ -727,7 +729,7 @@ class _PersonnelManagementScreenState
                             avatar: Icon(
                               Icons.person_off,
                               size: 16,
-                              color: _selectedFilterTimId == -1 ? Colors.white : Colors.red,
+                              color: _selectedFilterTimId == -1 ? Colors.white : AppColors.rejectedRed,
                             ),
                             label: const Text('Boşta / Kadro Dışı'),
                             selected: _selectedFilterTimId == -1,
@@ -736,9 +738,9 @@ class _PersonnelManagementScreenState
                                 _selectedFilterTimId = selected ? -1 : null;
                               });
                             },
-                            selectedColor: Colors.red.shade700,
+                            selectedColor: AppColors.rejectedRed,
                             labelStyle: TextStyle(
-                              color: _selectedFilterTimId == -1 ? Colors.white : Colors.black87,
+                              color: _selectedFilterTimId == -1 ? Colors.white : context.textPrimary,
                               fontWeight: _selectedFilterTimId == -1 ? FontWeight.bold : FontWeight.normal,
                             ),
                           ),
@@ -847,12 +849,12 @@ class _PersonnelManagementScreenState
                     const SizedBox(height: 8),
 
                     if (personnelList.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(24),
+                      Padding(
+                        padding: const EdgeInsets.all(24),
                         child: Center(
                           child: Text(
                             'Kriterlere uygun personel bulunamadı.',
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(color: context.textSecondary),
                           ),
                         ),
                       )
@@ -910,15 +912,17 @@ class _PersonnelManagementScreenState
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: Colors.red.shade50,
+                                        color: context.isDarkMode
+                                            ? AppColors.warningBackgroundDark
+                                            : AppColors.warningBackgroundLight,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: Text(
+                                      child: const Text(
                                         'Kadro Dışı',
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.red.shade700,
+                                          color: AppColors.rejectedRed,
                                         ),
                                       ),
                                     ),
@@ -971,7 +975,7 @@ class _PersonnelManagementScreenState
                                           value: 'edit',
                                           child: Row(
                                             children: [
-                                              Icon(Icons.edit, size: 20, color: Colors.blue),
+                                              Icon(Icons.edit, size: 20, color: AppColors.cardBlueGrey),
                                               SizedBox(width: 8),
                                               Text('Düzenle / Tim Değiştir'),
                                             ],
@@ -981,7 +985,7 @@ class _PersonnelManagementScreenState
                                           value: 'commander',
                                           child: Row(
                                             children: [
-                                              Icon(Icons.star, size: 20, color: Colors.amber),
+                                              Icon(Icons.star, size: 20, color: AppColors.pendingYellow),
                                               SizedBox(width: 8),
                                               Text('Tim Komutanı Yap / Yetki Ver'),
                                             ],
@@ -1014,6 +1018,7 @@ class _PersonnelManagementScreenState
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

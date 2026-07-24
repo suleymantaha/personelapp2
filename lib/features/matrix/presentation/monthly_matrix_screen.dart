@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/features/matrix/services/excel_xml_generator.dart';
 
 class MonthlyMatrixScreen extends ConsumerStatefulWidget {
@@ -19,37 +20,31 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
   DateTime _selectedMonth = DateTime.now();
 
   Color _getStatusBgColor(String status, BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
     if (status.contains('GÖREV') || status.contains('NÖBET')) {
-      return isDark
-          ? const Color(0xFF1B4D24)
-          : AppColors.approvedGreen.withValues(alpha: 0.15);
+      return isDark ? AppColors.statusDutyDark : AppColors.statusDutyLight;
     } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
-      return isDark ? const Color(0xFF2C3942) : Colors.grey.shade300;
+      return isDark ? AppColors.statusLeaveDark : AppColors.statusLeaveLight;
     } else if (status.contains('RAPOR') || status.contains('SEVK')) {
-      return isDark
-          ? const Color(0xFF4A1919)
-          : AppColors.rejectedRed.withValues(alpha: 0.15);
+      return isDark ? AppColors.statusReportDark : AppColors.statusReportLight;
     } else if (status.contains('beklemede')) {
-      return isDark
-          ? const Color(0xFF4A3710)
-          : AppColors.pendingYellow.withValues(alpha: 0.2);
+      return isDark ? AppColors.statusPendingDark : AppColors.statusPendingLight;
     }
-    return isDark ? const Color(0xFF161E14) : Colors.transparent;
+    return isDark ? AppColors.cardDark : Colors.transparent;
   }
 
   Color _getStatusTextColor(String status, BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
     if (status.contains('GÖREV') || status.contains('NÖBET')) {
-      return isDark ? const Color(0xFF81C784) : AppColors.approvedGreen;
+      return isDark ? AppColors.statusDutyTextDark : AppColors.statusDutyTextLight;
     } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
-      return isDark ? const Color(0xFFCFD8DC) : Colors.black87;
+      return isDark ? AppColors.statusLeaveTextDark : AppColors.statusLeaveTextLight;
     } else if (status.contains('RAPOR') || status.contains('SEVK')) {
-      return isDark ? const Color(0xFFE57373) : AppColors.rejectedRed;
+      return isDark ? AppColors.statusReportTextDark : AppColors.statusReportTextLight;
     } else if (status.contains('beklemede')) {
-      return isDark ? const Color(0xFFFFD54F) : Colors.orange.shade900;
+      return isDark ? AppColors.statusPendingTextDark : AppColors.statusPendingTextLight;
     }
-    return isDark ? Colors.white38 : Colors.black45;
+    return context.textMuted;
   }
 
   String _getAbbreviation(String status) {
@@ -172,12 +167,12 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? AppColors.militaryOlive
-                                  : Colors.grey.shade100,
+                                  : context.colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: isSelected
                                     ? AppColors.militaryOlive
-                                    : Colors.grey.shade300,
+                                    : context.colorScheme.outlineVariant,
                                 width: isSelected ? 2 : 1,
                               ),
                               boxShadow: isSelected
@@ -200,7 +195,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                     : FontWeight.w500,
                                 color: isSelected
                                     ? Colors.white
-                                    : Colors.black87,
+                                    : context.textPrimary,
                               ),
                             ),
                           ),
@@ -343,7 +338,10 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
 
           final matrixData = matrixAsync.value ?? {};
 
-          return SingleChildScrollView(
+          return ResponsiveCenter(
+            maxWidth: 1400,
+            padding: EdgeInsets.zero,
+            child: SingleChildScrollView(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -572,7 +570,8 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                 ),
               ],
             ),
-          );
+          ),
+        );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, st) => Center(child: Text('Hata: $err')),

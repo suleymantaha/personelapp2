@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
 class PendingApprovalsScreen extends ConsumerWidget {
@@ -22,18 +23,20 @@ class PendingApprovalsScreen extends ConsumerWidget {
       body: pendingAsync.when(
         data: (pendingList) {
           if (pendingList.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 'Onay bekleyen veya çakışan görev kaydı bulunmuyor.',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(fontSize: 16, color: context.textSecondary),
               ),
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: pendingList.length,
-            itemBuilder: (context, index) {
+          return ResponsiveCenter(
+            maxWidth: 900,
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: pendingList.length,
+              itemBuilder: (context, index) {
               final atama = pendingList[index];
               final p = pMap[atama.personelId];
               final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
@@ -72,7 +75,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
                       const SizedBox(height: 10),
                       RichText(
                         text: TextSpan(
-                          style: const TextStyle(color: Colors.black87, fontSize: 14),
+                          style: TextStyle(color: context.textPrimary, fontSize: 14),
                           children: [
                             const TextSpan(
                               text: 'Personel: ',
@@ -91,7 +94,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
                       const SizedBox(height: 4),
                       RichText(
                         text: TextSpan(
-                          style: const TextStyle(color: Colors.black87, fontSize: 14),
+                          style: TextStyle(color: context.textPrimary, fontSize: 14),
                           children: [
                             const TextSpan(
                               text: 'Talep Edilen Görev: ',
@@ -108,10 +111,10 @@ class PendingApprovalsScreen extends ConsumerWidget {
                         const SizedBox(height: 4),
                         Text(
                           'Açıklama: ${atama.aciklama}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             fontStyle: FontStyle.italic,
-                            color: Colors.grey,
+                            color: context.textSecondary,
                           ),
                         ),
                       ],
@@ -153,7 +156,8 @@ class PendingApprovalsScreen extends ConsumerWidget {
                 ),
               );
             },
-          );
+          ),
+        );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, st) => Center(child: Text('Hata: $err')),

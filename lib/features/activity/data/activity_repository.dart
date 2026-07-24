@@ -25,7 +25,9 @@ class ActivityRepository {
     if (endDate != null) {
       query.where((tbl) => tbl.tarih.isSmallerOrEqualValue(endDate));
     }
-    query.orderBy([(tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.desc)]);
+    query.orderBy([
+      (tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.desc),
+    ]);
     query.limit(limit, offset: offset);
     return query.watch();
   }
@@ -33,9 +35,12 @@ class ActivityRepository {
   /// Merges duplicate activity entries for the same date and cleans up orphaned duplicates
   Future<void> consolidateDuplicateActivities() async {
     await db.transaction(() async {
-      final allActs = await (db.select(db.gunlukFaaliyetTable)
-            ..orderBy([(tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.asc)]))
-          .get();
+      final allActs =
+          await (db.select(db.gunlukFaaliyetTable)..orderBy([
+                (tbl) =>
+                    OrderingTerm(expression: tbl.id, mode: OrderingMode.asc),
+              ]))
+              .get();
 
       final seenDates = <String, int>{};
       for (final act in allActs) {
@@ -43,33 +48,37 @@ class ActivityRepository {
           final primaryId = seenDates[act.tarih]!;
           final duplicateId = act.id;
 
-          final dupAssignments = await (db.select(db.faaliyetPersonelAtamaTable)
-                ..where((tbl) => tbl.faaliyetId.equals(duplicateId)))
-              .get();
+          final dupAssignments = await (db.select(
+            db.faaliyetPersonelAtamaTable,
+          )..where((tbl) => tbl.faaliyetId.equals(duplicateId))).get();
 
           for (final atama in dupAssignments) {
-            final existsInPrimary = await (db.select(db.faaliyetPersonelAtamaTable)
-                  ..where((tbl) =>
-                      tbl.faaliyetId.equals(primaryId) &
-                      tbl.personelId.equals(atama.personelId)))
-                .getSingleOrNull();
+            final existsInPrimary =
+                await (db.select(db.faaliyetPersonelAtamaTable)..where(
+                      (tbl) =>
+                          tbl.faaliyetId.equals(primaryId) &
+                          tbl.personelId.equals(atama.personelId),
+                    ))
+                    .getSingleOrNull();
 
             if (existsInPrimary == null) {
-              await (db.update(db.faaliyetPersonelAtamaTable)
-                    ..where((tbl) => tbl.id.equals(atama.id)))
-                  .write(FaaliyetPersonelAtamaTableCompanion(
-                faaliyetId: Value(primaryId),
-              ));
+              await (db.update(
+                db.faaliyetPersonelAtamaTable,
+              )..where((tbl) => tbl.id.equals(atama.id))).write(
+                FaaliyetPersonelAtamaTableCompanion(
+                  faaliyetId: Value(primaryId),
+                ),
+              );
             } else {
-              await (db.delete(db.faaliyetPersonelAtamaTable)
-                    ..where((tbl) => tbl.id.equals(atama.id)))
-                  .go();
+              await (db.delete(
+                db.faaliyetPersonelAtamaTable,
+              )..where((tbl) => tbl.id.equals(atama.id))).go();
             }
           }
 
-          await (db.delete(db.gunlukFaaliyetTable)
-                ..where((tbl) => tbl.id.equals(duplicateId)))
-              .go();
+          await (db.delete(
+            db.gunlukFaaliyetTable,
+          )..where((tbl) => tbl.id.equals(duplicateId))).go();
         } else {
           seenDates[act.tarih] = act.id;
         }
@@ -142,24 +151,26 @@ class ActivityRepository {
   }) async {
     return db.transaction(() async {
       // 1. Check if an activity record already exists for this date
-      final existingActs = await (db.select(db.gunlukFaaliyetTable)
-            ..where((tbl) => tbl.tarih.equals(tarih)))
-          .get();
+      final existingActs = await (db.select(
+        db.gunlukFaaliyetTable,
+      )..where((tbl) => tbl.tarih.equals(tarih))).get();
 
       int actId;
       if (existingActs.isNotEmpty) {
         actId = existingActs.first.id;
         // Optionally update activity title if needed
-        await (db.update(db.gunlukFaaliyetTable)
-              ..where((tbl) => tbl.id.equals(actId)))
-            .write(
+        await (db.update(
+          db.gunlukFaaliyetTable,
+        )..where((tbl) => tbl.id.equals(actId))).write(
           GunlukFaaliyetTableCompanion(
             faaliyetAdi: Value(faaliyetAdi),
             olusturanKullanici: Value(olusturanKullanici),
           ),
         );
       } else {
-        actId = await db.into(db.gunlukFaaliyetTable).insert(
+        actId = await db
+            .into(db.gunlukFaaliyetTable)
+            .insert(
               GunlukFaaliyetTableCompanion.insert(
                 faaliyetAdi: faaliyetAdi,
                 tarih: tarih,
@@ -225,17 +236,17 @@ class ActivityRepository {
         }
 
         // Check if assignment already exists for this activity & personnel
-        final currentAssignment = await (db.select(db.faaliyetPersonelAtamaTable)
-              ..where(
-                (tbl) =>
-                    tbl.faaliyetId.equals(actId) & tbl.personelId.equals(pId),
-              ))
-            .getSingleOrNull();
+        final currentAssignment =
+            await (db.select(db.faaliyetPersonelAtamaTable)..where(
+                  (tbl) =>
+                      tbl.faaliyetId.equals(actId) & tbl.personelId.equals(pId),
+                ))
+                .getSingleOrNull();
 
         if (currentAssignment != null) {
-          await (db.update(db.faaliyetPersonelAtamaTable)
-                ..where((tbl) => tbl.id.equals(currentAssignment.id)))
-              .write(
+          await (db.update(
+            db.faaliyetPersonelAtamaTable,
+          )..where((tbl) => tbl.id.equals(currentAssignment.id))).write(
             FaaliyetPersonelAtamaTableCompanion(
               gorevVeyaIzin: Value(gorev),
               durum: Value(evaluatedStatus),
@@ -243,7 +254,9 @@ class ActivityRepository {
             ),
           );
         } else {
-          await db.into(db.faaliyetPersonelAtamaTable).insert(
+          await db
+              .into(db.faaliyetPersonelAtamaTable)
+              .insert(
                 FaaliyetPersonelAtamaTableCompanion.insert(
                   faaliyetId: actId,
                   personelId: pId,

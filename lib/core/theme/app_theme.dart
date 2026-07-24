@@ -7,28 +7,96 @@ class AppColors {
   static const Color lightOlive = Color(0xFFE8EFE0); // Container Background
   static const Color accentKhaki = Color(0xFF8B9467);
 
+  // Genel Arka Plan ve Yüzey Renkleri
+  static const Color backgroundLight = Color(0xFFF8F9F5);
+  static const Color backgroundSecondaryLight = Color(0xFFF4F6F0);
+  static const Color backgroundDark = Color(0xFF0F1410);
+  static const Color cardDark = Color(0xFF1F291D);
+
+  // Metin Renkleri (Light / Dark)
+  static const Color textPrimaryLight = Color(0xFF212121);
+  static const Color textSecondaryLight = Color(0xFF757575);
+  static const Color textMutedLight = Color(0xFF9E9E9E);
+
+  static const Color textPrimaryDark = Color(0xFFEEEEEE);
+  static const Color textSecondaryDark = Color(0xFFB0BEC5);
+  static const Color textMutedDark = Color(0xFF78909C);
+
   // Durum Renkleri
   static const Color approvedGreen = Color(0xFF2E7D32);
   static const Color pendingYellow = Color(0xFFF57F17);
   static const Color rejectedRed = Color(0xFFC62828);
   static const Color leaveGrey = Color(0xFF616161);
 
+  // Uyarı & Bildirim Arka Planları
+  static const Color warningBackgroundLight = Color(0xFFFFEBEE);
+  static const Color warningBorderLight = Color(0xFFEF5350);
+  static const Color warningBackgroundDark = Color(0xFF3B1E1E);
+  static const Color warningBorderDark = Color(0xFFD32F2F);
+
+  // Kart Aksan Renkleri
+  static const Color cardBlueGrey = Color(0xFF37474F);
+  static const Color cardTeal = Color(0xFF00695C);
+  static const Color cardBrown = Color(0xFF4E342E);
+
   // Nöbet / Görev Hücre Renkleri (Matris İçin)
-  static const Color statusDuty = Color(0xFF2E7D32);
-  static const Color statusLeave = Color(0xFF424242);
-  static const Color statusReport = Color(0xFFC62828);
-  static const Color statusPending = Color(0xFFF57F17);
+  static const Color statusDutyLight = Color(0xFFE8F5E9);
+  static const Color statusDutyTextLight = Color(0xFF2E7D32);
+  static const Color statusDutyDark = Color(0xFF1B4D24);
+  static const Color statusDutyTextDark = Color(0xFF81C784);
+
+  static const Color statusLeaveLight = Color(0xFFE0E0E0);
+  static const Color statusLeaveTextLight = Color(0xFF212121);
+  static const Color statusLeaveDark = Color(0xFF2C3942);
+  static const Color statusLeaveTextDark = Color(0xFFCFD8DC);
+
+  static const Color statusReportLight = Color(0xFFFFEBEE);
+  static const Color statusReportTextLight = Color(0xFFC62828);
+  static const Color statusReportDark = Color(0xFF4A1919);
+  static const Color statusReportTextDark = Color(0xFFE57373);
+
+  static const Color statusPendingLight = Color(0xFFFFF8E1);
+  static const Color statusPendingTextLight = Color(0xFFE65100);
+  static const Color statusPendingDark = Color(0xFF4A3710);
+  static const Color statusPendingTextDark = Color(0xFFFFD54F);
+}
+
+extension ThemeContext on BuildContext {
+  /// Theme Data
+  ThemeData get theme => Theme.of(this);
+
+  /// Color Scheme
+  ColorScheme get colorScheme => theme.colorScheme;
+
+  /// True if dark mode
+  bool get isDarkMode => theme.brightness == Brightness.dark;
+
+  /// Primary text color based on active theme
+  Color get textPrimary => isDarkMode ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+
+  /// Secondary text color based on active theme
+  Color get textSecondary => isDarkMode ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+
+  /// Muted / Hint text color based on active theme
+  Color get textMuted => isDarkMode ? AppColors.textMutedDark : AppColors.textMutedLight;
+
+  /// Subtitle style with theme secondary text color
+  TextStyle get textStyleSecondary => TextStyle(color: textSecondary);
+
+  /// Muted text style
+  TextStyle get textStyleMuted => TextStyle(color: textMuted);
 }
 
 class AppTheme {
   static ThemeData get militaryTheme {
     return ThemeData(
       useMaterial3: true,
+      scaffoldBackgroundColor: AppColors.backgroundLight,
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.militaryOlive,
         primary: AppColors.militaryOlive,
         secondary: AppColors.darkOlive,
-        surface: const Color(0xFFF8F9F5),
+        surface: AppColors.backgroundLight,
         surfaceContainerHighest: AppColors.lightOlive,
       ),
       appBarTheme: const AppBarTheme(
@@ -74,7 +142,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color(0xFF0F1410), // Deep Tactical Obsidian
+      scaffoldBackgroundColor: AppColors.backgroundDark,
       dividerColor: const Color(0xFF2C3B29),
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.militaryOlive,
@@ -92,11 +160,11 @@ class AppTheme {
         iconTheme: IconThemeData(color: Colors.white),
       ),
       cardTheme: CardThemeData(
-        color: const Color(0xFF1F291D),
+        color: AppColors.cardDark,
         elevation: 3,
         shadowColor: Colors.black45,
         shape: RoundedRectangleBorder(
-          side: const BorderSide(color: Color(0xFF2C3B29), width: 1),
+          side: const BorderSide(color: Color(0xFF2C3B29)),
           borderRadius: BorderRadius.circular(12),
         ),
       ),
