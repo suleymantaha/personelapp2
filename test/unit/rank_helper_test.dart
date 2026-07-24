@@ -15,8 +15,8 @@ void main() {
     });
 
     test('Specialist Sergeants and Uzman Jandarma should be senior to Private Enlisted', () {
-      expect(getRankWeight('ASB.ÇVŞ'), lessThan(getRankWeight('J.Uzm.J.')));
-      expect(getRankWeight('J.Uzm.J.'), lessThan(getRankWeight('UZM.ÇVŞ')));
+      expect(getRankWeight('ASB.ÇVŞ'), lessThan(getRankWeight('Uzm.J.')));
+      expect(getRankWeight('Uzm.J.'), lessThan(getRankWeight('UZM.ÇVŞ')));
       expect(getRankWeight('UZM.ÇVŞ'), lessThan(getRankWeight('SÖZ.ER')));
       expect(getRankWeight('SÖZ.ER'), lessThan(getRankWeight('ER')));
     });
