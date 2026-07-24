@@ -138,264 +138,278 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       body: ResponsiveCenter(
         padding: EdgeInsets.zero,
         child: Column(
-        children: [
-          // Header Metrics Card & Master Excel Button
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [context.headerBg, context.headerBgSecondary],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          children: [
+            // Header Metrics Card & Master Excel Button
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [context.headerBg, context.headerBgSecondary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(
+                      alpha: context.isDarkMode ? 0.4 : 0.15,
+                    ),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: context.isDarkMode ? 0.4 : 0.15),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: Colors.white.withValues(alpha: 0.2),
-                          child: Icon(
-                            isAdmin
-                                ? Icons.admin_panel_settings
-                                : Icons.military_tech,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isAdmin
-                                  ? 'YÖNETİCİ KONTROL MERKEZİ'
-                                  : 'TİM KOMUTANLIĞI SÜZGECİ',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            Text(
-                              isAdmin
-                                  ? 'Tüm timlerin günlük kayıtları burada toplanır'
-                                  : 'Sadece timinize ait faaliyetler gösterilmektedir',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    if (isAdmin && pendingCount > 0)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: context.pendingColor,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '$pendingCount Onay Bekliyor',
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                activitiesAsync.when(
-                  data: (activities) {
-                    final dateFilterStr = _selectedDateFilter != null
-                        ? DateFormat('yyyy-MM-dd').format(_selectedDateFilter!)
-                        : null;
-
-                    var filtered = activities;
-                    if (dateFilterStr != null) {
-                      filtered = filtered
-                          .where((a) => a.tarih == dateFilterStr)
-                          .toList();
-                    }
-
-                    return SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.accentOrOlive,
-                          foregroundColor: context.onAccentOrOlive,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 3,
-                        ),
-                        icon: const Icon(Icons.file_download),
-                        label: Text(
-                          dateFilterStr != null
-                              ? "$dateFilterStr TARİHLİ FAALİYETLERİ TEK EXCEL'E AKTAR"
-                              : "GÜNLÜK TÜM FAALİYETLERİ TEK EXCEL'E AKTAR",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                        onPressed: () =>
-                            _exportMasterExcel(filtered, personnelList),
-                      ),
-                    );
-                  },
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, _) => const SizedBox.shrink(),
-                ),
-              ],
-            ),
-          ),
-
-          // Filters Bar: Search & Squad Tabs for Admin
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Faaliyet veya Tarih Ara...',
-                      prefixIcon: const Icon(Icons.search, size: 20),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                      filled: true,
-                      fillColor: context.colorScheme.surfaceContainerHighest,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    onChanged: (val) {
-                      setState(() => _searchQuery = val.trim().toLowerCase());
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Squad Filter Chips (Admin only)
-          if (isAdmin && squads.isNotEmpty)
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ChoiceChip(
-                    label: const Text('Tüm Timler'),
-                    selected: _selectedSquadFilter == null,
-                    selectedColor: context.accentOrOlive,
-                    labelStyle: TextStyle(
-                      color: _selectedSquadFilter == null
-                          ? Colors.white
-                          : context.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    onSelected: (_) =>
-                        setState(() => _selectedSquadFilter = null),
-                  ),
-                  const SizedBox(width: 8),
-                  ...squads.map((sq) {
-                    final isSel = _selectedSquadFilter == sq.id;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(sq.timAdi),
-                        selected: isSel,
-                        selectedColor: context.accentOrOlive,
-                        labelStyle: TextStyle(
-                          color: isSel ? Colors.white : context.textPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        onSelected: (_) =>
-                            setState(() => _selectedSquadFilter = sq.id),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.2,
+                            ),
+                            child: Icon(
+                              isAdmin
+                                  ? Icons.admin_panel_settings
+                                  : Icons.military_tech,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isAdmin
+                                    ? 'YÖNETİCİ KONTROL MERKEZİ'
+                                    : 'TİM KOMUTANLIĞI SÜZGECİ',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              Text(
+                                isAdmin
+                                    ? 'Tüm timlerin günlük kayıtları burada toplanır'
+                                    : 'Sadece timinize ait faaliyetler gösterilmektedir',
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    );
-                  }),
+                      if (isAdmin && pendingCount > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: context.pendingColor,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$pendingCount Onay Bekliyor',
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  activitiesAsync.when(
+                    data: (activities) {
+                      final dateFilterStr = _selectedDateFilter != null
+                          ? DateFormat(
+                              'yyyy-MM-dd',
+                            ).format(_selectedDateFilter!)
+                          : null;
+
+                      var filtered = activities;
+                      if (dateFilterStr != null) {
+                        filtered = filtered
+                            .where((a) => a.tarih == dateFilterStr)
+                            .toList();
+                      }
+
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: context.accentOrOlive,
+                            foregroundColor: context.onAccentOrOlive,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 3,
+                          ),
+                          icon: const Icon(Icons.file_download),
+                          label: Text(
+                            dateFilterStr != null
+                                ? "$dateFilterStr TARİHLİ FAALİYETLERİ TEK EXCEL'E AKTAR"
+                                : "GÜNLÜK TÜM FAALİYETLERİ TEK EXCEL'E AKTAR",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                          onPressed: () =>
+                              _exportMasterExcel(filtered, personnelList),
+                        ),
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
+                  ),
                 ],
               ),
             ),
 
-          const SizedBox(height: 6),
-
-          // Activity List
-          Expanded(
-            child: activitiesAsync.when(
-              data: (activities) {
-                final dateFilterStr = _selectedDateFilter != null
-                    ? DateFormat('yyyy-MM-dd').format(_selectedDateFilter!)
-                    : null;
-
-                final filtered = activities.where((act) {
-                  final nameMatch = act.faaliyetAdi.toLowerCase().contains(
-                    _searchQuery,
-                  );
-                  final dateMatch = act.tarih.toLowerCase().contains(
-                    _searchQuery,
-                  );
-                  final dateFilterMatch =
-                      dateFilterStr == null || act.tarih == dateFilterStr;
-                  return (nameMatch || dateMatch) && dateFilterMatch;
-                }).toList();
-
-                if (filtered.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'Aradığınız kriterlere uygun faaliyet kaydı bulunamadı.',
-                      style: TextStyle(color: context.textSecondary, fontSize: 14),
+            // Filters Bar: Search & Squad Tabs for Admin
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Faaliyet veya Tarih Ara...',
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                        ),
+                        filled: true,
+                        fillColor: context.colorScheme.surfaceContainerHighest,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      onChanged: (val) {
+                        setState(() => _searchQuery = val.trim().toLowerCase());
+                      },
                     ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
                   ),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final act = filtered[index];
-                    return _ActivityCard(
-                      activity: act,
-                      selectedSquadId: _selectedSquadFilter,
-                    );
-                  },
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Hata: $err')),
+                ],
+              ),
             ),
-          ),
-        ],
+
+            // Squad Filter Chips (Admin only)
+            if (isAdmin && squads.isNotEmpty)
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                child: Row(
+                  children: [
+                    ChoiceChip(
+                      label: const Text('Tüm Timler'),
+                      selected: _selectedSquadFilter == null,
+                      selectedColor: context.accentOrOlive,
+                      labelStyle: TextStyle(
+                        color: _selectedSquadFilter == null
+                            ? Colors.white
+                            : context.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      onSelected: (_) =>
+                          setState(() => _selectedSquadFilter = null),
+                    ),
+                    const SizedBox(width: 8),
+                    ...squads.map((sq) {
+                      final isSel = _selectedSquadFilter == sq.id;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(sq.timAdi),
+                          selected: isSel,
+                          selectedColor: context.accentOrOlive,
+                          labelStyle: TextStyle(
+                            color: isSel ? Colors.white : context.textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          onSelected: (_) =>
+                              setState(() => _selectedSquadFilter = sq.id),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+
+            const SizedBox(height: 6),
+
+            // Activity List
+            Expanded(
+              child: activitiesAsync.when(
+                data: (activities) {
+                  final dateFilterStr = _selectedDateFilter != null
+                      ? DateFormat('yyyy-MM-dd').format(_selectedDateFilter!)
+                      : null;
+
+                  final filtered = activities.where((act) {
+                    final nameMatch = act.faaliyetAdi.toLowerCase().contains(
+                      _searchQuery,
+                    );
+                    final dateMatch = act.tarih.toLowerCase().contains(
+                      _searchQuery,
+                    );
+                    final dateFilterMatch =
+                        dateFilterStr == null || act.tarih == dateFilterStr;
+                    return (nameMatch || dateMatch) && dateFilterMatch;
+                  }).toList();
+
+                  if (filtered.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'Aradığınız kriterlere uygun faaliyet kaydı bulunamadı.',
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final act = filtered[index];
+                      return _ActivityCard(
+                        activity: act,
+                        selectedSquadId: _selectedSquadFilter,
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, _) => Center(child: Text('Hata: $err')),
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
   }
 }
 
@@ -717,8 +731,9 @@ class _AssignmentDetails extends ConsumerWidget {
                 if (birlikInfo.isNotEmpty) birlikInfo,
               ].join(' • ');
               final digerNote = atama.aciklama ?? '';
-              final displayName =
-                  rutbeText.isNotEmpty ? '$rutbeText $nameText' : nameText;
+              final displayName = rutbeText.isNotEmpty
+                  ? '$rutbeText $nameText'
+                  : nameText;
 
               final isPending = atama.durum == AssignmentStatus.beklemede;
               final isApproved = atama.durum == AssignmentStatus.onaylandi;
