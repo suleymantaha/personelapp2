@@ -169,20 +169,20 @@ class ExcelXmlGenerator {
   static Future<void> cleanOldExports() async {
     try {
       final dir = await getTemporaryDirectory();
-      if (await dir.exists()) {
+      if (dir.existsSync()) {
         final files = dir.listSync();
         final now = DateTime.now();
         for (final entity in files) {
           if (entity is File &&
               (entity.path.endsWith('.xls') || entity.path.endsWith('.xml'))) {
-            final stat = await entity.stat();
+            final stat = entity.statSync();
             if (now.difference(stat.modified).inDays >= 1) {
               await entity.delete();
             }
           }
         }
       }
-    } catch (_) {}
+    } on Exception catch (_) {}
   }
 
   /// Exports XML content to a temporary .xls file and launches native share intent

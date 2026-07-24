@@ -621,22 +621,21 @@ class _AssignmentDetails extends ConsumerWidget {
 
     final existingPersonnelIds = assignments.map((a) => a.personelId).toSet();
 
-    final operationalAssignments = filteredAssignments.where((atama) {
-      return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
-    }).toList();
-
     // Sort assignments strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
-    operationalAssignments.sort((a, b) {
-      final pA = pMap[a.personelId];
-      final pB = pMap[b.personelId];
-      final weightA = getRankWeight(pA?.rutbe ?? '');
-      final weightB = getRankWeight(pB?.rutbe ?? '');
-      if (weightA != weightB) return weightA.compareTo(weightB);
-      final birlikA = pA?.birlik ?? '';
-      final birlikB = pB?.birlik ?? '';
-      if (birlikA != birlikB) return birlikA.compareTo(birlikB);
-      return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
-    });
+    final operationalAssignments =
+        filteredAssignments.where((atama) {
+          return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
+        }).toList()..sort((a, b) {
+          final pA = pMap[a.personelId];
+          final pB = pMap[b.personelId];
+          final weightA = getRankWeight(pA?.rutbe ?? '');
+          final weightB = getRankWeight(pB?.rutbe ?? '');
+          if (weightA != weightB) return weightA.compareTo(weightB);
+          final birlikA = pA?.birlik ?? '';
+          final birlikB = pB?.birlik ?? '';
+          if (birlikA != birlikB) return birlikA.compareTo(birlikB);
+          return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
+        });
 
     final rosterRows = <MilitaryRosterRow>[];
     for (var i = 0; i < operationalAssignments.length; i++) {

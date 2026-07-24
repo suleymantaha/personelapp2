@@ -187,29 +187,30 @@ class MilitaryRosterExporter {
 
       for (var j = 0; j <= mergeCount; j++) {
         final r = rows[i + j];
-        buffer.writeln('   <Row ss:Height="20">');
-        buffer.writeln(
-          '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="Number">${r.sNu}</Data></Cell>',
-        );
+        buffer
+          ..writeln('   <Row ss:Height="20">')
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="Number">${r.sNu}</Data></Cell>',
+          );
 
         if (j == 0) {
-          final mergeAttr =
-              mergeCount > 0 ? ' ss:MergeDown="$mergeCount"' : '';
+          final mergeAttr = mergeCount > 0 ? ' ss:MergeDown="$mergeCount"' : '';
           buffer.writeln(
             '    <Cell$mergeAttr ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.birligi)}</Data></Cell>',
           );
         }
 
-        buffer.writeln(
-          '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.rutbe)}</Data></Cell>',
-        );
-        buffer.writeln(
-          '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.adSoyad)}</Data></Cell>',
-        );
-        buffer.writeln(
-          '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>',
-        );
-        buffer.writeln('   </Row>');
+        buffer
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.rutbe)}</Data></Cell>',
+          )
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.adSoyad)}</Data></Cell>',
+          )
+          ..writeln(
+            '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>',
+          )
+          ..writeln('   </Row>');
       }
 
       i += mergeCount + 1;
@@ -233,7 +234,8 @@ class MilitaryRosterExporter {
         subayCount++;
       } else if (rutbeUpper.contains('ASB') || rutbeUpper.contains('ASTSB')) {
         astsubayCount++;
-      } else if (rutbeUpper.contains('UZM.J') || rutbeUpper.contains('UZM. J')) {
+      } else if (rutbeUpper.contains('UZM.J') ||
+          rutbeUpper.contains('UZM. J')) {
         uzmJCount++;
       } else if (rutbeUpper.contains('UZM') || rutbeUpper.contains('ÇVŞ')) {
         uzmErbasCount++;
@@ -244,15 +246,14 @@ class MilitaryRosterExporter {
 
     final totalCount = rows.length;
 
-    // Spacing Row
-    buffer.writeln('   <Row ss:Height="12"/>');
-
-    // Summary Section Header
-    buffer.writeln('   <Row ss:Height="22">');
-    buffer.writeln(
-      '    <Cell ss:MergeAcross="4" ss:StyleID="SubTitle"><Data ss:Type="String">GÖREV VE MEVCUT ÖZETİ</Data></Cell>',
-    );
-    buffer.writeln('   </Row>');
+    buffer
+      ..writeln('   <Row ss:Height="12"/>')
+      // Summary Section Header
+      ..writeln('   <Row ss:Height="22">')
+      ..writeln(
+        '    <Cell ss:MergeAcross="4" ss:StyleID="SubTitle"><Data ss:Type="String">GÖREV VE MEVCUT ÖZETİ</Data></Cell>',
+      )
+      ..writeln('   </Row>');
 
     // Summary Table Data
     final summaryItems = [
@@ -265,11 +266,12 @@ class MilitaryRosterExporter {
     ];
 
     for (final item in summaryItems) {
-      buffer.writeln('   <Row ss:Height="18">');
-      buffer.writeln(
-        '    <Cell ss:MergeAcross="4" ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(item)}</Data></Cell>',
-      );
-      buffer.writeln('   </Row>');
+      buffer
+        ..writeln('   <Row ss:Height="18">')
+        ..writeln(
+          '    <Cell ss:MergeAcross="4" ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(item)}</Data></Cell>',
+        )
+        ..writeln('   </Row>');
     }
 
     buffer
@@ -374,8 +376,7 @@ class MilitaryRosterExporter {
       ..writeln('   </Borders>')
       ..writeln('  </Style>')
       ..writeln(' </Styles>')
-
-    // 1. Consolidated Worksheet (GENEL İCMAL LİSTESİ)
+      // 1. Consolidated Worksheet (GENEL İCMAL LİSTESİ)
       ..writeln(' <Worksheet ss:Name="GENEL İCMAL LİSTESİ">')
       ..writeln('  <Table>')
       ..writeln('   <Column ss:Width="45"/>')

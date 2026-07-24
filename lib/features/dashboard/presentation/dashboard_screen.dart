@@ -59,9 +59,9 @@ class DashboardScreen extends ConsumerWidget {
                   if (ctx.mounted) {
                     Navigator.of(ctx).pop();
                     ScaffoldMessenger.of(ctx).showSnackBar(
-                      const SnackBar(
-                        content: Text('Şifreniz başarıyla güncellendi!'),
-                        backgroundColor: AppColors.approvedGreen,
+                      SnackBar(
+                        content: const Text('Şifreniz başarıyla güncellendi!'),
+                        backgroundColor: context.approvedColor,
                       ),
                     );
                   }
@@ -97,10 +97,6 @@ class DashboardScreen extends ConsumerWidget {
               return SafeArea(
                 child: ResponsiveCenter(
                   maxWidth: 600,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 16,
-                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -114,9 +110,9 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                       ),
                       ListTile(
-                        leading: const CircleAvatar(
-                          backgroundColor: AppColors.militaryOlive,
-                          child: Icon(Icons.person, color: Colors.white),
+                        leading: CircleAvatar(
+                          backgroundColor: context.accentOrOlive,
+                          child: const Icon(Icons.person, color: Colors.white),
                         ),
                         title: Text(
                           'Hesap: $username',
@@ -132,7 +128,7 @@ class DashboardScreen extends ConsumerWidget {
                       SwitchListTile(
                         secondary: Icon(
                           isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                          color: AppColors.militaryOlive,
+                          color: context.accentOrOlive,
                         ),
                         title: const Text('Koyu Mod (Dark Theme)'),
                         subtitle: Text(isDarkMode ? 'Aktif' : 'Pasif'),
@@ -145,9 +141,9 @@ class DashboardScreen extends ConsumerWidget {
                         },
                       ),
                       ListTile(
-                        leading: const Icon(
+                        leading: Icon(
                           Icons.key,
-                          color: AppColors.militaryOlive,
+                          color: context.accentOrOlive,
                         ),
                         title: const Text('Şifremi Değiştir'),
                         onTap: () {
@@ -158,13 +154,13 @@ class DashboardScreen extends ConsumerWidget {
                         },
                       ),
                       ListTile(
-                        leading: const Icon(
+                        leading: Icon(
                           Icons.logout,
-                          color: AppColors.rejectedRed,
+                          color: context.rejectedColor,
                         ),
-                        title: const Text(
+                        title: Text(
                           'Çıkış Yap',
-                          style: TextStyle(color: AppColors.rejectedRed),
+                          style: TextStyle(color: context.rejectedColor),
                         ),
                         onTap: () {
                           Navigator.pop(ctx);
@@ -209,7 +205,6 @@ class DashboardScreen extends ConsumerWidget {
       ),
       body: SingleChildScrollView(
         child: ResponsiveCenter(
-          maxWidth: 1200,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -221,27 +216,23 @@ class DashboardScreen extends ConsumerWidget {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       child: Card(
-                        color: context.isDarkMode
-                            ? AppColors.warningBackgroundDark
-                            : AppColors.warningBackgroundLight,
+                        color: context.rejectedBgColor,
                         shape: RoundedRectangleBorder(
                           side: BorderSide(
-                            color: context.isDarkMode
-                                ? AppColors.warningBorderDark
-                                : AppColors.warningBorderLight,
+                            color: context.rejectedBorderColor,
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: ListTile(
-                          leading: const Icon(
+                          leading: Icon(
                             Icons.warning_amber_rounded,
-                            color: AppColors.rejectedRed,
+                            color: context.rejectedColor,
                             size: 32,
                           ),
                           title: Text(
                             '${pendingList.length} Görevlendirmede Çakışma / Rapor Var!',
-                            style: const TextStyle(
-                              color: AppColors.rejectedRed,
+                            style: TextStyle(
+                              color: context.rejectedColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -249,10 +240,10 @@ class DashboardScreen extends ConsumerWidget {
                             'Onaylamak veya reddetmek için dokunun.',
                             style: TextStyle(color: context.textPrimary),
                           ),
-                          trailing: const Icon(
+                          trailing: Icon(
                             Icons.arrow_forward_ios,
                             size: 16,
-                            color: AppColors.rejectedRed,
+                            color: context.rejectedColor,
                           ),
                           onTap: () => context.push('/pending-approvals'),
                         ),
@@ -286,21 +277,21 @@ class DashboardScreen extends ConsumerWidget {
                     icon: Icons.edit_calendar,
                     title: 'Faaliyet Çizelgesi',
                     subtitle: 'Günlük görev gir',
-                    color: AppColors.militaryOlive,
+                    color: context.accentOrOlive,
                     onTap: () => context.push('/activity-form'),
                   ),
                   _MenuCard(
                     icon: Icons.grid_on,
                     title: 'Aylık Matris',
                     subtitle: 'Excel / Dağıtım',
-                    color: AppColors.accentKhaki,
+                    color: context.accentOrOlive,
                     onTap: () => context.push('/monthly-matrix'),
                   ),
                   _MenuCard(
                     icon: Icons.people_alt,
                     title: 'Personel & Tim',
                     subtitle: isAdmin ? 'Kayıt ve Yetki' : 'Kadro Durumu',
-                    color: AppColors.cardBlueGrey,
+                    color: context.blueGreyColor,
                     onTap: () => context.push('/personnel-management'),
                   ),
                   if (isAdmin) ...[
@@ -308,14 +299,14 @@ class DashboardScreen extends ConsumerWidget {
                       icon: Icons.group_add,
                       title: 'Yeni Tim Ekle',
                       subtitle: 'Tim & Komutan Ekle',
-                      color: AppColors.cardTeal,
+                      color: context.tealColor,
                       onTap: () => context.push('/personnel-management'),
                     ),
                     _MenuCard(
                       icon: Icons.assignment_turned_in,
                       title: 'Bekleyen Onaylar',
                       subtitle: 'Çakışma denetimi',
-                      color: AppColors.pendingYellow,
+                      color: context.pendingColor,
                       onTap: () => context.push('/pending-approvals'),
                     ),
                   ],
@@ -323,7 +314,7 @@ class DashboardScreen extends ConsumerWidget {
                     icon: Icons.inventory_2,
                     title: 'Faaliyet Arşivi',
                     subtitle: 'Arama ve İnceleme',
-                    color: AppColors.cardBrown,
+                    color: context.brownColor,
                     onTap: () => context.push('/activity-archive'),
                   ),
                 ],
@@ -357,9 +348,9 @@ class _MenuCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Card(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: context.isDarkMode ? 0.18 : 0.1),
         shape: RoundedRectangleBorder(
-          side: BorderSide(color: color.withValues(alpha: 0.3)),
+          side: BorderSide(color: color.withValues(alpha: context.isDarkMode ? 0.4 : 0.3)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Padding(

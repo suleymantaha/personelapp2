@@ -19,34 +19,6 @@ class MonthlyMatrixScreen extends ConsumerStatefulWidget {
 class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
   DateTime _selectedMonth = DateTime.now();
 
-  Color _getStatusBgColor(String status, BuildContext context) {
-    final isDark = context.isDarkMode;
-    if (status.contains('GÖREV') || status.contains('NÖBET')) {
-      return isDark ? AppColors.statusDutyDark : AppColors.statusDutyLight;
-    } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
-      return isDark ? AppColors.statusLeaveDark : AppColors.statusLeaveLight;
-    } else if (status.contains('RAPOR') || status.contains('SEVK')) {
-      return isDark ? AppColors.statusReportDark : AppColors.statusReportLight;
-    } else if (status.contains('beklemede')) {
-      return isDark ? AppColors.statusPendingDark : AppColors.statusPendingLight;
-    }
-    return isDark ? AppColors.cardDark : Colors.transparent;
-  }
-
-  Color _getStatusTextColor(String status, BuildContext context) {
-    final isDark = context.isDarkMode;
-    if (status.contains('GÖREV') || status.contains('NÖBET')) {
-      return isDark ? AppColors.statusDutyTextDark : AppColors.statusDutyTextLight;
-    } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
-      return isDark ? AppColors.statusLeaveTextDark : AppColors.statusLeaveTextLight;
-    } else if (status.contains('RAPOR') || status.contains('SEVK')) {
-      return isDark ? AppColors.statusReportTextDark : AppColors.statusReportTextLight;
-    } else if (status.contains('beklemede')) {
-      return isDark ? AppColors.statusPendingTextDark : AppColors.statusPendingTextLight;
-    }
-    return context.textMuted;
-  }
-
   String _getAbbreviation(String status) {
     if (status.contains('GÖREV') ||
         status.contains('NÖBET') ||
@@ -102,7 +74,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                   ),
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.militaryOlive.withValues(alpha: 0.08),
+                      color: context.accentSubtleBg,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -118,10 +90,10 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 6),
                           child: Text(
                             '$tempYear',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.militaryOlive,
+                              color: context.accentOrOlive,
                             ),
                           ),
                         ),
@@ -166,19 +138,19 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? AppColors.militaryOlive
+                                  ? context.accentOrOlive
                                   : context.colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: isSelected
-                                    ? AppColors.militaryOlive
+                                    ? context.accentOrOlive
                                     : context.colorScheme.outlineVariant,
                                 width: isSelected ? 2 : 1,
                               ),
                               boxShadow: isSelected
                                   ? [
                                       BoxShadow(
-                                        color: AppColors.militaryOlive
+                                        color: context.accentOrOlive
                                             .withValues(alpha: 0.3),
                                         blurRadius: 4,
                                         offset: const Offset(0, 2),
@@ -194,7 +166,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                     ? FontWeight.bold
                                     : FontWeight.w500,
                                 color: isSelected
-                                    ? Colors.white
+                                    ? context.onAccentOrOlive
                                     : context.textPrimary,
                               ),
                             ),
@@ -214,13 +186,13 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                 ElevatedButton(
                   onPressed: () {
                     setState(() {
-                      _selectedMonth = DateTime(tempYear, tempMonth, 1);
+                      _selectedMonth = DateTime(tempYear, tempMonth);
                     });
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.militaryOlive,
-                    foregroundColor: Colors.white,
+                    backgroundColor: context.accentOrOlive,
+                    foregroundColor: context.onAccentOrOlive,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -279,7 +251,6 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                 _selectedMonth = DateTime(
                   _selectedMonth.year,
                   _selectedMonth.month - 1,
-                  1,
                 );
               });
             },
@@ -292,7 +263,6 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                 _selectedMonth = DateTime(
                   _selectedMonth.year,
                   _selectedMonth.month + 1,
-                  1,
                 );
               });
             },
@@ -360,14 +330,14 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.militaryOlive,
+                            color: context.headerBg,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           alignment: Alignment.center,
-                          child: const Text(
+                          child: Text(
                             'S.N. | Personel',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: context.onAccentOrOlive,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -395,9 +365,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                               color: Theme.of(context).cardColor,
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: AppColors.militaryOlive.withValues(
-                                  alpha: 0.35,
-                                ),
+                                color: context.cardBorderColor,
                                 width: 1.2,
                               ),
                             ),
@@ -408,14 +376,14 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                   width: 22,
                                   height: 22,
                                   decoration: BoxDecoration(
-                                    color: AppColors.militaryOlive,
+                                    color: context.accentOrOlive,
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
                                     '$rowNumber',
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: context.onAccentOrOlive,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 11,
                                     ),
@@ -442,10 +410,10 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                         p.rutbe,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 9.5,
                                           fontWeight: FontWeight.bold,
-                                          color: AppColors.militaryOlive,
+                                          color: context.accentOrOlive,
                                         ),
                                       ),
                                     ],
@@ -489,18 +457,14 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: isTodayHeader
-                                          ? Colors.amber.shade700
-                                          : AppColors.darkOlive,
+                                      color: context.dayHeaderBg(isToday: isTodayHeader),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     alignment: Alignment.center,
                                     child: Text(
                                       '$dayNum',
                                       style: TextStyle(
-                                        color: isTodayHeader
-                                            ? Colors.black
-                                            : Colors.white,
+                                        color: context.dayHeaderTextColor(isToday: isTodayHeader),
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
                                       ),
@@ -522,8 +486,8 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                 children: List.generate(daysInMonth, (dIndex) {
                                   final day = dIndex + 1;
                                   final status = pStatusMap[day] ?? '';
-                                  final bgColor = _getStatusBgColor(status, context);
-                                  final textColor = _getStatusTextColor(status, context);
+                                  final bgColor = context.getStatusBgColor(status);
+                                  final textColor = context.getStatusTextColor(status);
                                   final label = _getAbbreviation(status);
 
                                   final isToday =
@@ -541,10 +505,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                         color: bgColor,
                                         borderRadius: BorderRadius.circular(6),
                                         border: Border.all(
-                                          color: isToday
-                                              ? AppColors.militaryOlive
-                                              : AppColors.militaryOlive
-                                                    .withValues(alpha: 0.35),
+                                          color: context.cellBorderColor(isToday: isToday),
                                           width: isToday ? 2.0 : 1.2,
                                         ),
                                       ),

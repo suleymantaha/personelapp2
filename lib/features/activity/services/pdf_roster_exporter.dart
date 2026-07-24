@@ -94,10 +94,10 @@ class PdfRosterExporter {
                 data: List<List<String>>.generate(filteredRows.length, (i) {
                   final r = filteredRows[i];
                   final showBirlik =
-                      (i == 0 || filteredRows[i - 1].birligi != r.birligi);
+                      i == 0 || filteredRows[i - 1].birligi != r.birligi;
                   return [
                     (i + 1).toString(),
-                    showBirlik ? r.birligi : '',
+                    if (showBirlik) r.birligi else '',
                     r.rutbe,
                     r.adSoyad,
                     r.diger,
@@ -118,7 +118,7 @@ class PdfRosterExporter {
                   children: [
                     pw.Text(
                       'GÖREV VE MEVCUT ÖZETİ',
-                      style: pw.TextStyle(
+                      style: const pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
                       ),

@@ -25,10 +25,11 @@ class ActivityRepository {
     if (endDate != null) {
       query.where((tbl) => tbl.tarih.isSmallerOrEqualValue(endDate));
     }
-    query.orderBy([
-      (tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.desc),
-    ]);
-    query.limit(limit, offset: offset);
+    query
+      ..orderBy([
+        (tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.desc),
+      ])
+      ..limit(limit, offset: offset);
     return query.watch();
   }
 
@@ -37,8 +38,7 @@ class ActivityRepository {
     await db.transaction(() async {
       final allActs =
           await (db.select(db.gunlukFaaliyetTable)..orderBy([
-                (tbl) =>
-                    OrderingTerm(expression: tbl.id, mode: OrderingMode.asc),
+                (tbl) => OrderingTerm(expression: tbl.id),
               ]))
               .get();
 
@@ -318,8 +318,8 @@ class ActivityRepository {
   Future<int> updateAssignmentDetails({
     required int assignmentId,
     required String gorevVeyaIzin,
-    String? aciklama,
     required String newStatus,
+    String? aciklama,
   }) {
     return (db.update(
       db.faaliyetPersonelAtamaTable,

@@ -168,17 +168,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.security,
                       size: 64,
-                      color: AppColors.militaryOlive,
+                      color: context.accentOrOlive,
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'Jandarma Görev Takip',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: AppColors.militaryOlive,
+                            color: context.accentOrOlive,
                           ),
                       textAlign: TextAlign.center,
                     ),

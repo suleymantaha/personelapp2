@@ -122,7 +122,7 @@ class _PersonnelManagementScreenState
                       controller: unitController,
                       decoration: InputDecoration(
                         labelText: 'Birlik',
-                        hintText: 'Örn: 1\'inci Bl. veya K.H',
+                        hintText: "Örn: 1'inci Bl. veya K.H",
                         suffixIcon: PopupMenuButton<String>(
                           icon: const Icon(Icons.arrow_drop_down),
                           onSelected: (val) {
@@ -154,8 +154,8 @@ class _PersonnelManagementScreenState
                               child: Text("3'üncü Bl. K.H"),
                             ),
                             const PopupMenuItem(
-                              value: "K.H",
-                              child: Text("K.H"),
+                              value: 'K.H',
+                              child: Text('K.H'),
                             ),
                           ],
                         ),
@@ -315,7 +315,7 @@ class _PersonnelManagementScreenState
                       controller: unitController,
                       decoration: InputDecoration(
                         labelText: 'Birlik',
-                        hintText: 'Örn: 1\'inci Bl. veya K.H',
+                        hintText: "Örn: 1'inci Bl. veya K.H",
                         suffixIcon: PopupMenuButton<String>(
                           icon: const Icon(Icons.arrow_drop_down),
                           onSelected: (val) {
@@ -347,8 +347,8 @@ class _PersonnelManagementScreenState
                               child: Text("3'üncü Bl. K.H"),
                             ),
                             const PopupMenuItem(
-                              value: "K.H",
-                              child: Text("K.H"),
+                              value: 'K.H',
+                              child: Text('K.H'),
                             ),
                           ],
                         ),

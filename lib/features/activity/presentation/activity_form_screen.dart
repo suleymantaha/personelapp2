@@ -67,8 +67,8 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
         SnackBar(
           content: Text(msg),
           backgroundColor: isCommander
-              ? AppColors.pendingYellow
-              : AppColors.approvedGreen,
+              ? context.pendingColor
+              : context.approvedColor,
         ),
       );
       Navigator.of(context).pop();
@@ -119,9 +119,9 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
               // Date Picker Card
               Card(
                 child: ListTile(
-                  leading: const Icon(
+                  leading: Icon(
                     Icons.calendar_today,
-                    color: AppColors.militaryOlive,
+                    color: context.accentOrOlive,
                   ),
                   title: Text('Faaliyet Tarihi: $dateFormatted'),
                   subtitle: const Text('Değiştirmek için dokunun'),
@@ -163,12 +163,12 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                       : rawPersonnelList;
 
                   if (!isAdmin && session?.timId == null) {
-                    return const Padding(
-                      padding: EdgeInsets.all(16),
+                    return Padding(
+                      padding: const EdgeInsets.all(16),
                       child: Text(
                         'Henüz bir time atamadınız. Lütfen yöneticinizle (Admin) iletişime geçiniz.',
                         style: TextStyle(
-                          color: AppColors.rejectedRed,
+                          color: context.rejectedColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -208,13 +208,12 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: sortedTimIds.map((timId) {
-                            final members = grouped[timId]!;
-                            // Sort members by Rank Seniority (Subay > Astsubay > Uzman > Er)
-                            members.sort(
-                              (a, b) => getRankWeight(
-                                a.rutbe,
-                              ).compareTo(getRankWeight(b.rutbe)),
-                            );
+                            final members = grouped[timId]!
+                              ..sort(
+                                (a, b) => getRankWeight(
+                                  a.rutbe,
+                                ).compareTo(getRankWeight(b.rutbe)),
+                              );
 
                             final squadName = timId == null
                                 ? 'Timsiz / Diğer Personeller'
@@ -224,25 +223,25 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                               margin: const EdgeInsets.symmetric(vertical: 6),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                side: const BorderSide(
-                                  color: AppColors.lightOlive,
+                                side: BorderSide(
+                                  color: context.cardBorderColor,
                                 ),
                               ),
                               child: ExpansionTile(
                                 title: Text(
                                   squadName,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.militaryOlive,
+                                    color: context.accentOrOlive,
                                   ),
                                 ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     PopupMenuButton<String>(
-                                      icon: const Icon(
+                                      icon: Icon(
                                         Icons.bolt,
-                                        color: AppColors.militaryOlive,
+                                        color: context.accentOrOlive,
                                         size: 22,
                                       ),
                                       tooltip: 'Time Toplu Görev Ata',
@@ -272,14 +271,14 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                         );
                                       },
                                       itemBuilder: (ctx) => [
-                                        const PopupMenuItem(
+                                        PopupMenuItem(
                                           enabled: false,
                                           child: Text(
                                             '⚡ TIME TOPLU GÖREV ATA',
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 12,
-                                              color: AppColors.militaryOlive,
+                                              color: context.accentOrOlive,
                                             ),
                                           ),
                                         ),
@@ -291,11 +290,13 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                           ),
                                         ),
                                         const PopupMenuDivider(),
-                                        const PopupMenuItem<String>(
+                                        PopupMenuItem<String>(
                                           value: 'CLEAR',
                                           child: Text(
                                             'Görevleri Sıfırla',
-                                            style: TextStyle(color: AppColors.rejectedRed),
+                                            style: TextStyle(
+                                              color: context.rejectedColor,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -307,13 +308,13 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.militaryOlive,
+                                        color: context.accentOrOlive,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
                                         '${members.length} Personel',
-                                        style: const TextStyle(
-                                          color: Colors.white,
+                                        style: TextStyle(
+                                          color: context.onAccentOrOlive,
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -322,18 +323,18 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                   ],
                                 ),
                                 children: [
-                                  const Divider(
+                                  Divider(
                                     height: 1,
-                                    color: AppColors.lightOlive,
+                                    color: context.cardBorderColor,
                                   ),
                                   ListView.separated(
                                     shrinkWrap: true,
                                     physics:
                                         const NeverScrollableScrollPhysics(),
                                     itemCount: members.length,
-                                    separatorBuilder: (_, _) => const Divider(
+                                    separatorBuilder: (_, _) => Divider(
                                       height: 1,
-                                      color: AppColors.lightOlive,
+                                      color: context.cardBorderColor,
                                     ),
                                     itemBuilder: (context, index) {
                                       final p = members[index];
@@ -383,11 +384,10 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                             ),
                                             DropdownButton<String>(
                                               value: currentSelection,
-                                              hint: const Text(
+                                              hint: Text(
                                                 'SEÇİNİZ',
                                                 style: TextStyle(
-                                                  color:
-                                                      AppColors.militaryOlive,
+                                                  color: context.accentOrOlive,
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 13,
                                                 ),
@@ -404,8 +404,8 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                                           ? FontWeight.bold
                                                           : FontWeight.normal,
                                                       color: isAdminOnly
-                                                          ? AppColors
-                                                                .militaryOlive
+                                                          ? context
+                                                                .accentOrOlive
                                                           : context.textPrimary,
                                                     ),
                                                   ),
@@ -447,7 +447,8 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: personnelList.length,
-                    separatorBuilder: (_, _) => const Divider(),
+                    separatorBuilder: (_, _) =>
+                        Divider(color: context.cardBorderColor),
                     itemBuilder: (context, index) {
                       final p = personnelList[index];
                       final currentSelection = _assignments[p.id];
@@ -463,6 +464,10 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
 
                       return Card(
                         margin: const EdgeInsets.symmetric(vertical: 4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: context.cardBorderColor),
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Column(
@@ -496,10 +501,10 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                   ),
                                   DropdownButton<String>(
                                     value: currentSelection,
-                                    hint: const Text(
+                                    hint: Text(
                                       'SEÇİNİZ',
                                       style: TextStyle(
-                                        color: AppColors.militaryOlive,
+                                        color: context.accentOrOlive,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13,
                                       ),
@@ -516,7 +521,7 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                                 ? FontWeight.bold
                                                 : FontWeight.normal,
                                             color: isAdminOnly
-                                                ? AppColors.militaryOlive
+                                                ? context.accentOrOlive
                                                 : context.textPrimary,
                                           ),
                                         ),

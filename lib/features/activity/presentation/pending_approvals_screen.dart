@@ -49,7 +49,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
                 elevation: 3,
                 margin: const EdgeInsets.only(bottom: 12),
                 shape: RoundedRectangleBorder(
-                  side: const BorderSide(color: AppColors.pendingYellow, width: 1.5),
+                  side: BorderSide(color: context.pendingColor, width: 1.5),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Padding(
@@ -59,7 +59,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.warning, color: AppColors.pendingYellow),
+                          Icon(Icons.warning, color: context.pendingColor),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -83,8 +83,8 @@ class PendingApprovalsScreen extends ConsumerWidget {
                             ),
                             TextSpan(
                               text: '$fullPersonName$squadInfo',
-                              style: const TextStyle(
-                                color: AppColors.militaryOlive,
+                              style: TextStyle(
+                                color: context.accentOrOlive,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -124,7 +124,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
                         children: [
                           OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.rejectedRed,
+                              foregroundColor: context.rejectedColor,
                             ),
                             onPressed: () async {
                               final repo = ref.read(activityRepositoryProvider);
@@ -138,7 +138,8 @@ class PendingApprovalsScreen extends ConsumerWidget {
                           const SizedBox(width: 12),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.approvedGreen,
+                              backgroundColor: context.approvedColor,
+                              foregroundColor: Colors.white,
                             ),
                             onPressed: () async {
                               final repo = ref.read(activityRepositoryProvider);
