@@ -6,6 +6,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
@@ -643,9 +644,10 @@ class _AssignmentDetails extends ConsumerWidget {
       final p = pMap[atama.personelId];
       final rutbe = p?.rutbe ?? '';
       final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
-      final birligi = (p?.birlik != null && p!.birlik.isNotEmpty)
+      final rawBirlik = (p?.birlik != null && p!.birlik.isNotEmpty)
           ? p.birlik
-          : 'Asayiş Timi';
+          : '';
+      final officialBirlik = MilitaryStructureHelper.getBolukName(rawBirlik);
 
       var digerText = atama.gorevVeyaIzin;
       if (atama.aciklama != null && atama.aciklama!.isNotEmpty) {
@@ -655,7 +657,7 @@ class _AssignmentDetails extends ConsumerWidget {
       rosterRows.add(
         MilitaryRosterRow(
           sNu: i + 1,
-          birligi: birligi,
+          birligi: officialBirlik,
           rutbe: rutbe,
           adSoyad: adSoyad,
           diger: digerText,

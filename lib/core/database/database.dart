@@ -49,6 +49,33 @@ class AppDatabase extends _$AppDatabase {
             ),
           );
         }
+
+        // Seed 12 default squads matching modTekTimSecim.bas structure
+        final existingSquads = await select(timTable).get();
+        if (existingSquads.isEmpty) {
+          final defaultSquads = [
+            '1-B Timi',
+            '2-B Timi',
+            '3-B Timi',
+            '4-B Timi',
+            '5-B Timi',
+            '6-B Timi',
+            '7-B Timi',
+            '8-B Timi',
+            '9-B Timi',
+            '10-B Timi',
+            '11-B Timi',
+            '12-B Timi',
+          ];
+          for (final name in defaultSquads) {
+            await into(timTable).insert(
+              TimTableCompanion.insert(
+                timAdi: name,
+                olusturmaTarihi: DateTime.now().toIso8601String(),
+              ),
+            );
+          }
+        }
       },
       onUpgrade: (m, from, to) async {
         if (from < 2) {
