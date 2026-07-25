@@ -20,17 +20,32 @@ class PdfRosterExporter {
     }
 
     var nameStr = faaliyetAdi.trim().toUpperCase();
-    if (nameStr.startsWith('GÜNLÜK FAALİYET')) {
+
+    // Remove any parenthesized date like (2026-07-24) or (24.07.2026)
+    nameStr = nameStr
+        .replaceAll(RegExp(r'\s*\(\d{2,4}[\.\-]\d{2}[\.\-]\d{2,4}\)\s*'), ' ')
+        .trim();
+
+    // Remove 'İSİM LİSTESİ' if present
+    nameStr = nameStr
+        .replaceAll('İSİM LİSTESİ', '')
+        .replaceAll('ISIM LISTESI', '')
+        .trim();
+
+    // Default to HEYBET TEPE PUSU FAALİYETİ if starts with GÜNLÜK FAALİYET or empty
+    if (nameStr.isEmpty ||
+        nameStr.startsWith('GÜNLÜK FAALİYET') ||
+        nameStr == 'GÜNLÜK FAALİYET') {
       nameStr = 'HEYBET TEPE PUSU FAALİYETİ';
     }
 
+    // Ensure starts with JÖH TB.K.LIĞI
     if (!nameStr.startsWith('JÖH')) {
       nameStr = 'JÖH TB.K.LIĞI $nameStr';
     }
 
-    if (!nameStr.contains('İSİM LİSTESİ')) {
-      nameStr = '$nameStr İSİM LİSTESİ';
-    }
+    // Clean multiple spaces
+    nameStr = nameStr.replaceAll(RegExp(r'\s+'), ' ').trim();
 
     return '$nameStr-$formattedDate';
   }
