@@ -22,8 +22,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final session = ref.read(userSessionProvider);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final db = ref.read(databaseProvider);
+        db.ensureSeeded();
+      } catch (_) {}
+
+      var session = ref.read(userSessionProvider);
+      if (session == null) {
+        try {
+          session = await SessionStorage.loadSession().timeout(
+            const Duration(seconds: 1),
+            onTimeout: () => null,
+          );
+          if (session != null) {
+            ref.read(userSessionProvider.notifier).state = session;
+          }
+        } catch (_) {}
+      }
+
       if (session != null && mounted) {
         context.go('/dashboard');
       }
