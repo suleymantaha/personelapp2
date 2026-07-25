@@ -24,7 +24,7 @@ class PdfRosterExporter {
         children: [
           pw.Text(
             'GÖREV VE MEVCUT ÖZETİ',
-            style: pw.TextStyle(
+            style: const pw.TextStyle(
               fontSize: 10,
               fontWeight: pw.FontWeight.bold,
             ),
@@ -58,7 +58,7 @@ class PdfRosterExporter {
             alignment: pw.Alignment.center,
             child: pw.Text(
               'S. NU',
-              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+              style: const pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
             ),
           ),
           pw.Container(
@@ -66,7 +66,7 @@ class PdfRosterExporter {
             alignment: pw.Alignment.center,
             child: pw.Text(
               'BİRLİĞİ',
-              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+              style: const pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
             ),
           ),
           pw.Container(
@@ -74,7 +74,7 @@ class PdfRosterExporter {
             alignment: pw.Alignment.center,
             child: pw.Text(
               'RÜTBE',
-              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+              style: const pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
             ),
           ),
           pw.Container(
@@ -82,7 +82,7 @@ class PdfRosterExporter {
             alignment: pw.Alignment.center,
             child: pw.Text(
               'ADI SOYADI',
-              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+              style: const pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
             ),
           ),
           pw.Container(
@@ -90,7 +90,7 @@ class PdfRosterExporter {
             alignment: pw.Alignment.center,
             child: pw.Text(
               'DİĞER',
-              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+              style: const pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
             ),
           ),
         ],
@@ -196,7 +196,7 @@ class PdfRosterExporter {
               alignment: pw.Alignment.center,
               child: pw.Text(
                 isBFirst ? r.birligi : '',
-                style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+                style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
               ),
             ),
             // RÜTBE
@@ -236,7 +236,7 @@ class PdfRosterExporter {
     return pw.Table(
       columnWidths: {
         0: const pw.FlexColumnWidth(0.8),
-        1: const pw.FlexColumnWidth(2.0),
+        1: const pw.FlexColumnWidth(2),
         2: const pw.FlexColumnWidth(2.2),
         3: const pw.FlexColumnWidth(3.8),
         4: const pw.FlexColumnWidth(2.5),

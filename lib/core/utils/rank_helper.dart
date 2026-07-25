@@ -86,14 +86,7 @@ class RankSummaryCounts {
     required this.totalCount,
   });
 
-  final int subayCount;
-  final int astsubayCount;
-  final int uzmanJandarmaCount;
-  final int uzmanErbasCount;
-  final int erCount;
-  final int totalCount;
-
-  static RankSummaryCounts calculate(List<String> rawRanks) {
+  factory RankSummaryCounts.calculate(List<String> rawRanks) {
     var subay = 0;
     var astsubay = 0;
     var uzmJ = 0;
@@ -126,4 +119,11 @@ class RankSummaryCounts {
       totalCount: rawRanks.length,
     );
   }
+
+  final int subayCount;
+  final int astsubayCount;
+  final int uzmanJandarmaCount;
+  final int uzmanErbasCount;
+  final int erCount;
+  final int totalCount;
 }
