@@ -382,42 +382,54 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                                 ],
                                               ),
                                             ),
-                                            DropdownButton<String>(
-                                              value: currentSelection,
-                                              hint: Text(
-                                                'SEÇİNİZ',
-                                                style: TextStyle(
-                                                  color: context.accentOrOlive,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 13,
+                                            ConstrainedBox(
+                                              constraints: BoxConstraints(
+                                                maxWidth: context.responsiveValue(
+                                                  mobile: 135,
+                                                  tablet: 180,
+                                                  desktop: 220,
                                                 ),
                                               ),
-                                              items: availableDuties.map((d) {
-                                                final isAdminOnly =
-                                                    adminOnlyDuties.contains(d);
-                                                return DropdownMenuItem<String>(
-                                                  value: d,
-                                                  child: Text(
-                                                    d,
-                                                    style: TextStyle(
-                                                      fontWeight: isAdminOnly
-                                                          ? FontWeight.bold
-                                                          : FontWeight.normal,
-                                                      color: isAdminOnly
-                                                          ? context
-                                                                .accentOrOlive
-                                                          : context.textPrimary,
-                                                    ),
+                                              child: DropdownButton<String>(
+                                                value: currentSelection,
+                                                isDense: true,
+                                                isExpanded: true,
+                                                hint: Text(
+                                                  'SEÇİNİZ',
+                                                  style: TextStyle(
+                                                    color: context.accentOrOlive,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 13,
                                                   ),
-                                                );
-                                              }).toList(),
-                                              onChanged: (val) {
-                                                if (val != null) {
-                                                  setState(() {
-                                                    _assignments[p.id] = val;
-                                                  });
-                                                }
-                                              },
+                                                ),
+                                                items: availableDuties.map((d) {
+                                                  final isAdminOnly =
+                                                      adminOnlyDuties.contains(d);
+                                                  return DropdownMenuItem<String>(
+                                                    value: d,
+                                                    child: Text(
+                                                      d,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontWeight: isAdminOnly
+                                                            ? FontWeight.bold
+                                                            : FontWeight.normal,
+                                                        color: isAdminOnly
+                                                            ? context
+                                                                  .accentOrOlive
+                                                            : context.textPrimary,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (val) {
+                                                  if (val != null) {
+                                                    setState(() {
+                                                      _assignments[p.id] = val;
+                                                    });
+                                                  }
+                                                },
+                                              ),
                                             ),
                                           ],
                                         ),

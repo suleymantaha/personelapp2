@@ -134,10 +134,10 @@ class DashboardScreen extends ConsumerWidget {
                         title: const Text('Koyu Mod (Dark Theme)'),
                         subtitle: Text(isDarkMode ? 'Aktif' : 'Pasif'),
                         value: isDarkMode,
-                        onChanged: (value) {
-                          ref.read(themeModeProvider.notifier).state = value
-                              ? ThemeMode.dark
-                              : ThemeMode.light;
+                        onChanged: (value) async {
+                          final newMode = value ? ThemeMode.dark : ThemeMode.light;
+                          ref.read(themeModeProvider.notifier).state = newMode;
+                          await SessionStorage.saveThemeMode(newMode);
                           setSheetState(() {});
                         },
                       ),
@@ -154,6 +154,79 @@ class DashboardScreen extends ConsumerWidget {
                           );
                         },
                       ),
+                      if (isAdmin) ...[
+                        const Divider(),
+                        ListTile(
+                          leading: Icon(
+                            Icons.group_add,
+                            color: context.accentOrOlive,
+                          ),
+                          title: const Text("10'ar Test Personeli Ekle"),
+                          subtitle: const Text('Her time 10 adet sahte personel oluşturur'),
+                          onTap: () async {
+                            Navigator.pop(ctx);
+                            final repo = ref.read(personnelRepositoryProvider);
+                            final count = await repo.seedTestPersonnelPerSquad();
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('$count adet test personeli başarıyla eklendi!'),
+                                  backgroundColor: context.approvedColor,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(
+                            Icons.delete_sweep,
+                            color: context.rejectedColor,
+                          ),
+                          title: Text(
+                            'Tüm Personelleri Sil (Sıfırla)',
+                            style: TextStyle(color: context.rejectedColor),
+                          ),
+                          subtitle: const Text('Eklenen tüm personelleri temizler'),
+                          onTap: () async {
+                            Navigator.pop(ctx);
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (dCtx) => AlertDialog(
+                                title: const Text('Personelleri Sil'),
+                                content: const Text('Veritabanındaki tüm personel kayıtları silinecektir. Emin misiniz?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(dCtx, false),
+                                    child: const Text('İPTAL'),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: context.rejectedColor,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    onPressed: () => Navigator.pop(dCtx, true),
+                                    child: const Text('SİL'),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true) {
+                              final repo = ref.read(personnelRepositoryProvider);
+                              await repo.deleteAllPersonnel();
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('Tüm personel verileri temizlendi!'),
+                                    backgroundColor: context.approvedColor,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      ],
+
                       ListTile(
                         leading: Icon(
                           Icons.logout,

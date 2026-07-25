@@ -812,76 +812,82 @@ class _PersonnelManagementScreenState
               const SizedBox(height: 6),
               squadsAsync.when(
                 data: (squads) {
+                  final filterChips = [
+                    FilterChip(
+                      avatar: const Icon(Icons.groups, size: 16),
+                      label: const Text('Tüm Personel'),
+                      selected: _selectedFilterTimId == null,
+                      onSelected: (selected) {
+                        setState(() => _selectedFilterTimId = null);
+                      },
+                      selectedColor: context.accentOrOlive,
+                      labelStyle: TextStyle(
+                        color: _selectedFilterTimId == null ? Colors.white : context.textPrimary,
+                        fontWeight: _selectedFilterTimId == null ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                    ...squads.map((sq) {
+                      final isSelected = _selectedFilterTimId == sq.id;
+                      return FilterChip(
+                        avatar: Icon(
+                          Icons.shield,
+                          size: 16,
+                          color: isSelected ? Colors.white : context.accentOrOlive,
+                        ),
+                        label: Text(sq.timAdi),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          setState(() {
+                            _selectedFilterTimId = selected ? sq.id : null;
+                          });
+                        },
+                        selectedColor: context.accentOrOlive,
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : context.textPrimary,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      );
+                    }),
+                    FilterChip(
+                      avatar: Icon(
+                        Icons.person_off,
+                        size: 16,
+                        color: _selectedFilterTimId == -1
+                            ? Colors.white
+                            : context.rejectedColor,
+                      ),
+                      label: const Text('Boşta / Kadro Dışı'),
+                      selected: _selectedFilterTimId == -1,
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedFilterTimId = selected ? -1 : null;
+                        });
+                      },
+                      selectedColor: context.rejectedBorderColor,
+                      labelStyle: TextStyle(
+                        color: _selectedFilterTimId == -1 ? Colors.white : context.textPrimary,
+                        fontWeight: _selectedFilterTimId == -1 ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                  ];
+
+                  if (context.isMobile) {
+                    return Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: filterChips,
+                    );
+                  }
+
                   return SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: FilterChip(
-                            avatar: const Icon(Icons.groups, size: 16),
-                            label: const Text('Tüm Personel'),
-                            selected: _selectedFilterTimId == null,
-                            onSelected: (selected) {
-                              setState(() => _selectedFilterTimId = null);
-                            },
-                            selectedColor: context.accentOrOlive,
-                            labelStyle: TextStyle(
-                              color: _selectedFilterTimId == null ? Colors.white : context.textPrimary,
-                              fontWeight: _selectedFilterTimId == null ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                        ...squads.map((sq) {
-                          final isSelected = _selectedFilterTimId == sq.id;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: FilterChip(
-                              avatar: Icon(
-                                Icons.shield,
-                                size: 16,
-                                color: isSelected ? Colors.white : context.accentOrOlive,
-                              ),
-                              label: Text(sq.timAdi),
-                              selected: isSelected,
-                              onSelected: (selected) {
-                                setState(() {
-                                  _selectedFilterTimId = selected ? sq.id : null;
-                                });
-                              },
-                              selectedColor: context.accentOrOlive,
-                              labelStyle: TextStyle(
-                                color: isSelected ? Colors.white : context.textPrimary,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              ),
-                            ),
-                          );
-                        }),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: FilterChip(
-                            avatar: Icon(
-                              Icons.person_off,
-                              size: 16,
-                              color: _selectedFilterTimId == -1
-                                  ? Colors.white
-                                  : context.rejectedColor,
-                            ),
-                            label: const Text('Boşta / Kadro Dışı'),
-                            selected: _selectedFilterTimId == -1,
-                            onSelected: (selected) {
-                              setState(() {
-                                _selectedFilterTimId = selected ? -1 : null;
-                              });
-                            },
-                            selectedColor: context.rejectedBorderColor,
-                            labelStyle: TextStyle(
-                              color: _selectedFilterTimId == -1 ? Colors.white : context.textPrimary,
-                              fontWeight: _selectedFilterTimId == -1 ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      ],
+                      children: filterChips
+                          .map((chip) => Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: chip,
+                              ))
+                          .toList(),
                     ),
                   );
                 },

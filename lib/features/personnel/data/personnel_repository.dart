@@ -300,4 +300,74 @@ class PersonnelRepository {
           .write(TimTableCompanion(timKomutaniId: Value(userId)));
     });
   }
+
+  /// Seed test personnel (e.g. 10 per squad) for trial/testing purposes
+  Future<int> seedTestPersonnelPerSquad({int countPerSquad = 10}) async {
+    final squads = await db.select(db.timTable).get();
+    if (squads.isEmpty) return 0;
+
+    final firstNames = [
+      'Ahmet', 'Mehmet', 'Mustafa', 'Ali', 'Hüseyin', 'Hasan',
+      'İbrahim', 'İsmail', 'Osman', 'Murat', 'Ömer', 'Yusuf',
+      'Emre', 'Burak', 'Hakan', 'Serkan', 'Fatih', 'Gökhan',
+      'Yasin', 'Bilal', 'Kaan', 'Oguz', 'Eren', 'Tolga',
+    ];
+
+    final lastNames = [
+      'YILMAZ', 'KAYA', 'DEMİR', 'ÇELİK', 'ŞAHİN', 'YILDIZ',
+      'YILDIRIM', 'ÖZTÜRK', 'AYDIN', 'ÖZDEMİR', 'ARSLAN', 'DOĞAN',
+      'KILIÇ', 'ASLAN', 'ÇETİN', 'KOÇ', 'KURT', 'ÖZKAN', 'ŞEN',
+    ];
+
+    final ranks = [
+      'J.Asb.Kd.Bçvş.',
+      'J.Asb.Bçvş.',
+      'J.Asb.Kd.Üçvş.',
+      'J.Asb.Üçvş.',
+      'J.Asb.Kd.Çvş.',
+      'Uzm.J.VII.Kad.Kıd.Çvş.',
+      'J.Uzm.Çvş.',
+      'J.Uzm.Onb.',
+    ];
+
+    final today = DateTime.now().toIso8601String().split('T').first;
+    var insertedCount = 0;
+
+    await db.transaction(() async {
+      var nameIdx = 0;
+      for (final squad in squads) {
+        final toInsert = <PersonelTableCompanion>[];
+        for (var i = 1; i <= countPerSquad; i++) {
+          final fName = firstNames[nameIdx % firstNames.length];
+          final lName = lastNames[(nameIdx * 3) % lastNames.length];
+          final rank = ranks[i % ranks.length];
+          nameIdx++;
+
+          toInsert.add(
+            PersonelTableCompanion.insert(
+              adSoyad: '$fName $lName',
+              rutbe: rank,
+              birlik: '${squad.timAdi} Birliği',
+              timId: Value(squad.id),
+              kayitTarihi: today,
+            ),
+          );
+        }
+        await db.batch((b) => b.insertAll(db.personelTable, toInsert));
+        insertedCount += toInsert.length;
+      }
+    });
+
+    return insertedCount;
+  }
+
+  /// Delete all personnel records from database
+  Future<int> deleteAllPersonnel() async {
+    return db.transaction(() async {
+      await db.delete(db.timUyelikGecmisiTable).go();
+      return db.delete(db.personelTable).go();
+    });
+  }
 }
+
+

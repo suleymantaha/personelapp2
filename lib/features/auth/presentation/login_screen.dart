@@ -5,6 +5,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/utils/password_hasher.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -166,20 +167,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final outerPadding = context.responsiveValue<EdgeInsetsGeometry>(
+      mobile: const EdgeInsets.all(16),
+      desktop: const EdgeInsets.all(24),
+    );
+    final cardPadding = context.responsiveValue<EdgeInsetsGeometry>(
+      mobile: const EdgeInsets.all(20),
+      desktop: const EdgeInsets.all(32),
+    );
+
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
+          padding: outerPadding,
+          child: ResponsiveCenter(
+            maxWidth: 440,
+            padding: EdgeInsets.zero,
             child: Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(32),
+                padding: cardPadding,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -5,6 +6,7 @@ class SessionStorage {
   static const String _keyUsername = 'session_username';
   static const String _keyRole = 'session_role';
   static const String _keyTimId = 'session_tim_id';
+  static const String _keyThemeMode = 'app_theme_mode';
 
   /// Save active user session to SharedPreferences
   static Future<void> saveSession(UserSessionState session) async {
@@ -41,5 +43,20 @@ class SessionStorage {
     await prefs.remove(_keyUsername);
     await prefs.remove(_keyRole);
     await prefs.remove(_keyTimId);
+  }
+
+  /// Save selected theme mode
+  static Future<void> saveThemeMode(ThemeMode mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyThemeMode, mode.name);
+  }
+
+  /// Load saved theme mode
+  static Future<ThemeMode> loadThemeMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final modeName = prefs.getString(_keyThemeMode);
+    if (modeName == 'dark') return ThemeMode.dark;
+    if (modeName == 'light') return ThemeMode.light;
+    return ThemeMode.light;
   }
 }
