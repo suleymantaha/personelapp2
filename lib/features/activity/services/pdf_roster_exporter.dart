@@ -9,6 +9,32 @@ import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
 class PdfRosterExporter {
+  /// Formats official title text: e.g. JÖH TB.K.LIĞI HEYBET TEPE PUSU FAALİYETİ İSİM LİSTESİ-24.07.2026
+  static String formatOfficialTitle(String faaliyetAdi, String rawDate) {
+    var formattedDate = rawDate.trim();
+    if (formattedDate.contains('-')) {
+      final parts = formattedDate.split('T')[0].split('-');
+      if (parts.length == 3) {
+        formattedDate = '${parts[2]}.${parts[1]}.${parts[0]}';
+      }
+    }
+
+    var nameStr = faaliyetAdi.trim().toUpperCase();
+    if (nameStr.startsWith('GÜNLÜK FAALİYET')) {
+      nameStr = 'HEYBET TEPE PUSU FAALİYETİ';
+    }
+
+    if (!nameStr.startsWith('JÖH')) {
+      nameStr = 'JÖH TB.K.LIĞI $nameStr';
+    }
+
+    if (!nameStr.contains('İSİM LİSTESİ')) {
+      nameStr = '$nameStr İSİM LİSTESİ';
+    }
+
+    return '$nameStr-$formattedDate';
+  }
+
   static pw.Widget builderSummaryBox(List<MilitaryRosterRow> rows) {
     final ranks = rows.map((r) => r.rutbe).toList();
     final counts = RankSummaryCounts.calculate(ranks);
@@ -44,7 +70,7 @@ class PdfRosterExporter {
     );
   }
 
-  /// Builds PDF Table with merged vertical cells for BİRLİĞİ and DİĞER (HAZIR KITA & GÜLÜŞKÜR)
+  /// Builds PDF Table with merged vertical cells and centered text for BİRLİĞİ and DİĞER (HAZIR KITA & GÜLÜŞKÜR)
   static pw.Widget buildPdfTable(List<MilitaryRosterRow> rows) {
     final tableRows = <pw.TableRow>[];
 
@@ -154,12 +180,16 @@ class PdfRosterExporter {
       final bEn = birlikEnd[i];
       final isBFirst = i == bSt;
       final isBLast = i == bEn;
+      final bMid = bSt + (bEn - bSt) ~/ 2;
+      final showBirlikText = i == bMid;
 
       final spSt = specialStart[i];
       final spEn = specialEnd[i];
       final isSpecial = spSt != -1;
       final isSpFirst = isSpecial && i == spSt;
       final isSpLast = isSpecial && i == spEn;
+      final spMid = isSpecial ? spSt + (spEn - spSt) ~/ 2 : -1;
+      final showSpecialText = isSpecial && i == spMid;
 
       final birlikBorder = pw.Border(
         top: isBFirst ? const pw.BorderSide(width: 0.8) : pw.BorderSide.none,
@@ -189,13 +219,13 @@ class PdfRosterExporter {
               alignment: pw.Alignment.center,
               child: pw.Text('${i + 1}', style: const pw.TextStyle(fontSize: 9)),
             ),
-            // BİRLİĞİ (Merged Cell Visuals)
+            // BİRLİĞİ (Merged Cell Visuals - Vertically Centered Text)
             pw.Container(
               decoration: pw.BoxDecoration(border: birlikBorder),
               padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
               alignment: pw.Alignment.center,
               child: pw.Text(
-                isBFirst ? r.birligi : '',
+                showBirlikText ? r.birligi : '',
                 style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
               ),
             ),
@@ -213,14 +243,14 @@ class PdfRosterExporter {
               alignment: pw.Alignment.centerLeft,
               child: pw.Text(r.adSoyad, style: const pw.TextStyle(fontSize: 9)),
             ),
-            // DİĞER (Merged Cell Visuals for HAZIR KITA & GÜLÜŞKÜR)
+            // DİĞER (Merged Cell Visuals for HAZIR KITA & GÜLÜŞKÜR - Vertically Centered Text)
             pw.Container(
               decoration: pw.BoxDecoration(border: specialBorder),
               padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
               alignment: isSpecial ? pw.Alignment.center : pw.Alignment.centerLeft,
               child: pw.Text(
                 isSpecial
-                    ? (isSpFirst ? r.diger : '')
+                    ? (showSpecialText ? r.diger : '')
                     : r.diger,
                 style: pw.TextStyle(
                   fontSize: 9,
@@ -270,10 +300,10 @@ class PdfRosterExporter {
     );
 
     final filteredRows = rows
-        .where((r) => DutyOrLeaveType.isOperationalDuty(r.diger))
+        .where((r) => DutyOrLeaveType.isOperationalDuty(r.diger) || r.diger.isEmpty)
         .toList();
 
-    final titleText = '$faaliyetAdi İSİM LİSTESİ - $tarih'.toUpperCase();
+    final titleText = formatOfficialTitle(faaliyetAdi, tarih);
 
     pdf.addPage(
       pw.Page(
@@ -293,8 +323,8 @@ class PdfRosterExporter {
                 child: pw.Center(
                   child: pw.Text(
                     titleText,
-                    style: const pw.TextStyle(
-                      fontSize: 14,
+                    style: pw.TextStyle(
+                      fontSize: 13,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),

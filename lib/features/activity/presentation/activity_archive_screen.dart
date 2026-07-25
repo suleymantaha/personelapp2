@@ -681,17 +681,15 @@ class _AssignmentDetails extends ConsumerWidget {
           : '';
       final officialBirlik = MilitaryStructureHelper.getBolukName(rawBirlik);
 
-      var digerText = atama.gorevVeyaIzin;
-      if (atama.aciklama != null && atama.aciklama!.isNotEmpty) {
-        digerText = '$digerText (${atama.aciklama})';
-      }
-
       var groupCode = 'DIGER';
+      var digerText = '';
       final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
       if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
         groupCode = 'HAZIR_KITA';
+        digerText = 'HAZIR KITA';
       } else if (dutyUpper.contains('GÜLÜŞKÜR') || dutyUpper.contains('GULUSKUR')) {
         groupCode = 'GULUSKUR';
+        digerText = 'GÜLÜŞKÜR';
       }
 
       rosterRows.add(

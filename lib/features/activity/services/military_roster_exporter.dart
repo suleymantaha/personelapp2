@@ -46,15 +46,38 @@ class MilitaryRosterExporter {
         .replaceAll("'", '&apos;');
   }
 
+  static String formatOfficialTitle(String faaliyetAdi, String rawDate) {
+    var formattedDate = rawDate.trim();
+    if (formattedDate.contains('-')) {
+      final parts = formattedDate.split('T')[0].split('-');
+      if (parts.length == 3) {
+        formattedDate = '${parts[2]}.${parts[1]}.${parts[0]}';
+      }
+    }
+
+    var nameStr = faaliyetAdi.trim().toUpperCase();
+    if (nameStr.startsWith('GÜNLÜK FAALİYET')) {
+      nameStr = 'HEYBET TEPE PUSU FAALİYETİ';
+    }
+
+    if (!nameStr.startsWith('JÖH')) {
+      nameStr = 'JÖH TB.K.LIĞI $nameStr';
+    }
+
+    if (!nameStr.contains('İSİM LİSTESİ')) {
+      nameStr = '$nameStr İSİM LİSTESİ';
+    }
+
+    return '$nameStr-$formattedDate';
+  }
+
   /// Generates HTML Excel file (.xls) with UTF-8 BOM for 100% native mobile & desktop opening
   static String generateMilitaryHtmlExcel({
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
   }) {
-    final titleHeader = escapeXml(
-      '$faaliyetAdi İSİM LİSTESİ - $tarih'.toUpperCase(),
-    );
+    final titleHeader = escapeXml(formatOfficialTitle(faaliyetAdi, tarih));
 
     final sb = StringBuffer()
       ..writeln('<!DOCTYPE html>')
@@ -197,9 +220,7 @@ class MilitaryRosterExporter {
     required String tarih,
     required List<MilitaryRosterRow> rows,
   }) {
-    final titleHeader = escapeXml(
-      '$faaliyetAdi İSİM LİSTESİ - $tarih'.toUpperCase(),
-    );
+    final titleHeader = escapeXml(formatOfficialTitle(faaliyetAdi, tarih));
 
     final buffer = StringBuffer()
       ..writeln('<?xml version="1.0" encoding="utf-8"?>')
