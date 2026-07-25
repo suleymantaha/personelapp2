@@ -84,7 +84,10 @@ class PdfRosterExporter {
             alignment: pw.Alignment.center,
             child: pw.Text(
               'S. NU',
-              style: const pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+              style: const pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
+              ),
             ),
           ),
           pw.Container(
@@ -92,7 +95,10 @@ class PdfRosterExporter {
             alignment: pw.Alignment.center,
             child: pw.Text(
               'BİRLİĞİ',
-              style: const pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+              style: const pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
+              ),
             ),
           ),
           pw.Container(
@@ -100,7 +106,10 @@ class PdfRosterExporter {
             alignment: pw.Alignment.center,
             child: pw.Text(
               'RÜTBE',
-              style: const pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+              style: const pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
+              ),
             ),
           ),
           pw.Container(
@@ -108,7 +117,10 @@ class PdfRosterExporter {
             alignment: pw.Alignment.center,
             child: pw.Text(
               'ADI SOYADI',
-              style: const pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+              style: const pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
+              ),
             ),
           ),
           pw.Container(
@@ -116,7 +128,10 @@ class PdfRosterExporter {
             alignment: pw.Alignment.center,
             child: pw.Text(
               'DİĞER',
-              style: const pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+              style: const pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -200,8 +215,12 @@ class PdfRosterExporter {
 
       final specialBorder = isSpecial
           ? pw.Border(
-              top: isSpFirst ? const pw.BorderSide(width: 0.8) : pw.BorderSide.none,
-              bottom: isSpLast ? const pw.BorderSide(width: 0.8) : pw.BorderSide.none,
+              top: isSpFirst
+                  ? const pw.BorderSide(width: 0.8)
+                  : pw.BorderSide.none,
+              bottom: isSpLast
+                  ? const pw.BorderSide(width: 0.8)
+                  : pw.BorderSide.none,
               left: const pw.BorderSide(width: 0.8),
               right: const pw.BorderSide(width: 0.8),
             )
@@ -215,46 +234,69 @@ class PdfRosterExporter {
             // S. NU
             pw.Container(
               decoration: pw.BoxDecoration(border: standardBorder),
-              padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              padding: const pw.EdgeInsets.symmetric(
+                vertical: 4,
+                horizontal: 2,
+              ),
               alignment: pw.Alignment.center,
-              child: pw.Text('${i + 1}', style: const pw.TextStyle(fontSize: 9)),
+              child: pw.Text(
+                '${i + 1}',
+                style: const pw.TextStyle(fontSize: 9),
+              ),
             ),
             // BİRLİĞİ (Merged Cell Visuals - Vertically Centered Text)
             pw.Container(
               decoration: pw.BoxDecoration(border: birlikBorder),
-              padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              padding: const pw.EdgeInsets.symmetric(
+                vertical: 4,
+                horizontal: 2,
+              ),
               alignment: pw.Alignment.center,
               child: pw.Text(
                 showBirlikText ? r.birligi : '',
-                style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+                style: const pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
             ),
             // RÜTBE
             pw.Container(
               decoration: pw.BoxDecoration(border: standardBorder),
-              padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              padding: const pw.EdgeInsets.symmetric(
+                vertical: 4,
+                horizontal: 2,
+              ),
               alignment: pw.Alignment.center,
               child: pw.Text(r.rutbe, style: const pw.TextStyle(fontSize: 9)),
             ),
             // ADI SOYADI
             pw.Container(
               decoration: pw.BoxDecoration(border: standardBorder),
-              padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+              padding: const pw.EdgeInsets.symmetric(
+                vertical: 4,
+                horizontal: 4,
+              ),
               alignment: pw.Alignment.centerLeft,
               child: pw.Text(r.adSoyad, style: const pw.TextStyle(fontSize: 9)),
             ),
             // DİĞER (Merged Cell Visuals for HAZIR KITA & GÜLÜŞKÜR - Vertically Centered Text)
             pw.Container(
               decoration: pw.BoxDecoration(border: specialBorder),
-              padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-              alignment: isSpecial ? pw.Alignment.center : pw.Alignment.centerLeft,
+              padding: const pw.EdgeInsets.symmetric(
+                vertical: 4,
+                horizontal: 2,
+              ),
+              alignment: isSpecial
+                  ? pw.Alignment.center
+                  : pw.Alignment.centerLeft,
               child: pw.Text(
-                isSpecial
-                    ? (showSpecialText ? r.diger : '')
-                    : r.diger,
+                isSpecial ? (showSpecialText ? r.diger : '') : r.diger,
                 style: pw.TextStyle(
                   fontSize: 9,
-                  fontWeight: isSpecial ? pw.FontWeight.bold : pw.FontWeight.normal,
+                  fontWeight: isSpecial
+                      ? pw.FontWeight.bold
+                      : pw.FontWeight.normal,
                 ),
               ),
             ),
@@ -300,7 +342,9 @@ class PdfRosterExporter {
     );
 
     final filteredRows = rows
-        .where((r) => DutyOrLeaveType.isOperationalDuty(r.diger) || r.diger.isEmpty)
+        .where(
+          (r) => DutyOrLeaveType.isOperationalDuty(r.diger) || r.diger.isEmpty,
+        )
         .toList();
 
     final titleText = formatOfficialTitle(faaliyetAdi, tarih);

@@ -85,7 +85,9 @@ class MilitaryRosterExporter {
         '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">',
       )
       ..writeln('<head>')
-      ..writeln('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">')
+      ..writeln(
+        '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">',
+      )
       ..writeln('<!--[if gte mso 9]>')
       ..writeln('<xml>')
       ..writeln(' <x:ExcelWorkbook>')
@@ -107,7 +109,9 @@ class MilitaryRosterExporter {
       ..writeln(
         '  th { border: 1px solid #000000; background-color: #D9D9D9; font-weight: bold; text-align: center; vertical-align: middle; height: 26px; }',
       )
-      ..writeln('  td { border: 1px solid #000000; vertical-align: middle; padding: 5px 8px; }')
+      ..writeln(
+        '  td { border: 1px solid #000000; vertical-align: middle; padding: 5px 8px; }',
+      )
       ..writeln('  .center { text-align: center; }')
       ..writeln('  .left { text-align: left; }')
       ..writeln('  .bold { font-weight: bold; }')
@@ -125,7 +129,9 @@ class MilitaryRosterExporter {
       ..writeln(
         '  <tr><td colspan="5" class="title">$titleHeader</td></tr>',
       )
-      ..writeln('  <tr style="height: 10px;"><td colspan="5" style="border: none;"></td></tr>')
+      ..writeln(
+        '  <tr style="height: 10px;"><td colspan="5" style="border: none;"></td></tr>',
+      )
       // Table Headers
       ..writeln('  <tr>')
       ..writeln('    <th style="width: 50px;">S. NU</th>')
@@ -142,7 +148,8 @@ class MilitaryRosterExporter {
     while (i < n) {
       final currentBirlik = rows[i].birligi;
       final currentGroup = rows[i].groupCode;
-      final isSpecialGroup = currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
+      final isSpecialGroup =
+          currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
 
       var mergeCount = 0;
       while (i + mergeCount + 1 < n &&
@@ -161,7 +168,9 @@ class MilitaryRosterExporter {
 
         // Column B: BİRLİĞİ (Merged vertically)
         if (j == 0) {
-          sb.writeln('    <td$spanAttr class="center bold">${escapeXml(r.birligi)}</td>');
+          sb.writeln(
+            '    <td$spanAttr class="center bold">${escapeXml(r.birligi)}</td>',
+          );
         }
 
         // Column C: RÜTBE
@@ -173,7 +182,9 @@ class MilitaryRosterExporter {
         // Column E: DİĞER (Merged vertically for Hazır Kıta & Gülüşkür, normal for others)
         if (isSpecialGroup) {
           if (j == 0) {
-            sb.writeln('    <td$spanAttr class="center bold">${escapeXml(r.diger)}</td>');
+            sb.writeln(
+              '    <td$spanAttr class="center bold">${escapeXml(r.diger)}</td>',
+            );
           }
         } else {
           sb.writeln('    <td class="left">${escapeXml(r.diger)}</td>');
@@ -190,20 +201,27 @@ class MilitaryRosterExporter {
     final counts = RankSummaryCounts.calculate(ranks);
 
     sb
-      ..writeln('  <tr style="height: 12px;"><td colspan="5" style="border: none;"></td></tr>')
-      ..writeln('  <tr><td colspan="5" class="summary-hdr">GÖREV VE MEVCUT ÖZETİ</td></tr>');
+      ..writeln(
+        '  <tr style="height: 12px;"><td colspan="5" style="border: none;"></td></tr>',
+      )
+      ..writeln(
+        '  <tr><td colspan="5" class="summary-hdr">GÖREV VE MEVCUT ÖZETİ</td></tr>',
+      );
 
     final summaryItems = [
       if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
       if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
-      if (counts.uzmanJandarmaCount > 0) 'Uzman Jandarma: ${counts.uzmanJandarmaCount}',
+      if (counts.uzmanJandarmaCount > 0)
+        'Uzman Jandarma: ${counts.uzmanJandarmaCount}',
       if (counts.uzmanErbasCount > 0) 'Uzman Erbaş: ${counts.uzmanErbasCount}',
       if (counts.erCount > 0) 'Er / Erbaş: ${counts.erCount}',
       'TOPLAM MEVCUT: ${counts.totalCount}',
     ];
 
     for (final item in summaryItems) {
-      sb.writeln('  <tr><td colspan="5" class="left">${escapeXml(item)}</td></tr>');
+      sb.writeln(
+        '  <tr><td colspan="5" class="left">${escapeXml(item)}</td></tr>',
+      );
     }
 
     sb
@@ -364,7 +382,8 @@ class MilitaryRosterExporter {
     while (i < n) {
       final currentBirlik = rows[i].birligi;
       final currentGroup = rows[i].groupCode;
-      final isSpecialGroup = currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
+      final isSpecialGroup =
+          currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
 
       var mergeCount = 0;
       while (i + mergeCount + 1 < n &&
@@ -398,7 +417,9 @@ class MilitaryRosterExporter {
 
         if (isSpecialGroup) {
           if (j == 0) {
-            final mergeAttr = mergeCount > 0 ? ' ss:MergeDown="$mergeCount"' : '';
+            final mergeAttr = mergeCount > 0
+                ? ' ss:MergeDown="$mergeCount"'
+                : '';
             buffer.writeln(
               '    <Cell$mergeAttr ss:StyleID="DataCellCenterBold"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>',
             );
@@ -429,7 +450,8 @@ class MilitaryRosterExporter {
     final summaryItems = [
       if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
       if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
-      if (counts.uzmanJandarmaCount > 0) 'Uzman Jandarma: ${counts.uzmanJandarmaCount}',
+      if (counts.uzmanJandarmaCount > 0)
+        'Uzman Jandarma: ${counts.uzmanJandarmaCount}',
       if (counts.uzmanErbasCount > 0) 'Uzman Erbaş: ${counts.uzmanErbasCount}',
       if (counts.erCount > 0) 'Er / Erbaş: ${counts.erCount}',
       'TOPLAM MEVCUT: ${counts.totalCount}',
@@ -496,7 +518,7 @@ class MilitaryRosterExporter {
     final dir = await getTemporaryDirectory();
     final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
     final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.xls');
-    
+
     // Write UTF-8 BOM byte sequence [0xEF, 0xBB, 0xBF] followed by HTML bytes
     final bytes = <int>[0xEF, 0xBB, 0xBF, ...utf8.encode(htmlContent)];
     await file.writeAsBytes(bytes);
@@ -507,6 +529,49 @@ class MilitaryRosterExporter {
         text: '$faaliyetAdi - Resmi İsim Listesi Excel Dökümanı',
       ),
     );
+  }
+
+  /// Saves Excel file directly to the device's public Downloads / Storage folder
+  static Future<File> saveExcelToDevice({
+    required String faaliyetAdi,
+    required String tarih,
+    required List<MilitaryRosterRow> rows,
+  }) async {
+    final htmlContent = generateMilitaryHtmlExcel(
+      faaliyetAdi: faaliyetAdi,
+      tarih: tarih,
+      rows: rows,
+    );
+
+    final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
+    final fileName = '${sanitizedTitle}_Listesi_$tarih.xls';
+
+    Directory targetDir;
+    if (Platform.isAndroid) {
+      targetDir = Directory('/storage/emulated/0/Download');
+      if (!targetDir.existsSync()) {
+        targetDir = await getApplicationDocumentsDirectory();
+      }
+    } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      final userHome =
+          Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
+      if (userHome != null) {
+        targetDir = Directory('$userHome/Downloads');
+      } else {
+        targetDir = await getApplicationDocumentsDirectory();
+      }
+    } else {
+      targetDir = await getApplicationDocumentsDirectory();
+    }
+
+    if (!targetDir.existsSync()) {
+      await targetDir.create(recursive: true);
+    }
+
+    final file = File('${targetDir.path}/$fileName');
+    final bytes = <int>[0xEF, 0xBB, 0xBF, ...utf8.encode(htmlContent)];
+    await file.writeAsBytes(bytes);
+    return file;
   }
 
   /// Shares Master Daily Excel containing all activities
