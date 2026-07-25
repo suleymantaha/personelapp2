@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:share_plus/share_plus.dart';
 
 class MilitaryRosterRow {
@@ -217,34 +218,8 @@ class MilitaryRosterExporter {
     }
 
     // Calculate Summary Totals matching modTekTimSecim.bas
-    var subayCount = 0;
-    var astsubayCount = 0;
-    var uzmJCount = 0;
-    var uzmErbasCount = 0;
-    var erCount = 0;
-
-    for (final r in rows) {
-      final rutbeUpper = r.rutbe.toUpperCase();
-      if (rutbeUpper.contains('ÜTĞM') ||
-          rutbeUpper.contains('TĞM') ||
-          rutbeUpper.contains('YZB') ||
-          rutbeUpper.contains('BŞB') ||
-          rutbeUpper.contains('ALBY') ||
-          rutbeUpper.contains('SB')) {
-        subayCount++;
-      } else if (rutbeUpper.contains('ASB') || rutbeUpper.contains('ASTSB')) {
-        astsubayCount++;
-      } else if (rutbeUpper.contains('UZM.J') ||
-          rutbeUpper.contains('UZM. J')) {
-        uzmJCount++;
-      } else if (rutbeUpper.contains('UZM') || rutbeUpper.contains('ÇVŞ')) {
-        uzmErbasCount++;
-      } else {
-        erCount++;
-      }
-    }
-
-    final totalCount = rows.length;
+    final ranks = rows.map((r) => r.rutbe).toList();
+    final counts = RankSummaryCounts.calculate(ranks);
 
     buffer
       ..writeln('   <Row ss:Height="12"/>')
@@ -257,12 +232,12 @@ class MilitaryRosterExporter {
 
     // Summary Table Data
     final summaryItems = [
-      if (subayCount > 0) 'Subay: $subayCount',
-      if (astsubayCount > 0) 'Astsubay: $astsubayCount',
-      if (uzmJCount > 0) 'Uzman Jandarma: $uzmJCount',
-      if (uzmErbasCount > 0) 'Uzman Erbaş: $uzmErbasCount',
-      if (erCount > 0) 'Er / Erbaş: $erCount',
-      'TOPLAM MEVCUT: $totalCount',
+      if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
+      if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
+      if (counts.uzmanJandarmaCount > 0) 'Uzman Jandarma: ${counts.uzmanJandarmaCount}',
+      if (counts.uzmanErbasCount > 0) 'Uzman Erbaş: ${counts.uzmanErbasCount}',
+      if (counts.erCount > 0) 'Er / Erbaş: ${counts.erCount}',
+      'TOPLAM MEVCUT: ${counts.totalCount}',
     ];
 
     for (final item in summaryItems) {

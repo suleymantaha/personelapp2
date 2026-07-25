@@ -74,3 +74,56 @@ int getRankWeight(String rutbe) {
 
   return 300; // Tanımlanamayan rütbeler en sona gider.
 }
+
+/// Evrak özet tabloları için rütbe gruplaması ve sayım yardımcısı.
+class RankSummaryCounts {
+  const RankSummaryCounts({
+    required this.subayCount,
+    required this.astsubayCount,
+    required this.uzmanJandarmaCount,
+    required this.uzmanErbasCount,
+    required this.erCount,
+    required this.totalCount,
+  });
+
+  final int subayCount;
+  final int astsubayCount;
+  final int uzmanJandarmaCount;
+  final int uzmanErbasCount;
+  final int erCount;
+  final int totalCount;
+
+  static RankSummaryCounts calculate(List<String> rawRanks) {
+    var subay = 0;
+    var astsubay = 0;
+    var uzmJ = 0;
+    var uzmErbas = 0;
+    var er = 0;
+
+    for (final raw in rawRanks) {
+      final norm = normalizeRank(raw);
+      final weight = getRankWeight(norm);
+
+      if (weight <= 70) {
+        subay++;
+      } else if (weight <= 130) {
+        astsubay++;
+      } else if (norm == 'Uzm.J.' || norm.contains('Uzm.J')) {
+        uzmJ++;
+      } else if (norm == 'J.Uzm.Çvş.' || norm.contains('Uzm')) {
+        uzmErbas++;
+      } else {
+        er++;
+      }
+    }
+
+    return RankSummaryCounts(
+      subayCount: subay,
+      astsubayCount: astsubay,
+      uzmanJandarmaCount: uzmJ,
+      uzmanErbasCount: uzmErbas,
+      erCount: er,
+      totalCount: rawRanks.length,
+    );
+  }
+}

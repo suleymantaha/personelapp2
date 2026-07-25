@@ -621,21 +621,54 @@ class _AssignmentDetails extends ConsumerWidget {
 
     final existingPersonnelIds = assignments.map((a) => a.personelId).toSet();
 
-    // Sort assignments strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
-    final operationalAssignments =
-        filteredAssignments.where((atama) {
-          return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
-        }).toList()..sort((a, b) {
-          final pA = pMap[a.personelId];
-          final pB = pMap[b.personelId];
-          final weightA = getRankWeight(pA?.rutbe ?? '');
-          final weightB = getRankWeight(pB?.rutbe ?? '');
-          if (weightA != weightB) return weightA.compareTo(weightB);
-          final birlikA = pA?.birlik ?? '';
-          final birlikB = pB?.birlik ?? '';
-          if (birlikA != birlikB) return birlikA.compareTo(birlikB);
-          return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
-        });
+    int getDutyPriority(String duty) {
+      final upper = duty.toUpperCase().trim();
+      if (upper.contains('HAZIR KITA') || upper.contains('HAZIRKITA')) return 1;
+      if (upper.contains('GÜLÜŞKÜR') || upper.contains('GULUSKUR')) return 2;
+      return 3;
+    }
+
+    final allSquadsAsync = ref.watch(allSquadsProvider);
+    final squadsList = allSquadsAsync.value ?? [];
+    final squadMap = {for (final s in squadsList) s.id: s.timAdi};
+
+    final operationalAssignments = filteredAssignments.where((atama) {
+      return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
+    }).toList()
+      ..sort((a, b) {
+        // 1. Group by Duty Priority (HAZIR KITA -> GÜLÜŞKÜR -> DİĞER GÖREVLER)
+        final priorityA = getDutyPriority(a.gorevVeyaIzin);
+        final priorityB = getDutyPriority(b.gorevVeyaIzin);
+        if (priorityA != priorityB) return priorityA.compareTo(priorityB);
+
+        final pA = pMap[a.personelId];
+        final pB = pMap[b.personelId];
+
+        // 2. Group by Bölük (1'inci Bl. -> 2'nci Bl. -> 3'üncü Bl. -> K.H)
+        final timNameA = (pA?.timId != null && squadMap.containsKey(pA!.timId))
+            ? squadMap[pA.timId]!
+            : '';
+        final timNameB = (pB?.timId != null && squadMap.containsKey(pB!.timId))
+            ? squadMap[pB.timId]!
+            : '';
+        final rawBirlikA = (pA?.birlik != null && pA!.birlik.isNotEmpty)
+            ? pA.birlik
+            : timNameA;
+        final rawBirlikB = (pB?.birlik != null && pB!.birlik.isNotEmpty)
+            ? pB.birlik
+            : timNameB;
+        final birlikA = MilitaryStructureHelper.getBolukName(rawBirlikA);
+        final birlikB = MilitaryStructureHelper.getBolukName(rawBirlikB);
+        if (birlikA != birlikB) return birlikA.compareTo(birlikB);
+
+        // 3. Sort strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
+        final weightA = getRankWeight(pA?.rutbe ?? '');
+        final weightB = getRankWeight(pB?.rutbe ?? '');
+        if (weightA != weightB) return weightA.compareTo(weightB);
+
+        // 4. Alphabetical name sort
+        return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
+      });
 
     final rosterRows = <MilitaryRosterRow>[];
     for (var i = 0; i < operationalAssignments.length; i++) {

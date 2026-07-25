@@ -2,12 +2,47 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
 class PdfRosterExporter {
+  static pw.Widget builderSummaryBox(List<MilitaryRosterRow> rows) {
+    final ranks = rows.map((r) => r.rutbe).toList();
+    final counts = RankSummaryCounts.calculate(ranks);
+
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(8),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(width: 0.8),
+        color: PdfColors.grey100,
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            'GÖREV VE MEVCUT ÖZETİ',
+            style: pw.TextStyle(
+              fontSize: 10,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Text(
+            'Subay: ${counts.subayCount}  •  '
+            'Astsubay: ${counts.astsubayCount}  •  '
+            'Uzman Jandarma: ${counts.uzmanJandarmaCount}  •  '
+            'Uzman Erbaş: ${counts.uzmanErbasCount}  •  '
+            'Er/Söz.Er: ${counts.erCount}  •  '
+            'TOPLAM MEVCUT: ${counts.totalCount} Personel',
+            style: const pw.TextStyle(fontSize: 9),
+          ),
+        ],
+      ),
+    );
+  }
   /// Generates a PDF document for official Jandarma daily activity roster
   static Future<pw.Document> generateRosterPdf({
     required String faaliyetAdi,
@@ -93,11 +128,9 @@ class PdfRosterExporter {
                 ],
                 data: List<List<String>>.generate(filteredRows.length, (i) {
                   final r = filteredRows[i];
-                  final showBirlik =
-                      i == 0 || filteredRows[i - 1].birligi != r.birligi;
                   return [
                     (i + 1).toString(),
-                    if (showBirlik) r.birligi else '',
+                    r.birligi,
                     r.rutbe,
                     r.adSoyad,
                     r.diger,
@@ -107,34 +140,7 @@ class PdfRosterExporter {
               pw.SizedBox(height: 12),
 
               // Summary Box (GÖREV VE MEVCUT ÖZETİ) matching modTekTimSecim.bas
-              pw.Container(
-                padding: const pw.EdgeInsets.all(8),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(width: 0.8),
-                  color: PdfColors.grey100,
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(
-                      'GÖREV VE MEVCUT ÖZETİ',
-                      style: const pw.TextStyle(
-                        fontSize: 10,
-                        fontWeight: pw.FontWeight.bold,
-                      ),
-                    ),
-                    pw.SizedBox(height: 4),
-                    pw.Text(
-                      'Astsubay: ${filteredRows.where((r) => r.rutbe.contains('ASB') || r.rutbe.contains('ASTSB')).length}  •  '
-                      'Uzman Jandarma: ${filteredRows.where((r) => r.rutbe.contains('UZM.J')).length}  •  '
-                      'Uzman Erbaş: ${filteredRows.where((r) => r.rutbe.contains('UZM') && !r.rutbe.contains('UZM.J')).length}  •  '
-                      'Er/Söz.Er: ${filteredRows.where((r) => r.rutbe.contains('ER')).length}  •  '
-                      'TOPLAM MEVCUT: ${filteredRows.length} Personel',
-                      style: const pw.TextStyle(fontSize: 9),
-                    ),
-                  ],
-                ),
-              ),
+              builderSummaryBox(filteredRows),
               pw.SizedBox(height: 16),
 
               // Footer Stamp / Signature Space
