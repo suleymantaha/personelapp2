@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
@@ -10,6 +11,7 @@ class MilitaryRosterRow {
     required this.rutbe,
     required this.adSoyad,
     required this.diger,
+    this.groupCode = 'DIGER',
   });
 
   final int sNu;
@@ -17,6 +19,7 @@ class MilitaryRosterRow {
   final String rutbe;
   final String adSoyad;
   final String diger;
+  final String groupCode; // 'DIGER', 'HAZIR_KITA', 'GULUSKUR'
 }
 
 class MasterActivityData {
@@ -41,6 +44,151 @@ class MilitaryRosterExporter {
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&apos;');
+  }
+
+  /// Generates HTML Excel file (.xls) with UTF-8 BOM for 100% native mobile & desktop opening
+  static String generateMilitaryHtmlExcel({
+    required String faaliyetAdi,
+    required String tarih,
+    required List<MilitaryRosterRow> rows,
+  }) {
+    final titleHeader = escapeXml(
+      '$faaliyetAdi İSİM LİSTESİ - $tarih'.toUpperCase(),
+    );
+
+    final sb = StringBuffer()
+      ..writeln('<!DOCTYPE html>')
+      ..writeln(
+        '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">',
+      )
+      ..writeln('<head>')
+      ..writeln('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">')
+      ..writeln('<!--[if gte mso 9]>')
+      ..writeln('<xml>')
+      ..writeln(' <x:ExcelWorkbook>')
+      ..writeln('  <x:ExcelWorksheets>')
+      ..writeln('   <x:ExcelWorksheet>')
+      ..writeln('    <x:Name>İsim Listesi</x:Name>')
+      ..writeln('    <x:WorksheetOptions>')
+      ..writeln('     <x:DisplayGridlines/>')
+      ..writeln('    </x:WorksheetOptions>')
+      ..writeln('   </x:ExcelWorksheet>')
+      ..writeln('  </x:ExcelWorksheets>')
+      ..writeln(' </x:ExcelWorkbook>')
+      ..writeln('</xml>')
+      ..writeln('<![endif]-->')
+      ..writeln('<style>')
+      ..writeln(
+        '  table { border-collapse: collapse; font-family: Calibri, sans-serif; font-size: 11pt; width: 100%; }',
+      )
+      ..writeln(
+        '  th { border: 1px solid #000000; background-color: #D9D9D9; font-weight: bold; text-align: center; vertical-align: middle; height: 26px; }',
+      )
+      ..writeln('  td { border: 1px solid #000000; vertical-align: middle; padding: 5px 8px; }')
+      ..writeln('  .center { text-align: center; }')
+      ..writeln('  .left { text-align: left; }')
+      ..writeln('  .bold { font-weight: bold; }')
+      ..writeln(
+        '  .title { font-size: 14pt; font-weight: bold; text-align: center; background-color: #E8EEF5; height: 34px; border: 1px solid #000000; }',
+      )
+      ..writeln(
+        '  .summary-hdr { font-weight: bold; background-color: #F2F2F2; border: 1px solid #000000; padding: 6px; }',
+      )
+      ..writeln('</style>')
+      ..writeln('</head>')
+      ..writeln('<body>')
+      ..writeln('<table>')
+      // Title Row
+      ..writeln(
+        '  <tr><td colspan="5" class="title">$titleHeader</td></tr>',
+      )
+      ..writeln('  <tr style="height: 10px;"><td colspan="5" style="border: none;"></td></tr>')
+      // Table Headers
+      ..writeln('  <tr>')
+      ..writeln('    <th style="width: 50px;">S. NU</th>')
+      ..writeln('    <th style="width: 140px;">BİRLİĞİ</th>')
+      ..writeln('    <th style="width: 130px;">RÜTBE</th>')
+      ..writeln('    <th style="width: 220px;">ADI SOYADI</th>')
+      ..writeln('    <th style="width: 160px;">DİĞER</th>')
+      ..writeln('  </tr>');
+
+    // Data Rows with Vertical Merging
+    var i = 0;
+    final n = rows.length;
+
+    while (i < n) {
+      final currentBirlik = rows[i].birligi;
+      final currentGroup = rows[i].groupCode;
+      final isSpecialGroup = currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
+
+      var mergeCount = 0;
+      while (i + mergeCount + 1 < n &&
+          rows[i + mergeCount + 1].birligi == currentBirlik &&
+          rows[i + mergeCount + 1].groupCode == currentGroup) {
+        mergeCount++;
+      }
+
+      final spanAttr = (mergeCount > 0) ? ' rowspan="${mergeCount + 1}"' : '';
+
+      for (var j = 0; j <= mergeCount; j++) {
+        final r = rows[i + j];
+        sb.writeln('  <tr>');
+        // Column A: S. NU
+        sb.writeln('    <td class="center">${r.sNu}</td>');
+
+        // Column B: BİRLİĞİ (Merged vertically)
+        if (j == 0) {
+          sb.writeln('    <td$spanAttr class="center bold">${escapeXml(r.birligi)}</td>');
+        }
+
+        // Column C: RÜTBE
+        sb.writeln('    <td class="center">${escapeXml(r.rutbe)}</td>');
+
+        // Column D: ADI SOYADI
+        sb.writeln('    <td class="left">${escapeXml(r.adSoyad)}</td>');
+
+        // Column E: DİĞER (Merged vertically for Hazır Kıta & Gülüşkür, normal for others)
+        if (isSpecialGroup) {
+          if (j == 0) {
+            sb.writeln('    <td$spanAttr class="center bold">${escapeXml(r.diger)}</td>');
+          }
+        } else {
+          sb.writeln('    <td class="left">${escapeXml(r.diger)}</td>');
+        }
+
+        sb.writeln('  </tr>');
+      }
+
+      i += mergeCount + 1;
+    }
+
+    // Summary Section
+    final ranks = rows.map((r) => r.rutbe).toList();
+    final counts = RankSummaryCounts.calculate(ranks);
+
+    sb
+      ..writeln('  <tr style="height: 12px;"><td colspan="5" style="border: none;"></td></tr>')
+      ..writeln('  <tr><td colspan="5" class="summary-hdr">GÖREV VE MEVCUT ÖZETİ</td></tr>');
+
+    final summaryItems = [
+      if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
+      if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
+      if (counts.uzmanJandarmaCount > 0) 'Uzman Jandarma: ${counts.uzmanJandarmaCount}',
+      if (counts.uzmanErbasCount > 0) 'Uzman Erbaş: ${counts.uzmanErbasCount}',
+      if (counts.erCount > 0) 'Er / Erbaş: ${counts.erCount}',
+      'TOPLAM MEVCUT: ${counts.totalCount}',
+    ];
+
+    for (final item in summaryItems) {
+      sb.writeln('  <tr><td colspan="5" class="left">${escapeXml(item)}</td></tr>');
+    }
+
+    sb
+      ..writeln('</table>')
+      ..writeln('</body>')
+      ..writeln('</html>');
+
+    return sb.toString();
   }
 
   /// Generates SpreadsheetML XML (.xls) matching the official military daily activity duty list format
@@ -122,6 +270,24 @@ class MilitaryRosterExporter {
       )
       ..writeln('   </Borders>')
       ..writeln('  </Style>')
+      ..writeln('  <Style ss:ID="DataCellCenterBold">')
+      ..writeln('   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>')
+      ..writeln('   <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1"/>')
+      ..writeln('   <Borders>')
+      ..writeln(
+        '    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln(
+        '    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#B0B0B0"/>',
+      )
+      ..writeln('   </Borders>')
+      ..writeln('  </Style>')
       ..writeln('  <Style ss:ID="DataCellLeft">')
       ..writeln('   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>')
       ..writeln('   <Borders>')
@@ -142,20 +308,17 @@ class MilitaryRosterExporter {
       ..writeln(' </Styles>')
       ..writeln(' <Worksheet ss:Name="İsim Listesi">')
       ..writeln('  <Table>')
-      ..writeln('   <Column ss:Width="45"/>') // S.NU
-      ..writeln('   <Column ss:Width="120"/>') // BİRLİĞİ
-      ..writeln('   <Column ss:Width="110"/>') // RÜTBE
-      ..writeln('   <Column ss:Width="180"/>') // ADI SOYADI
-      ..writeln('   <Column ss:Width="160"/>') // DİĞER
-      // Title Row
+      ..writeln('   <Column ss:Width="45"/>')
+      ..writeln('   <Column ss:Width="120"/>')
+      ..writeln('   <Column ss:Width="110"/>')
+      ..writeln('   <Column ss:Width="180"/>')
+      ..writeln('   <Column ss:Width="160"/>')
       ..writeln('   <Row ss:Height="26">')
       ..writeln(
         '    <Cell ss:MergeAcross="4" ss:StyleID="MainTitle"><Data ss:Type="String">$titleHeader</Data></Cell>',
       )
       ..writeln('   </Row>')
-      // Empty spacing row
       ..writeln('   <Row ss:Height="10"/>')
-      // Column Header Row
       ..writeln('   <Row ss:Height="22">')
       ..writeln(
         '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">S. NU</Data></Cell>',
@@ -174,15 +337,18 @@ class MilitaryRosterExporter {
       )
       ..writeln('   </Row>');
 
-    // Data Rows with Vertical Birlik Merging
     var i = 0;
-    while (i < rows.length) {
-      final currentBirlik = rows[i].birligi;
-      var mergeCount = 0;
+    final n = rows.length;
 
-      // Count consecutive rows with same Birlik
-      while (i + mergeCount + 1 < rows.length &&
-          rows[i + mergeCount + 1].birligi == currentBirlik) {
+    while (i < n) {
+      final currentBirlik = rows[i].birligi;
+      final currentGroup = rows[i].groupCode;
+      final isSpecialGroup = currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
+
+      var mergeCount = 0;
+      while (i + mergeCount + 1 < n &&
+          rows[i + mergeCount + 1].birligi == currentBirlik &&
+          rows[i + mergeCount + 1].groupCode == currentGroup) {
         mergeCount++;
       }
 
@@ -197,7 +363,7 @@ class MilitaryRosterExporter {
         if (j == 0) {
           final mergeAttr = mergeCount > 0 ? ' ss:MergeDown="$mergeCount"' : '';
           buffer.writeln(
-            '    <Cell$mergeAttr ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.birligi)}</Data></Cell>',
+            '    <Cell$mergeAttr ss:StyleID="DataCellCenterBold"><Data ss:Type="String">${escapeXml(r.birligi)}</Data></Cell>',
           );
         }
 
@@ -207,30 +373,38 @@ class MilitaryRosterExporter {
           )
           ..writeln(
             '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.adSoyad)}</Data></Cell>',
-          )
-          ..writeln(
+          );
+
+        if (isSpecialGroup) {
+          if (j == 0) {
+            final mergeAttr = mergeCount > 0 ? ' ss:MergeDown="$mergeCount"' : '';
+            buffer.writeln(
+              '    <Cell$mergeAttr ss:StyleID="DataCellCenterBold"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>',
+            );
+          }
+        } else {
+          buffer.writeln(
             '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>',
-          )
-          ..writeln('   </Row>');
+          );
+        }
+
+        buffer.writeln('   </Row>');
       }
 
       i += mergeCount + 1;
     }
 
-    // Calculate Summary Totals matching modTekTimSecim.bas
     final ranks = rows.map((r) => r.rutbe).toList();
     final counts = RankSummaryCounts.calculate(ranks);
 
     buffer
       ..writeln('   <Row ss:Height="12"/>')
-      // Summary Section Header
       ..writeln('   <Row ss:Height="22">')
       ..writeln(
         '    <Cell ss:MergeAcross="4" ss:StyleID="SubTitle"><Data ss:Type="String">GÖREV VE MEVCUT ÖZETİ</Data></Cell>',
       )
       ..writeln('   </Row>');
 
-    // Summary Table Data
     final summaryItems = [
       if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
       if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
@@ -257,13 +431,92 @@ class MilitaryRosterExporter {
     return buffer.toString();
   }
 
-  /// Generates multi-worksheet Master Excel combining all daily activities
+  static String generateMilitaryText({
+    required String faaliyetAdi,
+    required String tarih,
+    required List<MilitaryRosterRow> rows,
+  }) {
+    final titleHeader = '$faaliyetAdi İSİM LİSTESİ - $tarih'.toUpperCase();
+    final sb = StringBuffer()
+      ..writeln('==============================================')
+      ..writeln(titleHeader)
+      ..writeln('==============================================')
+      ..writeln(
+        'S.NU | BİRLİĞİ          | RÜTBE        | ADI SOYADI            | DİĞER',
+      )
+      ..writeln(
+        '----------------------------------------------------------------------',
+      );
+
+    for (final r in rows) {
+      final sNuStr = r.sNu.toString().padRight(4);
+      final birlikStr = r.birligi.padRight(16);
+      final rutbeStr = r.rutbe.padRight(12);
+      final adStr = r.adSoyad.padRight(22);
+      sb.writeln('$sNuStr| $birlikStr| $rutbeStr| $adStr| ${r.diger}');
+    }
+
+    sb.writeln('==============================================');
+    return sb.toString();
+  }
+
+  /// Exports Excel roster with UTF-8 BOM and triggers native OS share
+  static Future<void> shareExcelRoster({
+    required String faaliyetAdi,
+    required String tarih,
+    required List<MilitaryRosterRow> rows,
+  }) async {
+    final htmlContent = generateMilitaryHtmlExcel(
+      faaliyetAdi: faaliyetAdi,
+      tarih: tarih,
+      rows: rows,
+    );
+
+    final dir = await getTemporaryDirectory();
+    final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
+    final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.xls');
+    
+    // Write UTF-8 BOM byte sequence [0xEF, 0xBB, 0xBF] followed by HTML bytes
+    final bytes = <int>[0xEF, 0xBB, 0xBF, ...utf8.encode(htmlContent)];
+    await file.writeAsBytes(bytes);
+
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: '$faaliyetAdi - Resmi İsim Listesi Excel Dökümanı',
+      ),
+    );
+  }
+
+  /// Shares Master Daily Excel containing all activities
+  static Future<void> shareMasterDailyExcel({
+    required String title,
+    required String dateStr,
+    required List<MasterActivityData> activities,
+  }) async {
+    final xmlContent = generateMasterDailyXml(
+      title: title,
+      activities: activities,
+    );
+
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/Gunluk_Tum_Faaliyetler_$dateStr.xls');
+    final bytes = <int>[0xEF, 0xBB, 0xBF, ...utf8.encode(xmlContent)];
+    await file.writeAsBytes(bytes);
+
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: '$title - Günlük Tüm Faaliyetler Birleşik Excel Dökümanı',
+      ),
+    );
+  }
+
+  /// Master XML generator helper
   static String generateMasterDailyXml({
     required String title,
     required List<MasterActivityData> activities,
   }) {
-    final mainHeader = escapeXml(title.toUpperCase());
-
     final buffer = StringBuffer()
       ..writeln('<?xml version="1.0" encoding="utf-8"?>')
       ..writeln('<?mso-application progid="Excel.Sheet"?>')
@@ -351,8 +604,7 @@ class MilitaryRosterExporter {
       ..writeln('   </Borders>')
       ..writeln('  </Style>')
       ..writeln(' </Styles>')
-      // 1. Consolidated Worksheet (GENEL İCMAL LİSTESİ)
-      ..writeln(' <Worksheet ss:Name="GENEL İCMAL LİSTESİ">')
+      ..writeln(' <Worksheet ss:Name="Tüm Faaliyetler">')
       ..writeln('  <Table>')
       ..writeln('   <Column ss:Width="45"/>')
       ..writeln('   <Column ss:Width="120"/>')
@@ -361,94 +613,19 @@ class MilitaryRosterExporter {
       ..writeln('   <Column ss:Width="160"/>')
       ..writeln('   <Row ss:Height="28">')
       ..writeln(
-        '    <Cell ss:MergeAcross="4" ss:StyleID="MainTitle"><Data ss:Type="String">$mainHeader</Data></Cell>',
+        '    <Cell ss:MergeAcross="4" ss:StyleID="MainTitle"><Data ss:Type="String">${escapeXml(title)}</Data></Cell>',
       )
-      ..writeln('   </Row>')
-      ..writeln('   <Row ss:Height="12"/>');
+      ..writeln('   </Row>');
 
-    var globalNu = 1;
     for (final act in activities) {
-      final actHeader = escapeXml(
-        'GÖREV: ${act.faaliyetAdi.toUpperCase()} (Tarih: ${act.tarih} | Oluşturan: ${act.olusturanKullanici})',
-      );
       buffer
-        ..writeln('   <Row ss:Height="24">')
-        ..writeln(
-          '    <Cell ss:MergeAcross="4" ss:StyleID="SectionHeader"><Data ss:Type="String">$actHeader</Data></Cell>',
-        )
-        ..writeln('   </Row>')
+        ..writeln('   <Row ss:Height="12"/>')
         ..writeln('   <Row ss:Height="22">')
         ..writeln(
-          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">S. NU</Data></Cell>',
-        )
-        ..writeln(
-          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">BİRLİĞİ</Data></Cell>',
-        )
-        ..writeln(
-          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">RÜTBE</Data></Cell>',
-        )
-        ..writeln(
-          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">ADI SOYADI</Data></Cell>',
-        )
-        ..writeln(
-          '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">GÖREV / AÇIKLAMA</Data></Cell>',
-        )
-        ..writeln('   </Row>');
-
-      for (final r in act.rows) {
-        buffer
-          ..writeln('   <Row ss:Height="20">')
-          ..writeln(
-            '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="Number">${globalNu++}</Data></Cell>',
-          )
-          ..writeln(
-            '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.birligi)}</Data></Cell>',
-          )
-          ..writeln(
-            '    <Cell ss:StyleID="DataCellCenter"><Data ss:Type="String">${escapeXml(r.rutbe)}</Data></Cell>',
-          )
-          ..writeln(
-            '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.adSoyad)}</Data></Cell>',
-          )
-          ..writeln(
-            '    <Cell ss:StyleID="DataCellLeft"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>',
-          )
-          ..writeln('   </Row>');
-      }
-
-      buffer.writeln('   <Row ss:Height="12"/>');
-    }
-
-    buffer
-      ..writeln('  </Table>')
-      ..writeln(' </Worksheet>');
-
-    // 2. Individual Worksheets per Activity
-    var sheetIdx = 1;
-    for (final act in activities) {
-      final rawSheetName = '${sheetIdx++}. ${act.faaliyetAdi}';
-      final cleanSheetName = escapeXml(
-        rawSheetName.length > 30 ? rawSheetName.substring(0, 30) : rawSheetName,
-      );
-      final titleHeader = escapeXml(
-        '${act.faaliyetAdi} İSİM LİSTESİ - ${act.tarih}'.toUpperCase(),
-      );
-
-      buffer
-        ..writeln(' <Worksheet ss:Name="$cleanSheetName">')
-        ..writeln('  <Table>')
-        ..writeln('   <Column ss:Width="45"/>')
-        ..writeln('   <Column ss:Width="120"/>')
-        ..writeln('   <Column ss:Width="110"/>')
-        ..writeln('   <Column ss:Width="180"/>')
-        ..writeln('   <Column ss:Width="160"/>')
-        ..writeln('   <Row ss:Height="26">')
-        ..writeln(
-          '    <Cell ss:MergeAcross="4" ss:StyleID="MainTitle"><Data ss:Type="String">$titleHeader</Data></Cell>',
+          '    <Cell ss:MergeAcross="4" ss:StyleID="SectionHeader"><Data ss:Type="String">${escapeXml(act.faaliyetAdi.toUpperCase())} (${act.tarih})</Data></Cell>',
         )
         ..writeln('   </Row>')
-        ..writeln('   <Row ss:Height="10"/>')
-        ..writeln('   <Row ss:Height="22">')
+        ..writeln('   <Row ss:Height="20">')
         ..writeln(
           '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">S. NU</Data></Cell>',
         )
@@ -486,95 +663,17 @@ class MilitaryRosterExporter {
           )
           ..writeln('   </Row>');
       }
-
-      buffer
-        ..writeln('  </Table>')
-        ..writeln(' </Worksheet>');
     }
 
-    buffer.writeln('</Workbook>');
+    buffer
+      ..writeln('  </Table>')
+      ..writeln(' </Worksheet>')
+      ..writeln('</Workbook>');
+
     return buffer.toString();
   }
 
-  /// Formats the roster into a clean ASCII table suitable for WhatsApp / Telegram
-  static String generateMilitaryText({
-    required String faaliyetAdi,
-    required String tarih,
-    required List<MilitaryRosterRow> rows,
-  }) {
-    final titleHeader = '$faaliyetAdi İSİM LİSTESİ - $tarih'.toUpperCase();
-    final sb = StringBuffer()
-      ..writeln('==============================================')
-      ..writeln(titleHeader)
-      ..writeln('==============================================')
-      ..writeln(
-        'S.NU | BİRLİĞİ          | RÜTBE        | ADI SOYADI            | DİĞER',
-      )
-      ..writeln(
-        '----------------------------------------------------------------------',
-      );
-
-    for (final r in rows) {
-      final sNuStr = r.sNu.toString().padRight(4);
-      final birlikStr = r.birligi.padRight(16);
-      final rutbeStr = r.rutbe.padRight(12);
-      final adStr = r.adSoyad.padRight(22);
-      sb.writeln('$sNuStr| $birlikStr| $rutbeStr| $adStr| ${r.diger}');
-    }
-
-    sb.writeln('==============================================');
-    return sb.toString();
-  }
-
-  /// Exports Excel XML and triggers native OS share
-  static Future<void> shareExcelRoster({
-    required String faaliyetAdi,
-    required String tarih,
-    required List<MilitaryRosterRow> rows,
-  }) async {
-    final xmlContent = generateMilitaryXml(
-      faaliyetAdi: faaliyetAdi,
-      tarih: tarih,
-      rows: rows,
-    );
-
-    final dir = await getTemporaryDirectory();
-    final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-    final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.xls');
-    await file.writeAsString(xmlContent);
-
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path)],
-        text: '$faaliyetAdi - Resmi İsim Listesi Excel Dökümanı',
-      ),
-    );
-  }
-
-  /// Shares Master Daily Excel containing all activities
-  static Future<void> shareMasterDailyExcel({
-    required String title,
-    required String dateStr,
-    required List<MasterActivityData> activities,
-  }) async {
-    final xmlContent = generateMasterDailyXml(
-      title: title,
-      activities: activities,
-    );
-
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/Gunluk_Tum_Faaliyetler_$dateStr.xls');
-    await file.writeAsString(xmlContent);
-
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path)],
-        text: '$title - Günlük Tüm Faaliyetler Birleşik Excel Dökümanı',
-      ),
-    );
-  }
-
-  /// Shares the formatted text roster directly
+  /// Shares formatted text roster
   static Future<void> shareTextRoster({
     required String faaliyetAdi,
     required String tarih,

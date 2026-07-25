@@ -621,11 +621,11 @@ class _AssignmentDetails extends ConsumerWidget {
 
     final existingPersonnelIds = assignments.map((a) => a.personelId).toSet();
 
-    int getDutyPriority(String duty) {
+    int getDutyGroupOrder(String duty) {
       final upper = duty.toUpperCase().trim();
-      if (upper.contains('HAZIR KITA') || upper.contains('HAZIRKITA')) return 1;
-      if (upper.contains('GÜLÜŞKÜR') || upper.contains('GULUSKUR')) return 2;
-      return 3;
+      if (upper.contains('HAZIR KITA') || upper.contains('HAZIRKITA')) return 2;
+      if (upper.contains('GÜLÜŞKÜR') || upper.contains('GULUSKUR')) return 3;
+      return 1; // Operational duties (Nöbet, Heybet, Devriye etc.) FIRST at the top
     }
 
     final allSquadsAsync = ref.watch(allSquadsProvider);
@@ -636,10 +636,10 @@ class _AssignmentDetails extends ConsumerWidget {
       return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
     }).toList()
       ..sort((a, b) {
-        // 1. Group by Duty Priority (HAZIR KITA -> GÜLÜŞKÜR -> DİĞER GÖREVLER)
-        final priorityA = getDutyPriority(a.gorevVeyaIzin);
-        final priorityB = getDutyPriority(b.gorevVeyaIzin);
-        if (priorityA != priorityB) return priorityA.compareTo(priorityB);
+        // 1. Operational duties first, Hazır Kıta and Gülüşkür AT THE VERY BOTTOM!
+        final orderA = getDutyGroupOrder(a.gorevVeyaIzin);
+        final orderB = getDutyGroupOrder(b.gorevVeyaIzin);
+        if (orderA != orderB) return orderA.compareTo(orderB);
 
         final pA = pMap[a.personelId];
         final pB = pMap[b.personelId];
@@ -686,6 +686,14 @@ class _AssignmentDetails extends ConsumerWidget {
         digerText = '$digerText (${atama.aciklama})';
       }
 
+      var groupCode = 'DIGER';
+      final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
+      if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
+        groupCode = 'HAZIR_KITA';
+      } else if (dutyUpper.contains('GÜLÜŞKÜR') || dutyUpper.contains('GULUSKUR')) {
+        groupCode = 'GULUSKUR';
+      }
+
       rosterRows.add(
         MilitaryRosterRow(
           sNu: i + 1,
@@ -693,6 +701,7 @@ class _AssignmentDetails extends ConsumerWidget {
           rutbe: rutbe,
           adSoyad: adSoyad,
           diger: digerText,
+          groupCode: groupCode,
         ),
       );
     }

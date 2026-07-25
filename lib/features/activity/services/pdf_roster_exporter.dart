@@ -43,6 +43,208 @@ class PdfRosterExporter {
       ),
     );
   }
+
+  /// Builds PDF Table with merged vertical cells for BİRLİĞİ and DİĞER (HAZIR KITA & GÜLÜŞKÜR)
+  static pw.Widget buildPdfTable(List<MilitaryRosterRow> rows) {
+    final tableRows = <pw.TableRow>[];
+
+    // Header Row
+    tableRows.add(
+      pw.TableRow(
+        decoration: const pw.BoxDecoration(color: PdfColors.grey300),
+        children: [
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'S. NU',
+              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'BİRLİĞİ',
+              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'RÜTBE',
+              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'ADI SOYADI',
+              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'DİĞER',
+              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final n = rows.length;
+    if (n == 0) {
+      return pw.Table(children: tableRows);
+    }
+
+    final birlikStart = List<int>.filled(n, 0);
+    final birlikEnd = List<int>.filled(n, 0);
+    final specialStart = List<int>.filled(n, -1);
+    final specialEnd = List<int>.filled(n, -1);
+
+    // 1. Calculate Birlik merged blocks
+    var idx = 0;
+    while (idx < n) {
+      final bName = rows[idx].birligi;
+      final gCode = rows[idx].groupCode;
+      var endIdx = idx;
+      while (endIdx + 1 < n &&
+          rows[endIdx + 1].birligi == bName &&
+          rows[endIdx + 1].groupCode == gCode) {
+        endIdx++;
+      }
+      for (var k = idx; k <= endIdx; k++) {
+        birlikStart[k] = idx;
+        birlikEnd[k] = endIdx;
+      }
+      idx = endIdx + 1;
+    }
+
+    // 2. Calculate Special duty merged blocks (HAZIR KITA & GÜLÜŞKÜR)
+    idx = 0;
+    while (idx < n) {
+      final gCode = rows[idx].groupCode;
+      final isSpecial = gCode == 'HAZIR_KITA' || gCode == 'GULUSKUR';
+      if (isSpecial) {
+        final bName = rows[idx].birligi;
+        var endIdx = idx;
+        while (endIdx + 1 < n &&
+            rows[endIdx + 1].groupCode == gCode &&
+            rows[endIdx + 1].birligi == bName) {
+          endIdx++;
+        }
+        for (var k = idx; k <= endIdx; k++) {
+          specialStart[k] = idx;
+          specialEnd[k] = endIdx;
+        }
+        idx = endIdx + 1;
+      } else {
+        idx++;
+      }
+    }
+
+    for (var i = 0; i < n; i++) {
+      final r = rows[i];
+      final bSt = birlikStart[i];
+      final bEn = birlikEnd[i];
+      final isBFirst = i == bSt;
+      final isBLast = i == bEn;
+
+      final spSt = specialStart[i];
+      final spEn = specialEnd[i];
+      final isSpecial = spSt != -1;
+      final isSpFirst = isSpecial && i == spSt;
+      final isSpLast = isSpecial && i == spEn;
+
+      final birlikBorder = pw.Border(
+        top: isBFirst ? const pw.BorderSide(width: 0.8) : pw.BorderSide.none,
+        bottom: isBLast ? const pw.BorderSide(width: 0.8) : pw.BorderSide.none,
+        left: const pw.BorderSide(width: 0.8),
+        right: const pw.BorderSide(width: 0.8),
+      );
+
+      final specialBorder = isSpecial
+          ? pw.Border(
+              top: isSpFirst ? const pw.BorderSide(width: 0.8) : pw.BorderSide.none,
+              bottom: isSpLast ? const pw.BorderSide(width: 0.8) : pw.BorderSide.none,
+              left: const pw.BorderSide(width: 0.8),
+              right: const pw.BorderSide(width: 0.8),
+            )
+          : pw.Border.all(width: 0.8);
+
+      final standardBorder = pw.Border.all(width: 0.8);
+
+      tableRows.add(
+        pw.TableRow(
+          children: [
+            // S. NU
+            pw.Container(
+              decoration: pw.BoxDecoration(border: standardBorder),
+              padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              alignment: pw.Alignment.center,
+              child: pw.Text('${i + 1}', style: const pw.TextStyle(fontSize: 9)),
+            ),
+            // BİRLİĞİ (Merged Cell Visuals)
+            pw.Container(
+              decoration: pw.BoxDecoration(border: birlikBorder),
+              padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              alignment: pw.Alignment.center,
+              child: pw.Text(
+                isBFirst ? r.birligi : '',
+                style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+              ),
+            ),
+            // RÜTBE
+            pw.Container(
+              decoration: pw.BoxDecoration(border: standardBorder),
+              padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              alignment: pw.Alignment.center,
+              child: pw.Text(r.rutbe, style: const pw.TextStyle(fontSize: 9)),
+            ),
+            // ADI SOYADI
+            pw.Container(
+              decoration: pw.BoxDecoration(border: standardBorder),
+              padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+              alignment: pw.Alignment.centerLeft,
+              child: pw.Text(r.adSoyad, style: const pw.TextStyle(fontSize: 9)),
+            ),
+            // DİĞER (Merged Cell Visuals for HAZIR KITA & GÜLÜŞKÜR)
+            pw.Container(
+              decoration: pw.BoxDecoration(border: specialBorder),
+              padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              alignment: isSpecial ? pw.Alignment.center : pw.Alignment.centerLeft,
+              child: pw.Text(
+                isSpecial
+                    ? (isSpFirst ? r.diger : '')
+                    : r.diger,
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: isSpecial ? pw.FontWeight.bold : pw.FontWeight.normal,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return pw.Table(
+      columnWidths: {
+        0: const pw.FlexColumnWidth(0.8),
+        1: const pw.FlexColumnWidth(2.0),
+        2: const pw.FlexColumnWidth(2.2),
+        3: const pw.FlexColumnWidth(3.8),
+        4: const pw.FlexColumnWidth(2.5),
+      },
+      children: tableRows,
+    );
+  }
+
   /// Generates a PDF document for official Jandarma daily activity roster
   static Future<pw.Document> generateRosterPdf({
     required String faaliyetAdi,
@@ -67,7 +269,6 @@ class PdfRosterExporter {
           : null,
     );
 
-    // Filter out non-operational duties (İzinli, İstirahatli, Raporlu, Sevk)
     final filteredRows = rows
         .where((r) => DutyOrLeaveType.isOperationalDuty(r.diger))
         .toList();
@@ -101,45 +302,11 @@ class PdfRosterExporter {
               ),
               pw.SizedBox(height: 12),
 
-              // Roster Table
-              pw.TableHelper.fromTextArray(
-                border: pw.TableBorder.all(width: 0.8),
-                headerStyle: const pw.TextStyle(
-                  fontSize: 10,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-                headerDecoration: const pw.BoxDecoration(
-                  color: PdfColors.grey300,
-                ),
-                cellHeight: 22,
-                cellAlignments: {
-                  0: pw.Alignment.center,
-                  1: pw.Alignment.center,
-                  2: pw.Alignment.center,
-                  3: pw.Alignment.centerLeft,
-                  4: pw.Alignment.centerLeft,
-                },
-                headers: <String>[
-                  'S. NU',
-                  'BİRLİĞİ',
-                  'RÜTBE',
-                  'ADI SOYADI',
-                  'DİĞER',
-                ],
-                data: List<List<String>>.generate(filteredRows.length, (i) {
-                  final r = filteredRows[i];
-                  return [
-                    (i + 1).toString(),
-                    r.birligi,
-                    r.rutbe,
-                    r.adSoyad,
-                    r.diger,
-                  ];
-                }),
-              ),
+              // Custom Roster Table with Merged Cells
+              buildPdfTable(filteredRows),
               pw.SizedBox(height: 12),
 
-              // Summary Box (GÖREV VE MEVCUT ÖZETİ) matching modTekTimSecim.bas
+              // Summary Box (GÖREV VE MEVCUT ÖZETİ)
               builderSummaryBox(filteredRows),
               pw.SizedBox(height: 16),
 
@@ -184,35 +351,16 @@ class PdfRosterExporter {
       rows: rows,
     );
 
-    final bytes = await pdf.save();
     final dir = await getTemporaryDirectory();
     final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-    final file = File('${dir.path}/${sanitizedTitle}_$tarih.pdf');
-    await file.writeAsBytes(bytes);
+    final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.pdf');
+    await file.writeAsBytes(await pdf.save());
 
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
-        text: '$faaliyetAdi - Resmi İsim Listesi PDF Çıktısı',
+        text: '$faaliyetAdi - Resmi İsim Listesi PDF Dökümanı',
       ),
-    );
-  }
-
-  /// Directly sends PDF to native print dialog
-  static Future<void> printPdfRoster({
-    required String faaliyetAdi,
-    required String tarih,
-    required List<MilitaryRosterRow> rows,
-  }) async {
-    final pdf = await generateRosterPdf(
-      faaliyetAdi: faaliyetAdi,
-      tarih: tarih,
-      rows: rows,
-    );
-
-    await Printing.layoutPdf(
-      onLayout: (format) async => pdf.save(),
-      name: '${faaliyetAdi}_$tarih.pdf',
     );
   }
 }
