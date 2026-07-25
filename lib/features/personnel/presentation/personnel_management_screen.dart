@@ -73,7 +73,10 @@ class _PersonnelManagementScreenState
                   children: [
                     Text(
                       'Bu personeli bir Time Komutan olarak atayabilir ve giriş yetkisi verebilirsiniz.',
-                      style: TextStyle(fontSize: 13, color: context.textPrimary),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: context.textPrimary,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     TextField(
@@ -88,7 +91,9 @@ class _PersonnelManagementScreenState
                       data: (squads) {
                         return DropdownButtonFormField<int?>(
                           initialValue: selectedSquadId,
-                          decoration: const InputDecoration(labelText: 'Komutanı Olacağı Tim'),
+                          decoration: const InputDecoration(
+                            labelText: 'Komutanı Olacağı Tim',
+                          ),
                           items: squads.map((s) {
                             return DropdownMenuItem<int?>(
                               value: s.id,
@@ -106,7 +111,10 @@ class _PersonnelManagementScreenState
                     const SizedBox(height: 8),
                     Text(
                       '💡 Personel ilk girişinde kendi parolasını belirleyecektir.',
-                      style: TextStyle(fontSize: 12, color: context.textSecondary),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -125,7 +133,9 @@ class _PersonnelManagementScreenState
                     final u = userCtrl.text.trim();
                     if (u.isEmpty || selectedSquadId == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Lütfen kullanıcı adı ve tim seçiniz.')),
+                        const SnackBar(
+                          content: Text('Lütfen kullanıcı adı ve tim seçiniz.'),
+                        ),
                       );
                       return;
                     }
@@ -141,7 +151,9 @@ class _PersonnelManagementScreenState
                       Navigator.of(ctx).pop();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('${p.adSoyad} Tim Komutanı olarak yetkilendirildi!'),
+                          content: Text(
+                            '${p.adSoyad} Tim Komutanı olarak yetkilendirildi!',
+                          ),
                           backgroundColor: context.approvedColor,
                         ),
                       );
@@ -173,7 +185,9 @@ class _PersonnelManagementScreenState
                 return commandersAsync.when(
                   data: (commanders) {
                     if (commanders.isEmpty) {
-                      return const Text('Kayıtlı Tim Komutanı hesabı bulunamadı.');
+                      return const Text(
+                        'Kayıtlı Tim Komutanı hesabı bulunamadı.',
+                      );
                     }
 
                     return ListView.builder(
@@ -191,7 +205,9 @@ class _PersonnelManagementScreenState
                                   children: [
                                     Text(
                                       'Komutan: ${cmd.kullaniciAdi}',
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     const SizedBox(height: 4),
                                     DropdownButtonFormField<int?>(
@@ -204,16 +220,22 @@ class _PersonnelManagementScreenState
                                         DropdownMenuItem<int?>(
                                           child: Text(
                                             'BOŞTA / Yetkisiz',
-                                            style: TextStyle(color: context.rejectedColor),
+                                            style: TextStyle(
+                                              color: context.rejectedColor,
+                                            ),
                                           ),
                                         ),
-                                        ...squads.map((s) => DropdownMenuItem<int?>(
-                                              value: s.id,
-                                              child: Text(s.timAdi),
-                                            )),
+                                        ...squads.map(
+                                          (s) => DropdownMenuItem<int?>(
+                                            value: s.id,
+                                            child: Text(s.timAdi),
+                                          ),
+                                        ),
                                       ],
                                       onChanged: (newTimId) async {
-                                        final repo = ref.read(personnelRepositoryProvider);
+                                        final repo = ref.read(
+                                          personnelRepositoryProvider,
+                                        );
                                         await repo.assignCommanderToSquad(
                                           userId: cmd.id,
                                           timId: newTimId,
@@ -231,7 +253,8 @@ class _PersonnelManagementScreenState
                       },
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (err, st) => Text('Hata: $err'),
                 );
               },
@@ -261,7 +284,10 @@ class _PersonnelManagementScreenState
                           const SizedBox(height: 8),
                           Text(
                             '💡 Şifre istenmez. Kullanıcı ilk girişinde kendi parolasını belirler.',
-                            style: TextStyle(fontSize: 12, color: context.textSecondary),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: context.textSecondary,
+                            ),
                           ),
                         ],
                       ),
@@ -280,7 +306,9 @@ class _PersonnelManagementScreenState
                               kullaniciAdi: u,
                               rol: 'tim_komutani',
                             );
-                            if (dialogCtx.mounted) Navigator.of(dialogCtx).pop();
+                            if (dialogCtx.mounted) {
+                              Navigator.of(dialogCtx).pop();
+                            }
                           }
                         },
                         child: const Text('YETKİLENDİR'),
@@ -412,425 +440,518 @@ class _PersonnelManagementScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            // 1. Search Bar
-            TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Personel ad, rütbe veya birlik ara...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+              // 1. Search Bar
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Personel ad, rütbe veya birlik ara...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: context.colorScheme.surfaceContainerHighest,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
-                filled: true,
-                fillColor: context.colorScheme.surfaceContainerHighest,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                onChanged: (val) {
+                  setState(() => _searchQuery = val.trim());
+                },
               ),
-              onChanged: (val) {
-                setState(() => _searchQuery = val.trim());
-              },
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // 2. Tim Filter / Info Header
-            if (isAdmin) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Tim Filtresi',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.group_add, size: 18),
-                    label: const Text('Yeni Tim'),
-                    onPressed: _showAddSquadDialog,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              squadsAsync.when(
-                data: (rawSquads) {
-                  final squads = MilitaryStructureHelper.sortSquads(
-                    rawSquads,
-                    (s) => s.timAdi,
-                  );
-                  final filterChips = [
-                    FilterChip(
-                      avatar: const Icon(Icons.groups, size: 16),
-                      label: const Text('Tüm Personel'),
-                      selected: _selectedFilterTimId == null,
-                      onSelected: (selected) {
-                        setState(() => _selectedFilterTimId = null);
-                      },
-                      selectedColor: context.accentOrOlive,
-                      labelStyle: TextStyle(
-                        color: _selectedFilterTimId == null ? Colors.white : context.textPrimary,
-                        fontWeight: _selectedFilterTimId == null ? FontWeight.bold : FontWeight.normal,
+              // 2. Tim Filter / Info Header
+              if (isAdmin) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Tim Filtresi',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    ...squads.map((sq) {
-                      final isSelected = _selectedFilterTimId == sq.id;
-                      return FilterChip(
-                        avatar: Icon(
-                          Icons.shield,
-                          size: 16,
-                          color: isSelected ? Colors.white : context.accentOrOlive,
-                        ),
-                        label: Text(sq.timAdi),
-                        selected: isSelected,
+                    TextButton.icon(
+                      icon: const Icon(Icons.group_add, size: 18),
+                      label: const Text('Yeni Tim'),
+                      onPressed: _showAddSquadDialog,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                squadsAsync.when(
+                  data: (rawSquads) {
+                    final squads = MilitaryStructureHelper.sortSquads(
+                      rawSquads,
+                      (s) => s.timAdi,
+                    );
+                    final filterChips = [
+                      FilterChip(
+                        avatar: const Icon(Icons.groups, size: 16),
+                        label: const Text('Tüm Personel'),
+                        selected: _selectedFilterTimId == null,
                         onSelected: (selected) {
-                          setState(() {
-                            _selectedFilterTimId = selected ? sq.id : null;
-                          });
+                          setState(() => _selectedFilterTimId = null);
                         },
                         selectedColor: context.accentOrOlive,
                         labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : context.textPrimary,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: _selectedFilterTimId == null
+                              ? Colors.white
+                              : context.textPrimary,
+                          fontWeight: _selectedFilterTimId == null
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
-                      );
-                    }),
-                    FilterChip(
-                      avatar: Icon(
-                        Icons.person_off,
-                        size: 16,
-                        color: _selectedFilterTimId == -1
-                            ? Colors.white
-                            : context.rejectedColor,
                       ),
-                      label: const Text('Boşta / Kadro Dışı'),
-                      selected: _selectedFilterTimId == -1,
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedFilterTimId = selected ? -1 : null;
-                        });
-                      },
-                      selectedColor: context.rejectedBorderColor,
-                      labelStyle: TextStyle(
-                        color: _selectedFilterTimId == -1 ? Colors.white : context.textPrimary,
-                        fontWeight: _selectedFilterTimId == -1 ? FontWeight.bold : FontWeight.normal,
+                      ...squads.map((sq) {
+                        final isSelected = _selectedFilterTimId == sq.id;
+                        return FilterChip(
+                          avatar: Icon(
+                            Icons.shield,
+                            size: 16,
+                            color: isSelected
+                                ? Colors.white
+                                : context.accentOrOlive,
+                          ),
+                          label: Text(sq.timAdi),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedFilterTimId = selected ? sq.id : null;
+                            });
+                          },
+                          selectedColor: context.accentOrOlive,
+                          labelStyle: TextStyle(
+                            color: isSelected
+                                ? Colors.white
+                                : context.textPrimary,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        );
+                      }),
+                      FilterChip(
+                        avatar: Icon(
+                          Icons.person_off,
+                          size: 16,
+                          color: _selectedFilterTimId == -1
+                              ? Colors.white
+                              : context.rejectedColor,
+                        ),
+                        label: const Text('Boşta / Kadro Dışı'),
+                        selected: _selectedFilterTimId == -1,
+                        onSelected: (selected) {
+                          setState(() {
+                            _selectedFilterTimId = selected ? -1 : null;
+                          });
+                        },
+                        selectedColor: context.rejectedBorderColor,
+                        labelStyle: TextStyle(
+                          color: _selectedFilterTimId == -1
+                              ? Colors.white
+                              : context.textPrimary,
+                          fontWeight: _selectedFilterTimId == -1
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
                       ),
-                    ),
-                  ];
+                    ];
 
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: filterChips
-                          .map((chip) => Padding(
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: filterChips
+                            .map(
+                              (chip) => Padding(
                                 padding: const EdgeInsets.only(right: 6),
                                 child: chip,
-                              ))
-                          .toList(),
-                    ),
-                  );
-                },
-                loading: () => const LinearProgressIndicator(),
-                error: (err, st) => Text('Hata: $err'),
-              ),
-            ] else ...[
-              squadsAsync.when(
-                data: (squads) {
-                  final squadMap = {for (final s in squads) s.id: s.timAdi};
-                  final timName = session?.timId != null ? squadMap[session?.timId] ?? 'Tüm Birlik' : 'Abonelik Yok';
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: context.squadBadgeBg,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: context.cardBorderColor),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.shield, color: context.squadBadgeText, size: 22),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Yetkili Olduğunuz Tim: $timName',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: context.squadBadgeText,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                loading: () => const SizedBox.shrink(),
-                error: (err, st) => const SizedBox.shrink(),
-              ),
-            ],
-
-            const SizedBox(height: 20),
-
-            // 3. Personnel List Grouped by Squad (Matching Activity Form layout)
-            personnelAsync.when(
-              data: (rawPersonnelList) {
-                final squads = squadsAsync.value ?? [];
-                final squadMap = {for (final s in squads) s.id: s.timAdi};
-
-                // Filter by squad & commander permissions & search query
-                final personnelList = rawPersonnelList.where((p) {
-                  // If Commander, restrict to commander's squad
-                  if (!isAdmin && session?.timId != null && p.timId != session?.timId) {
-                    return false;
-                  }
-
-                  // Squad filter chip selection
-                  if (_selectedFilterTimId != null) {
-                    if (_selectedFilterTimId == -1) {
-                      if (p.timId != null) return false;
-                    } else {
-                      if (p.timId != _selectedFilterTimId) return false;
-                    }
-                  }
-
-                  // Search query filter
-                  if (_searchQuery.isNotEmpty) {
-                    final q = _searchQuery.toLowerCase();
-                    final nameMatch = p.adSoyad.toLowerCase().contains(q);
-                    final rankMatch = p.rutbe.toLowerCase().contains(q);
-                    final unitMatch = p.birlik.toLowerCase().contains(q);
-                    if (!nameMatch && !rankMatch && !unitMatch) return false;
-                  }
-
-                  return true;
-                }).toList();
-
-                if (personnelList.isEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Center(
-                      child: Text(
-                        'Kriterlere uygun personel bulunamadı.',
-                        style: TextStyle(color: context.textSecondary),
+                              ),
+                            )
+                            .toList(),
                       ),
-                    ),
-                  );
-                }
-
-                // Group personnel by Squad (timId)
-                final grouped = <int?, List<PersonelTableData>>{};
-                for (final p in personnelList) {
-                  grouped.putIfAbsent(p.timId, () => []).add(p);
-                }
-
-                final sortedTimIds = grouped.keys.toList()
-                  ..sort((a, b) {
-                    if (a == null) return 1;
-                    if (b == null) return -1;
-                    final nameA = squadMap[a] ?? '';
-                    final nameB = squadMap[b] ?? '';
-                    final wA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
-                    final wB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
-                    if (wA != wB) return wA.compareTo(wB);
-                    return nameA.compareTo(nameB);
-                  });
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Personel Listesi (${personnelList.length} Kişi)',
-                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          'Resmi Tim & Kıdem Sıralı',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: context.accentOrOlive,
+                    );
+                  },
+                  loading: () => const LinearProgressIndicator(),
+                  error: (err, st) => Text('Hata: $err'),
+                ),
+              ] else ...[
+                squadsAsync.when(
+                  data: (squads) {
+                    final squadMap = {for (final s in squads) s.id: s.timAdi};
+                    final timName = session?.timId != null
+                        ? squadMap[session?.timId] ?? 'Tüm Birlik'
+                        : 'Abonelik Yok';
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: context.squadBadgeBg,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: context.cardBorderColor),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.shield,
+                            color: context.squadBadgeText,
+                            size: 22,
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-
-                    ...sortedTimIds.map((timId) {
-                      final members = grouped[timId]!
-                        ..sort(
-                          (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
-                        );
-
-                      final squadName = timId == null
-                          ? 'Boşta / Kadro Dışı Personeller'
-                          : (squadMap[timId] ?? 'Bilinmeyen Tim');
-
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: context.cardBorderColor),
-                        ),
-                        child: ExpansionTile(
-                          initiallyExpanded: true,
-                          title: Text(
-                            squadName,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                              color: context.accentOrOlive,
-                            ),
-                          ),
-                          trailing: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: context.accentOrOlive,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                          const SizedBox(width: 10),
+                          Expanded(
                             child: Text(
-                              '${members.length} Personel',
+                              'Yetkili Olduğunuz Tim: $timName',
                               style: TextStyle(
-                                color: context.onAccentOrOlive,
-                                fontSize: 12,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
+                                color: context.squadBadgeText,
                               ),
                             ),
                           ),
-                          children: [
-                            Divider(height: 1, color: context.cardBorderColor),
-                            ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: members.length,
-                              separatorBuilder: (_, _) => Divider(
+                        ],
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (err, st) => const SizedBox.shrink(),
+                ),
+              ],
+
+              const SizedBox(height: 20),
+
+              // 3. Personnel List Grouped by Squad (Matching Activity Form layout)
+              personnelAsync.when(
+                data: (rawPersonnelList) {
+                  final squads = squadsAsync.value ?? [];
+                  final squadMap = {for (final s in squads) s.id: s.timAdi};
+
+                  // Filter by squad & commander permissions & search query
+                  final personnelList = rawPersonnelList.where((p) {
+                    // If Commander, restrict to commander's squad
+                    if (!isAdmin &&
+                        session?.timId != null &&
+                        p.timId != session?.timId) {
+                      return false;
+                    }
+
+                    // Squad filter chip selection
+                    if (_selectedFilterTimId != null) {
+                      if (_selectedFilterTimId == -1) {
+                        if (p.timId != null) return false;
+                      } else {
+                        if (p.timId != _selectedFilterTimId) return false;
+                      }
+                    }
+
+                    // Search query filter
+                    if (_searchQuery.isNotEmpty) {
+                      final q = _searchQuery.toLowerCase();
+                      final nameMatch = p.adSoyad.toLowerCase().contains(q);
+                      final rankMatch = p.rutbe.toLowerCase().contains(q);
+                      final unitMatch = p.birlik.toLowerCase().contains(q);
+                      if (!nameMatch && !rankMatch && !unitMatch) return false;
+                    }
+
+                    return true;
+                  }).toList();
+
+                  if (personnelList.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(
+                        child: Text(
+                          'Kriterlere uygun personel bulunamadı.',
+                          style: TextStyle(color: context.textSecondary),
+                        ),
+                      ),
+                    );
+                  }
+
+                  // Group personnel by Squad (timId)
+                  final grouped = <int?, List<PersonelTableData>>{};
+                  for (final p in personnelList) {
+                    grouped.putIfAbsent(p.timId, () => []).add(p);
+                  }
+
+                  final sortedTimIds = grouped.keys.toList()
+                    ..sort((a, b) {
+                      if (a == null) return 1;
+                      if (b == null) return -1;
+                      final nameA = squadMap[a] ?? '';
+                      final nameB = squadMap[b] ?? '';
+                      final wA = MilitaryStructureHelper.getSquadOrderWeight(
+                        nameA,
+                      );
+                      final wB = MilitaryStructureHelper.getSquadOrderWeight(
+                        nameB,
+                      );
+                      if (wA != wB) return wA.compareTo(wB);
+                      return nameA.compareTo(nameB);
+                    });
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Personel Listesi (${personnelList.length} Kişi)',
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Resmi Tim & Kıdem Sıralı',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: context.accentOrOlive,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+
+                      ...sortedTimIds.map((timId) {
+                        final members = grouped[timId]!
+                          ..sort(
+                            (a, b) => getRankWeight(
+                              a.rutbe,
+                            ).compareTo(getRankWeight(b.rutbe)),
+                          );
+
+                        final squadName = timId == null
+                            ? 'Boşta / Kadro Dışı Personeller'
+                            : (squadMap[timId] ?? 'Bilinmeyen Tim');
+
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: context.cardBorderColor),
+                          ),
+                          child: ExpansionTile(
+                            initiallyExpanded: true,
+                            title: Text(
+                              squadName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: context.accentOrOlive,
+                              ),
+                            ),
+                            trailing: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: context.accentOrOlive,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '${members.length} Personel',
+                                style: TextStyle(
+                                  color: context.onAccentOrOlive,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            children: [
+                              Divider(
                                 height: 1,
                                 color: context.cardBorderColor,
                               ),
-                              itemBuilder: (context, index) {
-                                final p = members[index];
+                              ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: members.length,
+                                separatorBuilder: (_, _) => Divider(
+                                  height: 1,
+                                  color: context.cardBorderColor,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final p = members[index];
 
-                                return ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: context.accentOrOlive,
-                                    child: Text(
-                                      '${index + 1}',
-                                      style: TextStyle(
-                                        color: context.onAccentOrOlive,
+                                  return ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: context.accentOrOlive,
+                                      child: Text(
+                                        '${index + 1}',
+                                        style: TextStyle(
+                                          color: context.onAccentOrOlive,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      '${p.rutbe} ${p.adSoyad}',
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ),
-                                  title: Text(
-                                    '${p.rutbe} ${p.adSoyad}',
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  subtitle: Padding(
-                                    padding: const EdgeInsets.only(top: 2),
-                                    child: Text('Birlik: ${p.birlik} | Kayıt: ${p.kayitTarihi}'),
-                                  ),
-                                  trailing: isAdmin
-                                      ? PopupMenuButton<String>(
-                                          icon: const Icon(Icons.more_vert),
-                                          tooltip: 'İşlemler',
-                                          onSelected: (action) async {
-                                            if (action == 'edit') {
-                                              await _showEditPersonnelDialog(p);
-                                            } else if (action == 'commander') {
-                                              await _showMakeCommanderDialog(p);
-                                            } else if (action == 'delete') {
-                                              final confirm = await showDialog<bool>(
-                                                context: context,
-                                                builder: (ctx) => AlertDialog(
-                                                  title: const Text('Personeli Sil'),
-                                                  content: Text(
-                                                    '${p.rutbe} ${p.adSoyad} isimli personel sistemden silinecektir. Emin misiniz?',
-                                                  ),
-                                                  actions: [
-                                                    TextButton(
-                                                      onPressed: () => Navigator.of(ctx).pop(false),
-                                                      child: const Text('İPTAL'),
+                                    subtitle: Padding(
+                                      padding: const EdgeInsets.only(top: 2),
+                                      child: Text(
+                                        'Birlik: ${p.birlik} | Kayıt: ${p.kayitTarihi}',
+                                      ),
+                                    ),
+                                    trailing: isAdmin
+                                        ? PopupMenuButton<String>(
+                                            icon: const Icon(Icons.more_vert),
+                                            tooltip: 'İşlemler',
+                                            onSelected: (action) async {
+                                              if (action == 'edit') {
+                                                await _showEditPersonnelDialog(
+                                                  p,
+                                                );
+                                              } else if (action ==
+                                                  'commander') {
+                                                await _showMakeCommanderDialog(
+                                                  p,
+                                                );
+                                              } else if (action == 'delete') {
+                                                final confirm = await showDialog<bool>(
+                                                  context: context,
+                                                  builder: (ctx) => AlertDialog(
+                                                    title: const Text(
+                                                      'Personeli Sil',
                                                     ),
-                                                    ElevatedButton(
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: context.rejectedColor,
+                                                    content: Text(
+                                                      '${p.rutbe} ${p.adSoyad} isimli personel sistemden silinecektir. Emin misiniz?',
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                              ctx,
+                                                            ).pop(false),
+                                                        child: const Text(
+                                                          'İPTAL',
+                                                        ),
                                                       ),
-                                                      onPressed: () => Navigator.of(ctx).pop(true),
-                                                      child: const Text('SİL'),
+                                                      ElevatedButton(
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              context
+                                                                  .rejectedColor,
+                                                        ),
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                              ctx,
+                                                            ).pop(true),
+                                                        child: const Text(
+                                                          'SİL',
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                                if (confirm == true) {
+                                                  final repo = ref.read(
+                                                    personnelRepositoryProvider,
+                                                  );
+                                                  await repo.deletePersonnel(
+                                                    p.id,
+                                                  );
+                                                }
+                                              }
+                                            },
+                                            itemBuilder: (context) => [
+                                              PopupMenuItem(
+                                                value: 'edit',
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.edit,
+                                                      size: 20,
+                                                      color:
+                                                          context.blueGreyColor,
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    const Text(
+                                                      'Düzenle / Tim Değiştir',
                                                     ),
                                                   ],
                                                 ),
-                                              );
-                                              if (confirm == true) {
-                                                final repo = ref.read(personnelRepositoryProvider);
-                                                await repo.deletePersonnel(p.id);
-                                              }
-                                            }
-                                          },
-                                          itemBuilder: (context) => [
-                                            PopupMenuItem(
-                                              value: 'edit',
-                                              child: Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.edit,
-                                                    size: 20,
-                                                    color: context.blueGreyColor,
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  const Text('Düzenle / Tim Değiştir'),
-                                                ],
                                               ),
-                                            ),
-                                            PopupMenuItem(
-                                              value: 'commander',
-                                              child: Row(
-                                                children: [
-                                                  Icon(Icons.star, size: 20, color: context.pendingColor),
-                                                  const SizedBox(width: 8),
-                                                  const Text('Tim Komutanı Yap / Yetki Ver'),
-                                                ],
+                                              PopupMenuItem(
+                                                value: 'commander',
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.star,
+                                                      size: 20,
+                                                      color:
+                                                          context.pendingColor,
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    const Text(
+                                                      'Tim Komutanı Yap / Yetki Ver',
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                            const PopupMenuDivider(),
-                                            PopupMenuItem(
-                                              value: 'delete',
-                                              child: Row(
-                                                children: [
-                                                  Icon(Icons.delete, size: 20, color: context.rejectedColor),
-                                                  const SizedBox(width: 8),
-                                                  Text(
-                                                    'Personeli Sil',
-                                                    style: TextStyle(color: context.rejectedColor),
-                                                  ),
-                                                ],
+                                              const PopupMenuDivider(),
+                                              PopupMenuItem(
+                                                value: 'delete',
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.delete,
+                                                      size: 20,
+                                                      color:
+                                                          context.rejectedColor,
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      'Personeli Sil',
+                                                      style: TextStyle(
+                                                        color: context
+                                                            .rejectedColor,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        )
-                                      : null,
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ],
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, st) => Center(child: Text('Hata: $err')),
-            ),
-          ],
+                                            ],
+                                          )
+                                        : null,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, st) => Center(child: Text('Hata: $err')),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
   }
 }

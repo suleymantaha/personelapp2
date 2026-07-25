@@ -632,43 +632,45 @@ class _AssignmentDetails extends ConsumerWidget {
     final squadsList = allSquadsAsync.value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
 
-    final operationalAssignments = filteredAssignments.where((atama) {
-      return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
-    }).toList()
-      ..sort((a, b) {
-        // 1. Operational duties first, Hazır Kıta and Gülüşkür AT THE VERY BOTTOM!
-        final orderA = getDutyGroupOrder(a.gorevVeyaIzin);
-        final orderB = getDutyGroupOrder(b.gorevVeyaIzin);
-        if (orderA != orderB) return orderA.compareTo(orderB);
+    final operationalAssignments =
+        filteredAssignments.where((atama) {
+          return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
+        }).toList()..sort((a, b) {
+          // 1. Operational duties first, Hazır Kıta and Gülüşkür AT THE VERY BOTTOM!
+          final orderA = getDutyGroupOrder(a.gorevVeyaIzin);
+          final orderB = getDutyGroupOrder(b.gorevVeyaIzin);
+          if (orderA != orderB) return orderA.compareTo(orderB);
 
-        final pA = pMap[a.personelId];
-        final pB = pMap[b.personelId];
+          final pA = pMap[a.personelId];
+          final pB = pMap[b.personelId];
 
-        // 2. Group by Bölük (1'inci Bl. -> 2'nci Bl. -> 3'üncü Bl. -> K.H)
-        final timNameA = (pA?.timId != null && squadMap.containsKey(pA!.timId))
-            ? squadMap[pA.timId]!
-            : '';
-        final timNameB = (pB?.timId != null && squadMap.containsKey(pB!.timId))
-            ? squadMap[pB.timId]!
-            : '';
-        final rawBirlikA = (pA?.birlik != null && pA!.birlik.isNotEmpty)
-            ? pA.birlik
-            : timNameA;
-        final rawBirlikB = (pB?.birlik != null && pB!.birlik.isNotEmpty)
-            ? pB.birlik
-            : timNameB;
-        final birlikA = MilitaryStructureHelper.getBolukName(rawBirlikA);
-        final birlikB = MilitaryStructureHelper.getBolukName(rawBirlikB);
-        if (birlikA != birlikB) return birlikA.compareTo(birlikB);
+          // 2. Group by Bölük (1'inci Bl. -> 2'nci Bl. -> 3'üncü Bl. -> K.H)
+          final timNameA =
+              (pA?.timId != null && squadMap.containsKey(pA!.timId))
+              ? squadMap[pA.timId]!
+              : '';
+          final timNameB =
+              (pB?.timId != null && squadMap.containsKey(pB!.timId))
+              ? squadMap[pB.timId]!
+              : '';
+          final rawBirlikA = (pA?.birlik != null && pA!.birlik.isNotEmpty)
+              ? pA.birlik
+              : timNameA;
+          final rawBirlikB = (pB?.birlik != null && pB!.birlik.isNotEmpty)
+              ? pB.birlik
+              : timNameB;
+          final birlikA = MilitaryStructureHelper.getBolukName(rawBirlikA);
+          final birlikB = MilitaryStructureHelper.getBolukName(rawBirlikB);
+          if (birlikA != birlikB) return birlikA.compareTo(birlikB);
 
-        // 3. Sort strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
-        final weightA = getRankWeight(pA?.rutbe ?? '');
-        final weightB = getRankWeight(pB?.rutbe ?? '');
-        if (weightA != weightB) return weightA.compareTo(weightB);
+          // 3. Sort strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
+          final weightA = getRankWeight(pA?.rutbe ?? '');
+          final weightB = getRankWeight(pB?.rutbe ?? '');
+          if (weightA != weightB) return weightA.compareTo(weightB);
 
-        // 4. Alphabetical name sort
-        return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
-      });
+          // 4. Alphabetical name sort
+          return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
+        });
 
     final rosterRows = <MilitaryRosterRow>[];
     for (var i = 0; i < operationalAssignments.length; i++) {
@@ -687,7 +689,8 @@ class _AssignmentDetails extends ConsumerWidget {
       if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
         groupCode = 'HAZIR_KITA';
         digerText = 'HAZIR KITA';
-      } else if (dutyUpper.contains('GÜLÜŞKÜR') || dutyUpper.contains('GULUSKUR')) {
+      } else if (dutyUpper.contains('GÜLÜŞKÜR') ||
+          dutyUpper.contains('GULUSKUR')) {
         groupCode = 'GULUSKUR';
         digerText = 'GÜLÜŞKÜR';
       }

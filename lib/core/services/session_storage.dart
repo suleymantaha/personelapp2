@@ -27,7 +27,10 @@ class SessionStorage {
     final role = prefs.getString(_keyRole);
     final timId = prefs.getInt(_keyTimId);
 
-    if (username != null && username.isNotEmpty && role != null && role.isNotEmpty) {
+    if (username != null &&
+        username.isNotEmpty &&
+        role != null &&
+        role.isNotEmpty) {
       return UserSessionState(
         username: username,
         role: role,

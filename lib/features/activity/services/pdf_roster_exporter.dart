@@ -87,83 +87,85 @@ class PdfRosterExporter {
 
   /// Builds PDF Table with merged vertical cells and centered text for BİRLİĞİ and DİĞER (HAZIR KITA & GÜLÜŞKÜR)
   static pw.Widget buildPdfTable(List<MilitaryRosterRow> rows) {
-    final tableRows = <pw.TableRow>[pw.TableRow(
-          decoration: const pw.BoxDecoration(color: PdfColors.grey300),
-          children: [
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(
-                vertical: 4,
-                horizontal: 2,
-              ),
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'S. NU',
-                style: const pw.TextStyle(
-                  fontSize: 10,
-                  fontWeight: pw.FontWeight.bold,
-                ),
+    final tableRows = <pw.TableRow>[
+      pw.TableRow(
+        decoration: const pw.BoxDecoration(color: PdfColors.grey300),
+        children: [
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(
+              vertical: 4,
+              horizontal: 2,
+            ),
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'S. NU',
+              style: const pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
               ),
             ),
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(
-                vertical: 4,
-                horizontal: 2,
-              ),
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'BİRLİĞİ',
-                style: const pw.TextStyle(
-                  fontSize: 10,
-                  fontWeight: pw.FontWeight.bold,
-                ),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(
+              vertical: 4,
+              horizontal: 2,
+            ),
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'BİRLİĞİ',
+              style: const pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
               ),
             ),
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(
-                vertical: 4,
-                horizontal: 2,
-              ),
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'RÜTBE',
-                style: const pw.TextStyle(
-                  fontSize: 10,
-                  fontWeight: pw.FontWeight.bold,
-                ),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(
+              vertical: 4,
+              horizontal: 2,
+            ),
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'RÜTBE',
+              style: const pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
               ),
             ),
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(
-                vertical: 4,
-                horizontal: 4,
-              ),
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'ADI SOYADI',
-                style: const pw.TextStyle(
-                  fontSize: 10,
-                  fontWeight: pw.FontWeight.bold,
-                ),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(
+              vertical: 4,
+              horizontal: 4,
+            ),
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'ADI SOYADI',
+              style: const pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
               ),
             ),
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(
-                vertical: 4,
-                horizontal: 2,
-              ),
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'DİĞER',
-                style: const pw.TextStyle(
-                  fontSize: 10,
-                  fontWeight: pw.FontWeight.bold,
-                ),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(
+              vertical: 4,
+              horizontal: 2,
+            ),
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'DİĞER',
+              style: const pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
               ),
             ),
-          ],
-        )]
-      // Header Row
-      ;
+          ),
+        ],
+      ),
+    ]
+    // Header Row
+    ;
 
     final n = rows.length;
     if (n == 0) {

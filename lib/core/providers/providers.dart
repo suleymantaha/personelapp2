@@ -5,7 +5,6 @@ import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/matrix/data/matrix_repository.dart';
 import 'package:personelapp2/features/personnel/data/personnel_repository.dart';
 
-
 AppDatabase? _singletonDb;
 
 /// Database Instance Provider (Singleton)
@@ -38,8 +37,7 @@ class UserSessionState {
   bool get isAdmin => role == 'yönetici';
 }
 
-final userSessionProvider =
-    StateProvider<UserSessionState?>((ref) => null);
+final userSessionProvider = StateProvider<UserSessionState?>((ref) => null);
 
 /// Dynamic Theme Mode Provider (System / Light / Dark)
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
@@ -57,25 +55,23 @@ final allCommandersProvider = StreamProvider<List<KullaniciTableData>>((ref) {
   return ref.watch(personnelRepositoryProvider).watchAllCommanders();
 });
 
-
 /// Pending Assignments Provider (for Dashboard Alert Badge)
 final pendingAssignmentsProvider =
     StreamProvider<List<FaaliyetPersonelAtamaTableData>>((ref) {
-  return ref.watch(activityRepositoryProvider).watchPendingAssignments();
-});
+      return ref.watch(activityRepositoryProvider).watchPendingAssignments();
+    });
 
 /// Role-Filtered Activities Stream Provider
 final filteredActivitiesProvider =
     StreamProvider<List<GunlukFaaliyetTableData>>((ref) {
-  final session = ref.watch(userSessionProvider);
-  final repo = ref.watch(activityRepositoryProvider);
+      final session = ref.watch(userSessionProvider);
+      final repo = ref.watch(activityRepositoryProvider);
 
-  if (session != null && !session.isAdmin && session.timId != null) {
-    return repo.watchActivitiesForTeam(session.timId!);
-  }
-  return repo.watchAllActivities();
-});
-
+      if (session != null && !session.isAdmin && session.timId != null) {
+        return repo.watchActivitiesForTeam(session.timId!);
+      }
+      return repo.watchAllActivities();
+    });
 
 /// Matrix Repository & Monthly Matrix Provider
 final matrixRepositoryProvider = Provider<MatrixRepository>((ref) {
@@ -83,8 +79,7 @@ final matrixRepositoryProvider = Provider<MatrixRepository>((ref) {
 });
 
 final StreamProviderFamily<Map<int, Map<int, String>>, String>
-    monthlyMatrixProvider =
-    StreamProvider.family<Map<int, Map<int, String>>, String>(
-        (ref, yearMonth) {
-  return ref.watch(matrixRepositoryProvider).watchMonthlyMatrix(yearMonth);
-});
+monthlyMatrixProvider =
+    StreamProvider.family<Map<int, Map<int, String>>, String>((ref, yearMonth) {
+      return ref.watch(matrixRepositoryProvider).watchMonthlyMatrix(yearMonth);
+    });

@@ -37,24 +37,27 @@ void main() {
     expect(historyList.first.islem, equals('eklendi'));
   });
 
-  test('Deleting personnel assigned to squad should log removal history', () async {
-    final timId = await repo.addSquad(
-      timAdi: '2. Asayiş Timi',
-      olusturmaTarihi: '2026-07-21',
-    );
+  test(
+    'Deleting personnel assigned to squad should log removal history',
+    () async {
+      final timId = await repo.addSquad(
+        timAdi: '2. Asayiş Timi',
+        olusturmaTarihi: '2026-07-21',
+      );
 
-    final pId = await repo.addPersonnel(
-      adSoyad: 'Ali Kaya',
-      rutbe: 'ASB.ÇVŞ',
-      birlik: 'Asayiş Timi',
-      kayitTarihi: '2026-07-21',
-      timId: timId,
-    );
+      final pId = await repo.addPersonnel(
+        adSoyad: 'Ali Kaya',
+        rutbe: 'ASB.ÇVŞ',
+        birlik: 'Asayiş Timi',
+        kayitTarihi: '2026-07-21',
+        timId: timId,
+      );
 
-    await repo.deletePersonnel(pId, tarih: '2026-07-22');
+      await repo.deletePersonnel(pId, tarih: '2026-07-22');
 
-    final historyList = await repo.watchAllHistory().first;
-    expect(historyList.length, equals(2));
-    expect(historyList.first.islem, equals('çıkarıldı'));
-  });
+      final historyList = await repo.watchAllHistory().first;
+      expect(historyList.length, equals(2));
+      expect(historyList.first.islem, equals('çıkarıldı'));
+    },
+  );
 }

@@ -72,13 +72,16 @@ extension ThemeContext on BuildContext {
   bool get isDarkMode => theme.brightness == Brightness.dark;
 
   /// Primary text color based on active theme
-  Color get textPrimary => isDarkMode ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+  Color get textPrimary =>
+      isDarkMode ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
 
   /// Secondary text color based on active theme
-  Color get textSecondary => isDarkMode ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+  Color get textSecondary =>
+      isDarkMode ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
 
   /// Muted / Hint text color based on active theme
-  Color get textMuted => isDarkMode ? AppColors.textMutedDark : AppColors.textMutedLight;
+  Color get textMuted =>
+      isDarkMode ? AppColors.textMutedDark : AppColors.textMutedLight;
 
   /// Subtitle style with theme secondary text color
   TextStyle get textStyleSecondary => TextStyle(color: textSecondary);
@@ -87,44 +90,59 @@ extension ThemeContext on BuildContext {
   TextStyle get textStyleMuted => TextStyle(color: textMuted);
 
   /// Accent Khaki in dark mode, Military Olive in light mode for legible primary text/icons
-  Color get accentOrOlive => isDarkMode ? AppColors.accentKhaki : AppColors.militaryOlive;
+  Color get accentOrOlive =>
+      isDarkMode ? AppColors.accentKhaki : AppColors.militaryOlive;
 
   /// Badge container background color (surfaceContainerHighest in dark, lightOlive in light)
-  Color get squadBadgeBg => isDarkMode ? colorScheme.surfaceContainerHighest : AppColors.lightOlive;
+  Color get squadBadgeBg =>
+      isDarkMode ? colorScheme.surfaceContainerHighest : AppColors.lightOlive;
 
   /// Badge container text color (accentKhaki in dark, darkOlive in light)
-  Color get squadBadgeText => isDarkMode ? AppColors.accentKhaki : AppColors.darkOlive;
+  Color get squadBadgeText =>
+      isDarkMode ? AppColors.accentKhaki : AppColors.darkOlive;
 
   /// Card border side color (dividerColor in dark, lightOlive in light)
-  Color get cardBorderColor => isDarkMode ? theme.dividerColor : AppColors.lightOlive;
+  Color get cardBorderColor =>
+      isDarkMode ? theme.dividerColor : AppColors.lightOlive;
 
   /// Text/Icon contrast color on accentOrOlive containers
-  Color get onAccentOrOlive => isDarkMode ? const Color(0xFF141B13) : Colors.white;
+  Color get onAccentOrOlive =>
+      isDarkMode ? const Color(0xFF141B13) : Colors.white;
 
   /// Rejection / Warning text & icon color for dark and light modes
-  Color get rejectedColor => isDarkMode ? AppColors.warningBorderLight : AppColors.rejectedRed;
+  Color get rejectedColor =>
+      isDarkMode ? AppColors.warningBorderLight : AppColors.rejectedRed;
 
   /// Rejection / Warning container background color
-  Color get rejectedBgColor => isDarkMode ? AppColors.warningBackgroundDark : AppColors.warningBackgroundLight;
+  Color get rejectedBgColor => isDarkMode
+      ? AppColors.warningBackgroundDark
+      : AppColors.warningBackgroundLight;
 
   /// Rejection / Warning container border color
-  Color get rejectedBorderColor => isDarkMode ? AppColors.warningBorderDark : AppColors.rejectedRed;
+  Color get rejectedBorderColor =>
+      isDarkMode ? AppColors.warningBorderDark : AppColors.rejectedRed;
 
   /// Dynamic shadow color
-  Color get shadowColor => isDarkMode ? Colors.black.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.12);
+  Color get shadowColor => isDarkMode
+      ? Colors.black.withValues(alpha: 0.4)
+      : Colors.black.withValues(alpha: 0.12);
 
   /// Primary header background color (darkOlive in dark mode, militaryOlive in light mode)
-  Color get headerBg => isDarkMode ? AppColors.darkOlive : AppColors.militaryOlive;
+  Color get headerBg =>
+      isDarkMode ? AppColors.darkOlive : AppColors.militaryOlive;
 
   /// Secondary header background for gradients (dark green in dark mode, darkOlive in light mode)
-  Color get headerBgSecondary => isDarkMode ? const Color(0xFF1F291D) : AppColors.darkOlive;
+  Color get headerBgSecondary =>
+      isDarkMode ? const Color(0xFF1F291D) : AppColors.darkOlive;
 
   /// PDF export button background color
-  Color get pdfButtonBg => isDarkMode ? const Color(0xFF2C4C7E) : const Color(0xFF1B365D);
+  Color get pdfButtonBg =>
+      isDarkMode ? const Color(0xFF2C4C7E) : const Color(0xFF1B365D);
 
   /// Day grid header background (pendingYellow for today, darkOlive/cardDark for standard days)
-  Color dayHeaderBg({required bool isToday}) =>
-      isToday ? AppColors.pendingYellow : (isDarkMode ? AppColors.cardDark : AppColors.darkOlive);
+  Color dayHeaderBg({required bool isToday}) => isToday
+      ? AppColors.pendingYellow
+      : (isDarkMode ? AppColors.cardDark : AppColors.darkOlive);
 
   /// Day grid header text color
   Color dayHeaderTextColor({required bool isToday}) =>
@@ -140,30 +158,41 @@ extension ThemeContext on BuildContext {
       : AppColors.militaryOlive.withValues(alpha: 0.08);
 
   /// Approved status color for light and dark modes
-  Color get approvedColor => isDarkMode ? const Color(0xFF81C784) : AppColors.approvedGreen;
+  Color get approvedColor =>
+      isDarkMode ? const Color(0xFF81C784) : AppColors.approvedGreen;
 
   /// Pending status color for light and dark modes
-  Color get pendingColor => isDarkMode ? const Color(0xFFFFD54F) : AppColors.pendingYellow;
+  Color get pendingColor =>
+      isDarkMode ? const Color(0xFFFFD54F) : AppColors.pendingYellow;
 
   /// Slate / Blue Grey accent color
-  Color get blueGreyColor => isDarkMode ? const Color(0xFF90A4AE) : AppColors.cardBlueGrey;
+  Color get blueGreyColor =>
+      isDarkMode ? const Color(0xFF90A4AE) : AppColors.cardBlueGrey;
 
   /// Teal accent color
-  Color get tealColor => isDarkMode ? const Color(0xFF4DB6AC) : AppColors.cardTeal;
+  Color get tealColor =>
+      isDarkMode ? const Color(0xFF4DB6AC) : AppColors.cardTeal;
 
   /// Brown accent color
-  Color get brownColor => isDarkMode ? const Color(0xFFFFB74D) : AppColors.cardBrown;
+  Color get brownColor =>
+      isDarkMode ? const Color(0xFFFFB74D) : AppColors.cardBrown;
 
   /// Matrix Duty/Leave status background color
   Color getStatusBgColor(String status) {
     if (status.contains('beklemede')) {
-      return isDarkMode ? AppColors.statusPendingDark : AppColors.statusPendingLight;
+      return isDarkMode
+          ? AppColors.statusPendingDark
+          : AppColors.statusPendingLight;
     } else if (status.contains('GÖREV') || status.contains('NÖBET')) {
       return isDarkMode ? AppColors.statusDutyDark : AppColors.statusDutyLight;
     } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
-      return isDarkMode ? AppColors.statusLeaveDark : AppColors.statusLeaveLight;
+      return isDarkMode
+          ? AppColors.statusLeaveDark
+          : AppColors.statusLeaveLight;
     } else if (status.contains('RAPOR') || status.contains('SEVK')) {
-      return isDarkMode ? AppColors.statusReportDark : AppColors.statusReportLight;
+      return isDarkMode
+          ? AppColors.statusReportDark
+          : AppColors.statusReportLight;
     }
     return isDarkMode ? AppColors.cardDark : Colors.transparent;
   }
@@ -171,13 +200,21 @@ extension ThemeContext on BuildContext {
   /// Matrix Duty/Leave status text color
   Color getStatusTextColor(String status) {
     if (status.contains('beklemede')) {
-      return isDarkMode ? AppColors.statusPendingTextDark : AppColors.statusPendingTextLight;
+      return isDarkMode
+          ? AppColors.statusPendingTextDark
+          : AppColors.statusPendingTextLight;
     } else if (status.contains('GÖREV') || status.contains('NÖBET')) {
-      return isDarkMode ? AppColors.statusDutyTextDark : AppColors.statusDutyTextLight;
+      return isDarkMode
+          ? AppColors.statusDutyTextDark
+          : AppColors.statusDutyTextLight;
     } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
-      return isDarkMode ? AppColors.statusLeaveTextDark : AppColors.statusLeaveTextLight;
+      return isDarkMode
+          ? AppColors.statusLeaveTextDark
+          : AppColors.statusLeaveTextLight;
     } else if (status.contains('RAPOR') || status.contains('SEVK')) {
-      return isDarkMode ? AppColors.statusReportTextDark : AppColors.statusReportTextLight;
+      return isDarkMode
+          ? AppColors.statusReportTextDark
+          : AppColors.statusReportTextLight;
     }
     return textMuted;
   }
@@ -228,7 +265,10 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.militaryOlive, width: 2),
+          borderSide: const BorderSide(
+            color: AppColors.militaryOlive,
+            width: 2,
+          ),
         ),
       ),
     );

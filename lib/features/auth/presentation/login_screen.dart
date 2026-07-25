@@ -47,7 +47,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
   }
 
-  Future<void> _showPasswordCreationDialog(String username, KullaniciTableData user) async {
+  Future<void> _showPasswordCreationDialog(
+    String username,
+    KullaniciTableData user,
+  ) async {
     final pass1Ctrl = TextEditingController();
     final pass2Ctrl = TextEditingController();
     String? errorText;
@@ -66,7 +69,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     Text(
                       'Sayın $username, hesabınız için yeni bir parola belirleyiniz.',
-                      style: TextStyle(fontSize: 13, color: context.textPrimary),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: context.textPrimary,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     TextField(
@@ -88,7 +94,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     if (errorText != null) ...[
                       const SizedBox(height: 8),
-                      Text(errorText!, style: TextStyle(color: context.colorScheme.error, fontSize: 12)),
+                      Text(
+                        errorText!,
+                        style: TextStyle(
+                          color: context.colorScheme.error,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -100,7 +112,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     final p2 = pass2Ctrl.text.trim();
 
                     if (p1.isEmpty || p1.length < 4) {
-                      setDialogState(() => errorText = 'Parola en az 4 karakter olmalıdır.');
+                      setDialogState(
+                        () => errorText = 'Parola en az 4 karakter olmalıdır.',
+                      );
                       return;
                     }
                     if (p1 != p2) {
@@ -109,7 +123,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     }
 
                     final repo = ref.read(personnelRepositoryProvider);
-                    await repo.updateUserPassword(kullaniciAdi: username, newPassword: p1);
+                    await repo.updateUserPassword(
+                      kullaniciAdi: username,
+                      newPassword: p1,
+                    );
 
                     if (ctx.mounted) Navigator.of(ctx).pop();
 
@@ -129,9 +146,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final db = ref.read(databaseProvider);
     var timId = user.timId;
     if (user.rol == 'tim_komutani' && timId == null) {
-      final squad = await (db.select(db.timTable)
-            ..where((tbl) => tbl.timKomutaniId.equals(user.id)))
-          .getSingleOrNull();
+      final squad = await (db.select(
+        db.timTable,
+      )..where((tbl) => tbl.timKomutaniId.equals(user.id))).getSingleOrNull();
       timId = squad?.id;
     }
 
@@ -155,9 +172,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (username.isEmpty) return;
 
     final db = ref.read(databaseProvider);
-    final user = await (db.select(db.kullaniciTable)
-          ..where((tbl) => tbl.kullaniciAdi.equals(username)))
-        .getSingleOrNull();
+    final user = await (db.select(
+      db.kullaniciTable,
+    )..where((tbl) => tbl.kullaniciAdi.equals(username))).getSingleOrNull();
 
     if (user != null) {
       if (user.sifre.isEmpty) {
@@ -171,7 +188,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Geçersiz kullanıcı adı veya parola!')),
+            const SnackBar(
+              content: Text('Geçersiz kullanıcı adı veya parola!'),
+            ),
           );
         }
       }
@@ -221,7 +240,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Jandarma Görev Takip',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: context.accentOrOlive,
                           ),

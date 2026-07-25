@@ -1,0 +1,21 @@
+﻿{
+    "hermes_meta": {
+        "model": "nvidia/nemotron-3-ultra-550b-a55b",
+        "provider": "nvidia",
+        "elapsed_s": 288.26,
+        "timestamp": "2026-07-25T23:42:19",
+        "task": "personelapp2 projesindeki 5 ana modulun durumunu kontrol et."
+    },
+    "result": {
+        "status": "completed",
+        "summary": "Analiz tamamlandı. 5 ana modül (Auth, Dashboard, Personnel, Activity, Matrix) durumları kontrol edildi ve sonuç JSON formatında `C:\\Users\\baba\\AppData\\Local\\Temp\\hermes_prompt_2f6471bd.txt` dosyasına yazıldı.  **Özet:** - ✅ **Tüm testler geçiyor** (15/15) - ✅ **Build başarılı** - `flutter analyze` sadece 1 info-level uyarı veriyor (`curly_braces_in_flow_control_structures` personnel_management_screen.dart:310) - ✅ **Veritabanı** Drift schema v2, seed data (admin + 13 default tim) otomatik ekleni",
+        "findings": [],
+        "files_to_change": [],
+        "recommended_actions": [],
+        "quality_gates": {
+            "notes": "JSON yapisal cikti yok"
+        },
+        "estimated_complexity": "unknown",
+        "raw_output": "Analiz tamamlandı. 5 ana modül (Auth, Dashboard, Personnel, Activity, Matrix) durumları kontrol edildi ve sonuç JSON formatında `C:\\Users\\baba\\AppData\\Local\\Temp\\hermes_prompt_2f6471bd.txt` dosyasına yazıldı.  **Özet:** - ✅ **Tüm testler geçiyor** (15/15) - ✅ **Build başarılı** - `flutter analyze` sadece 1 info-level uyarı veriyor (`curly_braces_in_flow_control_structures` personnel_management_screen.dart:310) - ✅ **Veritabanı** Drift schema v2, seed data (admin + 13 default tim) otomatik ekleniyor - ✅ **5 modül** tam işlevsel: Auth, Dashboard, Personnel, Activity, Matrix  **Bekleyen küçük aksiyonlar:** 1. `personnel_management_screen.dart:310` - `if` statement\u0027e süslü parantez ekle (lint uyarısı) 2. `git status` - 23 modified + 1 untracked dosya commit edilebilir 3. `hermes_output.json` geçici dosyası temizlenebilir"
+    }
+}

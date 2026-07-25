@@ -16,7 +16,9 @@ void main() {
 
   test('Database tables insert and query test', () async {
     // 1. Insert Tim
-    final timId = await db.into(db.timTable).insert(
+    final timId = await db
+        .into(db.timTable)
+        .insert(
           TimTableCompanion.insert(
             timAdi: '1. Asayiş Timi',
             olusturmaTarihi: '2026-07-21',
@@ -24,7 +26,9 @@ void main() {
         );
 
     // 2. Insert User
-    final userId = await db.into(db.kullaniciTable).insert(
+    final userId = await db
+        .into(db.kullaniciTable)
+        .insert(
           KullaniciTableCompanion.insert(
             kullaniciAdi: 'admin_test',
             sifre: const Value('123456'),
@@ -36,7 +40,9 @@ void main() {
     expect(userId, greaterThan(0));
 
     // 3. Insert Personnel
-    final pId = await db.into(db.personelTable).insert(
+    final pId = await db
+        .into(db.personelTable)
+        .insert(
           PersonelTableCompanion.insert(
             adSoyad: 'Ahmet Yılmaz',
             rutbe: 'ASB.KD.BÇVŞ',
@@ -47,7 +53,9 @@ void main() {
     expect(pId, greaterThan(0));
 
     // 4. Insert Activity
-    final actId = await db.into(db.gunlukFaaliyetTable).insert(
+    final actId = await db
+        .into(db.gunlukFaaliyetTable)
+        .insert(
           GunlukFaaliyetTableCompanion.insert(
             faaliyetAdi: 'Önleyici Kolluk Devriyesi',
             tarih: '2026-07-21',
@@ -57,7 +65,9 @@ void main() {
         );
 
     // 5. Insert Assignment
-    final atamaId = await db.into(db.faaliyetPersonelAtamaTable).insert(
+    final atamaId = await db
+        .into(db.faaliyetPersonelAtamaTable)
+        .insert(
           FaaliyetPersonelAtamaTableCompanion.insert(
             faaliyetId: actId,
             personelId: pId,

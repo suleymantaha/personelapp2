@@ -17,7 +17,8 @@ class PersonnelFormDialog extends ConsumerStatefulWidget {
   final PersonelTableData? personnelToEdit;
 
   @override
-  ConsumerState<PersonnelFormDialog> createState() => _PersonnelFormDialogState();
+  ConsumerState<PersonnelFormDialog> createState() =>
+      _PersonnelFormDialogState();
 }
 
 class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
@@ -41,7 +42,9 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
       final normalizedRutbe = normalizeRank(p.rutbe);
       final isStandardRank = kAskeriRutbeler.contains(normalizedRutbe);
       _selectedRank = isStandardRank ? normalizedRutbe : 'DİĞER / ÖZEL RÜTBE';
-      _customRankController = TextEditingController(text: isStandardRank ? '' : p.rutbe);
+      _customRankController = TextEditingController(
+        text: isStandardRank ? '' : p.rutbe,
+      );
       _selectedSquadId = p.timId;
     } else {
       _selectedRank = null;
@@ -121,7 +124,11 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
     final p = widget.personnelToEdit;
 
     return AlertDialog(
-      title: Text(_isEditing ? '${p?.rutbe} ${p?.adSoyad} - Düzenle' : 'Yeni Personel Ekle'),
+      title: Text(
+        _isEditing
+            ? '${p?.rutbe} ${p?.adSoyad} - Düzenle'
+            : 'Yeni Personel Ekle',
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -163,7 +170,9 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
               data: (squads) => DropdownButtonFormField<int?>(
                 initialValue: _selectedSquadId,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Bağlı Olduğu Tim'),
+                decoration: const InputDecoration(
+                  labelText: 'Bağlı Olduğu Tim',
+                ),
                 items: [
                   const DropdownMenuItem<int?>(
                     child: Text('Bağımsız / Tim Dışı'),
@@ -171,7 +180,9 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                   ...squads.map(
                     (sq) => DropdownMenuItem<int?>(
                       value: sq.id,
-                      child: Text('${sq.timAdi} (${MilitaryStructureHelper.getBolukName(sq.timAdi)})'),
+                      child: Text(
+                        '${sq.timAdi} (${MilitaryStructureHelper.getBolukName(sq.timAdi)})',
+                      ),
                     ),
                   ),
                 ],
@@ -200,12 +211,30 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                     _unitController.text = val;
                   },
                   itemBuilder: (ctx) => [
-                    const PopupMenuItem(value: "1'inci Bl.", child: Text("1'inci Bl.")),
-                    const PopupMenuItem(value: "2'nci Bl.", child: Text("2'nci Bl.")),
-                    const PopupMenuItem(value: "3'üncü Bl.", child: Text("3'üncü Bl.")),
-                    const PopupMenuItem(value: "1'inci Bl. K.H", child: Text("1'inci Bl. K.H")),
-                    const PopupMenuItem(value: "2'nci Bl. K.H", child: Text("2'nci Bl. K.H")),
-                    const PopupMenuItem(value: "3'üncü Bl. K.H", child: Text("3'üncü Bl. K.H")),
+                    const PopupMenuItem(
+                      value: "1'inci Bl.",
+                      child: Text("1'inci Bl."),
+                    ),
+                    const PopupMenuItem(
+                      value: "2'nci Bl.",
+                      child: Text("2'nci Bl."),
+                    ),
+                    const PopupMenuItem(
+                      value: "3'üncü Bl.",
+                      child: Text("3'üncü Bl."),
+                    ),
+                    const PopupMenuItem(
+                      value: "1'inci Bl. K.H",
+                      child: Text("1'inci Bl. K.H"),
+                    ),
+                    const PopupMenuItem(
+                      value: "2'nci Bl. K.H",
+                      child: Text("2'nci Bl. K.H"),
+                    ),
+                    const PopupMenuItem(
+                      value: "3'üncü Bl. K.H",
+                      child: Text("3'üncü Bl. K.H"),
+                    ),
                     const PopupMenuItem(value: 'K.H', child: Text('K.H')),
                   ],
                 ),

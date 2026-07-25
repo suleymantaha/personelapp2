@@ -203,8 +203,14 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                             if (b == null) return -1;
                             final nameA = squadMap[a] ?? '';
                             final nameB = squadMap[b] ?? '';
-                            final wA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
-                            final wB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
+                            final wA =
+                                MilitaryStructureHelper.getSquadOrderWeight(
+                                  nameA,
+                                );
+                            final wB =
+                                MilitaryStructureHelper.getSquadOrderWeight(
+                                  nameB,
+                                );
                             if (wA != wB) return wA.compareTo(wB);
                             return nameA.compareTo(nameB);
                           });
@@ -388,11 +394,12 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                             ),
                                             ConstrainedBox(
                                               constraints: BoxConstraints(
-                                                maxWidth: context.responsiveValue(
-                                                  mobile: 135,
-                                                  tablet: 180,
-                                                  desktop: 220,
-                                                ),
+                                                maxWidth: context
+                                                    .responsiveValue(
+                                                      mobile: 135,
+                                                      tablet: 180,
+                                                      desktop: 220,
+                                                    ),
                                               ),
                                               child: DropdownButton<String>(
                                                 value: currentSelection,
@@ -401,19 +408,25 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                                 hint: Text(
                                                   'SEÇİNİZ',
                                                   style: TextStyle(
-                                                    color: context.accentOrOlive,
+                                                    color:
+                                                        context.accentOrOlive,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 13,
                                                   ),
                                                 ),
                                                 items: availableDuties.map((d) {
                                                   final isAdminOnly =
-                                                      adminOnlyDuties.contains(d);
-                                                  return DropdownMenuItem<String>(
+                                                      adminOnlyDuties.contains(
+                                                        d,
+                                                      );
+                                                  return DropdownMenuItem<
+                                                    String
+                                                  >(
                                                     value: d,
                                                     child: Text(
                                                       d,
-                                                      overflow: TextOverflow.ellipsis,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
                                                       style: TextStyle(
                                                         fontWeight: isAdminOnly
                                                             ? FontWeight.bold
@@ -421,7 +434,8 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                                         color: isAdminOnly
                                                             ? context
                                                                   .accentOrOlive
-                                                            : context.textPrimary,
+                                                            : context
+                                                                  .textPrimary,
                                                       ),
                                                     ),
                                                   );

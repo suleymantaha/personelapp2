@@ -21,7 +21,9 @@ void main() {
 
   test('Monthly matrix should map personnel duties to day numbers', () async {
     // Insert personnel
-    final pId = await db.into(db.personelTable).insert(
+    final pId = await db
+        .into(db.personelTable)
+        .insert(
           PersonelTableCompanion.insert(
             adSoyad: 'Hasan Uzun',
             rutbe: 'YÜZBAŞI',
@@ -40,7 +42,7 @@ void main() {
           'personelId': pId,
           'gorevVeyaIzin': 'GÖREVLİ',
           'aciklama': null,
-        }
+        },
       ],
     );
 
@@ -50,33 +52,38 @@ void main() {
     expect(matrixMap[pId]?[15], equals('GÖREVLİ'));
   });
 
-  test('Monthly matrix should reactively update when new assignments are added', () async {
-    final pId = await db.into(db.personelTable).insert(
-          PersonelTableCompanion.insert(
-            adSoyad: 'Ali Kaya',
-            rutbe: 'TEĞMEN',
-            birlik: 'Birlik HQ',
-            kayitTarihi: '2026-07-01',
-          ),
-        );
+  test(
+    'Monthly matrix should reactively update when new assignments are added',
+    () async {
+      final pId = await db
+          .into(db.personelTable)
+          .insert(
+            PersonelTableCompanion.insert(
+              adSoyad: 'Ali Kaya',
+              rutbe: 'TEĞMEN',
+              birlik: 'Birlik HQ',
+              kayitTarihi: '2026-07-01',
+            ),
+          );
 
-    final stream = matrixRepo.watchMonthlyMatrix('2026-07');
+      final stream = matrixRepo.watchMonthlyMatrix('2026-07');
 
-    // Add activity for 2026-07-20
-    await actRepo.createActivityWithAssignments(
-      faaliyetAdi: 'Nöbet 1',
-      tarih: '2026-07-20',
-      olusturanKullanici: 'admin',
-      personnelAssignments: [
-        {
-          'personelId': pId,
-          'gorevVeyaIzin': 'NÖBETÇİ',
-          'aciklama': null,
-        }
-      ],
-    );
+      // Add activity for 2026-07-20
+      await actRepo.createActivityWithAssignments(
+        faaliyetAdi: 'Nöbet 1',
+        tarih: '2026-07-20',
+        olusturanKullanici: 'admin',
+        personnelAssignments: [
+          {
+            'personelId': pId,
+            'gorevVeyaIzin': 'NÖBETÇİ',
+            'aciklama': null,
+          },
+        ],
+      );
 
-    final updatedMap = await stream.first;
-    expect(updatedMap[pId]?[20], equals('NÖBETÇİ'));
-  });
+      final updatedMap = await stream.first;
+      expect(updatedMap[pId]?[20], equals('NÖBETÇİ'));
+    },
+  );
 }

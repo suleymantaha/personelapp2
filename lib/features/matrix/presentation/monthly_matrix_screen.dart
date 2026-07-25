@@ -113,73 +113,75 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                   width: 320,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Divider(),
-                    const SizedBox(height: 12),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            childAspectRatio: 2.2,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                          ),
-                      itemCount: 12,
-                      itemBuilder: (context, index) {
-                        final isSelected = (index + 1) == tempMonth;
-                        return InkWell(
-                          onTap: () {
-                            setDialogState(() => tempMonth = index + 1);
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? context.accentOrOlive
-                                  : context.colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
+                    children: [
+                      const Divider(),
+                      const SizedBox(height: 12),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              childAspectRatio: 2.2,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                            ),
+                        itemCount: 12,
+                        itemBuilder: (context, index) {
+                          final isSelected = (index + 1) == tempMonth;
+                          return InkWell(
+                            onTap: () {
+                              setDialogState(() => tempMonth = index + 1);
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
                                 color: isSelected
                                     ? context.accentOrOlive
-                                    : context.colorScheme.outlineVariant,
-                                width: isSelected ? 2 : 1,
+                                    : context
+                                          .colorScheme
+                                          .surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? context.accentOrOlive
+                                      : context.colorScheme.outlineVariant,
+                                  width: isSelected ? 2 : 1,
+                                ),
+                                boxShadow: isSelected
+                                    ? [
+                                        BoxShadow(
+                                          color: context.accentOrOlive
+                                              .withValues(alpha: 0.3),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ]
+                                    : null,
                               ),
-                              boxShadow: isSelected
-                                  ? [
-                                      BoxShadow(
-                                        color: context.accentOrOlive
-                                            .withValues(alpha: 0.3),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                            child: Text(
-                              months[index],
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.w500,
-                                color: isSelected
-                                    ? context.onAccentOrOlive
-                                    : context.textPrimary,
+                              child: Text(
+                                months[index],
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
+                                  color: isSelected
+                                      ? context.onAccentOrOlive
+                                      : context.textPrimary,
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                  ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ),
                 ),
               ),
-            ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
@@ -321,15 +323,19 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                     .where((s) => _getAbbreviation(s) == 'X')
                     .length;
                 final leaveCount = pStatusMap.values
-                    .where((s) =>
-                        _getAbbreviation(s) == 'İZ' ||
-                        _getAbbreviation(s) == 'RAP' ||
-                        _getAbbreviation(s) == 'İST')
+                    .where(
+                      (s) =>
+                          _getAbbreviation(s) == 'İZ' ||
+                          _getAbbreviation(s) == 'RAP' ||
+                          _getAbbreviation(s) == 'İST',
+                    )
                     .length;
 
                 return Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
@@ -436,19 +442,25 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                               children: List.generate(daysInMonth, (dIndex) {
                                 final day = dIndex + 1;
                                 final status = pStatusMap[day] ?? '';
-                                final bgColor = context.getStatusBgColor(status);
-                                final textColor =
-                                    context.getStatusTextColor(status);
+                                final bgColor = context.getStatusBgColor(
+                                  status,
+                                );
+                                final textColor = context.getStatusTextColor(
+                                  status,
+                                );
                                 final label = _getAbbreviation(status);
                                 final isToday =
-                                    DateTime.now().year == _selectedMonth.year &&
-                                        DateTime.now().month ==
-                                            _selectedMonth.month &&
-                                        DateTime.now().day == day;
+                                    DateTime.now().year ==
+                                        _selectedMonth.year &&
+                                    DateTime.now().month ==
+                                        _selectedMonth.month &&
+                                    DateTime.now().day == day;
 
                                 return Container(
                                   width: 42,
-                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: bgColor,
                                     borderRadius: BorderRadius.circular(6),
@@ -580,7 +592,8 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                   // Rank & Name
                                   Expanded(
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
@@ -644,14 +657,18 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: context.dayHeaderBg(isToday: isTodayHeader),
+                                        color: context.dayHeaderBg(
+                                          isToday: isTodayHeader,
+                                        ),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       alignment: Alignment.center,
                                       child: Text(
                                         '$dayNum',
                                         style: TextStyle(
-                                          color: context.dayHeaderTextColor(isToday: isTodayHeader),
+                                          color: context.dayHeaderTextColor(
+                                            isToday: isTodayHeader,
+                                          ),
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12,
                                         ),
@@ -670,11 +687,16 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                               return SizedBox(
                                 height: 48,
                                 child: Row(
-                                  children: List.generate(daysInMonth, (dIndex) {
+                                  children: List.generate(daysInMonth, (
+                                    dIndex,
+                                  ) {
                                     final day = dIndex + 1;
                                     final status = pStatusMap[day] ?? '';
-                                    final bgColor = context.getStatusBgColor(status);
-                                    final textColor = context.getStatusTextColor(status);
+                                    final bgColor = context.getStatusBgColor(
+                                      status,
+                                    );
+                                    final textColor = context
+                                        .getStatusTextColor(status);
                                     final label = _getAbbreviation(status);
 
                                     final isToday =
@@ -690,9 +712,13 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                         margin: const EdgeInsets.all(2),
                                         decoration: BoxDecoration(
                                           color: bgColor,
-                                          borderRadius: BorderRadius.circular(6),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
                                           border: Border.all(
-                                            color: context.cellBorderColor(isToday: isToday),
+                                            color: context.cellBorderColor(
+                                              isToday: isToday,
+                                            ),
                                             width: isToday ? 2.0 : 1.2,
                                           ),
                                         ),

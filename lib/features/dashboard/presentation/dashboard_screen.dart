@@ -104,155 +104,178 @@ class DashboardScreen extends ConsumerWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                      Container(
-                        width: 40,
-                        height: 4,
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: context.colorScheme.outlineVariant,
-                          borderRadius: BorderRadius.circular(2),
+                        Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: context.colorScheme.outlineVariant,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
                         ),
-                      ),
-                      ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: context.accentOrOlive,
-                          child: const Icon(Icons.person, color: Colors.white),
-                        ),
-                        title: Text(
-                          'Hesap: $username',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          isAdmin
-                              ? 'Rol: Birlik Yöneticisi (Admin)'
-                              : 'Rol: Tim Komutanı',
-                        ),
-                      ),
-                      const Divider(),
-                      SwitchListTile(
-                        secondary: Icon(
-                          isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                          color: context.accentOrOlive,
-                        ),
-                        title: const Text('Koyu Mod (Dark Theme)'),
-                        subtitle: Text(isDarkMode ? 'Aktif' : 'Pasif'),
-                        value: isDarkMode,
-                        onChanged: (value) async {
-                          final newMode = value ? ThemeMode.dark : ThemeMode.light;
-                          ref.read(themeModeProvider.notifier).state = newMode;
-                          await SessionStorage.saveThemeMode(newMode);
-                          setSheetState(() {});
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(
-                          Icons.key,
-                          color: context.accentOrOlive,
-                        ),
-                        title: const Text('Şifremi Değiştir'),
-                        onTap: () {
-                          Navigator.pop(ctx);
-                          unawaited(
-                            _showChangePasswordDialog(context, ref, username),
-                          );
-                        },
-                      ),
-                      if (isAdmin) ...[
-                        const Divider(),
                         ListTile(
-                          leading: Icon(
-                            Icons.group_add,
+                          leading: CircleAvatar(
+                            backgroundColor: context.accentOrOlive,
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                            ),
+                          ),
+                          title: Text(
+                            'Hesap: $username',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            isAdmin
+                                ? 'Rol: Birlik Yöneticisi (Admin)'
+                                : 'Rol: Tim Komutanı',
+                          ),
+                        ),
+                        const Divider(),
+                        SwitchListTile(
+                          secondary: Icon(
+                            isDarkMode ? Icons.dark_mode : Icons.light_mode,
                             color: context.accentOrOlive,
                           ),
-                          title: const Text("10'ar Test Personeli Ekle"),
-                          subtitle: const Text('Her time 10 adet sahte personel oluşturur'),
-                          onTap: () async {
-                            Navigator.pop(ctx);
-                            final repo = ref.read(personnelRepositoryProvider);
-                            final count = await repo.seedTestPersonnelPerSquad();
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('$count adet test personeli başarıyla eklendi!'),
-                                  backgroundColor: context.approvedColor,
-                                ),
-                              );
-                            }
+                          title: const Text('Koyu Mod (Dark Theme)'),
+                          subtitle: Text(isDarkMode ? 'Aktif' : 'Pasif'),
+                          value: isDarkMode,
+                          onChanged: (value) async {
+                            final newMode = value
+                                ? ThemeMode.dark
+                                : ThemeMode.light;
+                            ref.read(themeModeProvider.notifier).state =
+                                newMode;
+                            await SessionStorage.saveThemeMode(newMode);
+                            setSheetState(() {});
                           },
                         ),
                         ListTile(
                           leading: Icon(
-                            Icons.delete_sweep,
-                            color: context.rejectedColor,
+                            Icons.key,
+                            color: context.accentOrOlive,
                           ),
-                          title: Text(
-                            'Tüm Personelleri Sil (Sıfırla)',
-                            style: TextStyle(color: context.rejectedColor),
-                          ),
-                          subtitle: const Text('Eklenen tüm personelleri temizler'),
-                          onTap: () async {
+                          title: const Text('Şifremi Değiştir'),
+                          onTap: () {
                             Navigator.pop(ctx);
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (dCtx) => AlertDialog(
-                                title: const Text('Personelleri Sil'),
-                                content: const Text('Veritabanındaki tüm personel kayıtları silinecektir. Emin misiniz?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(dCtx, false),
-                                    child: const Text('İPTAL'),
-                                  ),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: context.rejectedColor,
-                                      foregroundColor: Colors.white,
-                                    ),
-                                    onPressed: () => Navigator.pop(dCtx, true),
-                                    child: const Text('SİL'),
-                                  ),
-                                ],
-                              ),
+                            unawaited(
+                              _showChangePasswordDialog(context, ref, username),
                             );
-
-                            if (confirm == true) {
-                              final repo = ref.read(personnelRepositoryProvider);
-                              await repo.deleteAllPersonnel();
+                          },
+                        ),
+                        if (isAdmin) ...[
+                          const Divider(),
+                          ListTile(
+                            leading: Icon(
+                              Icons.group_add,
+                              color: context.accentOrOlive,
+                            ),
+                            title: const Text("10'ar Test Personeli Ekle"),
+                            subtitle: const Text(
+                              'Her time 10 adet sahte personel oluşturur',
+                            ),
+                            onTap: () async {
+                              Navigator.pop(ctx);
+                              final repo = ref.read(
+                                personnelRepositoryProvider,
+                              );
+                              final count = await repo
+                                  .seedTestPersonnelPerSquad();
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: const Text('Tüm personel verileri temizlendi!'),
+                                    content: Text(
+                                      '$count adet test personeli başarıyla eklendi!',
+                                    ),
                                     backgroundColor: context.approvedColor,
                                   ),
                                 );
                               }
+                            },
+                          ),
+                          ListTile(
+                            leading: Icon(
+                              Icons.delete_sweep,
+                              color: context.rejectedColor,
+                            ),
+                            title: Text(
+                              'Tüm Personelleri Sil (Sıfırla)',
+                              style: TextStyle(color: context.rejectedColor),
+                            ),
+                            subtitle: const Text(
+                              'Eklenen tüm personelleri temizler',
+                            ),
+                            onTap: () async {
+                              Navigator.pop(ctx);
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (dCtx) => AlertDialog(
+                                  title: const Text('Personelleri Sil'),
+                                  content: const Text(
+                                    'Veritabanındaki tüm personel kayıtları silinecektir. Emin misiniz?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(dCtx, false),
+                                      child: const Text('İPTAL'),
+                                    ),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: context.rejectedColor,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      onPressed: () =>
+                                          Navigator.pop(dCtx, true),
+                                      child: const Text('SİL'),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                              if (confirm == true) {
+                                final repo = ref.read(
+                                  personnelRepositoryProvider,
+                                );
+                                await repo.deleteAllPersonnel();
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Text(
+                                        'Tüm personel verileri temizlendi!',
+                                      ),
+                                      backgroundColor: context.approvedColor,
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                          ),
+                        ],
+
+                        ListTile(
+                          leading: Icon(
+                            Icons.logout,
+                            color: context.rejectedColor,
+                          ),
+                          title: Text(
+                            'Çıkış Yap',
+                            style: TextStyle(color: context.rejectedColor),
+                          ),
+                          onTap: () async {
+                            Navigator.pop(ctx);
+                            await SessionStorage.clearSession();
+                            ref.read(userSessionProvider.notifier).state = null;
+                            if (context.mounted) {
+                              context.go('/login');
                             }
                           },
                         ),
                       ],
-
-                      ListTile(
-                        leading: Icon(
-                          Icons.logout,
-                          color: context.rejectedColor,
-                        ),
-                        title: Text(
-                          'Çıkış Yap',
-                          style: TextStyle(color: context.rejectedColor),
-                        ),
-                        onTap: () async {
-                          Navigator.pop(ctx);
-                          await SessionStorage.clearSession();
-                          ref.read(userSessionProvider.notifier).state = null;
-                          if (context.mounted) {
-                            context.go('/login');
-                          }
-                        },
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            );
+              );
             },
           );
         },
@@ -431,7 +454,9 @@ class _MenuCard extends StatelessWidget {
       child: Card(
         color: color.withValues(alpha: context.isDarkMode ? 0.18 : 0.1),
         shape: RoundedRectangleBorder(
-          side: BorderSide(color: color.withValues(alpha: context.isDarkMode ? 0.4 : 0.3)),
+          side: BorderSide(
+            color: color.withValues(alpha: context.isDarkMode ? 0.4 : 0.3),
+          ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Padding(

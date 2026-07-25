@@ -17,31 +17,36 @@ void main() {
     await db.close();
   });
 
-  test('Reassigning commander to squad should update user and squad table', () async {
-    final timId = await repo.addSquad(
-      timAdi: '1. Asayiş Timi',
-      olusturmaTarihi: '2026-07-21',
-    );
+  test(
+    'Reassigning commander to squad should update user and squad table',
+    () async {
+      final timId = await repo.addSquad(
+        timAdi: '1. Asayiş Timi',
+        olusturmaTarihi: '2026-07-21',
+      );
 
-    // Create commander user account
-    final userId = await db.into(db.kullaniciTable).insert(
-          KullaniciTableCompanion.insert(
-            kullaniciAdi: 'komutan1',
-            sifre: const Value('123456'),
-            rol: 'tim_komutani',
-          ),
-        );
+      // Create commander user account
+      final userId = await db
+          .into(db.kullaniciTable)
+          .insert(
+            KullaniciTableCompanion.insert(
+              kullaniciAdi: 'komutan1',
+              sifre: const Value('123456'),
+              rol: 'tim_komutani',
+            ),
+          );
 
-    // Reassign commander to timId
-    await repo.assignCommanderToSquad(userId: userId, timId: timId);
+      // Reassign commander to timId
+      await repo.assignCommanderToSquad(userId: userId, timId: timId);
 
-    final commanders = await repo.watchAllCommanders().first;
-    expect(commanders.first.timId, equals(timId));
+      final commanders = await repo.watchAllCommanders().first;
+      expect(commanders.first.timId, equals(timId));
 
-    // Revoke authority (assign to null)
-    await repo.assignCommanderToSquad(userId: userId, timId: null);
+      // Revoke authority (assign to null)
+      await repo.assignCommanderToSquad(userId: userId, timId: null);
 
-    final updatedCommanders = await repo.watchAllCommanders().first;
-    expect(updatedCommanders.first.timId, isNull);
-  });
+      final updatedCommanders = await repo.watchAllCommanders().first;
+      expect(updatedCommanders.first.timId, isNull);
+    },
+  );
 }

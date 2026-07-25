@@ -19,7 +19,8 @@ extension ResponsiveContext on BuildContext {
 
   /// True if current screen is tablet (600px - 1024px)
   bool get isTablet =>
-      screenWidth >= AppBreakpoints.mobile && screenWidth < AppBreakpoints.tablet;
+      screenWidth >= AppBreakpoints.mobile &&
+      screenWidth < AppBreakpoints.tablet;
 
   /// True if current screen is desktop/wide (> 1024px)
   bool get isDesktop => screenWidth >= AppBreakpoints.tablet;

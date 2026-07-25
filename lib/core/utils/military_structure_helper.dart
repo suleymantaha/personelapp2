@@ -89,7 +89,10 @@ class MilitaryStructureHelper {
   }
 
   /// Sorts a list of items by squad name according to official military order
-  static List<T> sortSquads<T>(List<T> squads, String Function(T) nameExtractor) {
+  static List<T> sortSquads<T>(
+    List<T> squads,
+    String Function(T) nameExtractor,
+  ) {
     return List<T>.from(squads)..sort((a, b) {
       final wA = getSquadOrderWeight(nameExtractor(a));
       final wB = getSquadOrderWeight(nameExtractor(b));
