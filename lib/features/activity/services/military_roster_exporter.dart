@@ -532,7 +532,7 @@ class MilitaryRosterExporter {
 
     final dir = await getTemporaryDirectory();
     final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-    final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.xls');
+    final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.xlsx');
 
     // Write UTF-8 BOM byte sequence [0xEF, 0xBB, 0xBF] followed by HTML bytes
     final bytes = <int>[0xEF, 0xBB, 0xBF, ...utf8.encode(htmlContent)];
@@ -559,7 +559,7 @@ class MilitaryRosterExporter {
     );
 
     final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-    final fileName = '${sanitizedTitle}_Listesi_$tarih.xls';
+    final fileName = '${sanitizedTitle}_Listesi_$tarih.xlsx';
 
     Directory targetDir;
     if (Platform.isAndroid) {
@@ -601,7 +601,7 @@ class MilitaryRosterExporter {
     );
 
     final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/Gunluk_Tum_Faaliyetler_$dateStr.xls');
+    final file = File('${dir.path}/Gunluk_Tum_Faaliyetler_$dateStr.xlsx');
     final bytes = <int>[0xEF, 0xBB, 0xBF, ...utf8.encode(xmlContent)];
     await file.writeAsBytes(bytes);
 

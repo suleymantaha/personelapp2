@@ -85,87 +85,45 @@ class PdfRosterExporter {
     );
   }
 
-  /// Builds PDF Table with merged vertical cells and centered text for BİRLİĞİ and DİĞER (HAZIR KITA & GÜLÜŞKÜR)
+  /// Builds PDF Table matching official military layout with dynamic vertically merged cells for BİRLİĞİ and DİĞER
   static pw.Widget buildPdfTable(List<MilitaryRosterRow> rows) {
+    const headerStyle = pw.TextStyle(
+      fontSize: 9.5,
+      fontWeight: pw.FontWeight.bold,
+    );
+
     final tableRows = <pw.TableRow>[
       pw.TableRow(
         decoration: const pw.BoxDecoration(color: PdfColors.grey300),
         children: [
           pw.Container(
-            padding: const pw.EdgeInsets.symmetric(
-              vertical: 4,
-              horizontal: 2,
-            ),
+            padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
             alignment: pw.Alignment.center,
-            child: pw.Text(
-              'S. NU',
-              style: const pw.TextStyle(
-                fontSize: 10,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
+            child: pw.Text('S. NU', style: headerStyle),
           ),
           pw.Container(
-            padding: const pw.EdgeInsets.symmetric(
-              vertical: 4,
-              horizontal: 2,
-            ),
+            padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
             alignment: pw.Alignment.center,
-            child: pw.Text(
-              'BİRLİĞİ',
-              style: const pw.TextStyle(
-                fontSize: 10,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
+            child: pw.Text('BİRLİĞİ', style: headerStyle),
           ),
           pw.Container(
-            padding: const pw.EdgeInsets.symmetric(
-              vertical: 4,
-              horizontal: 2,
-            ),
+            padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
             alignment: pw.Alignment.center,
-            child: pw.Text(
-              'RÜTBE',
-              style: const pw.TextStyle(
-                fontSize: 10,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
+            child: pw.Text('RÜTBE', style: headerStyle),
           ),
           pw.Container(
-            padding: const pw.EdgeInsets.symmetric(
-              vertical: 4,
-              horizontal: 4,
-            ),
+            padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 4),
             alignment: pw.Alignment.center,
-            child: pw.Text(
-              'ADI SOYADI',
-              style: const pw.TextStyle(
-                fontSize: 10,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
+            child: pw.Text('ADI SOYADI', style: headerStyle),
           ),
           pw.Container(
-            padding: const pw.EdgeInsets.symmetric(
-              vertical: 4,
-              horizontal: 2,
-            ),
+            padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
             alignment: pw.Alignment.center,
-            child: pw.Text(
-              'DİĞER',
-              style: const pw.TextStyle(
-                fontSize: 10,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
+            child: pw.Text('DİĞER', style: headerStyle),
           ),
         ],
       ),
-    ]
-    // Header Row
-    ;
+    ];
 
     final n = rows.length;
     if (n == 0) {
@@ -177,7 +135,7 @@ class PdfRosterExporter {
     final specialStart = List<int>.filled(n, -1);
     final specialEnd = List<int>.filled(n, -1);
 
-    // 1. Calculate Birlik merged blocks
+    // 1. Calculate dynamic Birlik merged blocks
     var idx = 0;
     while (idx < n) {
       final bName = rows[idx].birligi;
@@ -195,7 +153,7 @@ class PdfRosterExporter {
       idx = endIdx + 1;
     }
 
-    // 2. Calculate Special duty merged blocks (HAZIR KITA & GÜLÜŞKÜR)
+    // 2. Calculate dynamic Special duty merged blocks (HAZIR KITA & GÜLÜŞKÜR)
     idx = 0;
     while (idx < n) {
       final gCode = rows[idx].groupCode;
@@ -218,47 +176,107 @@ class PdfRosterExporter {
       }
     }
 
+    final standardBorder = pw.Border.all(width: 0.6, color: PdfColors.grey800);
+
     for (var i = 0; i < n; i++) {
       final r = rows[i];
+      final isEven = i.isEven;
+      final rowBgColor = isEven ? PdfColors.white : PdfColors.grey50;
+
+      // Birlik merge boundaries
       final bSt = birlikStart[i];
       final bEn = birlikEnd[i];
+      final bMergeCount = bEn - bSt + 1;
       final isBFirst = i == bSt;
       final isBLast = i == bEn;
-      final bMid = bSt + (bEn - bSt) ~/ 2;
-      final showBirlikText = i == bMid;
-
-      final spSt = specialStart[i];
-      final spEn = specialEnd[i];
-      final isSpecial = spSt != -1;
-      final isSpFirst = isSpecial && i == spSt;
-      final isSpLast = isSpecial && i == spEn;
-      final spMid = isSpecial ? spSt + (spEn - spSt) ~/ 2 : -1;
-      final showSpecialText = isSpecial && i == spMid;
 
       final birlikBorder = pw.Border(
-        top: isBFirst ? const pw.BorderSide(width: 0.8) : pw.BorderSide.none,
-        bottom: isBLast ? const pw.BorderSide(width: 0.8) : pw.BorderSide.none,
-        left: const pw.BorderSide(width: 0.8),
-        right: const pw.BorderSide(width: 0.8),
+        top: isBFirst
+            ? const pw.BorderSide(width: 0.6, color: PdfColors.grey800)
+            : pw.BorderSide.none,
+        bottom: isBLast
+            ? const pw.BorderSide(width: 0.6, color: PdfColors.grey800)
+            : pw.BorderSide.none,
+        left: const pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+        right: const pw.BorderSide(width: 0.6, color: PdfColors.grey800),
       );
 
-      final specialBorder = isSpecial
+      // Determine text placement and vertical alignment inside Birlik cell
+      var birlikCellText = '';
+      var birlikAlignment = pw.Alignment.center;
+
+      if (bMergeCount == 1) {
+        birlikCellText = r.birligi;
+        birlikAlignment = pw.Alignment.center;
+      } else if (bMergeCount == 2) {
+        if (i == bSt) {
+          birlikCellText = r.birligi;
+          birlikAlignment = pw.Alignment.bottomCenter;
+        } else {
+          birlikCellText = '';
+          birlikAlignment = pw.Alignment.topCenter;
+        }
+      } else {
+        final bMid = bSt + (bEn - bSt) ~/ 2;
+        if (i == bMid || (bMergeCount >= 6 && i == bSt)) {
+          birlikCellText = r.birligi;
+        }
+        birlikAlignment = pw.Alignment.center;
+      }
+
+      // Special duty merge boundaries
+      final spSt = specialStart[i];
+      final spEn = specialEnd[i];
+      final isSpecialGroup = spSt != -1;
+      final spMergeCount = isSpecialGroup ? (spEn - spSt + 1) : 1;
+      final isSpFirst = isSpecialGroup && i == spSt;
+      final isSpLast = isSpecialGroup && i == spEn;
+
+      final specialBorder = isSpecialGroup
           ? pw.Border(
               top: isSpFirst
-                  ? const pw.BorderSide(width: 0.8)
+                  ? const pw.BorderSide(width: 0.6, color: PdfColors.grey800)
                   : pw.BorderSide.none,
               bottom: isSpLast
-                  ? const pw.BorderSide(width: 0.8)
+                  ? const pw.BorderSide(width: 0.6, color: PdfColors.grey800)
                   : pw.BorderSide.none,
-              left: const pw.BorderSide(width: 0.8),
-              right: const pw.BorderSide(width: 0.8),
+              left: const pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+              right: const pw.BorderSide(width: 0.6, color: PdfColors.grey800),
             )
-          : pw.Border.all(width: 0.8);
+          : standardBorder;
 
-      final standardBorder = pw.Border.all(width: 0.8);
+      var specialCellText = '';
+      var specialAlignment = pw.Alignment.center;
+
+      if (isSpecialGroup) {
+        if (spMergeCount == 1) {
+          specialCellText = r.diger;
+          specialAlignment = pw.Alignment.center;
+        } else if (spMergeCount == 2) {
+          if (i == spSt) {
+            specialCellText = r.diger;
+            specialAlignment = pw.Alignment.bottomCenter;
+          } else {
+            specialCellText = '';
+            specialAlignment = pw.Alignment.topCenter;
+          }
+        } else {
+          final spMid = spSt + (spEn - spSt) ~/ 2;
+          if (i == spMid || (spMergeCount >= 6 && i == spSt)) {
+            specialCellText = r.diger;
+          }
+          specialAlignment = pw.Alignment.center;
+        }
+      } else {
+        specialCellText = r.diger.trim().isEmpty ? '-' : r.diger;
+        specialAlignment = r.diger.trim().isEmpty
+            ? pw.Alignment.center
+            : pw.Alignment.centerLeft;
+      }
 
       tableRows.add(
         pw.TableRow(
+          decoration: pw.BoxDecoration(color: rowBgColor),
           children: [
             // S. NU
             pw.Container(
@@ -269,22 +287,23 @@ class PdfRosterExporter {
               ),
               alignment: pw.Alignment.center,
               child: pw.Text(
-                '${i + 1}',
+                '${r.sNu > 0 ? r.sNu : i + 1}',
                 style: const pw.TextStyle(fontSize: 9),
               ),
             ),
-            // BİRLİĞİ (Merged Cell Visuals - Vertically Centered Text)
+            // BİRLİĞİ (Dynamically Merged Cell)
             pw.Container(
               decoration: pw.BoxDecoration(border: birlikBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 4,
-                horizontal: 2,
+                horizontal: 3,
               ),
-              alignment: pw.Alignment.center,
+              alignment: birlikAlignment,
               child: pw.Text(
-                showBirlikText ? r.birligi : '',
+                birlikCellText,
+                textAlign: pw.TextAlign.center,
                 style: const pw.TextStyle(
-                  fontSize: 9,
+                  fontSize: 8.5,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
@@ -297,7 +316,10 @@ class PdfRosterExporter {
                 horizontal: 2,
               ),
               alignment: pw.Alignment.center,
-              child: pw.Text(r.rutbe, style: const pw.TextStyle(fontSize: 9)),
+              child: pw.Text(
+                r.rutbe,
+                style: const pw.TextStyle(fontSize: 9),
+              ),
             ),
             // ADI SOYADI
             pw.Container(
@@ -307,23 +329,30 @@ class PdfRosterExporter {
                 horizontal: 4,
               ),
               alignment: pw.Alignment.centerLeft,
-              child: pw.Text(r.adSoyad, style: const pw.TextStyle(fontSize: 9)),
+              child: pw.Text(
+                r.adSoyad,
+                style: const pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
             ),
-            // DİĞER (Merged Cell Visuals for HAZIR KITA & GÜLÜŞKÜR - Vertically Centered Text)
+            // DİĞER (Dynamically Merged Cell for Special Duties)
             pw.Container(
               decoration: pw.BoxDecoration(border: specialBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 4,
                 horizontal: 2,
               ),
-              alignment: isSpecial
-                  ? pw.Alignment.center
-                  : pw.Alignment.centerLeft,
+              alignment: specialAlignment,
               child: pw.Text(
-                isSpecial ? (showSpecialText ? r.diger : '') : r.diger,
+                specialCellText,
+                textAlign: (isSpecialGroup || r.diger.trim().isEmpty)
+                    ? pw.TextAlign.center
+                    : pw.TextAlign.left,
                 style: pw.TextStyle(
-                  fontSize: 9,
-                  fontWeight: isSpecial
+                  fontSize: 8.5,
+                  fontWeight: isSpecialGroup
                       ? pw.FontWeight.bold
                       : pw.FontWeight.normal,
                 ),
@@ -335,12 +364,12 @@ class PdfRosterExporter {
     }
 
     return pw.Table(
-      columnWidths: {
-        0: const pw.FlexColumnWidth(0.8),
-        1: const pw.FlexColumnWidth(2),
-        2: const pw.FlexColumnWidth(2.2),
-        3: const pw.FlexColumnWidth(3.8),
-        4: const pw.FlexColumnWidth(2.5),
+      columnWidths: const {
+        0: pw.FlexColumnWidth(0.8), // S. NU
+        1: pw.FlexColumnWidth(2.5), // BİRLİĞİ
+        2: pw.FlexColumnWidth(2.2), // RÜTBE
+        3: pw.FlexColumnWidth(4), // ADI SOYADI
+        4: pw.FlexColumnWidth(2.5), // DİĞER
       },
       children: tableRows,
     );

@@ -174,7 +174,7 @@ class ExcelXmlGenerator {
         final now = DateTime.now();
         for (final entity in files) {
           if (entity is File &&
-              (entity.path.endsWith('.xls') || entity.path.endsWith('.xml'))) {
+              (entity.path.endsWith('.xlsx') || entity.path.endsWith('.xml'))) {
             final stat = entity.statSync();
             if (now.difference(stat.modified).inDays >= 1) {
               await entity.delete();
@@ -185,7 +185,7 @@ class ExcelXmlGenerator {
     } on Exception catch (_) {}
   }
 
-  /// Exports XML content to a temporary .xls file and launches native share intent
+  /// Exports XML content to a temporary .xlsx file and launches native share intent
   static Future<void> exportAndShareXml({
     required List<PersonelTableData> personnel,
     required Map<int, Map<int, String>> matrixData,
@@ -202,7 +202,7 @@ class ExcelXmlGenerator {
     );
 
     final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/Faaliyet_Matrisi_${year}_$month.xls');
+    final file = File('${dir.path}/Faaliyet_Matrisi_${year}_$month.xlsx');
     await file.writeAsString(xmlContent);
 
     await SharePlus.instance.share(
