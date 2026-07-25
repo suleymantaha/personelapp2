@@ -6,11 +6,12 @@ import 'package:personelapp2/features/matrix/data/matrix_repository.dart';
 import 'package:personelapp2/features/personnel/data/personnel_repository.dart';
 
 
-/// Database Instance Provider
+AppDatabase? _singletonDb;
+
+/// Database Instance Provider (Singleton)
 final databaseProvider = Provider<AppDatabase>((ref) {
-  final db = AppDatabase();
-  ref.onDispose(db.close);
-  return db;
+  ref.keepAlive();
+  return _singletonDb ??= AppDatabase();
 });
 
 /// Repositories
