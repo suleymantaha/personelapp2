@@ -37,128 +37,143 @@ class PendingApprovalsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               itemCount: pendingList.length,
               itemBuilder: (context, index) {
-              final atama = pendingList[index];
-              final p = pMap[atama.personelId];
-              final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
-              final rutbeText = p?.rutbe ?? '';
-              final birlikInfo = p?.birlik ?? '';
-              final fullPersonName = rutbeText.isNotEmpty ? '$rutbeText $nameText' : nameText;
-              final squadInfo = birlikInfo.isNotEmpty ? ' ($birlikInfo)' : '';
+                final atama = pendingList[index];
+                final p = pMap[atama.personelId];
+                final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
+                final rutbeText = p?.rutbe ?? '';
+                final birlikInfo = p?.birlik ?? '';
+                final fullPersonName = rutbeText.isNotEmpty
+                    ? '$rutbeText $nameText'
+                    : nameText;
+                final squadInfo = birlikInfo.isNotEmpty ? ' ($birlikInfo)' : '';
 
-              return Card(
-                elevation: 3,
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(color: context.pendingColor, width: 1.5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.warning, color: context.pendingColor),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Görevlendirme #${atama.id} (ÇAKIŞMA VAR)',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                return Card(
+                  elevation: 3,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(color: context.pendingColor, width: 1.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.warning, color: context.pendingColor),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Görevlendirme #${atama.id} (ÇAKIŞMA VAR)',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontSize: 14,
+                            ),
+                            children: [
+                              const TextSpan(
+                                text: 'Personel: ',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              TextSpan(
+                                text: '$fullPersonName$squadInfo',
+                                style: TextStyle(
+                                  color: context.accentOrOlive,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontSize: 14,
+                            ),
+                            children: [
+                              const TextSpan(
+                                text: 'Talep Edilen Görev: ',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              TextSpan(
+                                text: atama.gorevVeyaIzin,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (atama.aciklama != null &&
+                            atama.aciklama!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Açıklama: ${atama.aciklama}',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontStyle: FontStyle.italic,
+                              color: context.textSecondary,
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 10),
-                      RichText(
-                        text: TextSpan(
-                          style: TextStyle(color: context.textPrimary, fontSize: 14),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            const TextSpan(
-                              text: 'Personel: ',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                              text: '$fullPersonName$squadInfo',
-                              style: TextStyle(
-                                color: context.accentOrOlive,
-                                fontWeight: FontWeight.w600,
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: context.rejectedColor,
                               ),
+                              onPressed: () async {
+                                final repo = ref.read(
+                                  activityRepositoryProvider,
+                                );
+                                await repo.updateAssignmentStatus(
+                                  atama.id,
+                                  AssignmentStatus.reddedildi,
+                                );
+                              },
+                              child: const Text('REDDET'),
+                            ),
+                            const SizedBox(width: 12),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: context.approvedColor,
+                                foregroundColor: Colors.white,
+                              ),
+                              onPressed: () async {
+                                final repo = ref.read(
+                                  activityRepositoryProvider,
+                                );
+                                await repo.updateAssignmentStatus(
+                                  atama.id,
+                                  AssignmentStatus.onaylandi,
+                                );
+                              },
+                              child: const Text('ONAYLA'),
                             ),
                           ],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      RichText(
-                        text: TextSpan(
-                          style: TextStyle(color: context.textPrimary, fontSize: 14),
-                          children: [
-                            const TextSpan(
-                              text: 'Talep Edilen Görev: ',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                              text: atama.gorevVeyaIzin,
-                              style: const TextStyle(fontWeight: FontWeight.w500),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (atama.aciklama != null && atama.aciklama!.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          'Açıklama: ${atama.aciklama}',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontStyle: FontStyle.italic,
-                            color: context.textSecondary,
-                          ),
                         ),
                       ],
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: context.rejectedColor,
-                            ),
-                            onPressed: () async {
-                              final repo = ref.read(activityRepositoryProvider);
-                              await repo.updateAssignmentStatus(
-                                atama.id,
-                                AssignmentStatus.reddedildi,
-                              );
-                            },
-                            child: const Text('REDDET'),
-                          ),
-                          const SizedBox(width: 12),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: context.approvedColor,
-                              foregroundColor: Colors.white,
-                            ),
-                            onPressed: () async {
-                              final repo = ref.read(activityRepositoryProvider);
-                              await repo.updateAssignmentStatus(
-                                atama.id,
-                                AssignmentStatus.onaylandi,
-                              );
-                            },
-                            child: const Text('ONAYLA'),
-                          ),
-                        ],
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-        );
+                );
+              },
+            ),
+          );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, st) => Center(child: Text('Hata: $err')),

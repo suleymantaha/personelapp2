@@ -176,9 +176,10 @@ class MilitaryRosterExporter {
 
       for (var j = 0; j <= mergeCount; j++) {
         final r = rows[i + j];
-        sb.writeln('  <tr>');
-        // Column A: S. NU
-        sb.writeln('    <td class="center">${r.sNu}</td>');
+        sb
+          ..writeln('  <tr>')
+          // Column A: S. NU
+          ..writeln('    <td class="center">${r.sNu}</td>');
 
         // Column B: BİRLİĞİ (Merged vertically)
         if (j == 0) {
@@ -188,10 +189,10 @@ class MilitaryRosterExporter {
         }
 
         // Column C: RÜTBE
-        sb.writeln('    <td class="center">${escapeXml(r.rutbe)}</td>');
-
         // Column D: ADI SOYADI
-        sb.writeln('    <td class="left">${escapeXml(r.adSoyad)}</td>');
+        sb
+          ..writeln('    <td class="center">${escapeXml(r.rutbe)}</td>')
+          ..writeln('    <td class="left">${escapeXml(r.adSoyad)}</td>');
 
         // Column E: DİĞER (Merged vertically for Hazır Kıta & Gülüşkür, normal for others)
         if (isSpecialGroup) {

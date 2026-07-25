@@ -156,28 +156,28 @@ extension ThemeContext on BuildContext {
 
   /// Matrix Duty/Leave status background color
   Color getStatusBgColor(String status) {
-    if (status.contains('GÖREV') || status.contains('NÖBET')) {
+    if (status.contains('beklemede')) {
+      return isDarkMode ? AppColors.statusPendingDark : AppColors.statusPendingLight;
+    } else if (status.contains('GÖREV') || status.contains('NÖBET')) {
       return isDarkMode ? AppColors.statusDutyDark : AppColors.statusDutyLight;
     } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
       return isDarkMode ? AppColors.statusLeaveDark : AppColors.statusLeaveLight;
     } else if (status.contains('RAPOR') || status.contains('SEVK')) {
       return isDarkMode ? AppColors.statusReportDark : AppColors.statusReportLight;
-    } else if (status.contains('beklemede')) {
-      return isDarkMode ? AppColors.statusPendingDark : AppColors.statusPendingLight;
     }
     return isDarkMode ? AppColors.cardDark : Colors.transparent;
   }
 
   /// Matrix Duty/Leave status text color
   Color getStatusTextColor(String status) {
-    if (status.contains('GÖREV') || status.contains('NÖBET')) {
+    if (status.contains('beklemede')) {
+      return isDarkMode ? AppColors.statusPendingTextDark : AppColors.statusPendingTextLight;
+    } else if (status.contains('GÖREV') || status.contains('NÖBET')) {
       return isDarkMode ? AppColors.statusDutyTextDark : AppColors.statusDutyTextLight;
     } else if (status.contains('İZİN') || status.contains('İSTİRAHAT')) {
       return isDarkMode ? AppColors.statusLeaveTextDark : AppColors.statusLeaveTextLight;
     } else if (status.contains('RAPOR') || status.contains('SEVK')) {
       return isDarkMode ? AppColors.statusReportTextDark : AppColors.statusReportTextLight;
-    } else if (status.contains('beklemede')) {
-      return isDarkMode ? AppColors.statusPendingTextDark : AppColors.statusPendingTextLight;
     }
     return textMuted;
   }

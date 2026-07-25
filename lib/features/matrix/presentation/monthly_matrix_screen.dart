@@ -20,6 +20,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
   DateTime _selectedMonth = DateTime.now();
 
   String _getAbbreviation(String status) {
+    if (status.contains('beklemede')) return 'B';
     if (status.contains('GÖREV') ||
         status.contains('NÖBET') ||
         status.contains('HAZIR KITA') ||
@@ -31,7 +32,6 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
     if (status.contains('İSTİRAHAT')) return 'İST';
     if (status.contains('RAPOR')) return 'RAP';
     if (status.contains('SEVK')) return 'SVK';
-    if (status.contains('beklemede')) return 'B';
     return '-';
   }
 
@@ -108,10 +108,11 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                   ),
                 ],
               ),
-              content: SizedBox(
-                width: 320,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+              content: SingleChildScrollView(
+                child: SizedBox(
+                  width: 320,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                   children: [
                     const Divider(),
                     const SizedBox(height: 12),
@@ -178,6 +179,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                   ],
                 ),
               ),
+            ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
@@ -332,7 +334,6 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
                       color: context.cardBorderColor,
-                      width: 1,
                     ),
                   ),
                   child: ExpansionTile(

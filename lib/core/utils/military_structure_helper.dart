@@ -80,7 +80,7 @@ class MilitaryStructureHelper {
     if (idx != -1) return idx;
 
     // Case-insensitive match fallback
-    for (int i = 0; i < officialSquadOrder.length; i++) {
+    for (var i = 0; i < officialSquadOrder.length; i++) {
       if (officialSquadOrder[i].toLowerCase() == s.toLowerCase()) {
         return i;
       }
@@ -90,13 +90,11 @@ class MilitaryStructureHelper {
 
   /// Sorts a list of items by squad name according to official military order
   static List<T> sortSquads<T>(List<T> squads, String Function(T) nameExtractor) {
-    final list = List<T>.from(squads);
-    list.sort((a, b) {
+    return List<T>.from(squads)..sort((a, b) {
       final wA = getSquadOrderWeight(nameExtractor(a));
       final wB = getSquadOrderWeight(nameExtractor(b));
       if (wA != wB) return wA.compareTo(wB);
       return nameExtractor(a).compareTo(nameExtractor(b));
     });
-    return list;
   }
 }

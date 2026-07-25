@@ -166,7 +166,6 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                 decoration: const InputDecoration(labelText: 'Bağlı Olduğu Tim'),
                 items: [
                   const DropdownMenuItem<int?>(
-                    value: null,
                     child: Text('Bağımsız / Tim Dışı'),
                   ),
                   ...squads.map(
@@ -191,7 +190,7 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                     controller: _unitController,
                     decoration: const InputDecoration(
                       labelText: 'Birlik / Bölük',
-                      hintText: 'Örn: 1\'inci Bl.',
+                      hintText: "Örn: 1'inci Bl.",
                     ),
                   ),
                 ),

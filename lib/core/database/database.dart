@@ -96,7 +96,7 @@ class AppDatabase extends _$AppDatabase {
       if (toInsert.isNotEmpty) {
         await batch((b) => b.insertAll(timTable, toInsert));
       }
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Database seeding error: $e');
     }
   }

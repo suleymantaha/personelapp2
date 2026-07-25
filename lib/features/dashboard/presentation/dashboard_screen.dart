@@ -22,25 +22,27 @@ class DashboardScreen extends ConsumerWidget {
       builder: (ctx) {
         return AlertDialog(
           title: const Text('Şifremi Değiştir'),
-          content: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Kullanıcı: $username',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: passCtrl,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Yeni Şifreniz',
-                    prefixIcon: Icon(Icons.lock),
+          content: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Kullanıcı: $username',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: passCtrl,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Yeni Şifreniz',
+                      prefixIcon: Icon(Icons.lock),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -98,9 +100,10 @@ class DashboardScreen extends ConsumerWidget {
               return SafeArea(
                 child: ResponsiveCenter(
                   maxWidth: 600,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                       Container(
                         width: 40,
                         height: 4,
@@ -248,7 +251,8 @@ class DashboardScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-              );
+              ),
+            );
             },
           );
         },

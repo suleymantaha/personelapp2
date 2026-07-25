@@ -25,8 +25,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         final db = ref.read(databaseProvider);
-        db.ensureSeeded();
-      } catch (_) {}
+        await db.ensureSeeded();
+      } on Exception catch (_) {}
 
       var session = ref.read(userSessionProvider);
       if (session == null) {
@@ -38,7 +38,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           if (session != null) {
             ref.read(userSessionProvider.notifier).state = session;
           }
-        } catch (_) {}
+        } on Exception catch (_) {}
       }
 
       if (session != null && mounted) {
@@ -60,36 +60,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           builder: (ctx, setDialogState) {
             return AlertDialog(
               title: const Text('İlk Giriş: Parola Belirleyin'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Sayın $username, hesabınız için yeni bir parola belirleyiniz.',
-                    style: TextStyle(fontSize: 13, color: context.textPrimary),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: pass1Ctrl,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Yeni Parola',
-                      prefixIcon: Icon(Icons.lock_outline),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Sayın $username, hesabınız için yeni bir parola belirleyiniz.',
+                      style: TextStyle(fontSize: 13, color: context.textPrimary),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: pass2Ctrl,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Yeni Parola (Tekrar)',
-                      prefixIcon: Icon(Icons.lock_reset),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: pass1Ctrl,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Yeni Parola',
+                        prefixIcon: Icon(Icons.lock_outline),
+                      ),
                     ),
-                  ),
-                  if (errorText != null) ...[
-                    const SizedBox(height: 8),
-                    Text(errorText!, style: TextStyle(color: context.colorScheme.error, fontSize: 12)),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: pass2Ctrl,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Yeni Parola (Tekrar)',
+                        prefixIcon: Icon(Icons.lock_reset),
+                      ),
+                    ),
+                    if (errorText != null) ...[
+                      const SizedBox(height: 8),
+                      Text(errorText!, style: TextStyle(color: context.colorScheme.error, fontSize: 12)),
+                    ],
                   ],
-                ],
+                ),
               ),
               actions: [
                 ElevatedButton(

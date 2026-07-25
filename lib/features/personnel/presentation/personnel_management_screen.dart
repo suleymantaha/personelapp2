@@ -247,22 +247,24 @@ class _PersonnelManagementScreenState
                   context: ctx,
                   builder: (dialogCtx) => AlertDialog(
                     title: const Text('Yeni Komutan Yetkilendirme'),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextField(
-                          controller: userCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Kullanıcı Adı (Örn: ahmet.kaya)',
-                            prefixIcon: Icon(Icons.person),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            controller: userCtrl,
+                            decoration: const InputDecoration(
+                              labelText: 'Kullanıcı Adı (Örn: ahmet.kaya)',
+                              prefixIcon: Icon(Icons.person),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '💡 Şifre istenmez. Kullanıcı ilk girişinde kendi parolasını belirler.',
-                          style: TextStyle(fontSize: 12, color: context.textSecondary),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            '💡 Şifre istenmez. Kullanıcı ilk girişinde kendi parolasını belirler.',
+                            style: TextStyle(fontSize: 12, color: context.textSecondary),
+                          ),
+                        ],
+                      ),
                     ),
                     actions: [
                       TextButton(
@@ -620,7 +622,7 @@ class _PersonnelManagementScreenState
                 }
 
                 // Group personnel by Squad (timId)
-                final Map<int?, List<PersonelTableData>> grouped = {};
+                final grouped = <int?, List<PersonelTableData>>{};
                 for (final p in personnelList) {
                   grouped.putIfAbsent(p.timId, () => []).add(p);
                 }

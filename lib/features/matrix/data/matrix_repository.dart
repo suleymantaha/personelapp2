@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:personelapp2/core/database/database.dart';
 
 class MatrixRepository {
@@ -7,40 +8,35 @@ class MatrixRepository {
 
   /// Returns a stream mapping personnelId to a map of (dayNumber -> dutyStatusString) for a given yearMonth ("YYYY-MM").
   Stream<Map<int, Map<int, String>>> watchMonthlyMatrix(String yearMonth) {
-    // Combine activities, assignments, and personnel
-    final activityStream = db.select(db.gunlukFaaliyetTable).watch();
-    final assignmentStream = db.select(db.faaliyetPersonelAtamaTable).watch();
+    final query = db.select(db.faaliyetPersonelAtamaTable).join([
+      innerJoin(
+        db.gunlukFaaliyetTable,
+        db.gunlukFaaliyetTable.id.equalsExp(
+          db.faaliyetPersonelAtamaTable.faaliyetId,
+        ),
+      ),
+    ])..where(db.gunlukFaaliyetTable.tarih.like('$yearMonth%'));
 
-    return activityStream.asyncMap((activities) async {
-      final assignments = await assignmentStream.first;
-
-      // Filter activities matching yearMonth (e.g. "2026-07")
-      final monthActivities = activities
-          .where((act) => act.tarih.startsWith(yearMonth))
-          .toList();
-
-      final actIdToDate = {for (final act in monthActivities) act.id: act.tarih};
-      final targetActIds = actIdToDate.keys.toSet();
-
-      // Filter assignments for target activities
-      final monthAssignments = assignments
-          .where((atama) => targetActIds.contains(atama.faaliyetId))
-          .toList();
-
+    return query.watch().map((rows) {
       final matrixMap = <int, Map<int, String>>{};
+      for (final row in rows) {
+        final atama = row.readTable(db.faaliyetPersonelAtamaTable);
+        final faaliyet = row.readTable(db.gunlukFaaliyetTable);
 
-      for (final atama in monthAssignments) {
-        final dateStr = actIdToDate[atama.faaliyetId];
-        if (dateStr == null) continue;
+        // Date format: "YYYY-MM-DD"
+        final dateParts = faaliyet.tarih.split('-');
+        if (dateParts.length < 3) continue;
 
-        final dayPart = dateStr.split('-').last;
-        final day = int.tryParse(dayPart);
+        final day = int.tryParse(dateParts[2]);
         if (day == null) continue;
 
         final pMap = matrixMap.putIfAbsent(atama.personelId, () => {});
-        pMap[day] = atama.gorevVeyaIzin;
-      }
+        final status = atama.durum == 'beklemede'
+            ? '${atama.gorevVeyaIzin} (beklemede)'
+            : atama.gorevVeyaIzin;
 
+        pMap[day] = status;
+      }
       return matrixMap;
     });
   }
