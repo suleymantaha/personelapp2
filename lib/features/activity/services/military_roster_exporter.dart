@@ -42,8 +42,7 @@ class MilitaryRosterExporter {
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&apos;');
+        .replaceAll('"', '&quot;');
   }
 
   static String formatOfficialTitle(String faaliyetAdi, String rawDate) {
@@ -68,10 +67,10 @@ class MilitaryRosterExporter {
         .replaceAll('ISIM LISTESI', '')
         .trim();
 
-    // Default to HEYBET TEPE PUSU FAALİYETİ if starts with GÜNLÜK FAALİYET or empty
+    // Default to HEYBET TEPE PUSU FAALİYETİ if contains GÜNLÜK FAALİYET or empty
     if (nameStr.isEmpty ||
-        nameStr.startsWith('GÜNLÜK FAALİYET') ||
-        nameStr == 'GÜNLÜK FAALİYET') {
+        nameStr.contains('GÜNLÜK FAALİYET') ||
+        nameStr.contains('GUNLUK FAALIYET')) {
       nameStr = 'HEYBET TEPE PUSU FAALİYETİ';
     }
 

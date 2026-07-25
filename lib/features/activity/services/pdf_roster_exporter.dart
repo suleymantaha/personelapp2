@@ -365,16 +365,14 @@ class PdfRosterExporter {
     final titleText = formatOfficialTitle(faaliyetAdi, tarih);
 
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(24),
-        build: (context) {
+        header: (context) {
           return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
             children: [
-              // Header Box
               pw.Container(
-                padding: const pw.EdgeInsets.all(10),
+                padding: const pw.EdgeInsets.all(8),
                 decoration: pw.BoxDecoration(
                   color: PdfColors.grey200,
                   border: pw.Border.all(),
@@ -383,44 +381,43 @@ class PdfRosterExporter {
                   child: pw.Text(
                     titleText,
                     style: const pw.TextStyle(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
                 ),
               ),
-              pw.SizedBox(height: 12),
-
-              // Custom Roster Table with Merged Cells
-              buildPdfTable(filteredRows),
-              pw.SizedBox(height: 12),
-
-              // Summary Box (GÖREV VE MEVCUT ÖZETİ)
-              builderSummaryBox(filteredRows),
-              pw.SizedBox(height: 16),
-
-              // Footer Stamp / Signature Space
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text(
-                    'Düzenleyen: Jandarma Görev Takip',
-                    style: const pw.TextStyle(
-                      fontSize: 9,
-                      color: PdfColors.grey700,
-                    ),
-                  ),
-                  pw.Text(
-                    'Tarih: $tarih',
-                    style: const pw.TextStyle(
-                      fontSize: 9,
-                      color: PdfColors.grey700,
-                    ),
-                  ),
-                ],
+              pw.SizedBox(height: 10),
+            ],
+          );
+        },
+        footer: (context) {
+          return pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text(
+                'Düzenleyen: Jandarma Görev Takip',
+                style: const pw.TextStyle(
+                  fontSize: 8,
+                  color: PdfColors.grey700,
+                ),
+              ),
+              pw.Text(
+                'Sayfa ${context.pageNumber} / ${context.pagesCount} • Tarih: $tarih',
+                style: const pw.TextStyle(
+                  fontSize: 8,
+                  color: PdfColors.grey700,
+                ),
               ),
             ],
           );
+        },
+        build: (context) {
+          return [
+            buildPdfTable(filteredRows),
+            pw.SizedBox(height: 12),
+            builderSummaryBox(filteredRows),
+          ];
         },
       ),
     );
