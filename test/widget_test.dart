@@ -6,7 +6,7 @@ void main() {
   testWidgets('App smoke test', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(
-        child: PersonelApp(hasActiveSession: false),
+        child: PersonelApp(),
       ),
     );
     expect(find.byType(PersonelApp), findsOneWidget);
