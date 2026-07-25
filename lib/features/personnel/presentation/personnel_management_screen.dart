@@ -5,6 +5,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/personnel/presentation/widgets/personnel_form_dialog.dart';
 
@@ -455,7 +456,11 @@ class _PersonnelManagementScreenState
               ),
               const SizedBox(height: 6),
               squadsAsync.when(
-                data: (squads) {
+                data: (rawSquads) {
+                  final squads = MilitaryStructureHelper.sortSquads(
+                    rawSquads,
+                    (s) => s.timAdi,
+                  );
                   final filterChips = [
                     FilterChip(
                       avatar: const Icon(Icons.groups, size: 16),
@@ -515,16 +520,9 @@ class _PersonnelManagementScreenState
                     ),
                   ];
 
-                  if (context.isMobile) {
-                    return Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: filterChips,
-                    );
-                  }
-
                   return SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       children: filterChips
                           .map((chip) => Padding(
@@ -575,7 +573,7 @@ class _PersonnelManagementScreenState
 
             const SizedBox(height: 20),
 
-            // 3. Personnel List with Rank Sorting
+            // 3. Personnel List Grouped by Squad (Matching Activity Form layout)
             personnelAsync.when(
               data: (rawPersonnelList) {
                 final squads = squadsAsync.value ?? [];
@@ -607,10 +605,37 @@ class _PersonnelManagementScreenState
                   }
 
                   return true;
-                }).toList()
-                  ..sort(
-                    (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
+                }).toList();
+
+                if (personnelList.isEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: Text(
+                        'Kriterlere uygun personel bulunamadı.',
+                        style: TextStyle(color: context.textSecondary),
+                      ),
+                    ),
                   );
+                }
+
+                // Group personnel by Squad (timId)
+                final Map<int?, List<PersonelTableData>> grouped = {};
+                for (final p in personnelList) {
+                  grouped.putIfAbsent(p.timId, () => []).add(p);
+                }
+
+                final sortedTimIds = grouped.keys.toList()
+                  ..sort((a, b) {
+                    if (a == null) return 1;
+                    if (b == null) return -1;
+                    final nameA = squadMap[a] ?? '';
+                    final nameB = squadMap[b] ?? '';
+                    final wA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
+                    final wB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
+                    if (wA != wB) return wA.compareTo(wB);
+                    return nameA.compareTo(nameB);
+                  });
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -623,7 +648,7 @@ class _PersonnelManagementScreenState
                           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          'Kıdem Sıralı',
+                          'Resmi Tim & Kıdem Sıralı',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -632,185 +657,173 @@ class _PersonnelManagementScreenState
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
 
-                    if (personnelList.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Center(
-                          child: Text(
-                            'Kriterlere uygun personel bulunamadı.',
-                            style: TextStyle(color: context.textSecondary),
-                          ),
+                    ...sortedTimIds.map((timId) {
+                      final members = grouped[timId]!
+                        ..sort(
+                          (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
+                        );
+
+                      final squadName = timId == null
+                          ? 'Boşta / Kadro Dışı Personeller'
+                          : (squadMap[timId] ?? 'Bilinmeyen Tim');
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: context.cardBorderColor),
                         ),
-                      )
-                    else
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: personnelList.length,
-                        itemBuilder: (context, index) {
-                          final p = personnelList[index];
-                          final squadName = p.timId != null ? squadMap[p.timId] : null;
+                        child: ExpansionTile(
+                          initiallyExpanded: true,
+                          title: Text(
+                            squadName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: context.accentOrOlive,
+                            ),
+                          ),
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: context.accentOrOlive,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '${members.length} Personel',
+                              style: TextStyle(
+                                color: context.onAccentOrOlive,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          children: [
+                            Divider(height: 1, color: context.cardBorderColor),
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: members.length,
+                              separatorBuilder: (_, _) => Divider(
+                                height: 1,
+                                color: context.cardBorderColor,
+                              ),
+                              itemBuilder: (context, index) {
+                                final p = members[index];
 
-                          return Card(
-                            elevation: 2,
-                            margin: const EdgeInsets.only(bottom: 8),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: context.accentOrOlive,
-                                child: Text(
-                                  '${index + 1}',
-                                  style: TextStyle(
-                                    color: context.onAccentOrOlive,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              title: Row(
-                                children: [
-                                  Expanded(
+                                return ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: context.accentOrOlive,
                                     child: Text(
-                                      '${p.rutbe} ${p.adSoyad}',
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      '${index + 1}',
+                                      style: TextStyle(
+                                        color: context.onAccentOrOlive,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                  if (squadName != null)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: context.squadBadgeBg,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        squadName,
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: context.squadBadgeText,
-                                        ),
-                                      ),
-                                    )
-                                  else
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: context.rejectedBgColor,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        'Kadro Dışı',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: context.rejectedColor,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              subtitle: Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text('Birlik: ${p.birlik} | Kayıt: ${p.kayitTarihi}'),
-                              ),
-                              trailing: isAdmin
-                                  ? PopupMenuButton<String>(
-                                      icon: const Icon(Icons.more_vert),
-                                      tooltip: 'İşlemler',
-                                      onSelected: (action) async {
-                                        if (action == 'edit') {
-                                          await _showEditPersonnelDialog(p);
-                                        } else if (action == 'commander') {
-                                          await _showMakeCommanderDialog(p);
-                                        } else if (action == 'delete') {
-                                          final confirm = await showDialog<bool>(
-                                            context: context,
-                                            builder: (ctx) => AlertDialog(
-                                              title: const Text('Personeli Sil'),
-                                              content: Text(
-                                                '${p.rutbe} ${p.adSoyad} isimli personel sistemden silinecektir. Emin misiniz?',
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () => Navigator.of(ctx).pop(false),
-                                                  child: const Text('İPTAL'),
-                                                ),
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: context.rejectedColor,
+                                  title: Text(
+                                    '${p.rutbe} ${p.adSoyad}',
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  subtitle: Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Text('Birlik: ${p.birlik} | Kayıt: ${p.kayitTarihi}'),
+                                  ),
+                                  trailing: isAdmin
+                                      ? PopupMenuButton<String>(
+                                          icon: const Icon(Icons.more_vert),
+                                          tooltip: 'İşlemler',
+                                          onSelected: (action) async {
+                                            if (action == 'edit') {
+                                              await _showEditPersonnelDialog(p);
+                                            } else if (action == 'commander') {
+                                              await _showMakeCommanderDialog(p);
+                                            } else if (action == 'delete') {
+                                              final confirm = await showDialog<bool>(
+                                                context: context,
+                                                builder: (ctx) => AlertDialog(
+                                                  title: const Text('Personeli Sil'),
+                                                  content: Text(
+                                                    '${p.rutbe} ${p.adSoyad} isimli personel sistemden silinecektir. Emin misiniz?',
                                                   ),
-                                                  onPressed: () => Navigator.of(ctx).pop(true),
-                                                  child: const Text('SİL'),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () => Navigator.of(ctx).pop(false),
+                                                      child: const Text('İPTAL'),
+                                                    ),
+                                                    ElevatedButton(
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: context.rejectedColor,
+                                                      ),
+                                                      onPressed: () => Navigator.of(ctx).pop(true),
+                                                      child: const Text('SİL'),
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
+                                              );
+                                              if (confirm == true) {
+                                                final repo = ref.read(personnelRepositoryProvider);
+                                                await repo.deletePersonnel(p.id);
+                                              }
+                                            }
+                                          },
+                                          itemBuilder: (context) => [
+                                            PopupMenuItem(
+                                              value: 'edit',
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.edit,
+                                                    size: 20,
+                                                    color: context.blueGreyColor,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  const Text('Düzenle / Tim Değiştir'),
+                                                ],
+                                              ),
                                             ),
-                                          );
-                                          if (confirm == true) {
-                                            final repo = ref.read(personnelRepositoryProvider);
-                                            await repo.deletePersonnel(p.id);
-                                          }
-                                        }
-                                      },
-                                      itemBuilder: (context) => [
-                                        PopupMenuItem(
-                                          value: 'edit',
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.edit,
-                                                size: 20,
-                                                color: context.blueGreyColor,
+                                            PopupMenuItem(
+                                              value: 'commander',
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.star, size: 20, color: context.pendingColor),
+                                                  const SizedBox(width: 8),
+                                                  const Text('Tim Komutanı Yap / Yetki Ver'),
+                                                ],
                                               ),
-                                              const SizedBox(width: 8),
-                                              const Text('Düzenle / Tim Değiştir'),
-                                            ],
-                                          ),
-                                        ),
-                                        PopupMenuItem(
-                                          value: 'commander',
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.star, size: 20, color: context.pendingColor),
-                                              const SizedBox(width: 8),
-                                              const Text('Tim Komutanı Yap / Yetki Ver'),
-                                            ],
-                                          ),
-                                        ),
-                                        const PopupMenuDivider(),
-                                        PopupMenuItem(
-                                          value: 'delete',
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.delete_outline,
-                                                size: 20,
-                                                color: context.rejectedColor,
+                                            ),
+                                            const PopupMenuDivider(),
+                                            PopupMenuItem(
+                                              value: 'delete',
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.delete, size: 20, color: context.rejectedColor),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    'Personeli Sil',
+                                                    style: TextStyle(color: context.rejectedColor),
+                                                  ),
+                                                ],
                                               ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                'Personeli Sil',
-                                                style: TextStyle(
-                                                  color: context.rejectedColor,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : null,
+                                            ),
+                                          ],
+                                        )
+                                      : null,
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
+                          ],
+                        ),
+                      );
+                    }),
                   ],
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, st) => Text('Hata: $err'),
+              error: (err, st) => Center(child: Text('Hata: $err')),
             ),
           ],
         ),

@@ -53,12 +53,50 @@ class MilitaryStructureHelper {
     return timOrBirlik.isNotEmpty ? timOrBirlik : 'Asayiş Timi';
   }
 
-  /// Returns full Birlik display text including Squad and parent Bölük
-  static String getFullBirlikDisplay(String birlik, String timAdi) {
-    final boluk = getBolukName(timAdi.isNotEmpty ? timAdi : birlik);
-    if (timAdi.isNotEmpty && timAdi != boluk) {
-      return '$boluk ($timAdi)';
+  /// Official Jandarma Squad/Tim ordering
+  static const List<String> officialSquadOrder = [
+    'K.H',
+    "1'inci Bl. K.H",
+    '1-B Timi',
+    '2-B Timi',
+    '3-B Timi',
+    '4-B Timi',
+    "2'nci Bl. K.H",
+    '5-B Timi',
+    '6-B Timi',
+    '7-B Timi',
+    '8-B Timi',
+    "3'üncü Bl. K.H",
+    '9-B Timi',
+    '10-B Timi',
+    '11-B Timi',
+    '12-B Timi',
+  ];
+
+  /// Returns weight/index for sorting squads according to official military order
+  static int getSquadOrderWeight(String squadName) {
+    final s = squadName.trim();
+    final idx = officialSquadOrder.indexOf(s);
+    if (idx != -1) return idx;
+
+    // Case-insensitive match fallback
+    for (int i = 0; i < officialSquadOrder.length; i++) {
+      if (officialSquadOrder[i].toLowerCase() == s.toLowerCase()) {
+        return i;
+      }
     }
-    return boluk;
+    return 999;
+  }
+
+  /// Sorts a list of items by squad name according to official military order
+  static List<T> sortSquads<T>(List<T> squads, String Function(T) nameExtractor) {
+    final list = List<T>.from(squads);
+    list.sort((a, b) {
+      final wA = getSquadOrderWeight(nameExtractor(a));
+      final wB = getSquadOrderWeight(nameExtractor(b));
+      if (wA != wB) return wA.compareTo(wB);
+      return nameExtractor(a).compareTo(nameExtractor(b));
+    });
+    return list;
   }
 }

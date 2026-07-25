@@ -5,6 +5,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
@@ -202,6 +203,9 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                             if (b == null) return -1;
                             final nameA = squadMap[a] ?? '';
                             final nameB = squadMap[b] ?? '';
+                            final wA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
+                            final wB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
+                            if (wA != wB) return wA.compareTo(wB);
                             return nameA.compareTo(nameB);
                           });
 
