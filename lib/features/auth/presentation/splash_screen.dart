@@ -1,14 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
-import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -45,17 +40,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         debugPrint('Locale init error: $e');
       }
 
-      // 2. Initialize Database safely with timeout
+      // 2. Initialize Database and seed safely with timeout
       try {
-        await getApplicationDocumentsDirectory().timeout(
+        final db = ref.read(databaseProvider);
+        await db.ensureSeeded().timeout(
           const Duration(seconds: 3),
+          onTimeout: () {},
         );
       } catch (e) {
-        debugPrint('DB folder error fallback: $e');
+        debugPrint('DB seeding error fallback: $e');
       }
-
-      // Warm up database singleton provider
-      ref.read(databaseProvider);
 
       // 3. Load Session safely with timeout
       UserSessionState? session;
@@ -130,9 +124,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               Text(
                 'Jandarma Görev Takip',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: context.accentOrOlive,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: context.accentOrOlive,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 6),
