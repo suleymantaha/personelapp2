@@ -323,7 +323,7 @@ class PdfRosterExporter {
                 child: pw.Center(
                   child: pw.Text(
                     titleText,
-                    style: pw.TextStyle(
+                    style: const pw.TextStyle(
                       fontSize: 13,
                       fontWeight: pw.FontWeight.bold,
                     ),
