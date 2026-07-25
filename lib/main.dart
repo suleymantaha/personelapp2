@@ -4,21 +4,30 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:personelapp2/core/navigation/app_router.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('tr_TR');
 
+  final savedSession = await SessionStorage.loadSession();
+
   runApp(
-    const ProviderScope(
-      child: PersonelApp(),
+    ProviderScope(
+      overrides: [
+        if (savedSession != null)
+          userSessionProvider.overrideWith((ref) => savedSession),
+      ],
+      child: PersonelApp(hasActiveSession: savedSession != null),
     ),
   );
 }
 
 class PersonelApp extends ConsumerWidget {
-  const PersonelApp({super.key});
+  const PersonelApp({required this.hasActiveSession, super.key});
+
+  final bool hasActiveSession;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,7 +39,7 @@ class PersonelApp extends ConsumerWidget {
       theme: AppTheme.militaryTheme,
       darkTheme: AppTheme.darkMilitaryTheme,
       themeMode: themeMode,
-      routerConfig: appRouter,
+      routerConfig: createAppRouter(hasActiveSession: hasActiveSession),
     );
   }
 }

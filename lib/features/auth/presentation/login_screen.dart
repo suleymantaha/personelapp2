@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/utils/password_hasher.dart';
 
@@ -16,6 +17,17 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final session = ref.read(userSessionProvider);
+      if (session != null && mounted) {
+        context.go('/dashboard');
+      }
+    });
+  }
 
   Future<void> _showPasswordCreationDialog(String username, KullaniciTableData user) async {
     final pass1Ctrl = TextEditingController();
@@ -103,11 +115,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       timId = squad?.id;
     }
 
-    ref.read(userSessionProvider.notifier).state = UserSessionState(
+    final session = UserSessionState(
       username: user.kullaniciAdi,
       role: user.rol,
       timId: timId,
     );
+
+    await SessionStorage.saveSession(session);
+    ref.read(userSessionProvider.notifier).state = session;
 
     if (mounted) {
       context.go('/dashboard');

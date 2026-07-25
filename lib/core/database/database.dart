@@ -72,15 +72,19 @@ class AppDatabase extends _$AppDatabase {
           '12-B Timi',
         ];
         final nowStr = DateTime.now().toIso8601String();
+        final toInsert = <TimTableCompanion>[];
         for (final name in defaultSquads) {
           if (!existingNames.contains(name)) {
-            await into(timTable).insert(
+            toInsert.add(
               TimTableCompanion.insert(
                 timAdi: name,
                 olusturmaTarihi: nowStr,
               ),
             );
           }
+        }
+        if (toInsert.isNotEmpty) {
+          await batch((b) => b.insertAll(timTable, toInsert));
         }
       },
       onUpgrade: (m, from, to) async {
@@ -98,6 +102,6 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'jandarma_app.sqlite'));
-    return NativeDatabase.createInBackground(file);
+    return NativeDatabase(file);
   });
 }
