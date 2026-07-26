@@ -15,9 +15,6 @@ class ActivityRepository {
     String? startDate,
     String? endDate,
   }) {
-    // Auto-clean duplicates in background
-    unawaited(consolidateDuplicateActivities());
-
     final query = db.select(db.gunlukFaaliyetTable);
     if (startDate != null) {
       query.where((tbl) => tbl.tarih.isBiggerOrEqualValue(startDate));
@@ -220,8 +217,13 @@ class ActivityRepository {
 
       // 2. Evaluate and upsert each assignment
       for (final item in personnelAssignments) {
-        final pId = item['personelId'] as int;
-        final gorev = item['gorevVeyaIzin'] as String;
+        final rawPid = item['personelId'];
+        final rawGorev = item['gorevVeyaIzin'];
+        if (rawPid == null || rawGorev == null) continue;
+
+        final pId = rawPid is int ? rawPid : int.tryParse(rawPid.toString());
+        final gorev = rawGorev.toString();
+        if (pId == null || gorev.isEmpty) continue;
 
         var evaluatedStatus = ConflictChecker.evaluateAssignmentStatus(
           personelId: pId,

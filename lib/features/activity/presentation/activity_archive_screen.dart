@@ -38,67 +38,123 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
 
     final db = ref.read(databaseProvider);
     final pMap = {for (final p in personnelList) p.id: p};
-    final masterList = <MasterActivityData>[];
+    final squadsList = ref.read(allSquadsProvider).value ?? [];
+    final squadMap = {for (final s in squadsList) s.id: s.timAdi};
+
+    final allAssignments = <FaaliyetPersonelAtamaTableData>[];
+    final seenAssignmentIds = <int>{};
 
     for (final act in activities) {
       final assignments = await (db.select(
         db.faaliyetPersonelAtamaTable,
       )..where((tbl) => tbl.faaliyetId.equals(act.id))).get();
 
-      final filtered = assignments.where((a) => DutyOrLeaveType.isOperationalDuty(a.gorevVeyaIzin)).toList()
-        ..sort((a, b) {
-          final pA = pMap[a.personelId];
-          final pB = pMap[b.personelId];
-          final wA = MilitaryStructureHelper.getSquadOrderWeight(pA?.birlik ?? '', duty: a.gorevVeyaIzin);
-          final wB = MilitaryStructureHelper.getSquadOrderWeight(pB?.birlik ?? '', duty: b.gorevVeyaIzin);
-          if (wA != wB) return wA.compareTo(wB);
+      for (final a in assignments) {
+        if (!seenAssignmentIds.contains(a.id) &&
+            DutyOrLeaveType.isOperationalDuty(a.gorevVeyaIzin)) {
+          seenAssignmentIds.add(a.id);
+          allAssignments.add(a);
+        }
+      }
+    }
 
-          final rA = getRankWeight(pA?.rutbe ?? '');
-          final rB = getRankWeight(pB?.rutbe ?? '');
-          if (rA != rB) return rA.compareTo(rB);
+    allAssignments.sort((a, b) {
+      final catA = MilitaryStructureHelper.getDutyCategoryOrder(
+        a.gorevVeyaIzin,
+      );
+      final catB = MilitaryStructureHelper.getDutyCategoryOrder(
+        b.gorevVeyaIzin,
+      );
+      if (catA != catB) return catA.compareTo(catB);
 
-          return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
-        });
+      final pA = pMap[a.personelId];
+      final pB = pMap[b.personelId];
 
-      final rosterRows = <MilitaryRosterRow>[];
-      var sNuCounter = 1;
-      for (var i = 0; i < filtered.length; i++) {
-        final atama = filtered[i];
-        final p = pMap[atama.personelId];
-        final rutbe = p?.rutbe ?? '';
-        final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
-        final birligi = MilitaryStructureHelper.getOfficialBirlikName(p?.birlik ?? '', duty: atama.gorevVeyaIzin);
-        final digerNote = atama.aciklama ?? atama.gorevVeyaIzin;
-
-        rosterRows.add(
-          MilitaryRosterRow(
-            sNu: sNuCounter++,
-            birligi: birligi,
-            rutbe: rutbe,
-            adSoyad: adSoyad,
-            diger: '$digerNote (${atama.durum})',
-          ),
-        );
+      if (catA == 10) {
+        final rA = getRankWeight(pA?.rutbe ?? '');
+        final rB = getRankWeight(pB?.rutbe ?? '');
+        if (rA != rB) return rA.compareTo(rB);
+        return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
       }
 
-      masterList.add(
-        MasterActivityData(
-          faaliyetAdi: act.faaliyetAdi,
-          tarih: act.tarih,
-          olusturanKullanici: act.olusturanKullanici,
-          rows: rosterRows,
+      final timNameA = (pA?.timId != null && squadMap.containsKey(pA!.timId))
+          ? squadMap[pA.timId]!
+          : '';
+      final timNameB = (pB?.timId != null && squadMap.containsKey(pB!.timId))
+          ? squadMap[pB.timId]!
+          : '';
+      final rawBirlikA = (pA?.birlik != null && pA!.birlik.isNotEmpty)
+          ? pA.birlik
+          : timNameA;
+      final rawBirlikB = (pB?.birlik != null && pB!.birlik.isNotEmpty)
+          ? pB.birlik
+          : timNameB;
+
+      final wA = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikA);
+      final wB = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikB);
+      if (wA != wB) return wA.compareTo(wB);
+
+      final rA = getRankWeight(pA?.rutbe ?? '');
+      final rB = getRankWeight(pB?.rutbe ?? '');
+      if (rA != rB) return rA.compareTo(rB);
+
+      return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
+    });
+
+    final rosterRows = <MilitaryRosterRow>[];
+    for (var i = 0; i < allAssignments.length; i++) {
+      final atama = allAssignments[i];
+      final p = pMap[atama.personelId];
+      final rutbe = p?.rutbe ?? '';
+      final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
+      final timName = (p?.timId != null && squadMap.containsKey(p!.timId))
+          ? squadMap[p.timId]!
+          : '';
+      final rawBirlik = (p?.birlik != null && p!.birlik.isNotEmpty)
+          ? p.birlik
+          : timName;
+      final birligi = MilitaryStructureHelper.getOfficialBirlikName(
+        rawBirlik,
+        duty: atama.gorevVeyaIzin,
+      );
+      final digerNote = MilitaryStructureHelper.getDigerCellText(
+        atama.gorevVeyaIzin,
+        aciklama: atama.aciklama,
+      );
+
+      var groupCode = 'DIGER';
+      final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
+      if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
+        groupCode = 'HAZIR_KITA';
+      } else if (dutyUpper.contains('GÜLÜŞKÜR') ||
+          dutyUpper.contains('GULUSKUR')) {
+        groupCode = 'GULUSKUR';
+      }
+
+      rosterRows.add(
+        MilitaryRosterRow(
+          sNu: i + 1,
+          birligi: birligi,
+          rutbe: rutbe,
+          adSoyad: adSoyad,
+          diger: digerNote,
+          groupCode: groupCode,
         ),
       );
     }
 
     final dateTitle = _selectedDateFilter != null
-        ? DateFormat('yyyy-MM-dd').format(_selectedDateFilter!)
-        : DateFormat('yyyy-MM-dd').format(DateTime.now());
+        ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
+        : DateFormat('dd.MM.yyyy').format(DateTime.now());
 
-    await MilitaryRosterExporter.shareMasterDailyExcel(
-      title: 'TÜM GÜNLÜK FAALİYETLER VE GÖREV İCMAL LİSTESİ',
-      dateStr: dateTitle,
-      activities: masterList,
+    final mainActivityName = activities.length == 1
+        ? activities.first.faaliyetAdi
+        : 'GÜNLÜK TÜM FAALİYETLER';
+
+    await MilitaryRosterExporter.shareExcelRoster(
+      faaliyetAdi: mainActivityName,
+      tarih: dateTitle,
+      rows: rosterRows,
     );
   }
 
@@ -178,48 +234,57 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: Colors.white.withValues(
-                              alpha: 0.2,
-                            ),
-                            child: Icon(
-                              isAdmin
-                                  ? Icons.admin_panel_settings
-                                  : Icons.military_tech,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                isAdmin
-                                    ? 'YÖNETİCİ KONTROL MERKEZİ'
-                                    : 'TİM KOMUTANLIĞI SÜZGECİ',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  letterSpacing: 0.5,
-                                ),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.2,
                               ),
-                              Text(
+                              child: Icon(
                                 isAdmin
-                                    ? 'Tüm timlerin günlük kayıtları burada toplanır'
-                                    : 'Sadece timinize ait faaliyetler gösterilmektedir',
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 11,
-                                ),
+                                    ? Icons.admin_panel_settings
+                                    : Icons.military_tech,
+                                color: Colors.white,
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isAdmin
+                                        ? 'YÖNETİCİ KONTROL MERKEZİ'
+                                        : 'TİM KOMUTANLIĞI SÜZGECİ',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  Text(
+                                    isAdmin
+                                        ? 'Tüm timlerin günlük kayıtları burada toplanır'
+                                        : 'Sadece timinize ait faaliyetler gösterilmektedir',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      if (isAdmin && pendingCount > 0)
+                      if (isAdmin && pendingCount > 0) ...[
+                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -238,6 +303,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                             ),
                           ),
                         ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -631,13 +697,6 @@ class _AssignmentDetails extends ConsumerWidget {
 
     final existingPersonnelIds = assignments.map((a) => a.personelId).toSet();
 
-    int getDutyGroupOrder(String duty) {
-      final upper = duty.toUpperCase().trim();
-      if (upper.contains('HAZIR KITA') || upper.contains('HAZIRKITA')) return 2;
-      if (upper.contains('GÜLÜŞKÜR') || upper.contains('GULUSKUR')) return 3;
-      return 1; // Operational duties (Nöbet, Heybet, Devriye etc.) FIRST at the top
-    }
-
     final allSquadsAsync = ref.watch(allSquadsProvider);
     final squadsList = allSquadsAsync.value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
@@ -646,15 +705,28 @@ class _AssignmentDetails extends ConsumerWidget {
         filteredAssignments.where((atama) {
           return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
         }).toList()..sort((a, b) {
-          // 1. Operational duties first, Hazır Kıta and Gülüşkür AT THE VERY BOTTOM!
-          final orderA = getDutyGroupOrder(a.gorevVeyaIzin);
-          final orderB = getDutyGroupOrder(b.gorevVeyaIzin);
-          if (orderA != orderB) return orderA.compareTo(orderB);
+          // 1. Primary Roster Category: 10 (Nöbet Heyeti) -> 20 (Operasyonel) -> 30 (Hazır Kıta) -> 40 (Gülüşkür)
+          final catA = MilitaryStructureHelper.getDutyCategoryOrder(
+            a.gorevVeyaIzin,
+          );
+          final catB = MilitaryStructureHelper.getDutyCategoryOrder(
+            b.gorevVeyaIzin,
+          );
+          if (catA != catB) return catA.compareTo(catB);
 
           final pA = pMap[a.personelId];
           final pB = pMap[b.personelId];
 
-          // 2. Group by official squad order ('K.H' -> "1'inci Bl. K.H" -> '1-B Timi' ... '12-B Timi')
+          // 2. If both are Nöbet Heyeti (cat = 10), sort by Rank Seniority then Name
+          if (catA == 10) {
+            final rA = getRankWeight(pA?.rutbe ?? '');
+            final rB = getRankWeight(pB?.rutbe ?? '');
+            if (rA != rB) return rA.compareTo(rB);
+            return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
+          }
+
+          // 3. For Operasyonel (20), Hazır Kıta (30), and Gülüşkür (40):
+          // Group by official squad order ('K.H' -> "1'inci Bl. K.H" -> '1-B Timi' ... '12-B Timi')
           final timNameA =
               (pA?.timId != null && squadMap.containsKey(pA!.timId))
               ? squadMap[pA.timId]!
@@ -670,16 +742,20 @@ class _AssignmentDetails extends ConsumerWidget {
               ? pB.birlik
               : timNameB;
 
-          final wBirlikA = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikA, duty: a.gorevVeyaIzin);
-          final wBirlikB = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikB, duty: b.gorevVeyaIzin);
+          final wBirlikA = MilitaryStructureHelper.getSquadOrderWeight(
+            rawBirlikA,
+          );
+          final wBirlikB = MilitaryStructureHelper.getSquadOrderWeight(
+            rawBirlikB,
+          );
           if (wBirlikA != wBirlikB) return wBirlikA.compareTo(wBirlikB);
 
-          // 3. Sort strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
+          // 4. Sort strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
           final weightA = getRankWeight(pA?.rutbe ?? '');
           final weightB = getRankWeight(pB?.rutbe ?? '');
           if (weightA != weightB) return weightA.compareTo(weightB);
 
-          // 4. Alphabetical name sort
+          // 5. Alphabetical name sort
           return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
         });
 
@@ -689,26 +765,30 @@ class _AssignmentDetails extends ConsumerWidget {
       final p = pMap[atama.personelId];
       final rutbe = p?.rutbe ?? '';
       final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
-      final timName =
-          (p?.timId != null && squadMap.containsKey(p!.timId))
+      final timName = (p?.timId != null && squadMap.containsKey(p!.timId))
           ? squadMap[p.timId]!
           : '';
       final rawBirlik = (p?.birlik != null && p!.birlik.isNotEmpty)
           ? p.birlik
           : timName;
-      final officialBirlik = MilitaryStructureHelper.getOfficialBirlikName(rawBirlik, duty: atama.gorevVeyaIzin);
+      final officialBirlik = MilitaryStructureHelper.getOfficialBirlikName(
+        rawBirlik,
+        duty: atama.gorevVeyaIzin,
+      );
 
       var groupCode = 'DIGER';
-      var digerText = atama.aciklama ?? atama.gorevVeyaIzin;
       final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
       if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
         groupCode = 'HAZIR_KITA';
-        digerText = 'HAZIR KITA';
       } else if (dutyUpper.contains('GÜLÜŞKÜR') ||
           dutyUpper.contains('GULUSKUR')) {
         groupCode = 'GULUSKUR';
-        digerText = 'GÜLÜŞKÜR';
       }
+
+      final digerText = MilitaryStructureHelper.getDigerCellText(
+        atama.gorevVeyaIzin,
+        aciklama: atama.aciklama,
+      );
 
       rosterRows.add(
         MilitaryRosterRow(
@@ -851,33 +931,37 @@ class _AssignmentDetails extends ConsumerWidget {
                     const SizedBox(width: 6),
 
                     // Duty Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isApproved
-                            ? context.approvedColor.withValues(alpha: 0.12)
-                            : (isPending
-                                  ? context.pendingColor.withValues(
-                                      alpha: 0.25,
-                                    )
-                                  : context.rejectedBgColor),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        isPending
-                            ? '${atama.gorevVeyaIzin} • BEKLİYOR'
-                            : atama.gorevVeyaIzin,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
                           color: isApproved
-                              ? context.approvedColor
+                              ? context.approvedColor.withValues(alpha: 0.12)
                               : (isPending
-                                    ? context.pendingColor
-                                    : context.rejectedColor),
+                                    ? context.pendingColor.withValues(
+                                        alpha: 0.25,
+                                      )
+                                    : context.rejectedBgColor),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          isPending
+                              ? '${atama.gorevVeyaIzin} • BEKLİYOR'
+                              : atama.gorevVeyaIzin,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: isApproved
+                                ? context.approvedColor
+                                : (isPending
+                                      ? context.pendingColor
+                                      : context.rejectedColor),
+                          ),
                         ),
                       ),
                     ),
@@ -1069,7 +1153,8 @@ class _AssignmentDetails extends ConsumerWidget {
                   ),
                   onPressed: () {
                     unawaited(
-                      PdfRosterExporter.sharePdfRoster(
+                      PdfRosterExporter.showStylePickerAndSharePdf(
+                        context,
                         faaliyetAdi: activity.faaliyetAdi,
                         tarih: activity.tarih,
                         rows: rosterRows,

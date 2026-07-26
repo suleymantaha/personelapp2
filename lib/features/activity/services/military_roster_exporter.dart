@@ -212,6 +212,20 @@ class MilitaryRosterExporter {
     }
 
     // Summary Section
+    var hazirKitaCount = 0;
+    var guluskurCount = 0;
+    var digerCount = 0;
+
+    for (final r in rows) {
+      if (r.groupCode == 'HAZIR_KITA') {
+        hazirKitaCount++;
+      } else if (r.groupCode == 'GULUSKUR') {
+        guluskurCount++;
+      } else {
+        digerCount++;
+      }
+    }
+
     final ranks = rows.map((r) => r.rutbe).toList();
     final counts = RankSummaryCounts.calculate(ranks);
 
@@ -223,6 +237,12 @@ class MilitaryRosterExporter {
         '  <tr><td colspan="5" class="summary-hdr">GÖREV VE MEVCUT ÖZETİ</td></tr>',
       );
 
+    final dutySummaryStr =
+        'Hazır Kıta: $hazirKitaCount Personel  •  Gülüşkür: $guluskurCount Personel  •  Diğer: $digerCount Personel';
+    sb.writeln(
+      '  <tr><td colspan="5" class="left bold">${escapeXml(dutySummaryStr)}</td></tr>',
+    );
+
     final summaryItems = [
       if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
       if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
@@ -230,7 +250,7 @@ class MilitaryRosterExporter {
         'Uzman Jandarma: ${counts.uzmanJandarmaCount}',
       if (counts.uzmanErbasCount > 0) 'Uzman Erbaş: ${counts.uzmanErbasCount}',
       if (counts.erCount > 0) 'Er / Erbaş: ${counts.erCount}',
-      'TOPLAM MEVCUT: ${counts.totalCount}',
+      'TOPLAM MEVCUT: ${counts.totalCount} Personel',
     ];
 
     for (final item in summaryItems) {
@@ -701,7 +721,9 @@ class MilitaryRosterExporter {
     ];
 
     for (final item in summaryItems) {
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
+      sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+        )
         ..value = TextCellValue(item)
         ..cellStyle = cellLeftStyle;
       sheet.merge(
@@ -718,7 +740,8 @@ class MilitaryRosterExporter {
       ..setColumnWidth(3, 30)
       ..setColumnWidth(4, 25);
 
-    return excel.encode()!;
+    final encoded = excel.encode();
+    return encoded ?? <int>[];
   }
 
   /// Generates native binary .xlsx spreadsheet for all daily activities combined
@@ -793,7 +816,9 @@ class MilitaryRosterExporter {
 
     for (final act in activities) {
       currentRow++; // Spacing
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
+      sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+        )
         ..value = TextCellValue(
           '${act.faaliyetAdi.toUpperCase()} (${act.tarih})',
         )
@@ -805,26 +830,38 @@ class MilitaryRosterExporter {
       currentRow++;
 
       for (var c = 0; c < headers.length; c++) {
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: c, rowIndex: currentRow))
+        sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: c, rowIndex: currentRow),
+          )
           ..value = TextCellValue(headers[c])
           ..cellStyle = headerStyle;
       }
       currentRow++;
 
       for (final r in act.rows) {
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
+        sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+          )
           ..value = IntCellValue(r.sNu)
           ..cellStyle = cellCenterStyle;
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow))
+        sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow),
+          )
           ..value = TextCellValue(r.birligi)
           ..cellStyle = cellCenterStyle;
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow))
+        sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow),
+          )
           ..value = TextCellValue(r.rutbe)
           ..cellStyle = cellCenterStyle;
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow))
+        sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow),
+          )
           ..value = TextCellValue(r.adSoyad)
           ..cellStyle = cellLeftStyle;
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow))
+        sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
+          )
           ..value = TextCellValue(r.diger)
           ..cellStyle = cellLeftStyle;
         currentRow++;
@@ -838,7 +875,8 @@ class MilitaryRosterExporter {
       ..setColumnWidth(3, 30)
       ..setColumnWidth(4, 25);
 
-    return excel.encode()!;
+    final encoded = excel.encode();
+    return encoded ?? <int>[];
   }
 
   /// Exports Excel roster with native binary .xlsx and triggers OS share
@@ -882,30 +920,37 @@ class MilitaryRosterExporter {
     final fileName = '${sanitizedTitle}_Listesi_$tarih.xlsx';
 
     Directory targetDir;
-    if (Platform.isAndroid) {
-      targetDir = Directory('/storage/emulated/0/Download');
-      if (!targetDir.existsSync()) {
-        targetDir = await getApplicationDocumentsDirectory();
-      }
-    } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      final userHome =
-          Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
-      if (userHome != null) {
-        targetDir = Directory('$userHome/Downloads');
+    try {
+      if (Platform.isAndroid) {
+        targetDir = Directory('/storage/emulated/0/Download');
+        if (!targetDir.existsSync()) {
+          targetDir = await getApplicationDocumentsDirectory();
+        }
+      } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        final userHome =
+            Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
+        if (userHome != null) {
+          targetDir = Directory('$userHome/Downloads');
+        } else {
+          targetDir = await getApplicationDocumentsDirectory();
+        }
       } else {
         targetDir = await getApplicationDocumentsDirectory();
       }
-    } else {
+
+      if (!targetDir.existsSync()) {
+        await targetDir.create(recursive: true);
+      }
+
+      final file = File('${targetDir.path}/$fileName');
+      await file.writeAsBytes(bytes);
+      return file;
+    } on Exception catch (_) {
       targetDir = await getApplicationDocumentsDirectory();
+      final file = File('${targetDir.path}/$fileName');
+      await file.writeAsBytes(bytes);
+      return file;
     }
-
-    if (!targetDir.existsSync()) {
-      await targetDir.create(recursive: true);
-    }
-
-    final file = File('${targetDir.path}/$fileName');
-    await file.writeAsBytes(bytes);
-    return file;
   }
 
   /// Shares Master Daily Excel containing all activities

@@ -17,65 +17,69 @@ class DashboardScreen extends ConsumerWidget {
     String username,
   ) async {
     final passCtrl = TextEditingController();
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Şifremi Değiştir'),
-          content: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Kullanıcı: $username',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: passCtrl,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Yeni Şifreniz',
-                      prefixIcon: Icon(Icons.lock),
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: const Text('Şifremi Değiştir'),
+            content: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Kullanıcı: $username',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: passCtrl,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Yeni Şifreniz',
+                        prefixIcon: Icon(Icons.lock),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('İPTAL'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final newPass = passCtrl.text.trim();
-                if (newPass.length >= 4) {
-                  final repo = ref.read(personnelRepositoryProvider);
-                  await repo.updateUserPassword(
-                    kullaniciAdi: username,
-                    newPassword: newPass,
-                  );
-                  if (ctx.mounted) {
-                    Navigator.of(ctx).pop();
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      SnackBar(
-                        content: const Text('Şifreniz başarıyla güncellendi!'),
-                        backgroundColor: context.approvedColor,
-                      ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('İPTAL'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final newPass = passCtrl.text.trim();
+                  if (newPass.length >= 4) {
+                    final repo = ref.read(personnelRepositoryProvider);
+                    await repo.updateUserPassword(
+                      kullaniciAdi: username,
+                      newPassword: newPass,
                     );
+                    if (ctx.mounted) {
+                      Navigator.of(ctx).pop();
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        SnackBar(
+                          content: const Text('Şifreniz başarıyla güncellendi!'),
+                          backgroundColor: context.approvedColor,
+                        ),
+                      );
+                    }
                   }
-                }
-              },
-              child: const Text('GÜNCELLE'),
-            ),
-          ],
-        );
-      },
-    );
+                },
+                child: const Text('GÜNCELLE'),
+              ),
+            ],
+          );
+        },
+      );
+    } finally {
+      passCtrl.dispose();
+    }
   }
 
   void _showSettingsBottomSheet(
@@ -372,9 +376,9 @@ class DashboardScreen extends ConsumerWidget {
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
                 childAspectRatio: context.responsiveValue(
-                  mobile: 1.1,
-                  tablet: 1.2,
-                  desktop: 1.3,
+                  mobile: 1.2,
+                  tablet: 1.25,
+                  desktop: 1.35,
                 ),
                 children: [
                   _MenuCard(
@@ -460,23 +464,30 @@ class _MenuCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 40, color: color),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: color,
+              Icon(icon, size: 32, color: color),
+              const SizedBox(height: 6),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                 ),
               ),
-              Text(
-                subtitle,
-                style: TextStyle(fontSize: 12, color: context.textSecondary),
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  subtitle,
+                  style: TextStyle(fontSize: 11, color: context.textSecondary),
+                ),
               ),
             ],
           ),

@@ -57,116 +57,120 @@ class _PersonnelManagementScreenState
     final userCtrl = TextEditingController(text: suggestedUser);
     var selectedSquadId = p.timId;
 
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            final squadsAsync = ref.watch(allSquadsProvider);
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) {
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              final squadsAsync = ref.watch(allSquadsProvider);
 
-            return AlertDialog(
-              title: Text('⭐ Tim Komutanı Yap: ${p.rutbe} ${p.adSoyad}'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Bu personeli bir Time Komutan olarak atayabilir ve giriş yetkisi verebilirsiniz.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: context.textPrimary,
+              return AlertDialog(
+                title: Text('⭐ Tim Komutanı Yap: ${p.rutbe} ${p.adSoyad}'),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bu personeli bir Time Komutan olarak atayabilir ve giriş yetkisi verebilirsiniz.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: context.textPrimary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: userCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Kullanıcı Adı (Giriş için)',
-                        prefixIcon: Icon(Icons.person),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: userCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Kullanıcı Adı (Giriş için)',
+                          prefixIcon: Icon(Icons.person),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    squadsAsync.when(
-                      data: (squads) {
-                        return DropdownButtonFormField<int?>(
-                          initialValue: selectedSquadId,
-                          decoration: const InputDecoration(
-                            labelText: 'Komutanı Olacağı Tim',
-                          ),
-                          items: squads.map((s) {
-                            return DropdownMenuItem<int?>(
-                              value: s.id,
-                              child: Text(s.timAdi),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            setDialogState(() => selectedSquadId = val);
-                          },
-                        );
-                      },
-                      loading: () => const LinearProgressIndicator(),
-                      error: (err, st) => Text('Hata: $err'),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '💡 Personel ilk girişinde kendi parolasını belirleyecektir.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: context.textSecondary,
+                      const SizedBox(height: 12),
+                      squadsAsync.when(
+                        data: (squads) {
+                          return DropdownButtonFormField<int?>(
+                            initialValue: selectedSquadId,
+                            decoration: const InputDecoration(
+                              labelText: 'Komutanı Olacağı Tim',
+                            ),
+                            items: squads.map((s) {
+                              return DropdownMenuItem<int?>(
+                                value: s.id,
+                                child: Text(s.timAdi),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              setDialogState(() => selectedSquadId = val);
+                            },
+                          );
+                        },
+                        loading: () => const LinearProgressIndicator(),
+                        error: (err, st) => Text('Hata: $err'),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  child: const Text('İPTAL'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.accentOrOlive,
-                    foregroundColor: Colors.white,
+                      const SizedBox(height: 8),
+                      Text(
+                        '💡 Personel ilk girişinde kendi parolasını belirleyecektir.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: context.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
-                  onPressed: () async {
-                    final u = userCtrl.text.trim();
-                    if (u.isEmpty || selectedSquadId == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Lütfen kullanıcı adı ve tim seçiniz.'),
-                        ),
-                      );
-                      return;
-                    }
-
-                    final repo = ref.read(personnelRepositoryProvider);
-                    await repo.assignPersonnelAsCommander(
-                      kullaniciAdi: u,
-                      timId: selectedSquadId!,
-                      personnelId: p.id,
-                    );
-
-                    if (ctx.mounted) {
-                      Navigator.of(ctx).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${p.adSoyad} Tim Komutanı olarak yetkilendirildi!',
-                          ),
-                          backgroundColor: context.approvedColor,
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text('KOMUTAN YAP VE YETKİLENDİR'),
                 ),
-              ],
-            );
-          },
-        );
-      },
-    );
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: const Text('İPTAL'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: context.accentOrOlive,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () async {
+                      final u = userCtrl.text.trim();
+                      if (u.isEmpty || selectedSquadId == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Lütfen kullanıcı adı ve tim seçiniz.'),
+                          ),
+                        );
+                        return;
+                      }
+
+                      final repo = ref.read(personnelRepositoryProvider);
+                      await repo.assignPersonnelAsCommander(
+                        kullaniciAdi: u,
+                        timId: selectedSquadId!,
+                        personnelId: p.id,
+                      );
+
+                      if (ctx.mounted) {
+                        Navigator.of(ctx).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '${p.adSoyad} Tim Komutanı olarak yetkilendirildi!',
+                            ),
+                            backgroundColor: context.approvedColor,
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text('KOMUTAN YAP VE YETKİLENDİR'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+    } finally {
+      userCtrl.dispose();
+    }
   }
 
   Future<void> _showCommanderDelegationDialog() async {
@@ -332,74 +336,79 @@ class _PersonnelManagementScreenState
     final squadNameController = TextEditingController();
     final commanderUserController = TextEditingController();
 
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Yeni Tim & Komutan Yetkilendirme'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: squadNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Tim Adı (Örn: 1. Asayiş Timi)',
-                    prefixIcon: Icon(Icons.shield),
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: const Text('Yeni Tim & Komutan Yetkilendirme'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: squadNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Tim Adı (Örn: 1. Asayiş Timi)',
+                      prefixIcon: Icon(Icons.shield),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: commanderUserController,
-                  decoration: const InputDecoration(
-                    labelText: 'Tim Komutanı Kullanıcı Adı (Opsiyonel)',
-                    prefixIcon: Icon(Icons.person),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: commanderUserController,
+                    decoration: const InputDecoration(
+                      labelText: 'Tim Komutanı Kullanıcı Adı (Opsiyonel)',
+                      prefixIcon: Icon(Icons.person),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '💡 Atanan Tim Komutanı ilk girişinde kendi parolasını belirleyecektir.',
-                  style: TextStyle(fontSize: 12, color: context.textSecondary),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    '💡 Atanan Tim Komutanı ilk girişinde kendi parolasını belirleyecektir.',
+                    style: TextStyle(fontSize: 12, color: context.textSecondary),
+                  ),
+                ],
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('İPTAL'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final name = squadNameController.text.trim();
-                final cUser = commanderUserController.text.trim();
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('İPTAL'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final name = squadNameController.text.trim();
+                  final cUser = commanderUserController.text.trim();
 
-                if (name.isEmpty) return;
+                  if (name.isEmpty) return;
 
-                final repo = ref.read(personnelRepositoryProvider);
-                final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+                  final repo = ref.read(personnelRepositoryProvider);
+                  final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-                if (cUser.isNotEmpty) {
-                  await repo.addSquadWithCommander(
-                    timAdi: name,
-                    olusturmaTarihi: today,
-                    komutanKullaniciAdi: cUser,
-                  );
-                } else {
-                  await repo.addSquad(
-                    timAdi: name,
-                    olusturmaTarihi: today,
-                  );
-                }
+                  if (cUser.isNotEmpty) {
+                    await repo.addSquadWithCommander(
+                      timAdi: name,
+                      olusturmaTarihi: today,
+                      komutanKullaniciAdi: cUser,
+                    );
+                  } else {
+                    await repo.addSquad(
+                      timAdi: name,
+                      olusturmaTarihi: today,
+                    );
+                  }
 
-                if (ctx.mounted) Navigator.of(ctx).pop();
-              },
-              child: const Text('OLUŞTUR'),
-            ),
-          ],
-        );
-      },
-    );
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                },
+                child: const Text('OLUŞTUR'),
+              ),
+            ],
+          );
+        },
+      );
+    } finally {
+      squadNameController.dispose();
+      commanderUserController.dispose();
+    }
   }
 
   @override
@@ -710,19 +719,23 @@ class _PersonnelManagementScreenState
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Personel Listesi (${personnelList.length} Kişi)',
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Text(
+                              'Personel Listesi (${personnelList.length} Kişi)',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Text(
                             'Resmi Tim & Kıdem Sıralı',
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: context.accentOrOlive,
+                              color: context.textSecondary,
                             ),
                           ),
                         ],
