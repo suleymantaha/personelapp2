@@ -53,6 +53,14 @@ class MilitaryStructureHelper {
     return timOrBirlik.isNotEmpty ? timOrBirlik : 'Asayiş Timi';
   }
 
+  /// Returns duty group order weight: 1 for operational/guard duties, 2 for Hazır Kıta, 3 for Gülüşkür
+  static int getDutyGroupOrder(String duty) {
+    final upper = duty.toUpperCase().trim();
+    if (upper.contains('HAZIR KITA') || upper.contains('HAZIRKITA')) return 2;
+    if (upper.contains('GÜLÜŞKÜR') || upper.contains('GULUSKUR')) return 3;
+    return 1;
+  }
+
   /// Checks if a duty string represents a guard duty (Nöbetçiler / Nöbetçi Heyeti)
   static bool isNobetciHeyetiDuty(String duty) {
     final d = duty.toUpperCase().trim();

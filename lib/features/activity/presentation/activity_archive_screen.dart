@@ -53,6 +53,10 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
           final wB = MilitaryStructureHelper.getSquadOrderWeight(pB?.birlik ?? '', duty: b.gorevVeyaIzin);
           if (wA != wB) return wA.compareTo(wB);
 
+          final orderA = MilitaryStructureHelper.getDutyGroupOrder(a.gorevVeyaIzin);
+          final orderB = MilitaryStructureHelper.getDutyGroupOrder(b.gorevVeyaIzin);
+          if (orderA != orderB) return orderA.compareTo(orderB);
+
           final rA = getRankWeight(pA?.rutbe ?? '');
           final rB = getRankWeight(pB?.rutbe ?? '');
           if (rA != rB) return rA.compareTo(rB);
@@ -631,13 +635,6 @@ class _AssignmentDetails extends ConsumerWidget {
 
     final existingPersonnelIds = assignments.map((a) => a.personelId).toSet();
 
-    int getDutyGroupOrder(String duty) {
-      final upper = duty.toUpperCase().trim();
-      if (upper.contains('HAZIR KITA') || upper.contains('HAZIRKITA')) return 2;
-      if (upper.contains('GÜLÜŞKÜR') || upper.contains('GULUSKUR')) return 3;
-      return 1; // Operational duties (Nöbet, Heybet, Devriye etc.) FIRST at the top
-    }
-
     final allSquadsAsync = ref.watch(allSquadsProvider);
     final squadsList = allSquadsAsync.value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
@@ -646,15 +643,10 @@ class _AssignmentDetails extends ConsumerWidget {
         filteredAssignments.where((atama) {
           return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
         }).toList()..sort((a, b) {
-          // 1. Operational duties first, Hazır Kıta and Gülüşkür AT THE VERY BOTTOM!
-          final orderA = getDutyGroupOrder(a.gorevVeyaIzin);
-          final orderB = getDutyGroupOrder(b.gorevVeyaIzin);
-          if (orderA != orderB) return orderA.compareTo(orderB);
-
           final pA = pMap[a.personelId];
           final pB = pMap[b.personelId];
 
-          // 2. Group by official squad order ('K.H' -> "1'inci Bl. K.H" -> '1-B Timi' ... '12-B Timi')
+          // 1. Group by official squad order ('Nöbet Heyeti' -> 'K.H' -> "1'inci Bl. K.H" -> '1-B Timi' ... '12-B Timi')
           final timNameA =
               (pA?.timId != null && squadMap.containsKey(pA!.timId))
               ? squadMap[pA.timId]!
@@ -673,6 +665,11 @@ class _AssignmentDetails extends ConsumerWidget {
           final wBirlikA = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikA, duty: a.gorevVeyaIzin);
           final wBirlikB = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikB, duty: b.gorevVeyaIzin);
           if (wBirlikA != wBirlikB) return wBirlikA.compareTo(wBirlikB);
+
+          // 2. Operational duties first, Hazır Kıta and Gülüşkür at the bottom within the same squad
+          final orderA = MilitaryStructureHelper.getDutyGroupOrder(a.gorevVeyaIzin);
+          final orderB = MilitaryStructureHelper.getDutyGroupOrder(b.gorevVeyaIzin);
+          if (orderA != orderB) return orderA.compareTo(orderB);
 
           // 3. Sort strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
           final weightA = getRankWeight(pA?.rutbe ?? '');

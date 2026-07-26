@@ -176,7 +176,9 @@ class PdfRosterExporter {
       }
     }
 
-    final standardBorder = pw.Border.all(width: 0.6, color: PdfColors.grey800);
+    const cellBorder = pw.Border(
+      bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+    );
 
     for (var i = 0; i < n; i++) {
       final r = rows[i];
@@ -186,21 +188,15 @@ class PdfRosterExporter {
       // Birlik merge boundaries
       final bSt = birlikStart[i];
       final bEn = birlikEnd[i];
-      final isBFirst = i == bSt;
       final isBLast = i == bEn;
 
-      final birlikBorder = pw.Border(
-        top: isBFirst
-            ? const pw.BorderSide(width: 0.6, color: PdfColors.grey800)
-            : pw.BorderSide.none,
-        bottom: isBLast
-            ? const pw.BorderSide(width: 0.6, color: PdfColors.grey800)
-            : pw.BorderSide.none,
-        left: const pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-        right: const pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-      );
+      final birlikBorder = isBLast
+          ? const pw.Border(
+              bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+            )
+          : const pw.Border();
 
-      // Determine text placement and vertical alignment inside Birlik cell
+      // Determine text placement inside Birlik cell
       var birlikCellText = '';
       final bMid = bSt + (bEn - bSt) ~/ 2;
       if (i == bMid) {
@@ -212,21 +208,15 @@ class PdfRosterExporter {
       final spSt = specialStart[i];
       final spEn = specialEnd[i];
       final isSpecialGroup = spSt != -1;
-      final isSpFirst = isSpecialGroup && i == spSt;
       final isSpLast = isSpecialGroup && i == spEn;
 
       final specialBorder = isSpecialGroup
-          ? pw.Border(
-              top: isSpFirst
-                  ? const pw.BorderSide(width: 0.6, color: PdfColors.grey800)
-                  : pw.BorderSide.none,
-              bottom: isSpLast
-                  ? const pw.BorderSide(width: 0.6, color: PdfColors.grey800)
-                  : pw.BorderSide.none,
-              left: const pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-              right: const pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-            )
-          : standardBorder;
+          ? (isSpLast
+              ? const pw.Border(
+                  bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+                )
+              : const pw.Border())
+          : cellBorder;
 
       var specialCellText = '';
       var specialAlignment = pw.Alignment.center;
@@ -250,7 +240,7 @@ class PdfRosterExporter {
           children: [
             // S. NU
             pw.Container(
-              decoration: pw.BoxDecoration(border: standardBorder),
+              decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 4,
                 horizontal: 2,
@@ -283,7 +273,7 @@ class PdfRosterExporter {
             ),
             // RÜTBE
             pw.Container(
-              decoration: pw.BoxDecoration(border: standardBorder),
+              decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 4,
                 horizontal: 2,
@@ -296,7 +286,7 @@ class PdfRosterExporter {
             ),
             // ADI SOYADI
             pw.Container(
-              decoration: pw.BoxDecoration(border: standardBorder),
+              decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 4,
                 horizontal: 4,
@@ -340,6 +330,13 @@ class PdfRosterExporter {
     }
 
     return pw.Table(
+      border: const pw.TableBorder(
+        left: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+        right: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+        top: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+        bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+        verticalInside: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+      ),
       columnWidths: const {
         0: pw.FlexColumnWidth(0.8), // S. NU
         1: pw.FlexColumnWidth(2.5), // BİRLİĞİ
