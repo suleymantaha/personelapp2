@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personelapp2/features/activity/presentation/activity_archive_screen.dart';
 import 'package:personelapp2/features/activity/presentation/activity_form_screen.dart';
@@ -6,6 +7,10 @@ import 'package:personelapp2/features/auth/presentation/login_screen.dart';
 import 'package:personelapp2/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:personelapp2/features/matrix/presentation/monthly_matrix_screen.dart';
 import 'package:personelapp2/features/personnel/presentation/personnel_management_screen.dart';
+
+final appRouterProvider = Provider<GoRouter>((ref) {
+  return createAppRouter();
+});
 
 GoRouter createAppRouter({bool hasActiveSession = false}) {
   return GoRouter(
@@ -42,3 +47,4 @@ GoRouter createAppRouter({bool hasActiveSession = false}) {
     ],
   );
 }
+

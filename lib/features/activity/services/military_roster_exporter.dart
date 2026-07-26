@@ -740,7 +740,8 @@ class MilitaryRosterExporter {
       ..setColumnWidth(3, 30)
       ..setColumnWidth(4, 25);
 
-    return excel.encode()!;
+    final encoded = excel.encode();
+    return encoded ?? <int>[];
   }
 
   /// Generates native binary .xlsx spreadsheet for all daily activities combined
@@ -874,33 +875,33 @@ class MilitaryRosterExporter {
       ..setColumnWidth(3, 30)
       ..setColumnWidth(4, 25);
 
-    return excel.encode()!;
+    final encoded = excel.encode();
+    return encoded ?? <int>[];
   }
 
-  /// Exports Excel roster directly to public Downloads folder and triggers OS share
-  static Future<File> shareExcelRoster({
+  /// Exports Excel roster with native binary .xlsx and triggers OS share
+  static Future<void> shareExcelRoster({
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
   }) async {
-    final file = await saveExcelToDevice(
+    final bytes = generateMilitaryExcelBytes(
       faaliyetAdi: faaliyetAdi,
       tarih: tarih,
       rows: rows,
     );
 
-    try {
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(file.path)],
-          text: '$faaliyetAdi - Resmi İsim Listesi Excel Dökümanı',
-        ),
-      );
-    } on Exception catch (_) {
-      // Fallback
-    }
+    final dir = await getTemporaryDirectory();
+    final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
+    final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.xlsx');
+    await file.writeAsBytes(bytes);
 
-    return file;
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: '$faaliyetAdi - Resmi İsim Listesi Excel Dökümanı',
+      ),
+    );
   }
 
   /// Saves Excel file directly to the device's public Downloads / Storage folder
@@ -919,30 +920,37 @@ class MilitaryRosterExporter {
     final fileName = '${sanitizedTitle}_Listesi_$tarih.xlsx';
 
     Directory targetDir;
-    if (Platform.isAndroid) {
-      targetDir = Directory('/storage/emulated/0/Download');
-      if (!targetDir.existsSync()) {
-        targetDir = await getApplicationDocumentsDirectory();
-      }
-    } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      final userHome =
-          Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
-      if (userHome != null) {
-        targetDir = Directory('$userHome/Downloads');
+    try {
+      if (Platform.isAndroid) {
+        targetDir = Directory('/storage/emulated/0/Download');
+        if (!targetDir.existsSync()) {
+          targetDir = await getApplicationDocumentsDirectory();
+        }
+      } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        final userHome =
+            Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
+        if (userHome != null) {
+          targetDir = Directory('$userHome/Downloads');
+        } else {
+          targetDir = await getApplicationDocumentsDirectory();
+        }
       } else {
         targetDir = await getApplicationDocumentsDirectory();
       }
-    } else {
+
+      if (!targetDir.existsSync()) {
+        await targetDir.create(recursive: true);
+      }
+
+      final file = File('${targetDir.path}/$fileName');
+      await file.writeAsBytes(bytes);
+      return file;
+    } on Exception catch (_) {
       targetDir = await getApplicationDocumentsDirectory();
+      final file = File('${targetDir.path}/$fileName');
+      await file.writeAsBytes(bytes);
+      return file;
     }
-
-    if (!targetDir.existsSync()) {
-      await targetDir.create(recursive: true);
-    }
-
-    final file = File('${targetDir.path}/$fileName');
-    await file.writeAsBytes(bytes);
-    return file;
   }
 
   /// Shares Master Daily Excel containing all activities

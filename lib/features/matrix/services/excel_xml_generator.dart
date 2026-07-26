@@ -155,7 +155,8 @@ class ExcelXmlGenerator {
       sheet.setColumnWidth(day + 1, 5);
     }
 
-    return excel.encode()!;
+    final encoded = excel.encode();
+    return encoded ?? <int>[];
   }
 
   /// Cleans up old exported XML/XLSX files in temporary directory to prevent cache bloat

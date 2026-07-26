@@ -17,65 +17,69 @@ class DashboardScreen extends ConsumerWidget {
     String username,
   ) async {
     final passCtrl = TextEditingController();
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Şifremi Değiştir'),
-          content: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Kullanıcı: $username',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: passCtrl,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Yeni Şifreniz',
-                      prefixIcon: Icon(Icons.lock),
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: const Text('Şifremi Değiştir'),
+            content: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Kullanıcı: $username',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: passCtrl,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Yeni Şifreniz',
+                        prefixIcon: Icon(Icons.lock),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('İPTAL'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final newPass = passCtrl.text.trim();
-                if (newPass.length >= 4) {
-                  final repo = ref.read(personnelRepositoryProvider);
-                  await repo.updateUserPassword(
-                    kullaniciAdi: username,
-                    newPassword: newPass,
-                  );
-                  if (ctx.mounted) {
-                    Navigator.of(ctx).pop();
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      SnackBar(
-                        content: const Text('Şifreniz başarıyla güncellendi!'),
-                        backgroundColor: context.approvedColor,
-                      ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('İPTAL'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final newPass = passCtrl.text.trim();
+                  if (newPass.length >= 4) {
+                    final repo = ref.read(personnelRepositoryProvider);
+                    await repo.updateUserPassword(
+                      kullaniciAdi: username,
+                      newPassword: newPass,
                     );
+                    if (ctx.mounted) {
+                      Navigator.of(ctx).pop();
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        SnackBar(
+                          content: const Text('Şifreniz başarıyla güncellendi!'),
+                          backgroundColor: context.approvedColor,
+                        ),
+                      );
+                    }
                   }
-                }
-              },
-              child: const Text('GÜNCELLE'),
-            ),
-          ],
-        );
-      },
-    );
+                },
+                child: const Text('GÜNCELLE'),
+              ),
+            ],
+          );
+        },
+      );
+    } finally {
+      passCtrl.dispose();
+    }
   }
 
   void _showSettingsBottomSheet(

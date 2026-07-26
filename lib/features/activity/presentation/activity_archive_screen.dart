@@ -143,18 +143,10 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         ? activities.first.faaliyetAdi
         : 'GÜNLÜK TÜM FAALİYETLER';
 
-    final savedFile = await MilitaryRosterExporter.shareExcelRoster(
+    await MilitaryRosterExporter.shareExcelRoster(
       faaliyetAdi: mainActivityName,
       tarih: dateTitle,
       rows: rosterRows,
-    );
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('✅ Excel İndirilenler klasörüne kaydedildi:\n${savedFile.path}'),
-        duration: const Duration(seconds: 4),
-      ),
     );
   }
 
@@ -1104,20 +1096,14 @@ class _AssignmentDetails extends ConsumerWidget {
                     'Excel Al',
                     style: TextStyle(fontSize: 11),
                   ),
-                  onPressed: () async {
-                    final savedFile = await MilitaryRosterExporter.shareExcelRoster(
-                      faaliyetAdi: activity.faaliyetAdi,
-                      tarih: activity.tarih,
-                      rows: rosterRows,
+                  onPressed: () {
+                    unawaited(
+                      MilitaryRosterExporter.shareExcelRoster(
+                        faaliyetAdi: activity.faaliyetAdi,
+                        tarih: activity.tarih,
+                        rows: rosterRows,
+                      ),
                     );
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('✅ Excel İndirilenler klasörüne kaydedildi:\n${savedFile.path}'),
-                          duration: const Duration(seconds: 4),
-                        ),
-                      );
-                    }
                   },
                 ),
               ),

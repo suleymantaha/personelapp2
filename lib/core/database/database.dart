@@ -39,7 +39,9 @@ class AppDatabase extends _$AppDatabase {
         if (from < 2) {
           try {
             await m.createTable(timUyelikGecmisiTable);
-          } on Object catch (_) {}
+          } on Object catch (e) {
+            debugPrint('Database migration error (v$from -> v$to): $e');
+          }
         }
       },
     );

@@ -480,8 +480,8 @@ class PdfRosterExporter {
     return pdf;
   }
 
-  /// Saves PDF file directly to public Downloads folder (PC Downloads or Phone Downloads)
-  static Future<File> savePdfToDevice({
+  /// Exports PDF file and triggers OS share dialog
+  static Future<void> sharePdfRoster({
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
@@ -494,86 +494,20 @@ class PdfRosterExporter {
       style: style,
     );
 
+    final dir = await getTemporaryDirectory();
     final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-    final fileName = '${sanitizedTitle}_Listesi_$tarih.pdf';
-
-    Directory targetDir;
-    if (Platform.isAndroid) {
-      targetDir = Directory('/storage/emulated/0/Download');
-      if (!targetDir.existsSync()) {
-        targetDir = await getApplicationDocumentsDirectory();
-      }
-    } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      final userHome = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
-      if (userHome != null) {
-        targetDir = Directory('$userHome/Downloads');
-      } else {
-        targetDir = await getApplicationDocumentsDirectory();
-      }
-    } else {
-      targetDir = await getApplicationDocumentsDirectory();
-    }
-
-    if (!targetDir.existsSync()) {
-      await targetDir.create(recursive: true);
-    }
-
-    final file = File('${targetDir.path}/$fileName');
+    final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.pdf');
     await file.writeAsBytes(await pdf.save());
-    return file;
-  }
 
-  /// Exports PDF file directly to public Downloads folder and triggers OS share dialog
-  static Future<File> sharePdfRoster({
-    required String faaliyetAdi,
-    required String tarih,
-    required List<MilitaryRosterRow> rows,
-    PdfRosterStyle style = PdfRosterStyle.verticalBlock,
-  }) async {
-    final file = await savePdfToDevice(
-      faaliyetAdi: faaliyetAdi,
-      tarih: tarih,
-      rows: rows,
-      style: style,
-    );
-
-    try {
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(file.path)],
-          text: '$faaliyetAdi - Resmi İsim Listesi PDF Dökümanı',
-        ),
-      );
-    } on Exception catch (_) {
-      // Fallback
-    }
-
-    return file;
-  }
-
-  /// Opens interactive full-screen PDF Print Preview & Direct Printing dialog
-  static Future<void> previewAndPrintPdf({
-    required String faaliyetAdi,
-    required String tarih,
-    required List<MilitaryRosterRow> rows,
-    PdfRosterStyle style = PdfRosterStyle.verticalBlock,
-  }) async {
-    final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-    await Printing.layoutPdf(
-      name: '${sanitizedTitle}_Listesi_$tarih',
-      onLayout: (format) async {
-        final pdf = await generateRosterPdf(
-          faaliyetAdi: faaliyetAdi,
-          tarih: tarih,
-          rows: rows,
-          style: style,
-        );
-        return pdf.save();
-      },
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: '$faaliyetAdi - Resmi İsim Listesi PDF Dökümanı',
+      ),
     );
   }
 
-  /// Displays a modal bottom sheet to select from 3 PDF styles and opens live print preview
+  /// Displays a modal bottom sheet to select from 3 PDF styles and exports/shares the PDF
   static Future<void> showStylePickerAndSharePdf(
     BuildContext context, {
     required String faaliyetAdi,
@@ -598,7 +532,7 @@ class PdfRosterExporter {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Çıktı almak veya önizlemek istediğiniz resmi PDF düzenini seçin:',
+                  'Çıktı almak istediğiniz resmi PDF düzenini seçin:',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
@@ -643,7 +577,7 @@ class PdfRosterExporter {
     );
 
     if (selectedStyle != null && context.mounted) {
-      await previewAndPrintPdf(
+      await sharePdfRoster(
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
         rows: rows,

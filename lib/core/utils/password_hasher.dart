@@ -21,7 +21,7 @@ class PasswordHasher {
     String storedHashOrPassword, {
     String? username,
   }) {
-    if (storedHashOrPassword.isEmpty) return true;
+    if (storedHashOrPassword.isEmpty) return false;
     final hashedInputWithContext = hashPassword(
       inputPassword,
       username: username,

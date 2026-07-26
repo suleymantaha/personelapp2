@@ -22,6 +22,7 @@ class PersonelApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
+    final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
       title: 'Jandarma Görev Takip Uygulaması',
@@ -29,7 +30,7 @@ class PersonelApp extends ConsumerWidget {
       theme: AppTheme.militaryTheme,
       darkTheme: AppTheme.darkMilitaryTheme,
       themeMode: themeMode,
-      routerConfig: createAppRouter(),
+      routerConfig: router,
     );
   }
 }
