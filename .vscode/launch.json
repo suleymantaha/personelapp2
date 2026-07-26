@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "personelapp2 (Debug)",
+            "program": "lib/main.dart",
+            "deviceId": "adb-AJ4UVB4620002996-tHF7vF._adb-tls-connect._tcp",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "personelapp2 (Release)",
+            "program": "lib/main.dart",
+            "deviceId": "adb-AJ4UVB4620002996-tHF7vF._adb-tls-connect._tcp",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--release"
+            ]
+        }
+    ]
+}
