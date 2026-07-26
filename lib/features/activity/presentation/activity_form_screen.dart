@@ -8,6 +8,7 @@ import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 
 class ActivityFormScreen extends ConsumerStatefulWidget {
   const ActivityFormScreen({super.key});
