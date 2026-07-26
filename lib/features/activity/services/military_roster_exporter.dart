@@ -721,7 +721,9 @@ class MilitaryRosterExporter {
     ];
 
     for (final item in summaryItems) {
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
+      sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+        )
         ..value = TextCellValue(item)
         ..cellStyle = cellLeftStyle;
       sheet.merge(
@@ -813,7 +815,9 @@ class MilitaryRosterExporter {
 
     for (final act in activities) {
       currentRow++; // Spacing
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
+      sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+        )
         ..value = TextCellValue(
           '${act.faaliyetAdi.toUpperCase()} (${act.tarih})',
         )
@@ -825,26 +829,38 @@ class MilitaryRosterExporter {
       currentRow++;
 
       for (var c = 0; c < headers.length; c++) {
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: c, rowIndex: currentRow))
+        sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: c, rowIndex: currentRow),
+          )
           ..value = TextCellValue(headers[c])
           ..cellStyle = headerStyle;
       }
       currentRow++;
 
       for (final r in act.rows) {
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
+        sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+          )
           ..value = IntCellValue(r.sNu)
           ..cellStyle = cellCenterStyle;
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow))
+        sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow),
+          )
           ..value = TextCellValue(r.birligi)
           ..cellStyle = cellCenterStyle;
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow))
+        sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow),
+          )
           ..value = TextCellValue(r.rutbe)
           ..cellStyle = cellCenterStyle;
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow))
+        sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow),
+          )
           ..value = TextCellValue(r.adSoyad)
           ..cellStyle = cellLeftStyle;
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow))
+        sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
+          )
           ..value = TextCellValue(r.diger)
           ..cellStyle = cellLeftStyle;
         currentRow++;

@@ -264,25 +264,27 @@ class PdfRosterExporter {
           children: [
             // S. NU
             pw.Container(
+              height: 18,
               decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
-                vertical: 4,
+                vertical: 2,
                 horizontal: 2,
               ),
               alignment: pw.Alignment.center,
               child: pw.Text(
                 '${r.sNu > 0 ? r.sNu : i + 1}',
-                style: const pw.TextStyle(fontSize: 9),
+                style: const pw.TextStyle(fontSize: 8.5),
               ),
             ),
             // BİRLİĞİ (Dynamically Merged Cell)
             pw.Container(
+              height: 18,
               decoration: pw.BoxDecoration(
                 border: birlikBorder,
                 color: PdfColors.white,
               ),
               padding: const pw.EdgeInsets.symmetric(
-                vertical: 4,
+                vertical: 2,
                 horizontal: 3,
               ),
               alignment: birlikAlignment,
@@ -297,46 +299,51 @@ class PdfRosterExporter {
             ),
             // RÜTBE
             pw.Container(
+              height: 18,
               decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
-                vertical: 4,
+                vertical: 2,
                 horizontal: 2,
               ),
               alignment: pw.Alignment.center,
               child: pw.Text(
                 r.rutbe,
-                style: const pw.TextStyle(fontSize: 9),
+                style: const pw.TextStyle(fontSize: 8.5),
               ),
             ),
             // ADI SOYADI
             pw.Container(
+              height: 18,
               decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
-                vertical: 4,
+                vertical: 2,
                 horizontal: 4,
               ),
               alignment: pw.Alignment.centerLeft,
               child: pw.Text(
                 r.adSoyad,
+                maxLines: 1,
                 style: const pw.TextStyle(
-                  fontSize: 9,
+                  fontSize: 8.5,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
             ),
             // DİĞER (Dynamically Merged Cell for Special Duties)
             pw.Container(
+              height: 18,
               decoration: pw.BoxDecoration(
                 border: specialBorder,
                 color: isSpecialGroup ? PdfColors.white : null,
               ),
               padding: const pw.EdgeInsets.symmetric(
-                vertical: 4,
+                vertical: 2,
                 horizontal: 2,
               ),
               alignment: specialAlignment,
               child: pw.Text(
                 specialCellText,
+                maxLines: 1,
                 textAlign: (isSpecialGroup || r.diger.trim().isEmpty)
                     ? pw.TextAlign.center
                     : pw.TextAlign.left,
