@@ -129,7 +129,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
           birligi: birligi,
           rutbe: rutbe,
           adSoyad: adSoyad,
-          diger: digerNote.isEmpty ? '' : '$digerNote (${atama.durum})',
+          diger: digerNote,
           groupCode: groupCode,
         ),
       );
