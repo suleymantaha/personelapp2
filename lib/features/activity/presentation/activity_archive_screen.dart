@@ -40,110 +40,113 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
     final pMap = {for (final p in personnelList) p.id: p};
     final squadsList = ref.read(allSquadsProvider).value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
-    final masterList = <MasterActivityData>[];
+
+    final allAssignments = <FaaliyetPersonelAtamaTableData>[];
+    final seenAssignmentIds = <int>{};
 
     for (final act in activities) {
       final assignments = await (db.select(
         db.faaliyetPersonelAtamaTable,
       )..where((tbl) => tbl.faaliyetId.equals(act.id))).get();
 
-      final filtered = assignments.where((a) => DutyOrLeaveType.isOperationalDuty(a.gorevVeyaIzin)).toList()
-        ..sort((a, b) {
-          final catA = MilitaryStructureHelper.getDutyCategoryOrder(a.gorevVeyaIzin);
-          final catB = MilitaryStructureHelper.getDutyCategoryOrder(b.gorevVeyaIzin);
-          if (catA != catB) return catA.compareTo(catB);
-
-          final pA = pMap[a.personelId];
-          final pB = pMap[b.personelId];
-
-          if (catA == 10) {
-            final rA = getRankWeight(pA?.rutbe ?? '');
-            final rB = getRankWeight(pB?.rutbe ?? '');
-            if (rA != rB) return rA.compareTo(rB);
-            return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
-          }
-
-          final timNameA =
-              (pA?.timId != null && squadMap.containsKey(pA!.timId))
-              ? squadMap[pA.timId]!
-              : '';
-          final timNameB =
-              (pB?.timId != null && squadMap.containsKey(pB!.timId))
-              ? squadMap[pB.timId]!
-              : '';
-          final rawBirlikA = (pA?.birlik != null && pA!.birlik.isNotEmpty)
-              ? pA.birlik
-              : timNameA;
-          final rawBirlikB = (pB?.birlik != null && pB!.birlik.isNotEmpty)
-              ? pB.birlik
-              : timNameB;
-
-          final wA = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikA);
-          final wB = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikB);
-          if (wA != wB) return wA.compareTo(wB);
-
-          final rA = getRankWeight(pA?.rutbe ?? '');
-          final rB = getRankWeight(pB?.rutbe ?? '');
-          if (rA != rB) return rA.compareTo(rB);
-
-          return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
-        });
-
-      final rosterRows = <MilitaryRosterRow>[];
-      var sNuCounter = 1;
-      for (var i = 0; i < filtered.length; i++) {
-        final atama = filtered[i];
-        final p = pMap[atama.personelId];
-        final rutbe = p?.rutbe ?? '';
-        final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
-        final timName =
-            (p?.timId != null && squadMap.containsKey(p!.timId))
-            ? squadMap[p.timId]!
-            : '';
-        final rawBirlik = (p?.birlik != null && p!.birlik.isNotEmpty)
-            ? p.birlik
-            : timName;
-        final birligi = MilitaryStructureHelper.getOfficialBirlikName(rawBirlik, duty: atama.gorevVeyaIzin);
-        final digerNote = MilitaryStructureHelper.getDigerCellText(atama.gorevVeyaIzin, aciklama: atama.aciklama);
-
-        var groupCode = 'DIGER';
-        final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
-        if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
-          groupCode = 'HAZIR_KITA';
-        } else if (dutyUpper.contains('GÜLÜŞKÜR') || dutyUpper.contains('GULUSKUR')) {
-          groupCode = 'GULUSKUR';
+      for (final a in assignments) {
+        if (!seenAssignmentIds.contains(a.id) &&
+            DutyOrLeaveType.isOperationalDuty(a.gorevVeyaIzin)) {
+          seenAssignmentIds.add(a.id);
+          allAssignments.add(a);
         }
+      }
+    }
 
-        rosterRows.add(
-          MilitaryRosterRow(
-            sNu: sNuCounter++,
-            birligi: birligi,
-            rutbe: rutbe,
-            adSoyad: adSoyad,
-            diger: digerNote.isEmpty ? '' : '$digerNote (${atama.durum})',
-            groupCode: groupCode,
-          ),
-        );
+    allAssignments.sort((a, b) {
+      final catA = MilitaryStructureHelper.getDutyCategoryOrder(a.gorevVeyaIzin);
+      final catB = MilitaryStructureHelper.getDutyCategoryOrder(b.gorevVeyaIzin);
+      if (catA != catB) return catA.compareTo(catB);
+
+      final pA = pMap[a.personelId];
+      final pB = pMap[b.personelId];
+
+      if (catA == 10) {
+        final rA = getRankWeight(pA?.rutbe ?? '');
+        final rB = getRankWeight(pB?.rutbe ?? '');
+        if (rA != rB) return rA.compareTo(rB);
+        return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
       }
 
-      masterList.add(
-        MasterActivityData(
-          faaliyetAdi: act.faaliyetAdi,
-          tarih: act.tarih,
-          olusturanKullanici: act.olusturanKullanici,
-          rows: rosterRows,
+      final timNameA =
+          (pA?.timId != null && squadMap.containsKey(pA!.timId))
+          ? squadMap[pA.timId]!
+          : '';
+      final timNameB =
+          (pB?.timId != null && squadMap.containsKey(pB!.timId))
+          ? squadMap[pB.timId]!
+          : '';
+      final rawBirlikA = (pA?.birlik != null && pA!.birlik.isNotEmpty)
+          ? pA.birlik
+          : timNameA;
+      final rawBirlikB = (pB?.birlik != null && pB!.birlik.isNotEmpty)
+          ? pB.birlik
+          : timNameB;
+
+      final wA = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikA);
+      final wB = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikB);
+      if (wA != wB) return wA.compareTo(wB);
+
+      final rA = getRankWeight(pA?.rutbe ?? '');
+      final rB = getRankWeight(pB?.rutbe ?? '');
+      if (rA != rB) return rA.compareTo(rB);
+
+      return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
+    });
+
+    final rosterRows = <MilitaryRosterRow>[];
+    for (var i = 0; i < allAssignments.length; i++) {
+      final atama = allAssignments[i];
+      final p = pMap[atama.personelId];
+      final rutbe = p?.rutbe ?? '';
+      final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
+      final timName =
+          (p?.timId != null && squadMap.containsKey(p!.timId))
+          ? squadMap[p.timId]!
+          : '';
+      final rawBirlik = (p?.birlik != null && p!.birlik.isNotEmpty)
+          ? p.birlik
+          : timName;
+      final birligi = MilitaryStructureHelper.getOfficialBirlikName(rawBirlik, duty: atama.gorevVeyaIzin);
+      final digerNote = MilitaryStructureHelper.getDigerCellText(atama.gorevVeyaIzin, aciklama: atama.aciklama);
+
+      var groupCode = 'DIGER';
+      final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
+      if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
+        groupCode = 'HAZIR_KITA';
+      } else if (dutyUpper.contains('GÜLÜŞKÜR') || dutyUpper.contains('GULUSKUR')) {
+        groupCode = 'GULUSKUR';
+      }
+
+      rosterRows.add(
+        MilitaryRosterRow(
+          sNu: i + 1,
+          birligi: birligi,
+          rutbe: rutbe,
+          adSoyad: adSoyad,
+          diger: digerNote.isEmpty ? '' : '$digerNote (${atama.durum})',
+          groupCode: groupCode,
         ),
       );
     }
 
     final dateTitle = _selectedDateFilter != null
-        ? DateFormat('yyyy-MM-dd').format(_selectedDateFilter!)
-        : DateFormat('yyyy-MM-dd').format(DateTime.now());
+        ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
+        : DateFormat('dd.MM.yyyy').format(DateTime.now());
 
-    await MilitaryRosterExporter.shareMasterDailyExcel(
-      title: 'TÜM GÜNLÜK FAALİYETLER VE GÖREV İCMAL LİSTESİ',
-      dateStr: dateTitle,
-      activities: masterList,
+    final mainActivityName = activities.length == 1
+        ? activities.first.faaliyetAdi
+        : 'GÜNLÜK TÜM FAALİYETLER';
+
+    await MilitaryRosterExporter.shareExcelRoster(
+      faaliyetAdi: mainActivityName,
+      tarih: dateTitle,
+      rows: rosterRows,
     );
   }
 
