@@ -514,9 +514,9 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Sticky Left Column (Personnel Names with Sıra No)
+                  // Sticky Left Column (Personnel Rütbe & Name with Sıra No)
                   SizedBox(
-                    width: 165,
+                    width: 210,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -528,18 +528,46 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                               horizontal: 2,
                               vertical: 4,
                             ),
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
                             decoration: BoxDecoration(
                               color: context.headerBg,
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              'S.N. | Personel',
-                              style: TextStyle(
-                                color: context.onAccentOrOlive,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 24,
+                                  child: Text(
+                                    'S.N.',
+                                    style: TextStyle(
+                                      color: context.onAccentOrOlive,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 60,
+                                  child: Text(
+                                    'Rütbe',
+                                    style: TextStyle(
+                                      color: context.onAccentOrOlive,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    'Adı Soyadı',
+                                    style: TextStyle(
+                                      color: context.onAccentOrOlive,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -589,34 +617,31 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 6),
-                                  // Rank & Name
+                                  // Rütbe
+                                  SizedBox(
+                                    width: 60,
+                                    child: Text(
+                                      p.rutbe,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: context.accentOrOlive,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  // Ad Soyad
                                   Expanded(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          p.adSoyad,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 11.5,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        Text(
-                                          p.rutbe,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontSize: 9.5,
-                                            fontWeight: FontWeight.bold,
-                                            color: context.accentOrOlive,
-                                          ),
-                                        ),
-                                      ],
+                                    child: Text(
+                                      p.adSoyad,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ],
