@@ -36,7 +36,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3' # projeyi build eden sürüm
+          flutter-version: '3.24' # 3.24.x stable series (auto-picks latest patch)
           channel: 'stable'
           cache: true
 
