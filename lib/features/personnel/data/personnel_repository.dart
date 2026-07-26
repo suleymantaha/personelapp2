@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/password_hasher.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 
@@ -406,7 +407,7 @@ class PersonnelRepository {
             PersonelTableCompanion.insert(
               adSoyad: '$fName $lName',
               rutbe: rank,
-              birlik: '${squad.timAdi} Birliği',
+              birlik: MilitaryStructureHelper.getOfficialBirlikName(squad.timAdi),
               timId: Value(squad.id),
               kayitTarihi: today,
             ),

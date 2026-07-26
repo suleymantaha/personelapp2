@@ -1,10 +1,11 @@
 import 'dart:io';
+import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ExcelXmlGenerator {
-  /// XML special character escaping helper
+  /// XML special character escaping helper (for backward compatibility if needed)
   static String escapeXml(String value) {
     return value
         .replaceAll('&', '&amp;')
@@ -14,109 +15,98 @@ class ExcelXmlGenerator {
         .replaceAll("'", '&apos;');
   }
 
-  /// Generates a SpreadsheetML XML document compatible with Microsoft Excel (.xls)
-  static String generateXml({
+  /// Generates a native binary .xlsx document for the monthly activity matrix
+  static List<int> generateExcelBytes({
     required List<PersonelTableData> personnel,
     required Map<int, Map<int, String>> matrixData,
     required int year,
     required int month,
   }) {
-    final buffer = StringBuffer()
-      ..writeln('<?xml version="1.0" encoding="utf-8"?>')
-      ..writeln('<?mso-application progid="Excel.Sheet"?>')
-      ..writeln(
-        '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"',
-      )
-      ..writeln(' xmlns:o="urn:schemas-microsoft-com:office:office"')
-      ..writeln(' xmlns:x="urn:schemas-microsoft-com:office:excel"')
-      ..writeln(' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"')
-      ..writeln(' xmlns:html="http://www.w3.org/TR/REC-html40">')
-      ..writeln(' <Styles>')
-      ..writeln('  <Style ss:ID="Default" ss:Name="Normal">')
-      ..writeln('   <Alignment ss:Vertical="Center"/>')
-      ..writeln(
-        '   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Color="#333333"/>',
-      )
-      ..writeln('  </Style>')
-      ..writeln('  <Style ss:ID="Header">')
-      ..writeln('   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>')
-      ..writeln(
-        '   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/>',
-      )
-      ..writeln('   <Interior ss:Color="#4A5D36" ss:Pattern="Solid"/>')
-      ..writeln('   <Borders>')
-      ..writeln(
-        '    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#2E3B21"/>',
-      )
-      ..writeln(
-        '    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#2E3B21"/>',
-      )
-      ..writeln(
-        '    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#2E3B21"/>',
-      )
-      ..writeln(
-        '    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#2E3B21"/>',
-      )
-      ..writeln('   </Borders>')
-      ..writeln('  </Style>')
-      ..writeln('  <Style ss:ID="GÖREVLİ">')
-      ..writeln('   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>')
-      ..writeln('   <Interior ss:Color="#C8E6C9" ss:Pattern="Solid"/>')
-      ..writeln(
-        '   <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E0E0E0"/></Borders>',
-      )
-      ..writeln('  </Style>')
-      ..writeln('  <Style ss:ID="İZİNLİ">')
-      ..writeln('   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>')
-      ..writeln('   <Interior ss:Color="#E0E0E0" ss:Pattern="Solid"/>')
-      ..writeln(
-        '   <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E0E0E0"/></Borders>',
-      )
-      ..writeln('  </Style>')
-      ..writeln('  <Style ss:ID="RAPORLU">')
-      ..writeln('   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>')
-      ..writeln('   <Interior ss:Color="#FFCDD2" ss:Pattern="Solid"/>')
-      ..writeln(
-        '   <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E0E0E0"/></Borders>',
-      )
-      ..writeln('  </Style>')
-      ..writeln('  <Style ss:ID="BEKLEYEN">')
-      ..writeln('   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>')
-      ..writeln('   <Interior ss:Color="#FFF9C4" ss:Pattern="Solid"/>')
-      ..writeln(
-        '   <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E0E0E0"/></Borders>',
-      )
-      ..writeln('  </Style>')
-      ..writeln(' </Styles>')
-      ..writeln(' <Worksheet ss:Name="Aylık Faaliyet Matrisi">')
-      ..writeln('  <Table>')
-      ..writeln('   <Row>')
-      ..writeln(
-        '    <Cell ss:StyleID="Header"><Data ss:Type="String">S.No</Data></Cell>',
-      )
-      ..writeln(
-        '    <Cell ss:StyleID="Header"><Data ss:Type="String">Rütbesi ve Adı Soyadı</Data></Cell>',
-      );
+    final excel = Excel.createExcel();
+    const sheetName = 'Aylık Faaliyet Matrisi';
+    final sheet = excel[sheetName];
+    excel.setDefaultSheet(sheetName);
+    if (excel.tables.containsKey('Sheet1')) {
+      excel.delete('Sheet1');
+    }
+
+    final headerStyle = CellStyle(
+      bold: true,
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 10,
+      fontColorHex: ExcelColor.fromHexString('#FFFFFF'),
+      backgroundColorHex: ExcelColor.fromHexString('#4A5D36'),
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final cellNormalStyle = CellStyle(
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 10,
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final cellGorevliStyle = CellStyle(
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 10,
+      backgroundColorHex: ExcelColor.fromHexString('#C8E6C9'),
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final cellIzinliStyle = CellStyle(
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 10,
+      backgroundColorHex: ExcelColor.fromHexString('#E0E0E0'),
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final cellRaporluStyle = CellStyle(
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 10,
+      backgroundColorHex: ExcelColor.fromHexString('#FFCDD2'),
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final cellBekleyenStyle = CellStyle(
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 10,
+      backgroundColorHex: ExcelColor.fromHexString('#FFF9C4'),
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    // Headers
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0))
+      ..value = TextCellValue('S.No')
+      ..cellStyle = headerStyle;
+
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0))
+      ..value = TextCellValue('Rütbesi ve Adı Soyadı')
+      ..cellStyle = headerStyle;
 
     final daysInMonth = DateTime(year, month + 1, 0).day;
     for (var day = 1; day <= daysInMonth; day++) {
-      buffer.writeln(
-        '    <Cell ss:StyleID="Header"><Data ss:Type="Number">$day</Data></Cell>',
-      );
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: day + 1, rowIndex: 0))
+        ..value = IntCellValue(day)
+        ..cellStyle = headerStyle;
     }
-    buffer.writeln('   </Row>');
 
     // Personnel Data Rows
     for (var i = 0; i < personnel.length; i++) {
       final p = personnel[i];
-      final escapedName = escapeXml('${p.rutbe} ${p.adSoyad}');
+      final rowIndex = i + 1;
 
-      buffer
-        ..writeln('   <Row>')
-        ..writeln('    <Cell><Data ss:Type="Number">${i + 1}</Data></Cell>')
-        ..writeln(
-          '    <Cell><Data ss:Type="String">$escapedName</Data></Cell>',
-        );
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex))
+        ..value = IntCellValue(i + 1)
+        ..cellStyle = cellNormalStyle;
+
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex))
+        ..value = TextCellValue('${p.rutbe} ${p.adSoyad}')
+        ..cellStyle = cellNormalStyle;
 
       final pStatusMap = matrixData[p.id] ?? {};
 
@@ -124,7 +114,7 @@ class ExcelXmlGenerator {
         final status = pStatusMap[day] ?? '-';
 
         var cellText = '-';
-        var styleId = '';
+        var styleToUse = cellNormalStyle;
 
         if (status.contains('GÖREV') ||
             status.contains('NÖBET') ||
@@ -132,40 +122,43 @@ class ExcelXmlGenerator {
             status.contains('GÜLÜŞKÜR') ||
             status.contains('HEYBET')) {
           cellText = 'X';
-          styleId = ' ss:StyleID="GÖREVLİ"';
+          styleToUse = cellGorevliStyle;
         } else if (status.contains('İZİN')) {
           cellText = 'İZ';
-          styleId = ' ss:StyleID="İZİNLİ"';
+          styleToUse = cellIzinliStyle;
         } else if (status.contains('İSTİRAHAT')) {
           cellText = 'İST';
-          styleId = ' ss:StyleID="İZİNLİ"';
+          styleToUse = cellIzinliStyle;
         } else if (status.contains('RAPOR')) {
           cellText = 'RAP';
-          styleId = ' ss:StyleID="RAPORLU"';
+          styleToUse = cellRaporluStyle;
         } else if (status.contains('SEVK')) {
           cellText = 'SVK';
-          styleId = ' ss:StyleID="RAPORLU"';
+          styleToUse = cellRaporluStyle;
         } else if (status.contains('beklemede')) {
           cellText = 'B';
-          styleId = ' ss:StyleID="BEKLEYEN"';
+          styleToUse = cellBekleyenStyle;
         }
 
-        buffer.writeln(
-          '    <Cell$styleId><Data ss:Type="String">${escapeXml(cellText)}</Data></Cell>',
-        );
+        sheet
+            .cell(CellIndex.indexByColumnRow(
+                columnIndex: day + 1, rowIndex: rowIndex))
+          ..value = TextCellValue(cellText)
+          ..cellStyle = styleToUse;
       }
-      buffer.writeln('   </Row>');
     }
 
-    buffer
-      ..writeln('  </Table>')
-      ..writeln(' </Worksheet>')
-      ..writeln('</Workbook>');
+    sheet
+      ..setColumnWidth(0, 8)
+      ..setColumnWidth(1, 28);
+    for (var day = 1; day <= daysInMonth; day++) {
+      sheet.setColumnWidth(day + 1, 5);
+    }
 
-    return buffer.toString();
+    return excel.encode()!;
   }
 
-  /// Cleans up old exported XML/XLS files in temporary directory to prevent cache bloat
+  /// Cleans up old exported XML/XLSX files in temporary directory to prevent cache bloat
   static Future<void> cleanOldExports() async {
     try {
       final dir = await getTemporaryDirectory();
@@ -185,7 +178,7 @@ class ExcelXmlGenerator {
     } on Exception catch (_) {}
   }
 
-  /// Exports XML content to a temporary .xlsx file and launches native share intent
+  /// Exports binary .xlsx content to a temporary file and launches native share intent
   static Future<void> exportAndShareXml({
     required List<PersonelTableData> personnel,
     required Map<int, Map<int, String>> matrixData,
@@ -194,7 +187,7 @@ class ExcelXmlGenerator {
   }) async {
     await cleanOldExports();
 
-    final xmlContent = generateXml(
+    final bytes = generateExcelBytes(
       personnel: personnel,
       matrixData: matrixData,
       year: year,
@@ -203,7 +196,7 @@ class ExcelXmlGenerator {
 
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/Faaliyet_Matrisi_${year}_$month.xlsx');
-    await file.writeAsString(xmlContent);
+    await file.writeAsBytes(bytes);
 
     await SharePlus.instance.share(
       ShareParams(

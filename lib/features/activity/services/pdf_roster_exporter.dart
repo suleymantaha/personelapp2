@@ -186,7 +186,6 @@ class PdfRosterExporter {
       // Birlik merge boundaries
       final bSt = birlikStart[i];
       final bEn = birlikEnd[i];
-      final bMergeCount = bEn - bSt + 1;
       final isBFirst = i == bSt;
       final isBLast = i == bEn;
 
@@ -203,32 +202,16 @@ class PdfRosterExporter {
 
       // Determine text placement and vertical alignment inside Birlik cell
       var birlikCellText = '';
-      var birlikAlignment = pw.Alignment.center;
-
-      if (bMergeCount == 1) {
+      final bMid = bSt + (bEn - bSt) ~/ 2;
+      if (i == bMid) {
         birlikCellText = r.birligi;
-        birlikAlignment = pw.Alignment.center;
-      } else if (bMergeCount == 2) {
-        if (i == bSt) {
-          birlikCellText = r.birligi;
-          birlikAlignment = pw.Alignment.bottomCenter;
-        } else {
-          birlikCellText = '';
-          birlikAlignment = pw.Alignment.topCenter;
-        }
-      } else {
-        final bMid = bSt + (bEn - bSt) ~/ 2;
-        if (i == bMid || (bMergeCount >= 6 && i == bSt)) {
-          birlikCellText = r.birligi;
-        }
-        birlikAlignment = pw.Alignment.center;
       }
+      const birlikAlignment = pw.Alignment.center;
 
       // Special duty merge boundaries
       final spSt = specialStart[i];
       final spEn = specialEnd[i];
       final isSpecialGroup = spSt != -1;
-      final spMergeCount = isSpecialGroup ? (spEn - spSt + 1) : 1;
       final isSpFirst = isSpecialGroup && i == spSt;
       final isSpLast = isSpecialGroup && i == spEn;
 
@@ -249,24 +232,11 @@ class PdfRosterExporter {
       var specialAlignment = pw.Alignment.center;
 
       if (isSpecialGroup) {
-        if (spMergeCount == 1) {
+        final spMid = spSt + (spEn - spSt) ~/ 2;
+        if (i == spMid) {
           specialCellText = r.diger;
-          specialAlignment = pw.Alignment.center;
-        } else if (spMergeCount == 2) {
-          if (i == spSt) {
-            specialCellText = r.diger;
-            specialAlignment = pw.Alignment.bottomCenter;
-          } else {
-            specialCellText = '';
-            specialAlignment = pw.Alignment.topCenter;
-          }
-        } else {
-          final spMid = spSt + (spEn - spSt) ~/ 2;
-          if (i == spMid || (spMergeCount >= 6 && i == spSt)) {
-            specialCellText = r.diger;
-          }
-          specialAlignment = pw.Alignment.center;
         }
+        specialAlignment = pw.Alignment.center;
       } else {
         specialCellText = r.diger.trim().isEmpty ? '-' : r.diger;
         specialAlignment = r.diger.trim().isEmpty
@@ -293,7 +263,10 @@ class PdfRosterExporter {
             ),
             // BİRLİĞİ (Dynamically Merged Cell)
             pw.Container(
-              decoration: pw.BoxDecoration(border: birlikBorder),
+              decoration: pw.BoxDecoration(
+                border: birlikBorder,
+                color: PdfColors.white,
+              ),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 4,
                 horizontal: 3,
@@ -339,7 +312,10 @@ class PdfRosterExporter {
             ),
             // DİĞER (Dynamically Merged Cell for Special Duties)
             pw.Container(
-              decoration: pw.BoxDecoration(border: specialBorder),
+              decoration: pw.BoxDecoration(
+                border: specialBorder,
+                color: isSpecialGroup ? PdfColors.white : null,
+              ),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 4,
                 horizontal: 2,

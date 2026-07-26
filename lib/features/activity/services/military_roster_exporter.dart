@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
+import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:share_plus/share_plus.dart';
@@ -518,13 +518,336 @@ class MilitaryRosterExporter {
     return sb.toString();
   }
 
-  /// Exports Excel roster with UTF-8 BOM and triggers native OS share
+  /// Generates native binary .xlsx spreadsheet matching the official military daily activity duty list format
+  static List<int> generateMilitaryExcelBytes({
+    required String faaliyetAdi,
+    required String tarih,
+    required List<MilitaryRosterRow> rows,
+  }) {
+    final excel = Excel.createExcel();
+    const sheetName = 'İsim Listesi';
+    final sheet = excel[sheetName];
+    excel.setDefaultSheet(sheetName);
+    if (excel.tables.containsKey('Sheet1')) {
+      excel.delete('Sheet1');
+    }
+
+    final titleHeader = formatOfficialTitle(faaliyetAdi, tarih);
+
+    final titleStyle = CellStyle(
+      bold: true,
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 14,
+      fontColorHex: ExcelColor.fromHexString('#1B365D'),
+      backgroundColorHex: ExcelColor.fromHexString('#E8EEF5'),
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final headerStyle = CellStyle(
+      bold: true,
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 11,
+      backgroundColorHex: ExcelColor.fromHexString('#D9D9D9'),
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final cellCenterStyle = CellStyle(
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 11,
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final cellCenterBoldStyle = CellStyle(
+      bold: true,
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 11,
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final cellLeftStyle = CellStyle(
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 11,
+      horizontalAlign: HorizontalAlign.Left,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final summaryHdrStyle = CellStyle(
+      bold: true,
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 11,
+      fontColorHex: ExcelColor.fromHexString('#2D5A27'),
+      backgroundColorHex: ExcelColor.fromHexString('#F0F4EF'),
+      horizontalAlign: HorizontalAlign.Left,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    // Row 0: Title Header
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0))
+      ..value = TextCellValue(titleHeader)
+      ..cellStyle = titleStyle;
+
+    sheet.merge(
+      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0),
+      CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0),
+    );
+
+    // Row 2: Table Headers
+    final headers = ['S. NU', 'BİRLİĞİ', 'RÜTBE', 'ADI SOYADI', 'DİĞER'];
+    for (var c = 0; c < headers.length; c++) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: c, rowIndex: 2))
+        ..value = TextCellValue(headers[c])
+        ..cellStyle = headerStyle;
+    }
+
+    var currentRow = 3;
+    var i = 0;
+    final n = rows.length;
+
+    while (i < n) {
+      final currentBirlik = rows[i].birligi;
+      final currentGroup = rows[i].groupCode;
+      final isSpecialGroup =
+          currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
+
+      var mergeCount = 0;
+      while (i + mergeCount + 1 < n &&
+          rows[i + mergeCount + 1].birligi == currentBirlik &&
+          rows[i + mergeCount + 1].groupCode == currentGroup) {
+        mergeCount++;
+      }
+
+      final startRowIndex = currentRow;
+
+      for (var j = 0; j <= mergeCount; j++) {
+        final r = rows[i + j];
+        final rIndex = startRowIndex + j;
+
+        // Col 0: S. NU
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rIndex))
+          ..value = IntCellValue(r.sNu)
+          ..cellStyle = cellCenterStyle;
+
+        // Col 1: BİRLİĞİ
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rIndex))
+          ..value = TextCellValue(r.birligi)
+          ..cellStyle = cellCenterBoldStyle;
+
+        // Col 2: RÜTBE
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rIndex))
+          ..value = TextCellValue(r.rutbe)
+          ..cellStyle = cellCenterStyle;
+
+        // Col 3: ADI SOYADI
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: rIndex))
+          ..value = TextCellValue(r.adSoyad)
+          ..cellStyle = cellLeftStyle;
+
+        // Col 4: DİĞER
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: rIndex))
+          ..value = TextCellValue(r.diger)
+          ..cellStyle = isSpecialGroup ? cellCenterBoldStyle : cellLeftStyle;
+      }
+
+      if (mergeCount > 0) {
+        sheet.merge(
+          CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: startRowIndex),
+          CellIndex.indexByColumnRow(
+            columnIndex: 1,
+            rowIndex: startRowIndex + mergeCount,
+          ),
+        );
+
+        if (isSpecialGroup) {
+          sheet.merge(
+            CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: startRowIndex),
+            CellIndex.indexByColumnRow(
+              columnIndex: 4,
+              rowIndex: startRowIndex + mergeCount,
+            ),
+          );
+        }
+      }
+
+      currentRow += mergeCount + 1;
+      i += mergeCount + 1;
+    }
+
+    // Summary Section
+    currentRow += 1;
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
+      ..value = TextCellValue('GÖREV VE MEVCUT ÖZETİ')
+      ..cellStyle = summaryHdrStyle;
+    sheet.merge(
+      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+      CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
+    );
+    currentRow++;
+
+    final ranks = rows.map((r) => r.rutbe).toList();
+    final counts = RankSummaryCounts.calculate(ranks);
+
+    final summaryItems = [
+      if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
+      if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
+      if (counts.uzmanJandarmaCount > 0)
+        'Uzman Jandarma: ${counts.uzmanJandarmaCount}',
+      if (counts.uzmanErbasCount > 0) 'Uzman Erbaş: ${counts.uzmanErbasCount}',
+      if (counts.erCount > 0) 'Er / Erbaş: ${counts.erCount}',
+      'TOPLAM MEVCUT: ${counts.totalCount}',
+    ];
+
+    for (final item in summaryItems) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
+        ..value = TextCellValue(item)
+        ..cellStyle = cellLeftStyle;
+      sheet.merge(
+        CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+        CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
+      );
+      currentRow++;
+    }
+
+    sheet
+      ..setColumnWidth(0, 10)
+      ..setColumnWidth(1, 22)
+      ..setColumnWidth(2, 18)
+      ..setColumnWidth(3, 30)
+      ..setColumnWidth(4, 25);
+
+    return excel.encode()!;
+  }
+
+  /// Generates native binary .xlsx spreadsheet for all daily activities combined
+  static List<int> generateMasterDailyExcelBytes({
+    required String title,
+    required List<MasterActivityData> activities,
+  }) {
+    final excel = Excel.createExcel();
+    const sheetName = 'Tüm Faaliyetler';
+    final sheet = excel[sheetName];
+    excel.setDefaultSheet(sheetName);
+    if (excel.tables.containsKey('Sheet1')) {
+      excel.delete('Sheet1');
+    }
+
+    final titleStyle = CellStyle(
+      bold: true,
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 14,
+      fontColorHex: ExcelColor.fromHexString('#1B365D'),
+      backgroundColorHex: ExcelColor.fromHexString('#E8EEF5'),
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final sectionHeaderStyle = CellStyle(
+      bold: true,
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 12,
+      fontColorHex: ExcelColor.fromHexString('#2D5A27'),
+      backgroundColorHex: ExcelColor.fromHexString('#E2EFCB'),
+      horizontalAlign: HorizontalAlign.Left,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final headerStyle = CellStyle(
+      bold: true,
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 11,
+      backgroundColorHex: ExcelColor.fromHexString('#D9D9D9'),
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final cellCenterStyle = CellStyle(
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 11,
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    final cellLeftStyle = CellStyle(
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 11,
+      horizontalAlign: HorizontalAlign.Left,
+      verticalAlign: VerticalAlign.Center,
+    );
+
+    var currentRow = 0;
+
+    // Main Title
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
+      ..value = TextCellValue(title)
+      ..cellStyle = titleStyle;
+    sheet.merge(
+      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+      CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
+    );
+    currentRow++;
+
+    final headers = ['S. NU', 'BİRLİĞİ', 'RÜTBE', 'ADI SOYADI', 'DİĞER'];
+
+    for (final act in activities) {
+      currentRow++; // Spacing
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
+        ..value = TextCellValue(
+          '${act.faaliyetAdi.toUpperCase()} (${act.tarih})',
+        )
+        ..cellStyle = sectionHeaderStyle;
+      sheet.merge(
+        CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+        CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
+      );
+      currentRow++;
+
+      for (var c = 0; c < headers.length; c++) {
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: c, rowIndex: currentRow))
+          ..value = TextCellValue(headers[c])
+          ..cellStyle = headerStyle;
+      }
+      currentRow++;
+
+      for (final r in act.rows) {
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
+          ..value = IntCellValue(r.sNu)
+          ..cellStyle = cellCenterStyle;
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow))
+          ..value = TextCellValue(r.birligi)
+          ..cellStyle = cellCenterStyle;
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow))
+          ..value = TextCellValue(r.rutbe)
+          ..cellStyle = cellCenterStyle;
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow))
+          ..value = TextCellValue(r.adSoyad)
+          ..cellStyle = cellLeftStyle;
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow))
+          ..value = TextCellValue(r.diger)
+          ..cellStyle = cellLeftStyle;
+        currentRow++;
+      }
+    }
+
+    sheet
+      ..setColumnWidth(0, 10)
+      ..setColumnWidth(1, 22)
+      ..setColumnWidth(2, 18)
+      ..setColumnWidth(3, 30)
+      ..setColumnWidth(4, 25);
+
+    return excel.encode()!;
+  }
+
+  /// Exports Excel roster with native binary .xlsx and triggers OS share
   static Future<void> shareExcelRoster({
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
   }) async {
-    final htmlContent = generateMilitaryHtmlExcel(
+    final bytes = generateMilitaryExcelBytes(
       faaliyetAdi: faaliyetAdi,
       tarih: tarih,
       rows: rows,
@@ -533,9 +856,6 @@ class MilitaryRosterExporter {
     final dir = await getTemporaryDirectory();
     final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
     final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.xlsx');
-
-    // Write UTF-8 BOM byte sequence [0xEF, 0xBB, 0xBF] followed by HTML bytes
-    final bytes = <int>[0xEF, 0xBB, 0xBF, ...utf8.encode(htmlContent)];
     await file.writeAsBytes(bytes);
 
     await SharePlus.instance.share(
@@ -552,7 +872,7 @@ class MilitaryRosterExporter {
     required String tarih,
     required List<MilitaryRosterRow> rows,
   }) async {
-    final htmlContent = generateMilitaryHtmlExcel(
+    final bytes = generateMilitaryExcelBytes(
       faaliyetAdi: faaliyetAdi,
       tarih: tarih,
       rows: rows,
@@ -584,7 +904,6 @@ class MilitaryRosterExporter {
     }
 
     final file = File('${targetDir.path}/$fileName');
-    final bytes = <int>[0xEF, 0xBB, 0xBF, ...utf8.encode(htmlContent)];
     await file.writeAsBytes(bytes);
     return file;
   }
@@ -595,14 +914,13 @@ class MilitaryRosterExporter {
     required String dateStr,
     required List<MasterActivityData> activities,
   }) async {
-    final xmlContent = generateMasterDailyXml(
+    final bytes = generateMasterDailyExcelBytes(
       title: title,
       activities: activities,
     );
 
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/Gunluk_Tum_Faaliyetler_$dateStr.xlsx');
-    final bytes = <int>[0xEF, 0xBB, 0xBF, ...utf8.encode(xmlContent)];
     await file.writeAsBytes(bytes);
 
     await SharePlus.instance.share(

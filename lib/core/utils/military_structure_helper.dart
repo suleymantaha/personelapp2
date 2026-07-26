@@ -53,8 +53,97 @@ class MilitaryStructureHelper {
     return timOrBirlik.isNotEmpty ? timOrBirlik : 'Asayiş Timi';
   }
 
+  /// Checks if a duty string represents a guard duty (Nöbetçiler / Nöbetçi Heyeti)
+  static bool isNobetciHeyetiDuty(String duty) {
+    final d = duty.toUpperCase().trim();
+    if (d.contains('HAZIR KITA') || d.contains('GÜLÜŞKÜR') || d.contains('GULUSKUR')) {
+      return false;
+    }
+    return d.contains('NÖB') ||
+        d.contains('NÖBET') ||
+        d.contains('NOBET') ||
+        d.contains('HEYBET KOMUTANI');
+  }
+
+  /// Maps raw squad/tim or birlik text to its official standardized Jandarma squad name
+  static String getOfficialBirlikName(String timOrBirlik, {String? duty}) {
+    if (duty != null && isNobetciHeyetiDuty(duty)) {
+      return 'Nöbet Heyeti';
+    }
+
+    final s = timOrBirlik.trim();
+    if (s.isEmpty) return 'K.H';
+
+    final upper = s.toUpperCase();
+
+    // 0. Check Nöbet Heyeti directly
+    if (upper.contains('NÖBET HEYETİ') || upper.contains('NOBET HEYETI')) {
+      return 'Nöbet Heyeti';
+    }
+
+    // 1. Direct exact match check
+    for (final official in officialSquadOrder) {
+      if (official.toLowerCase() == s.toLowerCase()) {
+        return official;
+      }
+    }
+
+    // 2. Specific Company Headquarters (Bölük K.H)
+    if (upper.contains("1'İNCİ BL. K.H") ||
+        upper.contains("1'İNCİ BÖLÜK K.H") ||
+        upper.contains('1. BL. K.H') ||
+        upper.contains('1. BL K.H') ||
+        upper.contains('1. BÖLÜK K.H') ||
+        upper.contains('1.BL.K.H')) {
+      return "1'inci Bl. K.H";
+    }
+    if (upper.contains("2'NCİ BL. K.H") ||
+        upper.contains("2'NCİ BÖLÜK K.H") ||
+        upper.contains('2. BL. K.H') ||
+        upper.contains('2. BL K.H') ||
+        upper.contains('2. BÖLÜK K.H') ||
+        upper.contains('2.BL.K.H')) {
+      return "2'nci Bl. K.H";
+    }
+    if (upper.contains("3'ÜNCÜ BL. K.H") ||
+        upper.contains("3'ÜNCÜ BÖLÜK K.H") ||
+        upper.contains('3. BL. K.H') ||
+        upper.contains('3. BL K.H') ||
+        upper.contains('3. BÖLÜK K.H') ||
+        upper.contains('3.BL.K.H')) {
+      return "3'üncü Bl. K.H";
+    }
+
+    // 3. Main Battalion Headquarters / Karargah / K.H Birliği -> 'K.H'
+    if (upper.contains('K.H') ||
+        upper.contains('KH') ||
+        upper.contains('KARARGAH')) {
+      return 'K.H';
+    }
+
+    // 4. Tim matches (1-B through 12-B)
+    for (var i = 1; i <= 12; i++) {
+      if (upper.contains('$i-B') ||
+          upper.contains('$i. TİM') ||
+          upper.contains('$i.TIM') ||
+          upper.contains('$i TİM')) {
+        return '$i-B Timi';
+      }
+    }
+
+    // 5. Exact match fallback with officialSquadOrder
+    for (final official in officialSquadOrder) {
+      if (official.toLowerCase() == s.toLowerCase()) {
+        return official;
+      }
+    }
+
+    return timOrBirlik;
+  }
+
   /// Official Jandarma Squad/Tim ordering
   static const List<String> officialSquadOrder = [
+    'Nöbet Heyeti',
     'K.H',
     "1'inci Bl. K.H",
     '1-B Timi',
@@ -74,14 +163,14 @@ class MilitaryStructureHelper {
   ];
 
   /// Returns weight/index for sorting squads according to official military order
-  static int getSquadOrderWeight(String squadName) {
-    final s = squadName.trim();
-    final idx = officialSquadOrder.indexOf(s);
+  static int getSquadOrderWeight(String squadName, {String? duty}) {
+    final officialName = getOfficialBirlikName(squadName, duty: duty);
+    final idx = officialSquadOrder.indexOf(officialName);
     if (idx != -1) return idx;
 
-    // Case-insensitive match fallback
+    // Fallback search
     for (var i = 0; i < officialSquadOrder.length; i++) {
-      if (officialSquadOrder[i].toLowerCase() == s.toLowerCase()) {
+      if (officialSquadOrder[i].toLowerCase() == squadName.trim().toLowerCase()) {
         return i;
       }
     }

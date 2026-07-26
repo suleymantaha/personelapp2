@@ -45,19 +45,29 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         db.faaliyetPersonelAtamaTable,
       )..where((tbl) => tbl.faaliyetId.equals(act.id))).get();
 
+      final filtered = assignments.where((a) => DutyOrLeaveType.isOperationalDuty(a.gorevVeyaIzin)).toList()
+        ..sort((a, b) {
+          final pA = pMap[a.personelId];
+          final pB = pMap[b.personelId];
+          final wA = MilitaryStructureHelper.getSquadOrderWeight(pA?.birlik ?? '', duty: a.gorevVeyaIzin);
+          final wB = MilitaryStructureHelper.getSquadOrderWeight(pB?.birlik ?? '', duty: b.gorevVeyaIzin);
+          if (wA != wB) return wA.compareTo(wB);
+
+          final rA = getRankWeight(pA?.rutbe ?? '');
+          final rB = getRankWeight(pB?.rutbe ?? '');
+          if (rA != rB) return rA.compareTo(rB);
+
+          return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
+        });
+
       final rosterRows = <MilitaryRosterRow>[];
       var sNuCounter = 1;
-      for (var i = 0; i < assignments.length; i++) {
-        final atama = assignments[i];
-        // Exclude off-duty statuses (İzinli, İstirahatli, Raporlu, Sevk) from shared roster
-        if (!DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin)) {
-          continue;
-        }
-
+      for (var i = 0; i < filtered.length; i++) {
+        final atama = filtered[i];
         final p = pMap[atama.personelId];
         final rutbe = p?.rutbe ?? '';
         final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
-        final birligi = p?.birlik ?? 'Birlik';
+        final birligi = MilitaryStructureHelper.getOfficialBirlikName(p?.birlik ?? '', duty: atama.gorevVeyaIzin);
         final digerNote = atama.aciklama ?? atama.gorevVeyaIzin;
 
         rosterRows.add(
@@ -644,7 +654,7 @@ class _AssignmentDetails extends ConsumerWidget {
           final pA = pMap[a.personelId];
           final pB = pMap[b.personelId];
 
-          // 2. Group by Bölük (1'inci Bl. -> 2'nci Bl. -> 3'üncü Bl. -> K.H)
+          // 2. Group by official squad order ('K.H' -> "1'inci Bl. K.H" -> '1-B Timi' ... '12-B Timi')
           final timNameA =
               (pA?.timId != null && squadMap.containsKey(pA!.timId))
               ? squadMap[pA.timId]!
@@ -659,9 +669,10 @@ class _AssignmentDetails extends ConsumerWidget {
           final rawBirlikB = (pB?.birlik != null && pB!.birlik.isNotEmpty)
               ? pB.birlik
               : timNameB;
-          final birlikA = MilitaryStructureHelper.getBolukName(rawBirlikA);
-          final birlikB = MilitaryStructureHelper.getBolukName(rawBirlikB);
-          if (birlikA != birlikB) return birlikA.compareTo(birlikB);
+
+          final wBirlikA = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikA, duty: a.gorevVeyaIzin);
+          final wBirlikB = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikB, duty: b.gorevVeyaIzin);
+          if (wBirlikA != wBirlikB) return wBirlikA.compareTo(wBirlikB);
 
           // 3. Sort strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
           final weightA = getRankWeight(pA?.rutbe ?? '');
@@ -678,13 +689,17 @@ class _AssignmentDetails extends ConsumerWidget {
       final p = pMap[atama.personelId];
       final rutbe = p?.rutbe ?? '';
       final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
+      final timName =
+          (p?.timId != null && squadMap.containsKey(p!.timId))
+          ? squadMap[p.timId]!
+          : '';
       final rawBirlik = (p?.birlik != null && p!.birlik.isNotEmpty)
           ? p.birlik
-          : '';
-      final officialBirlik = MilitaryStructureHelper.getBolukName(rawBirlik);
+          : timName;
+      final officialBirlik = MilitaryStructureHelper.getOfficialBirlikName(rawBirlik, duty: atama.gorevVeyaIzin);
 
       var groupCode = 'DIGER';
-      var digerText = '';
+      var digerText = atama.aciklama ?? atama.gorevVeyaIzin;
       final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
       if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
         groupCode = 'HAZIR_KITA';
