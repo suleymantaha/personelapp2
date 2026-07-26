@@ -7,6 +7,7 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -403,6 +404,24 @@ class DashboardScreen extends ConsumerWidget {
                     onTap: () => context.push('/personnel-management'),
                   ),
                   if (isAdmin) ...[
+                    _MenuCard(
+                      icon: Icons.paste_rounded,
+                      title: 'Metinden Toplu Aktar',
+                      subtitle: 'WhatsApp / Liste Yükle',
+                      color: Colors.blue.shade700,
+                      onTap: () async {
+                        final db = ref.read(databaseProvider);
+                        final activityRepo = ref.read(activityRepositoryProvider);
+                        await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => BulkImportDialog(
+                            database: db,
+                            activityRepository: activityRepo,
+                          ),
+                        );
+                        ref.invalidate(activityRepositoryProvider);
+                      },
+                    ),
                     _MenuCard(
                       icon: Icons.group_add,
                       title: 'Yeni Tim Ekle',
