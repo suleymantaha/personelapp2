@@ -200,10 +200,6 @@ class PdfRosterExporter {
       }
     }
 
-    const cellBorder = pw.Border(
-      bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-    );
-
     for (var i = 0; i < n; i++) {
       final r = rows[i];
       final isEven = i.isEven;
@@ -212,13 +208,7 @@ class PdfRosterExporter {
       // Birlik merge boundaries
       final bSt = birlikStart[i];
       final bEn = birlikEnd[i];
-      final isBLast = i == bEn;
-
-      final birlikBorder = isBLast
-          ? const pw.Border(
-              bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-            )
-          : const pw.Border();
+      final isBInside = i < bEn;
 
       // Determine text placement inside Birlik cell
       var birlikCellText = '';
@@ -232,15 +222,7 @@ class PdfRosterExporter {
       final spSt = specialStart[i];
       final spEn = specialEnd[i];
       final isSpecialGroup = spSt != -1;
-      final isSpLast = isSpecialGroup && i == spEn;
-
-      final specialBorder = isSpecialGroup
-          ? (isSpLast
-                ? const pw.Border(
-                    bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-                  )
-                : const pw.Border())
-          : cellBorder;
+      final isSpInside = isSpecialGroup && i < spEn;
 
       var specialCellText = '';
       var specialAlignment = pw.Alignment.center;
@@ -265,7 +247,6 @@ class PdfRosterExporter {
             // S. NU
             pw.Container(
               height: 18,
-              decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
                 horizontal: 2,
@@ -276,13 +257,12 @@ class PdfRosterExporter {
                 style: const pw.TextStyle(fontSize: 8.5),
               ),
             ),
-            // BİRLİĞİ (Dynamically Merged Cell)
+            // BİRLİĞİ (Dynamically Merged Cell - white cover hides inner horizontal gridlines)
             pw.Container(
               height: 18,
-              decoration: pw.BoxDecoration(
-                border: birlikBorder,
-                color: PdfColors.white,
-              ),
+              decoration: isBInside
+                  ? const pw.BoxDecoration(color: PdfColors.white)
+                  : null,
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
                 horizontal: 3,
@@ -300,7 +280,6 @@ class PdfRosterExporter {
             // RÜTBE
             pw.Container(
               height: 18,
-              decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
                 horizontal: 2,
@@ -314,7 +293,6 @@ class PdfRosterExporter {
             // ADI SOYADI
             pw.Container(
               height: 18,
-              decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
                 horizontal: 4,
@@ -332,10 +310,9 @@ class PdfRosterExporter {
             // DİĞER (Dynamically Merged Cell for Special Duties)
             pw.Container(
               height: 18,
-              decoration: pw.BoxDecoration(
-                border: specialBorder,
-                color: isSpecialGroup ? PdfColors.white : null,
-              ),
+              decoration: isSpInside
+                  ? const pw.BoxDecoration(color: PdfColors.white)
+                  : null,
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
                 horizontal: 2,
@@ -362,11 +339,12 @@ class PdfRosterExporter {
 
     return pw.Table(
       border: const pw.TableBorder(
-        left: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-        right: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-        top: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-        bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-        verticalInside: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+        left: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
+        right: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
+        top: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
+        bottom: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
+        verticalInside: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
+        horizontalInside: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
       ),
       columnWidths: const {
         0: pw.FlexColumnWidth(0.8), // S. NU
