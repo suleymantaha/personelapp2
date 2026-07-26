@@ -877,29 +877,30 @@ class MilitaryRosterExporter {
     return excel.encode()!;
   }
 
-  /// Exports Excel roster with native binary .xlsx and triggers OS share
-  static Future<void> shareExcelRoster({
+  /// Exports Excel roster directly to public Downloads folder and triggers OS share
+  static Future<File> shareExcelRoster({
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
   }) async {
-    final bytes = generateMilitaryExcelBytes(
+    final file = await saveExcelToDevice(
       faaliyetAdi: faaliyetAdi,
       tarih: tarih,
       rows: rows,
     );
 
-    final dir = await getTemporaryDirectory();
-    final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-    final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.xlsx');
-    await file.writeAsBytes(bytes);
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: '$faaliyetAdi - Resmi İsim Listesi Excel Dökümanı',
+        ),
+      );
+    } on Exception catch (_) {
+      // Fallback
+    }
 
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path)],
-        text: '$faaliyetAdi - Resmi İsim Listesi Excel Dökümanı',
-      ),
-    );
+    return file;
   }
 
   /// Saves Excel file directly to the device's public Downloads / Storage folder

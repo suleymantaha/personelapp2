@@ -480,8 +480,8 @@ class PdfRosterExporter {
     return pdf;
   }
 
-  /// Exports PDF file and triggers OS share dialog
-  static Future<void> sharePdfRoster({
+  /// Saves PDF file directly to public Downloads folder (PC Downloads or Phone Downloads)
+  static Future<File> savePdfToDevice({
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
@@ -494,17 +494,61 @@ class PdfRosterExporter {
       style: style,
     );
 
-    final dir = await getTemporaryDirectory();
     final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-    final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.pdf');
-    await file.writeAsBytes(await pdf.save());
+    final fileName = '${sanitizedTitle}_Listesi_$tarih.pdf';
 
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path)],
-        text: '$faaliyetAdi - Resmi İsim Listesi PDF Dökümanı',
-      ),
+    Directory targetDir;
+    if (Platform.isAndroid) {
+      targetDir = Directory('/storage/emulated/0/Download');
+      if (!targetDir.existsSync()) {
+        targetDir = await getApplicationDocumentsDirectory();
+      }
+    } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      final userHome = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
+      if (userHome != null) {
+        targetDir = Directory('$userHome/Downloads');
+      } else {
+        targetDir = await getApplicationDocumentsDirectory();
+      }
+    } else {
+      targetDir = await getApplicationDocumentsDirectory();
+    }
+
+    if (!targetDir.existsSync()) {
+      await targetDir.create(recursive: true);
+    }
+
+    final file = File('${targetDir.path}/$fileName');
+    await file.writeAsBytes(await pdf.save());
+    return file;
+  }
+
+  /// Exports PDF file directly to public Downloads folder and triggers OS share dialog
+  static Future<File> sharePdfRoster({
+    required String faaliyetAdi,
+    required String tarih,
+    required List<MilitaryRosterRow> rows,
+    PdfRosterStyle style = PdfRosterStyle.verticalBlock,
+  }) async {
+    final file = await savePdfToDevice(
+      faaliyetAdi: faaliyetAdi,
+      tarih: tarih,
+      rows: rows,
+      style: style,
     );
+
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: '$faaliyetAdi - Resmi İsim Listesi PDF Dökümanı',
+        ),
+      );
+    } on Exception catch (_) {
+      // Fallback
+    }
+
+    return file;
   }
 
   /// Displays a modal bottom sheet to select from 3 PDF styles and exports/shares the PDF
@@ -577,12 +621,21 @@ class PdfRosterExporter {
     );
 
     if (selectedStyle != null && context.mounted) {
-      await sharePdfRoster(
+      final savedFile = await sharePdfRoster(
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
         rows: rows,
         style: selectedStyle,
       );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ PDF İndirilenler klasörüne kaydedildi:\n${savedFile.path}'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
     }
   }
 }
