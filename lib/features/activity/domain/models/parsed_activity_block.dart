@@ -1,12 +1,4 @@
-class ParsedPersonnelItem {
-  final int rawIndex;
-  final String rawRank;
-  final String rawName;
-  final int? matchedPersonnelId;
-  final String? matchedAdSoyad;
-  final String? matchedRutbe;
-  final int? matchedTimId;
-  final double matchConfidence; // 1.0: exact, 0.7-0.9: fuzzy, 0.0: none
+class ParsedPersonnelItem { // 1.0: exact, 0.7-0.9: fuzzy, 0.0: none
 
   ParsedPersonnelItem({
     required this.rawIndex,
@@ -18,6 +10,14 @@ class ParsedPersonnelItem {
     this.matchedTimId,
     this.matchConfidence = 0.0,
   });
+  final int rawIndex;
+  final String rawRank;
+  final String rawName;
+  final int? matchedPersonnelId;
+  final String? matchedAdSoyad;
+  final String? matchedRutbe;
+  final int? matchedTimId;
+  final double matchConfidence;
 
   bool get isMatched => matchedPersonnelId != null;
 
@@ -45,21 +45,20 @@ class ParsedPersonnelItem {
 }
 
 class ParsedActivityBlock {
-  final String rawTitle;
-  final String parsedTimName; // e.g. "6/B"
-  final String parsedActivityType; // e.g. "Gülüşkür", "Hazır Kıta", "Heybet", "İhtiyat"
-  final String parsedDate; // YYYY-AA-DD
-  final String? parsedTimeRange; // e.g. "08:00 - 19:30"
-  final List<ParsedPersonnelItem> personnelList;
 
   ParsedActivityBlock({
     required this.rawTitle,
     required this.parsedTimName,
     required this.parsedActivityType,
     required this.parsedDate,
-    this.parsedTimeRange,
-    required this.personnelList,
+    required this.personnelList, this.parsedTimeRange,
   });
+  final String rawTitle;
+  final String parsedTimName; // e.g. "6/B"
+  final String parsedActivityType; // e.g. "Gülüşkür", "Hazır Kıta", "Heybet", "İhtiyat"
+  final String parsedDate; // YYYY-AA-DD
+  final String? parsedTimeRange; // e.g. "08:00 - 19:30"
+  final List<ParsedPersonnelItem> personnelList;
 
   ParsedActivityBlock copyWith({
     String? rawTitle,

@@ -85,12 +85,16 @@ class ExcelXmlGenerator {
       ..cellStyle = headerStyle;
 
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0))
-      ..value = TextCellValue('Rütbesi ve Adı Soyadı')
+      ..value = TextCellValue('Rütbesi')
+      ..cellStyle = headerStyle;
+
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0))
+      ..value = TextCellValue('Adı Soyadı')
       ..cellStyle = headerStyle;
 
     final daysInMonth = DateTime(year, month + 1, 0).day;
     for (var day = 1; day <= daysInMonth; day++) {
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: day + 1, rowIndex: 0))
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: day + 2, rowIndex: 0))
         ..value = IntCellValue(day)
         ..cellStyle = headerStyle;
     }
@@ -105,7 +109,11 @@ class ExcelXmlGenerator {
         ..cellStyle = cellNormalStyle;
 
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex))
-        ..value = TextCellValue('${p.rutbe} ${p.adSoyad}')
+        ..value = TextCellValue(p.rutbe)
+        ..cellStyle = cellNormalStyle;
+
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex))
+        ..value = TextCellValue(p.adSoyad)
         ..cellStyle = cellNormalStyle;
 
       final pStatusMap = matrixData[p.id] ?? {};
@@ -142,7 +150,7 @@ class ExcelXmlGenerator {
 
         sheet
             .cell(CellIndex.indexByColumnRow(
-                columnIndex: day + 1, rowIndex: rowIndex))
+                columnIndex: day + 2, rowIndex: rowIndex))
           ..value = TextCellValue(cellText)
           ..cellStyle = styleToUse;
       }
@@ -150,9 +158,10 @@ class ExcelXmlGenerator {
 
     sheet
       ..setColumnWidth(0, 8)
-      ..setColumnWidth(1, 28);
+      ..setColumnWidth(1, 16)
+      ..setColumnWidth(2, 24);
     for (var day = 1; day <= daysInMonth; day++) {
-      sheet.setColumnWidth(day + 1, 5);
+      sheet.setColumnWidth(day + 2, 5);
     }
 
     final encoded = excel.encode();

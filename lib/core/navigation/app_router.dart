@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/presentation/activity_archive_screen.dart';
 import 'package:personelapp2/features/activity/presentation/activity_form_screen.dart';
 import 'package:personelapp2/features/activity/presentation/pending_approvals_screen.dart';
@@ -9,15 +10,37 @@ import 'package:personelapp2/features/matrix/presentation/monthly_matrix_screen.
 import 'package:personelapp2/features/personnel/presentation/personnel_management_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  return createAppRouter();
+  final session = ref.watch(userSessionProvider);
+  return createAppRouter(session: session);
 });
 
-GoRouter createAppRouter({bool hasActiveSession = false}) {
+GoRouter createAppRouter({UserSessionState? session}) {
+  const loginRoute = '/login';
+  const adminOnlyRoutes = <String>{'/pending-approvals'};
+
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: loginRoute,
+    redirect: (context, state) {
+      final location = state.matchedLocation;
+      final hasSession = session != null;
+
+      if (!hasSession && location != loginRoute) {
+        return loginRoute;
+      }
+
+      if (hasSession && location == loginRoute) {
+        return '/dashboard';
+      }
+
+      if (adminOnlyRoutes.contains(location) && session?.isAdmin != true) {
+        return '/dashboard';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
-        path: '/login',
+        path: loginRoute,
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(

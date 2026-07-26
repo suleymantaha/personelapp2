@@ -51,7 +51,7 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
     }
 
     final repo = ref.read(activityRepositoryProvider);
-    final isCommander = !(userSession?.isAdmin ?? true);
+    final isCommander = userSession?.isAdmin != true;
 
     await repo.createActivityWithAssignments(
       faaliyetAdi: name,
@@ -80,7 +80,7 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(userSessionProvider);
-    final isAdmin = session?.isAdmin ?? true;
+    final isAdmin = session?.isAdmin ?? false;
 
     final personnelAsync = ref.watch(allPersonnelProvider);
     final squadsAsync = ref.watch(allSquadsProvider);
@@ -128,7 +128,7 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                   );
                   if (result == true) {
                     ref.invalidate(activityRepositoryProvider);
-                    if (mounted) {
+                    if (context.mounted) {
                       Navigator.pop(context);
                     }
                   }
@@ -138,7 +138,10 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade700,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),

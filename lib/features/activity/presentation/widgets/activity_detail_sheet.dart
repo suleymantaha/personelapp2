@@ -27,12 +27,23 @@ class ActivityAssignmentDetails extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(userSessionProvider);
-    final isAdmin = session?.isAdmin ?? true;
+    final isAdmin = session?.isAdmin ?? false;
     final allPersonnelAsync = ref.watch(allPersonnelProvider);
     final personnelList = allPersonnelAsync.value ?? [];
     final pMap = {for (final p in personnelList) p.id: p};
 
     var filteredAssignments = assignments;
+    if (!isAdmin) {
+      if (session?.timId == null) {
+        filteredAssignments = const <FaaliyetPersonelAtamaTableData>[];
+      } else {
+        filteredAssignments = filteredAssignments.where((a) {
+          final person = pMap[a.personelId];
+          return person?.timId == session!.timId;
+        }).toList();
+      }
+    }
+
     if (selectedSquadId != null) {
       filteredAssignments = filteredAssignments.where((a) {
         final p = pMap[a.personelId];
@@ -40,7 +51,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
       }).toList();
     }
 
-    final existingPersonnelIds = assignments.map((a) => a.personelId).toSet();
+    final existingPersonnelIds = filteredAssignments
+        .map((a) => a.personelId)
+        .toSet();
     final allSquadsAsync = ref.watch(allSquadsProvider);
     final squadsList = allSquadsAsync.value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
@@ -150,43 +163,49 @@ class ActivityAssignmentDetails extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextButton.icon(
-                style: TextButton.styleFrom(
-                  foregroundColor: context.accentOrOlive,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                icon: const Icon(Icons.person_add_alt_1, size: 16),
-                label: const Text(
-                  '+ Personel Ekle',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                ),
-                onPressed: () async {
-                  final added = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AddPersonnelToActivityDialog(
-                      activity: activity,
-                      isAdmin: isAdmin,
-                      existingPersonnelIds: existingPersonnelIds,
+              if (isAdmin)
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: context.accentOrOlive,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
                     ),
-                  );
-                  if (added == true && context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          isAdmin
-                              ? 'Personel faaliyete eklendi.'
-                              : 'Personel eklendi, Admin onayına gönderildi.',
-                        ),
-                        backgroundColor: isAdmin
-                            ? context.approvedColor
-                            : context.pendingColor,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  icon: const Icon(Icons.person_add_alt_1, size: 16),
+                  label: const Text(
+                    '+ Personel Ekle',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                  onPressed: () async {
+                    final added = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AddPersonnelToActivityDialog(
+                        activity: activity,
+                        isAdmin: isAdmin,
+                        existingPersonnelIds: existingPersonnelIds,
                       ),
                     );
-                  }
-                },
-              ),
+                    if (added == true && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isAdmin
+                                ? 'Personel faaliyete eklendi.'
+                                : 'Personel eklendi, Admin onayına gönderildi.',
+                          ),
+                          backgroundColor: isAdmin
+                              ? context.approvedColor
+                              : context.pendingColor,
+                        ),
+                      );
+                    }
+                  },
+                )
+              else
+                const SizedBox.shrink(),
               PopupMenuButton<String>(
                 icon: Icon(
                   Icons.more_horiz,
@@ -299,7 +318,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                   color: context.colorScheme.surface,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: context.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                    color: context.colorScheme.outlineVariant.withValues(
+                      alpha: 0.3,
+                    ),
                   ),
                 ),
                 child: Row(
@@ -369,88 +390,90 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 2),
-                    IconButton(
-                      icon: Icon(
-                        Icons.edit_outlined,
-                        color: context.blueGreyColor,
-                        size: 18,
-                      ),
-                      padding: const EdgeInsets.all(4),
-                      constraints: const BoxConstraints(),
-                      tooltip: 'Düzenle',
-                      onPressed: () async {
-                        final updated = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => EditAssignmentDialog(
-                            assignment: atama,
-                            personnelName: displayName,
-                            isAdmin: isAdmin,
-                          ),
-                        );
-                        if (updated == true && context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                isAdmin
-                                    ? 'Görev güncellendi.'
-                                    : 'Görev değişikliği kaydedildi, Admin onayına gönderildi.',
-                              ),
-                              backgroundColor: isAdmin
-                                  ? context.approvedColor
-                                  : context.pendingColor,
+                    if (isAdmin)
+                      IconButton(
+                        icon: Icon(
+                          Icons.edit_outlined,
+                          color: context.blueGreyColor,
+                          size: 18,
+                        ),
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(),
+                        tooltip: 'Düzenle',
+                        onPressed: () async {
+                          final updated = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => EditAssignmentDialog(
+                              assignment: atama,
+                              personnelName: displayName,
+                              isAdmin: isAdmin,
                             ),
                           );
-                        }
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.delete_outline,
-                        color: context.rejectedColor,
-                        size: 18,
-                      ),
-                      padding: const EdgeInsets.all(4),
-                      constraints: const BoxConstraints(),
-                      tooltip: 'Çıkar',
-                      onPressed: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: const Text('Personeli Görevden Çıkar'),
-                            content: Text(
-                              '$displayName adlı personel ${activity.faaliyetAdi} faaliyetinden çıkarılacaktır. Emin misiniz?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(ctx).pop(false),
-                                child: const Text('İPTAL'),
-                              ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: context.rejectedColor,
-                                ),
-                                onPressed: () => Navigator.of(ctx).pop(true),
-                                child: const Text('ÇIKAR'),
-                              ),
-                            ],
-                          ),
-                        );
-
-                        if (confirm == true) {
-                          final repo = ref.read(activityRepositoryProvider);
-                          await repo.deleteAssignment(atama.id);
-                          if (context.mounted) {
+                          if (updated == true && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  '$displayName faaliyetten çıkarıldı.',
+                                  isAdmin
+                                      ? 'Görev güncellendi.'
+                                      : 'Görev değişikliği kaydedildi, Admin onayına gönderildi.',
                                 ),
+                                backgroundColor: isAdmin
+                                    ? context.approvedColor
+                                    : context.pendingColor,
                               ),
                             );
                           }
-                        }
-                      },
-                    ),
+                        },
+                      ),
+                    if (isAdmin)
+                      IconButton(
+                        icon: Icon(
+                          Icons.delete_outline,
+                          color: context.rejectedColor,
+                          size: 18,
+                        ),
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(),
+                        tooltip: 'Çıkar',
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Personeli Görevden Çıkar'),
+                              content: Text(
+                                '$displayName adlı personel ${activity.faaliyetAdi} faaliyetinden çıkarılacaktır. Emin misiniz?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(ctx).pop(false),
+                                  child: const Text('İPTAL'),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: context.rejectedColor,
+                                  ),
+                                  onPressed: () => Navigator.of(ctx).pop(true),
+                                  child: const Text('ÇIKAR'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm == true) {
+                            final repo = ref.read(activityRepositoryProvider);
+                            await repo.deleteAssignment(atama.id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '$displayName faaliyetten çıkarıldı.',
+                                  ),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      ),
                     if (isAdmin && isPending) ...[
                       IconButton(
                         icon: Icon(

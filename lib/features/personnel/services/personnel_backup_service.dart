@@ -1,0 +1,180 @@
+import 'dart:convert';
+import 'package:drift/drift.dart';
+import 'package:personelapp2/core/database/database.dart';
+
+class PersonnelBackupService {
+  PersonnelBackupService(this.db);
+  final AppDatabase db;
+
+  /// Export all personnel and squads into JSON backup string
+  Future<String> exportBackupJson() async {
+    final personnelList = await db.select(db.personelTable).get();
+    final timList = await db.select(db.timTable).get();
+
+    final data = {
+      'version': 1,
+      'exportedAt': DateTime.now().toIso8601String(),
+      'squads': timList
+          .map(
+            (t) => {
+              'id': t.id,
+              'timAdi': t.timAdi,
+              'olusturmaTarihi': t.olusturmaTarihi,
+            },
+          )
+          .toList(),
+      'personnel': personnelList
+          .map(
+            (p) => {
+              'id': p.id,
+              'adSoyad': p.adSoyad,
+              'rutbe': p.rutbe,
+              'birlik': p.birlik,
+              'timId': p.timId,
+              'kayitTarihi': p.kayitTarihi,
+            },
+          )
+          .toList(),
+    };
+
+    return const JsonEncoder.withIndent('  ').convert(data);
+  }
+
+  /// Import personnel and squads from JSON string
+  Future<int> importBackupJson(String jsonString) async {
+    final decoded = jsonDecode(jsonString);
+    if (decoded is! Map<String, Object?>) {
+      throw const FormatException(
+        'Yedek verisi beklenen JSON nesnesi formatinda degil.',
+      );
+    }
+
+    final squads = _readObjectList(decoded['squads']);
+    final personnel = _readObjectList(decoded['personnel']);
+
+    var importedCount = 0;
+
+    await db.transaction(() async {
+      final existingSquads = await db.select(db.timTable).get();
+      final squadMap = <String, int>{
+        for (final s in existingSquads) s.timAdi.toLowerCase(): s.id,
+      };
+
+      // 1. Restore / Match Squads
+      for (final squad in squads) {
+        final timAdi = _readString(squad, 'timAdi');
+        if (timAdi.isEmpty || squadMap.containsKey(timAdi.toLowerCase())) {
+          continue;
+        }
+
+        final newSquadId = await db
+            .into(db.timTable)
+            .insert(
+              TimTableCompanion.insert(
+                timAdi: timAdi,
+                olusturmaTarihi: _readString(
+                  squad,
+                  'olusturmaTarihi',
+                  fallback: DateTime.now().toIso8601String(),
+                ),
+              ),
+            );
+        squadMap[timAdi.toLowerCase()] = newSquadId;
+      }
+
+      // 2. Restore Personnel
+      final existingPersonnel = await db.select(db.personelTable).get();
+      final personnelSet = {
+        for (final p in existingPersonnel)
+          '${p.rutbe}_${p.adSoyad}'.toLowerCase(),
+      };
+
+      for (final p in personnel) {
+        final adSoyad = _readString(p, 'adSoyad');
+        final rutbe = _readString(p, 'rutbe', fallback: 'J.Uzm.Çvş.');
+        final birlik = _readString(p, 'birlik', fallback: '1.J.KÖK.Tug.K.lığı');
+        final key = '${rutbe}_$adSoyad'.toLowerCase();
+
+        if (adSoyad.isNotEmpty && !personnelSet.contains(key)) {
+          int? timId;
+          final timIdVal = _readNullableInt(p, 'timId');
+          if (timIdVal != null) {
+            // Find squad name if present
+            final squadObj = _findSquadBySourceId(squads, timIdVal);
+            if (squadObj != null) {
+              final squadName = _readString(squadObj, 'timAdi').toLowerCase();
+              timId = squadMap[squadName];
+            }
+          }
+
+          await db
+              .into(db.personelTable)
+              .insert(
+                PersonelTableCompanion.insert(
+                  adSoyad: adSoyad,
+                  rutbe: rutbe,
+                  birlik: birlik,
+                  timId: Value(timId),
+                  kayitTarihi: _readString(
+                    p,
+                    'kayitTarihi',
+                    fallback: DateTime.now().toIso8601String(),
+                  ),
+                ),
+              );
+          personnelSet.add(key);
+          importedCount++;
+        }
+      }
+    });
+
+    return importedCount;
+  }
+
+  List<Map<String, Object?>> _readObjectList(Object? value) {
+    if (value is! List) {
+      return const <Map<String, Object?>>[];
+    }
+
+    return value
+        .whereType<Map<Object?, Object?>>()
+        .map<Map<String, Object?>>(
+          (item) => item.map(
+            (key, itemValue) => MapEntry(key.toString(), itemValue),
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  String _readString(
+    Map<String, Object?> data,
+    String key, {
+    String fallback = '',
+  }) {
+    final value = data[key];
+    return value?.toString() ?? fallback;
+  }
+
+  int? _readNullableInt(Map<String, Object?> data, String key) {
+    final value = data[key];
+
+    return switch (value) {
+      final int intValue => intValue,
+      final String stringValue => int.tryParse(stringValue),
+      _ => null,
+    };
+  }
+
+  Map<String, Object?>? _findSquadBySourceId(
+    List<Map<String, Object?>> squads,
+    int sourceId,
+  ) {
+    for (final squad in squads) {
+      if (_readNullableInt(squad, 'id') == sourceId) {
+        return squad;
+      }
+    }
+
+    return null;
+  }
+}

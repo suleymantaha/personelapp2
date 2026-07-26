@@ -58,6 +58,10 @@ final allCommandersProvider = StreamProvider<List<KullaniciTableData>>((ref) {
 /// Pending Assignments Provider (for Dashboard Alert Badge)
 final pendingAssignmentsProvider =
     StreamProvider<List<FaaliyetPersonelAtamaTableData>>((ref) {
+      final session = ref.watch(userSessionProvider);
+      if (session?.isAdmin != true) {
+        return Stream.value(const <FaaliyetPersonelAtamaTableData>[]);
+      }
       return ref.watch(activityRepositoryProvider).watchPendingAssignments();
     });
 
@@ -67,7 +71,15 @@ final filteredActivitiesProvider =
       final session = ref.watch(userSessionProvider);
       final repo = ref.watch(activityRepositoryProvider);
 
-      if (session != null && !session.isAdmin && session.timId != null) {
+      if (session == null) {
+        return Stream.value(const <GunlukFaaliyetTableData>[]);
+      }
+
+      if (!session.isAdmin && session.timId == null) {
+        return Stream.value(const <GunlukFaaliyetTableData>[]);
+      }
+
+      if (!session.isAdmin && session.timId != null) {
         return repo.watchActivitiesForTeam(session.timId!);
       }
       return repo.watchAllActivities();

@@ -1,4 +1,4 @@
-import '../models/parsed_activity_block.dart';
+import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
 class BulkTextParser {
   static const List<String> knownRanks = [
@@ -19,18 +19,18 @@ class BulkTextParser {
     final cleanText = rawText.replaceAll('*', '').replaceAll('_', '');
     final lines = cleanText.split(RegExp(r'\r?\n'));
 
-    List<ParsedActivityBlock> blocks = [];
+    final blocks = <ParsedActivityBlock>[];
 
-    String currentTim = 'Genel';
-    String currentActivityType = 'GÖREVLİ';
-    String currentDate = _formatDate(DateTime.now());
+    var currentTim = 'Genel';
+    var currentActivityType = 'GÖREVLİ';
+    var currentDate = _formatDate(DateTime.now());
     String? currentTimeRange;
-    List<ParsedPersonnelItem> currentPersonnel = [];
-    String currentRawTitle = '';
+    final currentPersonnel = <ParsedPersonnelItem>[];
+    var currentRawTitle = '';
 
-    String defaultDate = _formatDate(DateTime.now());
+    var defaultDate = _formatDate(DateTime.now());
 
-    for (int i = 0; i < lines.length; i++) {
+    for (var i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
       if (line.isEmpty) continue;
 
@@ -176,8 +176,8 @@ class BulkTextParser {
 
   static ParsedPersonnelItem? _parsePersonnelLine(String line, int defaultIndex) {
     // Clean leading index like 1-, 1), 1., 10.
-    String content = line.trim();
-    int index = defaultIndex;
+    var content = line.trim();
+    var index = defaultIndex;
 
     final indexMatch = RegExp(r'^(\d+)[\.\)-]?\s*').firstMatch(content);
     if (indexMatch != null) {
@@ -186,8 +186,8 @@ class BulkTextParser {
     }
 
     // Extract rank
-    String rank = 'J.Uzm.Çvş.';
-    String name = content;
+    var rank = 'J.Uzm.Çvş.';
+    var name = content;
 
     final rankRegex = RegExp(
       r'^(J\.\s*Asb\.\s*(?:Kd\.\s*)?(?:Üçvş\.|Çvş\.)|J\.\s*Uzm\.\s*Çvş\.|J\.\s*Uzm\s*Çvş\.|J\.\s*Uzm\.\s*Çvş|J\.\s*Asb\.\s*Çvş\.)',

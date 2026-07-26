@@ -10,6 +10,16 @@ class PendingApprovalsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(userSessionProvider);
+    if (session?.isAdmin != true) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Bekleyen Görev Onayları')),
+        body: const Center(
+          child: Text('Bu sayfaya erisim yetkiniz bulunmuyor.'),
+        ),
+      );
+    }
+
     final pendingAsync = ref.watch(pendingAssignmentsProvider);
     final personnelAsync = ref.watch(allPersonnelProvider);
 

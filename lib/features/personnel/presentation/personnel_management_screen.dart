@@ -7,6 +7,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/widgets/personnel_form_dialog.dart';
 
 class PersonnelManagementScreen extends ConsumerStatefulWidget {
@@ -135,7 +136,9 @@ class _PersonnelManagementScreenState
                       if (u.isEmpty || selectedSquadId == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Lütfen kullanıcı adı ve tim seçiniz.'),
+                            content: Text(
+                              'Lütfen kullanıcı adı ve tim seçiniz.',
+                            ),
                           ),
                         );
                         return;
@@ -364,7 +367,10 @@ class _PersonnelManagementScreenState
                   const SizedBox(height: 8),
                   Text(
                     '💡 Atanan Tim Komutanı ilk girişinde kendi parolasını belirleyecektir.',
-                    style: TextStyle(fontSize: 12, color: context.textSecondary),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -414,7 +420,7 @@ class _PersonnelManagementScreenState
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(userSessionProvider);
-    final isAdmin = session?.isAdmin ?? true;
+    final isAdmin = session?.isAdmin ?? false;
 
     final personnelAsync = ref.watch(allPersonnelProvider);
     final squadsAsync = ref.watch(allSquadsProvider);
@@ -424,6 +430,22 @@ class _PersonnelManagementScreenState
         title: const Text('Personel & Tim Yönetimi'),
         actions: [
           if (isAdmin) ...[
+            IconButton(
+              icon: const Icon(Icons.import_export_rounded),
+              tooltip: 'Verileri Yedekle & Geri Yükle',
+              onPressed: () async {
+                final db = ref.read(databaseProvider);
+                final res = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => BackupRestoreDialog(database: db),
+                );
+                if (res == true) {
+                  ref
+                    ..invalidate(allPersonnelProvider)
+                    ..invalidate(allSquadsProvider);
+                }
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.manage_accounts),
               tooltip: 'Komutan Yetki Devri',
@@ -652,10 +674,14 @@ class _PersonnelManagementScreenState
                   // Filter by squad & commander permissions & search query
                   final personnelList = rawPersonnelList.where((p) {
                     // If Commander, restrict to commander's squad
-                    if (!isAdmin &&
-                        session?.timId != null &&
-                        p.timId != session?.timId) {
-                      return false;
+                    if (!isAdmin) {
+                      if (session?.timId == null) {
+                        return false;
+                      }
+
+                      if (p.timId != session?.timId) {
+                        return false;
+                      }
                     }
 
                     // Squad filter chip selection
