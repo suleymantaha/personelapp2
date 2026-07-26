@@ -310,9 +310,28 @@ class _BulkImportDialogState extends State<BulkImportDialog> {
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
                 const Spacer(),
-                Chip(
-                  label: Text(block.parsedDate, style: const TextStyle(fontSize: 12)),
-                  visualDensity: VisualDensity.compact,
+                InkWell(
+                  onTap: () async {
+                    final initial = DateTime.tryParse(block.parsedDate) ?? DateTime.now();
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: initial,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2030),
+                    );
+                    if (picked != null) {
+                      final formatted = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                      setState(() {
+                        _parsedBlocks[blockIdx] = block.copyWith(parsedDate: formatted);
+                      });
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Chip(
+                    avatar: const Icon(Icons.calendar_today, size: 14),
+                    label: Text(block.parsedDate, style: const TextStyle(fontSize: 12)),
+                    visualDensity: VisualDensity.compact,
+                  ),
                 ),
               ],
             ),

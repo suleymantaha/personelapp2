@@ -160,11 +160,18 @@ class BulkTextParser {
 
   static bool _isPersonnelLine(String line) {
     final lower = line.toLowerCase();
-    return lower.contains('j.asb') ||
+    if (lower.contains('j.asb') ||
         lower.contains('j.uzm') ||
         lower.contains('uzm.çvş') ||
         lower.contains('asb.') ||
-        lower.contains('çvş');
+        lower.contains('çvş')) {
+      return true;
+    }
+    // Check if line starts with index number followed by rank or capital name: "1- Erdem BUYAR" or "1) J.Asb"
+    if (RegExp(r'^\d+[\.\)-]\s*(?:J\.|[A-ZÇĞİÖŞÜ])').hasMatch(line.trim()) && !lower.contains('listesi')) {
+      return true;
+    }
+    return false;
   }
 
   static ParsedPersonnelItem? _parsePersonnelLine(String line, int defaultIndex) {
