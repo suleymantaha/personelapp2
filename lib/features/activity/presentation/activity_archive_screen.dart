@@ -1118,7 +1118,8 @@ class _AssignmentDetails extends ConsumerWidget {
                   ),
                   onPressed: () {
                     unawaited(
-                      PdfRosterExporter.sharePdfRoster(
+                      PdfRosterExporter.showStylePickerAndSharePdf(
+                        context,
                         faaliyetAdi: activity.faaliyetAdi,
                         tarih: activity.tarih,
                         rows: rosterRows,
