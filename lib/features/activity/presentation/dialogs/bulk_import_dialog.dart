@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/database/database.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../domain/models/parsed_activity_block.dart';
 import '../../domain/parser/bulk_text_parser.dart';
 import '../../domain/parser/personnel_fuzzy_matcher.dart';
@@ -19,17 +20,26 @@ class BulkImportDialog extends StatefulWidget {
   State<BulkImportDialog> createState() => _BulkImportDialogState();
 }
 
-class _BulkImportDialogState extends State<BulkImportDialog> {
+class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
   List<ParsedActivityBlock> _parsedBlocks = [];
   List<PersonelTableData> _allPersonnel = [];
   bool _isParsing = false;
   bool _isSaving = false;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _loadPersonnel();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _textController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadPersonnel() async {
@@ -54,6 +64,9 @@ class _BulkImportDialogState extends State<BulkImportDialog> {
 
       setState(() {
         _parsedBlocks = matchedBlocks;
+        if (_parsedBlocks.isNotEmpty) {
+          _tabController.animateTo(1); // Auto switch to Preview tab on mobile/desktop
+        }
       });
     } finally {
       setState(() {
@@ -100,7 +113,8 @@ class _BulkImportDialogState extends State<BulkImportDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('$successCount adet faaliyet ve personelleri başarıyla eklendi.'),
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.green.shade700,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -121,172 +135,289 @@ class _BulkImportDialogState extends State<BulkImportDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
+
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.85,
-        height: MediaQuery.of(context).size.height * 0.85,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.paste_rounded, color: Colors.blueAccent, size: 28),
-                const SizedBox(width: 12),
-                const Text(
-                  'Metinden Toplu Faaliyet Ayrıştırma ve Önizleme',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-            const Divider(height: 24),
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Left Side: Raw Text Input
-                  Expanded(
-                    flex: 4,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '1. Ham Metni Yapıştırın (WhatsApp/Telegram Listesi):',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                        ),
-                        const SizedBox(height: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: _textController,
-                            maxLines: null,
-                            expands: true,
-                            textAlignVertical: TextAlignVertical.top,
-                            decoration: InputDecoration(
-                              hintText: 'Metni buraya yapıştırın...\nÖrn:\n6/B Gülüşkür isim listesi\n25.07.2026\n1-J.Asb.Üçvş. Erdem BUYAR...',
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                              filled: true,
-                              fillColor: Colors.grey.shade50,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 46,
-                          child: ElevatedButton.icon(
-                            onPressed: _isParsing ? null : _processText,
-                            icon: _isParsing
-                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                                : const Icon(Icons.analytics_outlined),
-                            label: const Text('Metni Ayrıştır ve Önizle', style: TextStyle(fontSize: 16)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12 : 24,
+        vertical: isMobile ? 24 : 32,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          width: isMobile ? screenWidth : screenWidth * 0.85,
+          height: MediaQuery.of(context).size.height * 0.9,
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: Column(
+            children: [
+              // Dialog Header Banner
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      context.accentOrOlive,
+                      context.accentOrOlive.withOpacity(0.85),
+                    ],
                   ),
-
-                  const SizedBox(width: 16),
-                  const VerticalDivider(width: 1),
-                  const SizedBox(width: 16),
-
-                  // Right Side: Parsed Preview Blocks
-                  Expanded(
-                    flex: 6,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '2. Tespit Edilen Faaliyet Kartları (${_parsedBlocks.length}):',
-                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.paste_rounded, color: Colors.white, size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'Metinden Toplu Aktarım',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                            if (_parsedBlocks.isNotEmpty)
-                              TextButton.icon(
-                                onPressed: () => setState(() => _parsedBlocks.clear()),
-                                icon: const Icon(Icons.clear_all, size: 18),
-                                label: const Text('Temizle'),
-                              ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'WhatsApp / Telegram nöbet listelerini yapıştırıp akıllı ayrıştırın',
+                            style: TextStyle(fontSize: 12, color: Colors.white70),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+
+              // TabBar for Mobile or Split Layout for Desktop/Tablet
+              if (isMobile)
+                TabBar(
+                  controller: _tabController,
+                  labelColor: context.accentOrOlive,
+                  unselectedLabelColor: Colors.grey,
+                  indicatorColor: context.accentOrOlive,
+                  indicatorWeight: 3,
+                  tabs: [
+                    const Tab(icon: Icon(Icons.text_fields), text: '1. Metin Yapıştır'),
+                    Tab(
+                      icon: Badge(
+                        isLabelVisible: _parsedBlocks.isNotEmpty,
+                        label: Text(_parsedBlocks.length.toString()),
+                        child: const Icon(Icons.preview_rounded),
+                      ),
+                      text: '2. Kart Önizleme',
+                    ),
+                  ],
+                ),
+
+              // Main Body Content
+              Expanded(
+                child: isMobile
+                    ? TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildInputSection(isMobile: true),
+                          _buildPreviewSection(isMobile: true),
+                        ],
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(flex: 4, child: _buildInputSection(isMobile: false)),
+                            const SizedBox(width: 20),
+                            const VerticalDivider(width: 1),
+                            const SizedBox(width: 20),
+                            Expanded(flex: 6, child: _buildPreviewSection(isMobile: false)),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        Expanded(
-                          child: _parsedBlocks.isEmpty
-                              ? Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.rule_folder_outlined, size: 64, color: Colors.grey.shade400),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        'Sol tarafa metni yapıştırıp "Ayrıştır ve Önizle" butonuna basın.',
-                                        style: TextStyle(color: Colors.grey.shade600),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : ListView.builder(
-                                  itemCount: _parsedBlocks.length,
-                                  itemBuilder: (context, blockIdx) {
-                                    final block = _parsedBlocks[blockIdx];
-                                    return _buildPreviewCard(block, blockIdx);
-                                  },
-                                ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton.icon(
-                            onPressed: (_parsedBlocks.isEmpty || _isSaving) ? null : _saveAllToFaaliyet,
-                            icon: _isSaving
-                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                : const Icon(Icons.check_circle_outline),
-                            label: Text(
-                              'Tümünü Faaliyet Raporuna Aktar (${_parsedBlocks.length} Kart)',
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green.shade700,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputSection({required bool isMobile}) {
+    return Padding(
+      padding: EdgeInsets.all(isMobile ? 16 : 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.edit_note_rounded, color: context.accentOrOlive, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Ham Metni Yapıştırın:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: TextField(
+              controller: _textController,
+              maxLines: null,
+              expands: true,
+              textAlignVertical: TextAlignVertical.top,
+              style: const TextStyle(fontSize: 13, height: 1.4),
+              decoration: InputDecoration(
+                hintText: 'WhatsApp veya mesaj metnini yapıştırın...\n\nÖrnek:\n6 / B Gülüşkür isim listesi\n25.07.2026\n1-J.Asb.üçvş. Erdem BUYAR\n2-J.Uzm.Çvş. Erol SARI...',
+                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: context.cardBorderColor),
+                ),
+                filled: true,
+                fillColor: Theme.of(context).cardColor,
+                contentPadding: const EdgeInsets.all(14),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: _isParsing ? null : _processText,
+              icon: _isParsing
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.auto_awesome_rounded),
+              label: const Text('Metni Ayrıştır ve Kartları Oluştur', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.accentOrOlive,
+                foregroundColor: Colors.white,
+                elevation: 2,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreviewSection({required bool isMobile}) {
+    return Padding(
+      padding: EdgeInsets.all(isMobile ? 16 : 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.style_rounded, color: context.accentOrOlive, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Faaliyet Kartları (${_parsedBlocks.length})',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ],
               ),
+              if (_parsedBlocks.isNotEmpty)
+                IconButton(
+                  onPressed: () => setState(() => _parsedBlocks.clear()),
+                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                  tooltip: 'Tümünü Temizle',
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: _parsedBlocks.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: context.accentOrOlive.withOpacity(0.08),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.fact_check_outlined, size: 48, color: context.accentOrOlive),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Henüz Kart Oluşturulmadı',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Soldaki kutuya mesajı yapıştırıp "Metni Ayrıştır" butonuna basın.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _parsedBlocks.length,
+                    itemBuilder: (context, blockIdx) {
+                      final block = _parsedBlocks[blockIdx];
+                      return _buildPreviewCard(block, blockIdx);
+                    },
+                  ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: (_parsedBlocks.isEmpty || _isSaving) ? null : _saveAllToFaaliyet,
+              icon: _isSaving
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.check_circle_rounded),
+              label: Text(
+                'Tümünü Faaliyet Raporuna Aktar (${_parsedBlocks.length} Kart)',
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.approvedColor,
+                foregroundColor: Colors.white,
+                elevation: 2,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildPreviewCard(ParsedActivityBlock block, int blockIdx) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 14),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.blueAccent.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: context.cardBorderColor),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -294,22 +425,24 @@ class _BulkImportDialogState extends State<BulkImportDialog> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade100,
-                    borderRadius: BorderRadius.circular(6),
+                    color: context.accentOrOlive.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     block.parsedTimName,
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: context.accentOrOlive, fontSize: 13),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  block.parsedActivityType,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    block.parsedActivityType,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                const Spacer(),
                 InkWell(
                   onTap: () async {
                     final initial = DateTime.tryParse(block.parsedDate) ?? DateTime.now();
@@ -326,26 +459,43 @@ class _BulkImportDialogState extends State<BulkImportDialog> {
                       });
                     }
                   },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Chip(
-                    avatar: const Icon(Icons.calendar_today, size: 14),
-                    label: Text(block.parsedDate, style: const TextStyle(fontSize: 12)),
-                    visualDensity: VisualDensity.compact,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.calendar_today, size: 12, color: Colors.blue),
+                        const SizedBox(width: 4),
+                        Text(
+                          block.parsedDate,
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.blue),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
             if (block.parsedTimeRange != null) ...[
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Row(
                 children: [
-                  const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                  const Icon(Icons.access_time_rounded, size: 14, color: Colors.grey),
                   const SizedBox(width: 4),
-                  Text('Vardiya: ${block.parsedTimeRange}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(
+                    'Vardiya: ${block.parsedTimeRange}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                  ),
                 ],
               ),
             ],
-            const Divider(height: 16),
+            const Divider(height: 20),
 
             // Personnel Items
             ...block.personnelList.asMap().entries.map((entry) {
@@ -354,69 +504,83 @@ class _BulkImportDialogState extends State<BulkImportDialog> {
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Text('${item.rawIndex}.', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 4,
-                      child: Text(
-                        '${item.rawRank} ${item.rawName}',
-                        style: const TextStyle(fontSize: 13),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const Icon(Icons.arrow_right_alt, size: 16, color: Colors.grey),
-                    Expanded(
-                      flex: 5,
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<int?>(
-                          value: item.matchedPersonnelId,
-                          isDense: true,
-                          isExpanded: true,
-                          hint: Text(
-                            '⚠️ Eşleşmedi (${item.rawName})',
-                            style: const TextStyle(color: Colors.red, fontSize: 12),
-                          ),
-                          items: [
-                            const DropdownMenuItem<int?>(
-                              value: null,
-                              child: Text('-- Personel Seçin --', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                            ),
-                            ..._allPersonnel.map((p) => DropdownMenuItem<int?>(
-                                  value: p.id,
-                                  child: Text(
-                                    '${p.rutbe} ${p.adSoyad}',
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                )),
-                          ],
-                          onChanged: (selectedId) {
-                            if (selectedId != null) {
-                              final p = _allPersonnel.firstWhere((element) => element.id == selectedId);
-                              setState(() {
-                                final updatedList = List<ParsedPersonnelItem>.from(block.personnelList);
-                                updatedList[pIdx] = item.copyWith(
-                                  matchedPersonnelId: p.id,
-                                  matchedAdSoyad: p.adSoyad,
-                                  matchedRutbe: p.rutbe,
-                                  matchedTimId: p.timId,
-                                  matchConfidence: 1.0,
-                                );
-                                _parsedBlocks[blockIdx] = block.copyWith(personnelList: updatedList);
-                              });
-                            }
-                          },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: item.isMatched ? Colors.transparent : Colors.amber.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 10,
+                        backgroundColor: context.accentOrOlive.withOpacity(0.15),
+                        child: Text(
+                          '${item.rawIndex}',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.accentOrOlive),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      item.isMatched ? Icons.check_circle : Icons.warning_amber_rounded,
-                      color: item.isMatched ? Colors.green : Colors.amber.shade800,
-                      size: 18,
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 5,
+                        child: Text(
+                          '${item.rawRank} ${item.rawName}',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const Icon(Icons.arrow_right_alt_rounded, size: 16, color: Colors.grey),
+                      Expanded(
+                        flex: 6,
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<int?>(
+                            value: item.matchedPersonnelId,
+                            isDense: true,
+                            isExpanded: true,
+                            hint: const Text(
+                              '⚠️ Eşleşmedi',
+                              style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                            items: [
+                              const DropdownMenuItem<int?>(
+                                value: null,
+                                child: Text('-- Seçin --', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                              ),
+                              ..._allPersonnel.map((p) => DropdownMenuItem<int?>(
+                                    value: p.id,
+                                    child: Text(
+                                      '${p.rutbe} ${p.adSoyad}',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  )),
+                            ],
+                            onChanged: (selectedId) {
+                              if (selectedId != null) {
+                                final p = _allPersonnel.firstWhere((element) => element.id == selectedId);
+                                setState(() {
+                                  final updatedList = List<ParsedPersonnelItem>.from(block.personnelList);
+                                  updatedList[pIdx] = item.copyWith(
+                                    matchedPersonnelId: p.id,
+                                    matchedAdSoyad: p.adSoyad,
+                                    matchedRutbe: p.rutbe,
+                                    matchedTimId: p.timId,
+                                    matchConfidence: 1.0,
+                                  );
+                                  _parsedBlocks[blockIdx] = block.copyWith(personnelList: updatedList);
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        item.isMatched ? Icons.check_circle_rounded : Icons.warning_amber_rounded,
+                        color: item.isMatched ? context.approvedColor : Colors.amber.shade800,
+                        size: 18,
+                      ),
+                    ],
+                  ),
                 ),
               );
             }),
