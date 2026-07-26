@@ -1,26 +1,26 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../../core/database/database.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../domain/models/parsed_activity_block.dart';
-import '../../domain/parser/bulk_text_parser.dart';
-import '../../domain/parser/personnel_fuzzy_matcher.dart';
-import '../../data/activity_repository.dart';
+import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/features/activity/data/activity_repository.dart';
+import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
+import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
+import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
 
 class BulkImportDialog extends StatefulWidget {
-  final AppDatabase database;
-  final ActivityRepository activityRepository;
 
   const BulkImportDialog({
-    super.key,
-    required this.database,
-    required this.activityRepository,
+    required this.database, required this.activityRepository, super.key,
   });
+  final AppDatabase database;
+  final ActivityRepository activityRepository;
 
   @override
   State<BulkImportDialog> createState() => _BulkImportDialogState();
 }
 
-class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerProviderStateMixin {
+class _BulkImportDialogState extends State<BulkImportDialog>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
   List<ParsedActivityBlock> _parsedBlocks = [];
   List<PersonelTableData> _allPersonnel = [];
@@ -32,7 +32,7 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadPersonnel();
+    unawaited(_loadPersonnel());
   }
 
   @override
@@ -43,7 +43,9 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
   }
 
   Future<void> _loadPersonnel() async {
-    final list = await widget.database.select(widget.database.personelTable).get();
+    final list = await widget.database
+        .select(widget.database.personelTable)
+        .get();
     setState(() {
       _allPersonnel = list;
     });
@@ -65,7 +67,9 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
       setState(() {
         _parsedBlocks = matchedBlocks;
         if (_parsedBlocks.isNotEmpty) {
-          _tabController.animateTo(1); // Auto switch to Preview tab on mobile/desktop
+          _tabController.animateTo(
+            1,
+          ); // Auto switch to Preview tab on mobile/desktop
         }
       });
     } finally {
@@ -83,18 +87,21 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
     });
 
     try {
-      int successCount = 0;
+      var successCount = 0;
 
       for (final block in _parsedBlocks) {
-        final title = '${block.parsedTimName} - ${block.parsedActivityType}${block.parsedTimeRange != null ? " (${block.parsedTimeRange})" : ""}';
-        
+        final title =
+            '${block.parsedTimName} - ${block.parsedActivityType}${block.parsedTimeRange != null ? " (${block.parsedTimeRange})" : ""}';
+
         final payload = block.personnelList
             .where((p) => p.matchedPersonnelId != null)
-            .map((p) => {
-                  'personelId': p.matchedPersonnelId!,
-                  'gorevVeyaIzin': 'GÖREVLİ',
-                  'aciklama': block.parsedTimeRange ?? block.parsedActivityType,
-                })
+            .map(
+              (p) => {
+                'personelId': p.matchedPersonnelId!,
+                'gorevVeyaIzin': 'GÖREVLİ',
+                'aciklama': block.parsedTimeRange ?? block.parsedActivityType,
+              },
+            )
             .toList();
 
         if (payload.isNotEmpty) {
@@ -112,16 +119,21 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$successCount adet faaliyet ve personelleri başarıyla eklendi.'),
+            content: Text(
+              '$successCount adet faaliyet ve personelleri başarıyla eklendi.',
+            ),
             backgroundColor: Colors.green.shade700,
             behavior: SnackBarBehavior.floating,
           ),
         );
       }
-    } catch (e) {
+    } on Object catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata oluştu: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -154,12 +166,15 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
             children: [
               // Dialog Header Banner
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
                       context.accentOrOlive,
-                      context.accentOrOlive.withOpacity(0.85),
+                      context.accentOrOlive.withValues(alpha: 0.85),
                     ],
                   ),
                 ),
@@ -168,16 +183,20 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.paste_rounded, color: Colors.white, size: 24),
+                      child: const Icon(
+                        Icons.paste_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 14),
-                    Expanded(
+                    const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             'Metinden Toplu Aktarım',
                             style: TextStyle(
@@ -189,7 +208,10 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
                           SizedBox(height: 2),
                           Text(
                             'WhatsApp / Telegram nöbet listelerini yapıştırıp akıllı ayrıştırın',
-                            style: TextStyle(fontSize: 12, color: Colors.white70),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white70,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
@@ -212,7 +234,10 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
                   indicatorColor: context.accentOrOlive,
                   indicatorWeight: 3,
                   tabs: [
-                    const Tab(icon: Icon(Icons.text_fields), text: '1. Metin Yapıştır'),
+                    const Tab(
+                      icon: Icon(Icons.text_fields),
+                      text: '1. Metin Yapıştır',
+                    ),
                     Tab(
                       icon: Badge(
                         isLabelVisible: _parsedBlocks.isNotEmpty,
@@ -239,11 +264,17 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(flex: 4, child: _buildInputSection(isMobile: false)),
+                            Expanded(
+                              flex: 4,
+                              child: _buildInputSection(isMobile: false),
+                            ),
                             const SizedBox(width: 20),
                             const VerticalDivider(width: 1),
                             const SizedBox(width: 20),
-                            Expanded(flex: 6, child: _buildPreviewSection(isMobile: false)),
+                            Expanded(
+                              flex: 6,
+                              child: _buildPreviewSection(isMobile: false),
+                            ),
                           ],
                         ),
                       ),
@@ -263,7 +294,11 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
         children: [
           Row(
             children: [
-              Icon(Icons.edit_note_rounded, color: context.accentOrOlive, size: 20),
+              Icon(
+                Icons.edit_note_rounded,
+                color: context.accentOrOlive,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               const Text(
                 'Ham Metni Yapıştırın:',
@@ -280,7 +315,8 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
               textAlignVertical: TextAlignVertical.top,
               style: const TextStyle(fontSize: 13, height: 1.4),
               decoration: InputDecoration(
-                hintText: 'WhatsApp veya mesaj metnini yapıştırın...\n\nÖrnek:\n6 / B Gülüşkür isim listesi\n25.07.2026\n1-J.Asb.üçvş. Erdem BUYAR\n2-J.Uzm.Çvş. Erol SARI...',
+                hintText:
+                    'WhatsApp veya mesaj metnini yapıştırın...\n\nÖrnek:\n6 / B Gülüşkür isim listesi\n25.07.2026\n1-J.Asb.üçvş. Erdem BUYAR\n2-J.Uzm.Çvş. Erol SARI...',
                 hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -299,14 +335,26 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
             child: ElevatedButton.icon(
               onPressed: _isParsing ? null : _processText,
               icon: _isParsing
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
                   : const Icon(Icons.auto_awesome_rounded),
-              label: const Text('Metni Ayrıştır ve Kartları Oluştur', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+              label: const Text(
+                'Metni Ayrıştır ve Kartları Oluştur',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.accentOrOlive,
                 foregroundColor: Colors.white,
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -326,18 +374,29 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
             children: [
               Row(
                 children: [
-                  Icon(Icons.style_rounded, color: context.accentOrOlive, size: 20),
+                  Icon(
+                    Icons.style_rounded,
+                    color: context.accentOrOlive,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Faaliyet Kartları (${_parsedBlocks.length})',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
               if (_parsedBlocks.isNotEmpty)
                 IconButton(
                   onPressed: () => setState(() => _parsedBlocks.clear()),
-                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.redAccent,
+                    size: 20,
+                  ),
                   tooltip: 'Tümünü Temizle',
                 ),
             ],
@@ -347,28 +406,38 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
             child: _parsedBlocks.isEmpty
                 ? Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(24.0),
+                      padding: const EdgeInsets.all(24),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: context.accentOrOlive.withOpacity(0.08),
+                              color: context.accentOrOlive.withValues(alpha: 0.08),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(Icons.fact_check_outlined, size: 48, color: context.accentOrOlive),
+                            child: Icon(
+                              Icons.fact_check_outlined,
+                              size: 48,
+                              color: context.accentOrOlive,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           const Text(
                             'Henüz Kart Oluşturulmadı',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Soldaki kutuya mesajı yapıştırıp "Metni Ayrıştır" butonuna basın.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
@@ -387,19 +456,33 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
             width: double.infinity,
             height: 48,
             child: ElevatedButton.icon(
-              onPressed: (_parsedBlocks.isEmpty || _isSaving) ? null : _saveAllToFaaliyet,
+              onPressed: (_parsedBlocks.isEmpty || _isSaving)
+                  ? null
+                  : _saveAllToFaaliyet,
               icon: _isSaving
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
                   : const Icon(Icons.check_circle_rounded),
               label: Text(
                 'Tümünü Faaliyet Raporuna Aktar (${_parsedBlocks.length} Kart)',
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.approvedColor,
                 foregroundColor: Colors.white,
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -425,27 +508,38 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: context.accentOrOlive.withOpacity(0.12),
+                    color: context.accentOrOlive.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     block.parsedTimName,
-                    style: TextStyle(fontWeight: FontWeight.bold, color: context.accentOrOlive, fontSize: 13),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: context.accentOrOlive,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     block.parsedActivityType,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 InkWell(
                   onTap: () async {
-                    final initial = DateTime.tryParse(block.parsedDate) ?? DateTime.now();
+                    final initial =
+                        DateTime.tryParse(block.parsedDate) ?? DateTime.now();
                     final picked = await showDatePicker(
                       context: context,
                       initialDate: initial,
@@ -453,28 +547,42 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
                       lastDate: DateTime(2030),
                     );
                     if (picked != null) {
-                      final formatted = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                      final formatted =
+                          '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
                       setState(() {
-                        _parsedBlocks[blockIdx] = block.copyWith(parsedDate: formatted);
+                        _parsedBlocks[blockIdx] = block.copyWith(
+                          parsedDate: formatted,
+                        );
                       });
                     }
                   },
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                      border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.calendar_today, size: 12, color: Colors.blue),
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 12,
+                          color: Colors.blue,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           block.parsedDate,
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.blue),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.blue,
+                          ),
                         ),
                       ],
                     ),
@@ -486,11 +594,19 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
               const SizedBox(height: 6),
               Row(
                 children: [
-                  const Icon(Icons.access_time_rounded, size: 14, color: Colors.grey),
+                  const Icon(
+                    Icons.access_time_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     'Vardiya: ${block.parsedTimeRange}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
@@ -505,19 +621,30 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: item.isMatched ? Colors.transparent : Colors.amber.withOpacity(0.08),
+                    color: item.isMatched
+                        ? Colors.transparent
+                        : Colors.amber.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: 10,
-                        backgroundColor: context.accentOrOlive.withOpacity(0.15),
+                        backgroundColor: context.accentOrOlive.withValues(
+                          alpha: 0.15,
+                        ),
                         child: Text(
                           '${item.rawIndex}',
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.accentOrOlive),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: context.accentOrOlive,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -525,11 +652,18 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
                         flex: 5,
                         child: Text(
                           '${item.rawRank} ${item.rawName}',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Icon(Icons.arrow_right_alt_rounded, size: 16, color: Colors.grey),
+                      const Icon(
+                        Icons.arrow_right_alt_rounded,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
                       Expanded(
                         flex: 6,
                         child: DropdownButtonHideUnderline(
@@ -539,34 +673,53 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
                             isExpanded: true,
                             hint: const Text(
                               '⚠️ Eşleşmedi',
-                              style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             items: [
                               const DropdownMenuItem<int?>(
                                 value: null,
-                                child: Text('-- Seçin --', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                child: Text(
+                                  '-- Seçin --',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
                               ),
-                              ..._allPersonnel.map((p) => DropdownMenuItem<int?>(
-                                    value: p.id,
-                                    child: Text(
-                                      '${p.rutbe} ${p.adSoyad}',
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                  )),
+                              ..._allPersonnel.map(
+                                (p) => DropdownMenuItem<int?>(
+                                  value: p.id,
+                                  child: Text(
+                                    '${p.rutbe} ${p.adSoyad}',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                              ),
                             ],
                             onChanged: (selectedId) {
                               if (selectedId != null) {
-                                final p = _allPersonnel.firstWhere((element) => element.id == selectedId);
+                                final p = _allPersonnel.firstWhere(
+                                  (element) => element.id == selectedId,
+                                );
                                 setState(() {
-                                  final updatedList = List<ParsedPersonnelItem>.from(block.personnelList);
+                                  final updatedList =
+                                      List<ParsedPersonnelItem>.from(
+                                        block.personnelList,
+                                      );
                                   updatedList[pIdx] = item.copyWith(
                                     matchedPersonnelId: p.id,
                                     matchedAdSoyad: p.adSoyad,
                                     matchedRutbe: p.rutbe,
                                     matchedTimId: p.timId,
-                                    matchConfidence: 1.0,
+                                    matchConfidence: 1,
                                   );
-                                  _parsedBlocks[blockIdx] = block.copyWith(personnelList: updatedList);
+                                  _parsedBlocks[blockIdx] = block.copyWith(
+                                    personnelList: updatedList,
+                                  );
                                 });
                               }
                             },
@@ -575,8 +728,12 @@ class _BulkImportDialogState extends State<BulkImportDialog> with SingleTickerPr
                       ),
                       const SizedBox(width: 4),
                       Icon(
-                        item.isMatched ? Icons.check_circle_rounded : Icons.warning_amber_rounded,
-                        color: item.isMatched ? context.approvedColor : Colors.amber.shade800,
+                        item.isMatched
+                            ? Icons.check_circle_rounded
+                            : Icons.warning_amber_rounded,
+                        color: item.isMatched
+                            ? context.approvedColor
+                            : Colors.amber.shade800,
                         size: 18,
                       ),
                     ],

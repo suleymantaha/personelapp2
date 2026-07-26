@@ -1,19 +1,20 @@
-import 'package:drift/drift.dart';
-import '../../../../core/database/database.dart';
-import '../models/parsed_activity_block.dart';
+import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
 class PersonnelFuzzyMatcher {
-  final AppDatabase database;
 
   PersonnelFuzzyMatcher(this.database);
+  final AppDatabase database;
 
-  Future<List<ParsedActivityBlock>> matchBlocks(List<ParsedActivityBlock> blocks) async {
+  Future<List<ParsedActivityBlock>> matchBlocks(
+    List<ParsedActivityBlock> blocks,
+  ) async {
     final allPersonnel = await database.select(database.personelTable).get();
-    
-    List<ParsedActivityBlock> matchedBlocks = [];
+
+    final matchedBlocks = <ParsedActivityBlock>[];
 
     for (final block in blocks) {
-      List<ParsedPersonnelItem> matchedPersonnelList = [];
+      final matchedPersonnelList = <ParsedPersonnelItem>[];
 
       for (final item in block.personnelList) {
         final matchedItem = _matchPersonnel(item, allPersonnel);
@@ -26,7 +27,10 @@ class PersonnelFuzzyMatcher {
     return matchedBlocks;
   }
 
-  ParsedPersonnelItem _matchPersonnel(ParsedPersonnelItem item, List<PersonelTableData> dbList) {
+  ParsedPersonnelItem _matchPersonnel(
+    ParsedPersonnelItem item,
+    List<PersonelTableData> dbList,
+  ) {
     if (dbList.isEmpty) return item;
 
     final rawNameClean = _sanitizeString(item.rawName);
@@ -40,18 +44,24 @@ class PersonnelFuzzyMatcher {
           matchedAdSoyad: p.adSoyad,
           matchedRutbe: p.rutbe,
           matchedTimId: p.timId,
-          matchConfidence: 1.0,
+          matchConfidence: 1,
         );
       }
     }
 
     // 2. Token Set Match (ad/soyad yer değişse de tüm kelimeler eşleşiyor mu?)
-    final rawTokens = rawNameClean.split(' ').where((e) => e.isNotEmpty).toSet();
+    final rawTokens = rawNameClean
+        .split(' ')
+        .where((e) => e.isNotEmpty)
+        .toSet();
 
     for (final p in dbList) {
-      final dbTokens = _sanitizeString(p.adSoyad).split(' ').where((e) => e.isNotEmpty).toSet();
+      final dbTokens = _sanitizeString(
+        p.adSoyad,
+      ).split(' ').where((e) => e.isNotEmpty).toSet();
 
-      if (rawTokens.length == dbTokens.length && rawTokens.containsAll(dbTokens)) {
+      if (rawTokens.length == dbTokens.length &&
+          rawTokens.containsAll(dbTokens)) {
         return item.copyWith(
           matchedPersonnelId: p.id,
           matchedAdSoyad: p.adSoyad,
@@ -64,14 +74,22 @@ class PersonnelFuzzyMatcher {
 
     // 3. Partial Token Overlap Match (En az 2 kelime veya soyad+ad eşleşmesi)
     PersonelTableData? bestMatch;
+    // maxScore must be typed as double because score calculation yields a double.
+    // ignore: omit_local_variable_types, prefer_int_literals
     double maxScore = 0.0;
 
     for (final p in dbList) {
-      final dbTokens = _sanitizeString(p.adSoyad).split(' ').where((e) => e.isNotEmpty).toSet();
+      final dbTokens = _sanitizeString(
+        p.adSoyad,
+      ).split(' ').where((e) => e.isNotEmpty).toSet();
       final intersection = rawTokens.intersection(dbTokens);
 
       if (intersection.isNotEmpty) {
-        final score = intersection.length / (rawTokens.length > dbTokens.length ? rawTokens.length : dbTokens.length);
+        final score =
+            intersection.length /
+            (rawTokens.length > dbTokens.length
+                ? rawTokens.length
+                : dbTokens.length);
         if (score > maxScore && score >= 0.5) {
           maxScore = score;
           bestMatch = p;

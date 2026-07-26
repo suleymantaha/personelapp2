@@ -128,7 +128,7 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                   );
                   if (result == true) {
                     ref.invalidate(activityRepositoryProvider);
-                    if (mounted) {
+                    if (context.mounted) {
                       Navigator.pop(context);
                     }
                   }
