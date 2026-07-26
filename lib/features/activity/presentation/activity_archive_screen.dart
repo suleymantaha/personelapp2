@@ -38,6 +38,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
 
     final db = ref.read(databaseProvider);
     final pMap = {for (final p in personnelList) p.id: p};
+    final squadsList = ref.read(allSquadsProvider).value ?? [];
+    final squadMap = {for (final s in squadsList) s.id: s.timAdi};
     final masterList = <MasterActivityData>[];
 
     for (final act in activities) {
@@ -61,8 +63,23 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
             return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
           }
 
-          final wA = MilitaryStructureHelper.getSquadOrderWeight(pA?.birlik ?? '');
-          final wB = MilitaryStructureHelper.getSquadOrderWeight(pB?.birlik ?? '');
+          final timNameA =
+              (pA?.timId != null && squadMap.containsKey(pA!.timId))
+              ? squadMap[pA.timId]!
+              : '';
+          final timNameB =
+              (pB?.timId != null && squadMap.containsKey(pB!.timId))
+              ? squadMap[pB.timId]!
+              : '';
+          final rawBirlikA = (pA?.birlik != null && pA!.birlik.isNotEmpty)
+              ? pA.birlik
+              : timNameA;
+          final rawBirlikB = (pB?.birlik != null && pB!.birlik.isNotEmpty)
+              ? pB.birlik
+              : timNameB;
+
+          final wA = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikA);
+          final wB = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikB);
           if (wA != wB) return wA.compareTo(wB);
 
           final rA = getRankWeight(pA?.rutbe ?? '');
@@ -79,7 +96,14 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         final p = pMap[atama.personelId];
         final rutbe = p?.rutbe ?? '';
         final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
-        final birligi = MilitaryStructureHelper.getOfficialBirlikName(p?.birlik ?? '', duty: atama.gorevVeyaIzin);
+        final timName =
+            (p?.timId != null && squadMap.containsKey(p!.timId))
+            ? squadMap[p.timId]!
+            : '';
+        final rawBirlik = (p?.birlik != null && p!.birlik.isNotEmpty)
+            ? p.birlik
+            : timName;
+        final birligi = MilitaryStructureHelper.getOfficialBirlikName(rawBirlik, duty: atama.gorevVeyaIzin);
         final digerNote = MilitaryStructureHelper.getDigerCellText(atama.gorevVeyaIzin, aciklama: atama.aciklama);
 
         var groupCode = 'DIGER';
