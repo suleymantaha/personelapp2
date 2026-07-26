@@ -111,6 +111,41 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Faaliyet Çizelgesi Oluştur'),
+        actions: [
+          if (isAdmin)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final db = ref.read(databaseProvider);
+                  final activityRepo = ref.read(activityRepositoryProvider);
+                  final result = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => BulkImportDialog(
+                      database: db,
+                      activityRepository: activityRepo,
+                    ),
+                  );
+                  if (result == true) {
+                    ref.invalidate(activityRepositoryProvider);
+                    if (mounted) {
+                      Navigator.pop(context);
+                    }
+                  }
+                },
+                icon: const Icon(Icons.paste_rounded, size: 18),
+                label: const Text('Toplu Metin Yapıştır'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade700,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         child: ResponsiveCenter(
