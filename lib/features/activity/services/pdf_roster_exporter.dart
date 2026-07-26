@@ -3,7 +3,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:personelapp2/core/utils/rank_helper.dart';
-import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
@@ -201,7 +200,7 @@ class PdfRosterExporter {
     }
 
     const cellBorder = pw.Border(
-      bottom: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
+      bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
     );
 
     for (var i = 0; i < n; i++) {
@@ -216,14 +215,14 @@ class PdfRosterExporter {
 
       final birlikBorder = isBLast
           ? const pw.Border(
-              bottom: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
+              bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
             )
           : const pw.Border();
 
-      // Determine text placement inside Birlik cell (on first row of group for guaranteed visibility)
+      // Determine text placement inside Birlik cell
       var birlikCellText = '';
       final bMid = bSt + (bEn - bSt) ~/ 2;
-      if (i == bSt || i == bMid) {
+      if (i == bMid) {
         birlikCellText = r.birligi;
       }
       const birlikAlignment = pw.Alignment.center;
@@ -237,7 +236,7 @@ class PdfRosterExporter {
       final specialBorder = isSpecialGroup
           ? (isSpLast
                 ? const pw.Border(
-                    bottom: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
+                    bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
                   )
                 : const pw.Border())
           : cellBorder;
@@ -247,13 +246,13 @@ class PdfRosterExporter {
 
       if (isSpecialGroup) {
         final spMid = spSt + (spEn - spSt) ~/ 2;
-        if (i == spSt || i == spMid) {
+        if (i == spMid) {
           specialCellText = r.diger;
         }
         specialAlignment = pw.Alignment.center;
       } else {
-        specialCellText = r.diger.trim();
-        specialAlignment = specialCellText.isEmpty
+        specialCellText = r.diger.trim().isEmpty ? '-' : r.diger;
+        specialAlignment = r.diger.trim().isEmpty
             ? pw.Alignment.center
             : pw.Alignment.centerLeft;
       }
@@ -362,11 +361,11 @@ class PdfRosterExporter {
 
     return pw.Table(
       border: const pw.TableBorder(
-        left: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
-        right: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
-        top: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
-        bottom: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
-        verticalInside: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
+        left: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+        right: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+        top: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+        bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+        verticalInside: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
       ),
       columnWidths: const {
         0: pw.FlexColumnWidth(0.8), // S. NU
@@ -402,12 +401,6 @@ class PdfRosterExporter {
             )
           : null,
     );
-
-    final filteredRows = rows
-        .where(
-          (r) => DutyOrLeaveType.isOperationalDuty(r.diger) || r.diger.isEmpty,
-        )
-        .toList();
 
     final titleText = formatOfficialTitle(faaliyetAdi, tarih);
 
@@ -461,9 +454,9 @@ class PdfRosterExporter {
         },
         build: (context) {
           return [
-            buildPdfTable(filteredRows),
+            buildPdfTable(rows),
             pw.SizedBox(height: 12),
-            builderSummaryBox(filteredRows),
+            builderSummaryBox(rows),
           ];
         },
       ),
