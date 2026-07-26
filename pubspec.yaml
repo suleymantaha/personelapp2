@@ -47,7 +47,6 @@ dependencies:
 
 dependency_overrides:
   archive: ^3.6.1
-  xml: ^7.0.1
 
 dev_dependencies:
   build_runner: ^2.15.1
