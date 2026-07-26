@@ -59,8 +59,12 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
     }
 
     allAssignments.sort((a, b) {
-      final catA = MilitaryStructureHelper.getDutyCategoryOrder(a.gorevVeyaIzin);
-      final catB = MilitaryStructureHelper.getDutyCategoryOrder(b.gorevVeyaIzin);
+      final catA = MilitaryStructureHelper.getDutyCategoryOrder(
+        a.gorevVeyaIzin,
+      );
+      final catB = MilitaryStructureHelper.getDutyCategoryOrder(
+        b.gorevVeyaIzin,
+      );
       if (catA != catB) return catA.compareTo(catB);
 
       final pA = pMap[a.personelId];
@@ -73,12 +77,10 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
       }
 
-      final timNameA =
-          (pA?.timId != null && squadMap.containsKey(pA!.timId))
+      final timNameA = (pA?.timId != null && squadMap.containsKey(pA!.timId))
           ? squadMap[pA.timId]!
           : '';
-      final timNameB =
-          (pB?.timId != null && squadMap.containsKey(pB!.timId))
+      final timNameB = (pB?.timId != null && squadMap.containsKey(pB!.timId))
           ? squadMap[pB.timId]!
           : '';
       final rawBirlikA = (pA?.birlik != null && pA!.birlik.isNotEmpty)
@@ -105,21 +107,27 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       final p = pMap[atama.personelId];
       final rutbe = p?.rutbe ?? '';
       final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
-      final timName =
-          (p?.timId != null && squadMap.containsKey(p!.timId))
+      final timName = (p?.timId != null && squadMap.containsKey(p!.timId))
           ? squadMap[p.timId]!
           : '';
       final rawBirlik = (p?.birlik != null && p!.birlik.isNotEmpty)
           ? p.birlik
           : timName;
-      final birligi = MilitaryStructureHelper.getOfficialBirlikName(rawBirlik, duty: atama.gorevVeyaIzin);
-      final digerNote = MilitaryStructureHelper.getDigerCellText(atama.gorevVeyaIzin, aciklama: atama.aciklama);
+      final birligi = MilitaryStructureHelper.getOfficialBirlikName(
+        rawBirlik,
+        duty: atama.gorevVeyaIzin,
+      );
+      final digerNote = MilitaryStructureHelper.getDigerCellText(
+        atama.gorevVeyaIzin,
+        aciklama: atama.aciklama,
+      );
 
       var groupCode = 'DIGER';
       final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
       if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
         groupCode = 'HAZIR_KITA';
-      } else if (dutyUpper.contains('GÜLÜŞKÜR') || dutyUpper.contains('GULUSKUR')) {
+      } else if (dutyUpper.contains('GÜLÜŞKÜR') ||
+          dutyUpper.contains('GULUSKUR')) {
         groupCode = 'GULUSKUR';
       }
 
@@ -698,8 +706,12 @@ class _AssignmentDetails extends ConsumerWidget {
           return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
         }).toList()..sort((a, b) {
           // 1. Primary Roster Category: 10 (Nöbet Heyeti) -> 20 (Operasyonel) -> 30 (Hazır Kıta) -> 40 (Gülüşkür)
-          final catA = MilitaryStructureHelper.getDutyCategoryOrder(a.gorevVeyaIzin);
-          final catB = MilitaryStructureHelper.getDutyCategoryOrder(b.gorevVeyaIzin);
+          final catA = MilitaryStructureHelper.getDutyCategoryOrder(
+            a.gorevVeyaIzin,
+          );
+          final catB = MilitaryStructureHelper.getDutyCategoryOrder(
+            b.gorevVeyaIzin,
+          );
           if (catA != catB) return catA.compareTo(catB);
 
           final pA = pMap[a.personelId];
@@ -730,8 +742,12 @@ class _AssignmentDetails extends ConsumerWidget {
               ? pB.birlik
               : timNameB;
 
-          final wBirlikA = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikA);
-          final wBirlikB = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikB);
+          final wBirlikA = MilitaryStructureHelper.getSquadOrderWeight(
+            rawBirlikA,
+          );
+          final wBirlikB = MilitaryStructureHelper.getSquadOrderWeight(
+            rawBirlikB,
+          );
           if (wBirlikA != wBirlikB) return wBirlikA.compareTo(wBirlikB);
 
           // 4. Sort strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
@@ -749,14 +765,16 @@ class _AssignmentDetails extends ConsumerWidget {
       final p = pMap[atama.personelId];
       final rutbe = p?.rutbe ?? '';
       final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
-      final timName =
-          (p?.timId != null && squadMap.containsKey(p!.timId))
+      final timName = (p?.timId != null && squadMap.containsKey(p!.timId))
           ? squadMap[p.timId]!
           : '';
       final rawBirlik = (p?.birlik != null && p!.birlik.isNotEmpty)
           ? p.birlik
           : timName;
-      final officialBirlik = MilitaryStructureHelper.getOfficialBirlikName(rawBirlik, duty: atama.gorevVeyaIzin);
+      final officialBirlik = MilitaryStructureHelper.getOfficialBirlikName(
+        rawBirlik,
+        duty: atama.gorevVeyaIzin,
+      );
 
       var groupCode = 'DIGER';
       final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
@@ -913,33 +931,37 @@ class _AssignmentDetails extends ConsumerWidget {
                     const SizedBox(width: 6),
 
                     // Duty Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isApproved
-                            ? context.approvedColor.withValues(alpha: 0.12)
-                            : (isPending
-                                  ? context.pendingColor.withValues(
-                                      alpha: 0.25,
-                                    )
-                                  : context.rejectedBgColor),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        isPending
-                            ? '${atama.gorevVeyaIzin} • BEKLİYOR'
-                            : atama.gorevVeyaIzin,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
                           color: isApproved
-                              ? context.approvedColor
+                              ? context.approvedColor.withValues(alpha: 0.12)
                               : (isPending
-                                    ? context.pendingColor
-                                    : context.rejectedColor),
+                                    ? context.pendingColor.withValues(
+                                        alpha: 0.25,
+                                      )
+                                    : context.rejectedBgColor),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          isPending
+                              ? '${atama.gorevVeyaIzin} • BEKLİYOR'
+                              : atama.gorevVeyaIzin,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: isApproved
+                                ? context.approvedColor
+                                : (isPending
+                                      ? context.pendingColor
+                                      : context.rejectedColor),
+                          ),
                         ),
                       ),
                     ),
