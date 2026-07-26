@@ -220,10 +220,10 @@ class PdfRosterExporter {
             )
           : const pw.Border();
 
-      // Determine text placement inside Birlik cell
+      // Determine text placement inside Birlik cell (on first row of group for guaranteed visibility)
       var birlikCellText = '';
       final bMid = bSt + (bEn - bSt) ~/ 2;
-      if (i == bMid) {
+      if (i == bSt || i == bMid) {
         birlikCellText = r.birligi;
       }
       const birlikAlignment = pw.Alignment.center;
@@ -247,13 +247,13 @@ class PdfRosterExporter {
 
       if (isSpecialGroup) {
         final spMid = spSt + (spEn - spSt) ~/ 2;
-        if (i == spMid) {
+        if (i == spSt || i == spMid) {
           specialCellText = r.diger;
         }
         specialAlignment = pw.Alignment.center;
       } else {
-        specialCellText = r.diger.trim().isEmpty ? '-' : r.diger;
-        specialAlignment = r.diger.trim().isEmpty
+        specialCellText = r.diger.trim();
+        specialAlignment = specialCellText.isEmpty
             ? pw.Alignment.center
             : pw.Alignment.centerLeft;
       }
