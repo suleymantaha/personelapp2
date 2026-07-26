@@ -5,10 +5,10 @@ on:
     branches: [main]
     tags:
       - 'v*'
-  workflow_dispatch: # manuel tetikleme için
+  workflow_dispatch: # manual trigger
 
 permissions:
-  contents: write # Release oluşturmak için
+  contents: write
   artifacts: write
 
 jobs:
@@ -18,13 +18,11 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      # 1. Repository'yi checkout et
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # tag'ler için gerekli
+          fetch-depth: 0
 
-      # 2. Java 17 kur (Flutter 3.x için)
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -32,37 +30,28 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # 3. Flutter kur
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24' # 3.24.x stable series (auto-picks latest patch)
+          flutter-version: '3.24'
           channel: 'stable'
           cache: true
 
-      # 4. Dependencies indir
       - name: Get dependencies
         run: flutter pub get
 
-      # 5. Kod analizi (opsiyonel ama önerilir)
       - name: Analyze
         run: flutter analyze --no-fatal-infos
 
-      # 6. Testler (varsa)
       - name: Run tests
         run: flutter test --no-coverage
 
-      # 7. Release APK build et
       - name: Build Release APK
         run: flutter build apk --release --split-per-abi
-        # --split-per-abi: arm64-v8a, armeabi-v7a, x86_64 ayrı APK'lar (daha küçük)
-        # tek APK isterseniz: flutter build apk --release
 
-      # 8. Release App Bundle de build et (Play Store için)
       - name: Build Release App Bundle
         run: flutter build appbundle --release
 
-      # 9. Version bilgisini al (pubspec.yaml'dan)
       - name: Extract version
         id: version
         run: |
@@ -71,7 +60,6 @@ jobs:
           echo "VERSION_NAME=$(echo $VERSION | cut -d'+' -f1)" >> $GITHUB_OUTPUT
           echo "VERSION_CODE=$(echo $VERSION | cut -d'+' -f2)" >> $GITHUB_OUTPUT
 
-      # 10. APK'ları artifact olarak yükle (Workflow run sayfasından indirilebilir)
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -81,7 +69,6 @@ jobs:
             build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
 
-      # 11. Tag push edilirse GitHub Release oluştur ve APK'ları ekle
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
