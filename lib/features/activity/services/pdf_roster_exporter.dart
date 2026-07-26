@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -7,6 +8,7 @@ import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
+
 enum PdfRosterStyle {
   /// Stil 1 (Dikey Blok Mimarisi - VIP Format): Sol tarafta birlik/tim için tek parça piksel ortalı dikey kutu
   verticalBlock,
@@ -42,10 +44,10 @@ class PdfRosterExporter {
         .replaceAll('ISIM LISTESI', '')
         .trim();
 
-    // Default to HEYBET TEPE PUSU FAALİYETİ if starts with GÜNLÜK FAALİYET or empty
+    // Default to HEYBET TEPE PUSU FAALİYETİ if contains GÜNLÜK FAALİYET or empty
     if (nameStr.isEmpty ||
-        nameStr.startsWith('GÜNLÜK FAALİYET') ||
-        nameStr == 'GÜNLÜK FAALİYET') {
+        nameStr.contains('GÜNLÜK FAALİYET') ||
+        nameStr.contains('GUNLUK FAALIYET')) {
       nameStr = 'HEYBET TEPE PUSU FAALİYETİ';
     }
 
@@ -219,8 +221,7 @@ class PdfRosterExporter {
 
     for (var i = 0; i < n; i++) {
       final r = rows[i];
-      final isEven = i.isEven;
-      final rowBgColor = isEven ? PdfColors.white : PdfColors.grey50;
+      const rowBgColor = PdfColors.white;
 
       // Birlik merge boundaries
       final bSt = birlikStart[i];
@@ -273,7 +274,7 @@ class PdfRosterExporter {
 
       tableRows.add(
         pw.TableRow(
-          decoration: pw.BoxDecoration(color: rowBgColor),
+          decoration: const pw.BoxDecoration(color: rowBgColor),
           children: [
             // S. NU
             pw.Container(
@@ -402,10 +403,21 @@ class PdfRosterExporter {
     pw.Font? font;
     pw.Font? boldFont;
     try {
-      font = await PdfGoogleFonts.robotoRegular();
-      boldFont = await PdfGoogleFonts.robotoBold();
+      // Load bundled Roboto TTF — supports Turkish characters offline
+      final regularData = await rootBundle.load(
+        'assets/fonts/Roboto-Regular.ttf',
+      );
+      final boldData = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
+      font = pw.Font.ttf(regularData);
+      boldFont = pw.Font.ttf(boldData);
     } on Exception catch (_) {
-      // Fallback if offline
+      // Network fallback
+      try {
+        font = await PdfGoogleFonts.robotoRegular();
+        boldFont = await PdfGoogleFonts.robotoBold();
+      } on Exception catch (_) {
+        // Use built-in font as last resort
+      }
     }
 
     final pdf = pw.Document(
@@ -541,10 +553,20 @@ class PdfRosterExporter {
                   contentPadding: EdgeInsets.zero,
                   leading: const CircleAvatar(
                     backgroundColor: Colors.indigoAccent,
-                    child: Icon(Icons.dashboard_customize, color: Colors.white, size: 20),
+                    child: Icon(
+                      Icons.dashboard_customize,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
-                  title: const Text('Stil 1: Dikey Blok Mimarisi (VIP Format)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  subtitle: const Text('Sol tarafta tek parça birlik kutusu. Sıfır çizgi kayması ve kusursuz hizalama.', style: TextStyle(fontSize: 11)),
+                  title: const Text(
+                    'Stil 1: Dikey Blok Mimarisi (VIP Format)',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  subtitle: const Text(
+                    'Sol tarafta tek parça birlik kutusu. Sıfır çizgi kayması ve kusursuz hizalama.',
+                    style: TextStyle(fontSize: 11),
+                  ),
                   onTap: () => Navigator.pop(ctx, PdfRosterStyle.verticalBlock),
                 ),
                 const Divider(height: 1),
@@ -552,11 +574,22 @@ class PdfRosterExporter {
                   contentPadding: EdgeInsets.zero,
                   leading: const CircleAvatar(
                     backgroundColor: Colors.teal,
-                    child: Icon(Icons.table_rows, color: Colors.white, size: 20),
+                    child: Icon(
+                      Icons.table_rows,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
-                  title: const Text('Stil 2: Akıllı Sayfa Kırılımı Formatı', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  subtitle: const Text('Klasik 5 sütunlu tablo. Sayfa taşmalarında korumalı birleştirme.', style: TextStyle(fontSize: 11)),
-                  onTap: () => Navigator.pop(ctx, PdfRosterStyle.smartPageChunk),
+                  title: const Text(
+                    'Stil 2: Akıllı Sayfa Kırılımı Formatı',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  subtitle: const Text(
+                    'Klasik 5 sütunlu tablo. Sayfa taşmalarında korumalı birleştirme.',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                  onTap: () =>
+                      Navigator.pop(ctx, PdfRosterStyle.smartPageChunk),
                 ),
                 const Divider(height: 1),
                 ListTile(
@@ -565,8 +598,14 @@ class PdfRosterExporter {
                     backgroundColor: Colors.amber,
                     child: Icon(Icons.view_day, color: Colors.white, size: 20),
                   ),
-                  title: const Text('Stil 3: Askeri Şerit Başlık Formatı', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  subtitle: const Text('Birlik/Tim bazlı gri bant başlıklar. Maksimum okunabilirlik.', style: TextStyle(fontSize: 11)),
+                  title: const Text(
+                    'Stil 3: Askeri Şerit Başlık Formatı',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  subtitle: const Text(
+                    'Birlik/Tim bazlı gri bant başlıklar. Maksimum okunabilirlik.',
+                    style: TextStyle(fontSize: 11),
+                  ),
                   onTap: () => Navigator.pop(ctx, PdfRosterStyle.headerBand),
                 ),
               ],
