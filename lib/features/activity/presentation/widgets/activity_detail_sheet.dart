@@ -141,59 +141,133 @@ class ActivityAssignmentDetails extends ConsumerWidget {
     }
 
     return Container(
-      color: context.colorScheme.surfaceContainerHighest,
-      padding: const EdgeInsets.all(14),
+      color: context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Action: Add single personnel to activity
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              style: TextButton.styleFrom(
-                foregroundColor: context.accentOrOlive,
-              ),
-              icon: const Icon(Icons.person_add_alt_1, size: 18),
-              label: const Text(
-                '+ Faaliyete Personel Ekle',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-              ),
-              onPressed: () async {
-                final added = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AddPersonnelToActivityDialog(
-                    activity: activity,
-                    isAdmin: isAdmin,
-                    existingPersonnelIds: existingPersonnelIds,
-                  ),
-                );
-                if (added == true && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        isAdmin
-                            ? 'Personel faaliyete eklendi.'
-                            : 'Personel eklendi, Admin onayına gönderildi.',
-                      ),
-                      backgroundColor: isAdmin
-                          ? context.approvedColor
-                          : context.pendingColor,
+          // Header Row: Add Personnel & Single Activity Quick Export Menu
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                  foregroundColor: context.accentOrOlive,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                icon: const Icon(Icons.person_add_alt_1, size: 16),
+                label: const Text(
+                  '+ Personel Ekle',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+                onPressed: () async {
+                  final added = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AddPersonnelToActivityDialog(
+                      activity: activity,
+                      isAdmin: isAdmin,
+                      existingPersonnelIds: existingPersonnelIds,
                     ),
                   );
-                }
-              },
-            ),
+                  if (added == true && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          isAdmin
+                              ? 'Personel faaliyete eklendi.'
+                              : 'Personel eklendi, Admin onayına gönderildi.',
+                        ),
+                        backgroundColor: isAdmin
+                            ? context.approvedColor
+                            : context.pendingColor,
+                      ),
+                    );
+                  }
+                },
+              ),
+              PopupMenuButton<String>(
+                icon: Icon(
+                  Icons.more_horiz,
+                  color: context.textSecondary,
+                  size: 20,
+                ),
+                tooltip: 'Bu Faaliyeti Dışa Aktar',
+                onSelected: (val) {
+                  if (val == 'excel') {
+                    unawaited(
+                      MilitaryRosterExporter.shareExcelRoster(
+                        faaliyetAdi: activity.faaliyetAdi,
+                        tarih: activity.tarih,
+                        rows: rosterRows,
+                      ),
+                    );
+                  } else if (val == 'pdf') {
+                    unawaited(
+                      PdfRosterExporter.showStylePickerAndSharePdf(
+                        context,
+                        faaliyetAdi: activity.faaliyetAdi,
+                        tarih: activity.tarih,
+                        rows: rosterRows,
+                      ),
+                    );
+                  } else if (val == 'text') {
+                    unawaited(
+                      MilitaryRosterExporter.shareTextRoster(
+                        faaliyetAdi: activity.faaliyetAdi,
+                        tarih: activity.tarih,
+                        rows: rosterRows,
+                      ),
+                    );
+                  }
+                },
+                itemBuilder: (ctx) => [
+                  const PopupMenuItem(
+                    value: 'excel',
+                    child: Row(
+                      children: [
+                        Icon(Icons.table_chart, size: 18),
+                        SizedBox(width: 8),
+                        Text('Excel Olarak Aktar'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'pdf',
+                    child: Row(
+                      children: [
+                        Icon(Icons.picture_as_pdf, size: 18),
+                        SizedBox(width: 8),
+                        Text('PDF / Yazdır'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'text',
+                    child: Row(
+                      children: [
+                        Icon(Icons.share, size: 18),
+                        SizedBox(width: 8),
+                        Text('Metin Listesi Paylaş'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           const SizedBox(height: 4),
 
           if (filteredAssignments.isEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
-                'Bu faaliyette seçilen tim için görevlendirilmiş personel kaydı bulunmuyor.',
+                'Bu faaliyette görevlendirilmiş personel bulunmuyor.',
                 style: TextStyle(
                   fontStyle: FontStyle.italic,
                   color: context.textSecondary,
+                  fontSize: 12,
                 ),
               ),
             )
@@ -223,14 +297,10 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                 ),
                 decoration: BoxDecoration(
                   color: context.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 3,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: context.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -241,7 +311,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                           Text(
                             nameText,
                             style: const TextStyle(
-                              fontSize: 14,
+                              fontSize: 13,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -249,7 +319,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                             Text(
                               subInfo,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: context.textSecondary,
                               ),
                             ),
@@ -266,41 +336,39 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isApproved
+                            ? context.approvedColor.withValues(alpha: 0.12)
+                            : (isPending
+                                  ? context.pendingColor.withValues(
+                                      alpha: 0.25,
+                                    )
+                                  : context.rejectedBgColor),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        isPending
+                            ? '${atama.gorevVeyaIzin} • BEKLİYOR'
+                            : atama.gorevVeyaIzin,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
                           color: isApproved
-                              ? context.approvedColor.withValues(alpha: 0.12)
+                              ? context.approvedColor
                               : (isPending
-                                    ? context.pendingColor.withValues(
-                                        alpha: 0.25,
-                                      )
-                                    : context.rejectedBgColor),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          isPending
-                              ? '${atama.gorevVeyaIzin} • BEKLİYOR'
-                              : atama.gorevVeyaIzin,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: isApproved
-                                ? context.approvedColor
-                                : (isPending
-                                      ? context.pendingColor
-                                      : context.rejectedColor),
-                          ),
+                                    ? context.pendingColor
+                                    : context.rejectedColor),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 2),
                     IconButton(
                       icon: Icon(
                         Icons.edit_outlined,
@@ -335,7 +403,6 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                         }
                       },
                     ),
-                    const SizedBox(width: 4),
                     IconButton(
                       icon: Icon(
                         Icons.delete_outline,
@@ -385,7 +452,6 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       },
                     ),
                     if (isAdmin && isPending) ...[
-                      const SizedBox(width: 4),
                       IconButton(
                         icon: Icon(
                           Icons.check_circle,
@@ -403,7 +469,6 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                           );
                         },
                       ),
-                      const SizedBox(width: 2),
                       IconButton(
                         icon: Icon(
                           Icons.cancel,
@@ -426,76 +491,6 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                 ),
               );
             }),
-          const Divider(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.share, size: 15),
-                  label: const Text(
-                    'Metin Listesi',
-                    style: TextStyle(fontSize: 11),
-                  ),
-                  onPressed: () {
-                    unawaited(
-                      MilitaryRosterExporter.shareTextRoster(
-                        faaliyetAdi: activity.faaliyetAdi,
-                        tarih: activity.tarih,
-                        rows: rosterRows,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.accentOrOlive,
-                    foregroundColor: context.onAccentOrOlive,
-                  ),
-                  icon: const Icon(Icons.table_chart, size: 15),
-                  label: const Text(
-                    'Excel Al',
-                    style: TextStyle(fontSize: 11),
-                  ),
-                  onPressed: () {
-                    unawaited(
-                      MilitaryRosterExporter.shareExcelRoster(
-                        faaliyetAdi: activity.faaliyetAdi,
-                        tarih: activity.tarih,
-                        rows: rosterRows,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.pdfButtonBg,
-                    foregroundColor: Colors.white,
-                  ),
-                  icon: const Icon(Icons.picture_as_pdf, size: 15),
-                  label: const Text(
-                    'PDF / Yazdır',
-                    style: TextStyle(fontSize: 11),
-                  ),
-                  onPressed: () {
-                    unawaited(
-                      PdfRosterExporter.showStylePickerAndSharePdf(
-                        context,
-                        faaliyetAdi: activity.faaliyetAdi,
-                        tarih: activity.tarih,
-                        rows: rosterRows,
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );

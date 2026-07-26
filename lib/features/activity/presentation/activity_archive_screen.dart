@@ -12,6 +12,7 @@ import 'package:personelapp2/features/activity/presentation/widgets/activity_sum
 import 'package:personelapp2/features/activity/presentation/widgets/archive_filter_bar.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_header_stats.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
+import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 
 class ActivityArchiveScreen extends ConsumerStatefulWidget {
   const ActivityArchiveScreen({super.key});
@@ -27,17 +28,10 @@ class _ActivityArchiveScreenState
   DateTime? _selectedDateFilter;
   int? _selectedSquadFilter; // null = Tümü
 
-  Future<void> _exportMasterExcel(
+  Future<List<MilitaryRosterRow>> _buildRosterRowsForMasterExport(
     List<GunlukFaaliyetTableData> activities,
     List<PersonelTableData> personnelList,
   ) async {
-    if (activities.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dışa aktarılacak faaliyet bulunamadı.')),
-      );
-      return;
-    }
-
     final db = ref.read(databaseProvider);
     final pMap = {for (final p in personnelList) p.id: p};
     final squadsList = ref.read(allSquadsProvider).value ?? [];
@@ -144,11 +138,24 @@ class _ActivityArchiveScreenState
         ),
       );
     }
+    return rosterRows;
+  }
 
+  Future<void> _exportMasterExcel(
+    List<GunlukFaaliyetTableData> activities,
+    List<PersonelTableData> personnelList,
+  ) async {
+    if (activities.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dışa aktarılacak faaliyet bulunamadı.')),
+      );
+      return;
+    }
+    final rows =
+        await _buildRosterRowsForMasterExport(activities, personnelList);
     final dateTitle = _selectedDateFilter != null
         ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
         : DateFormat('dd.MM.yyyy').format(DateTime.now());
-
     final mainActivityName = activities.length == 1
         ? activities.first.faaliyetAdi
         : 'GÜNLÜK TÜM FAALİYETLER';
@@ -156,7 +163,62 @@ class _ActivityArchiveScreenState
     await MilitaryRosterExporter.shareExcelRoster(
       faaliyetAdi: mainActivityName,
       tarih: dateTitle,
-      rows: rosterRows,
+      rows: rows,
+    );
+  }
+
+  Future<void> _exportMasterPdf(
+    List<GunlukFaaliyetTableData> activities,
+    List<PersonelTableData> personnelList,
+  ) async {
+    if (activities.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dışa aktarılacak faaliyet bulunamadı.')),
+      );
+      return;
+    }
+    final rows =
+        await _buildRosterRowsForMasterExport(activities, personnelList);
+    final dateTitle = _selectedDateFilter != null
+        ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
+        : DateFormat('dd.MM.yyyy').format(DateTime.now());
+    final mainActivityName = activities.length == 1
+        ? activities.first.faaliyetAdi
+        : 'GÜNLÜK TÜM FAALİYETLER';
+
+    if (mounted) {
+      await PdfRosterExporter.showStylePickerAndSharePdf(
+        context,
+        faaliyetAdi: mainActivityName,
+        tarih: dateTitle,
+        rows: rows,
+      );
+    }
+  }
+
+  Future<void> _exportMasterText(
+    List<GunlukFaaliyetTableData> activities,
+    List<PersonelTableData> personnelList,
+  ) async {
+    if (activities.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dışa aktarılacak faaliyet bulunamadı.')),
+      );
+      return;
+    }
+    final rows =
+        await _buildRosterRowsForMasterExport(activities, personnelList);
+    final dateTitle = _selectedDateFilter != null
+        ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
+        : DateFormat('dd.MM.yyyy').format(DateTime.now());
+    final mainActivityName = activities.length == 1
+        ? activities.first.faaliyetAdi
+        : 'GÜNLÜK TÜM FAALİYETLER';
+
+    await MilitaryRosterExporter.shareTextRoster(
+      faaliyetAdi: mainActivityName,
+      tarih: dateTitle,
+      rows: rows,
     );
   }
 
@@ -182,7 +244,8 @@ class _ActivityArchiveScreenState
       backgroundColor: context.colorScheme.surface,
       appBar: AppBar(
         title: Text(
-          isAdmin ? 'Faaliyet Arşivi & Onay Merkezi' : 'Tim Faaliyet Arşivi',
+          isAdmin ? 'Faaliyet Arşivi' : 'Tim Faaliyet Arşivi',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         actions: [
           if (_selectedDateFilter != null)
@@ -212,7 +275,7 @@ class _ActivityArchiveScreenState
         padding: EdgeInsets.zero,
         child: Column(
           children: [
-            // Header Metrics Card & Master Excel Button
+            // Header Metrics Card & Master Export Toolbar
             activitiesAsync.when(
               data: (activities) {
                 var filteredForExcel = activities;
@@ -229,6 +292,10 @@ class _ActivityArchiveScreenState
                   selectedDateStr: dateFilterStr,
                   onExportMasterExcel: () =>
                       _exportMasterExcel(filteredForExcel, personnelList),
+                  onExportMasterPdf: () =>
+                      _exportMasterPdf(filteredForExcel, personnelList),
+                  onExportMasterText: () =>
+                      _exportMasterText(filteredForExcel, personnelList),
                 );
               },
               loading: () => const SizedBox.shrink(),
