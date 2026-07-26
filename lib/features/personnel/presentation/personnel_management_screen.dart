@@ -7,6 +7,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/widgets/personnel_form_dialog.dart';
 
 class PersonnelManagementScreen extends ConsumerStatefulWidget {
@@ -424,6 +425,21 @@ class _PersonnelManagementScreenState
         title: const Text('Personel & Tim Yönetimi'),
         actions: [
           if (isAdmin) ...[
+            IconButton(
+              icon: const Icon(Icons.import_export_rounded),
+              tooltip: 'Verileri Yedekle & Geri Yükle',
+              onPressed: () async {
+                final db = ref.read(databaseProvider);
+                final res = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => BackupRestoreDialog(database: db),
+                );
+                if (res == true) {
+                  ref.invalidate(allPersonnelProvider);
+                  ref.invalidate(allSquadsProvider);
+                }
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.manage_accounts),
               tooltip: 'Komutan Yetki Devri',
