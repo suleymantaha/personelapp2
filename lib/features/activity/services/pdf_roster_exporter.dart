@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -402,10 +403,19 @@ class PdfRosterExporter {
     pw.Font? font;
     pw.Font? boldFont;
     try {
-      font = await PdfGoogleFonts.robotoRegular();
-      boldFont = await PdfGoogleFonts.robotoBold();
+      // Load bundled Roboto TTF — supports Turkish characters offline
+      final regularData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+      final boldData = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
+      font = pw.Font.ttf(regularData);
+      boldFont = pw.Font.ttf(boldData);
     } on Exception catch (_) {
-      // Fallback if offline
+      // Network fallback
+      try {
+        font = await PdfGoogleFonts.robotoRegular();
+        boldFont = await PdfGoogleFonts.robotoBold();
+      } on Exception catch (_) {
+        // Use built-in font as last resort
+      }
     }
 
     final pdf = pw.Document(
