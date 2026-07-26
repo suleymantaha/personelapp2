@@ -719,19 +719,23 @@ class _PersonnelManagementScreenState
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Personel Listesi (${personnelList.length} Kişi)',
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Text(
+                              'Personel Listesi (${personnelList.length} Kişi)',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Text(
                             'Resmi Tim & Kıdem Sıralı',
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: context.accentOrOlive,
+                              color: context.textSecondary,
                             ),
                           ),
                         ],

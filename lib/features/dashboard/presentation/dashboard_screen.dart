@@ -376,9 +376,9 @@ class DashboardScreen extends ConsumerWidget {
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
                 childAspectRatio: context.responsiveValue(
-                  mobile: 1.1,
-                  tablet: 1.2,
-                  desktop: 1.3,
+                  mobile: 1.2,
+                  tablet: 1.25,
+                  desktop: 1.35,
                 ),
                 children: [
                   _MenuCard(
@@ -464,23 +464,30 @@ class _MenuCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 40, color: color),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: color,
+              Icon(icon, size: 32, color: color),
+              const SizedBox(height: 6),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                 ),
               ),
-              Text(
-                subtitle,
-                style: TextStyle(fontSize: 12, color: context.textSecondary),
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  subtitle,
+                  style: TextStyle(fontSize: 11, color: context.textSecondary),
+                ),
               ),
             ],
           ),

@@ -226,48 +226,57 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: Colors.white.withValues(
-                              alpha: 0.2,
-                            ),
-                            child: Icon(
-                              isAdmin
-                                  ? Icons.admin_panel_settings
-                                  : Icons.military_tech,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                isAdmin
-                                    ? 'YÖNETİCİ KONTROL MERKEZİ'
-                                    : 'TİM KOMUTANLIĞI SÜZGECİ',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  letterSpacing: 0.5,
-                                ),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.2,
                               ),
-                              Text(
+                              child: Icon(
                                 isAdmin
-                                    ? 'Tüm timlerin günlük kayıtları burada toplanır'
-                                    : 'Sadece timinize ait faaliyetler gösterilmektedir',
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 11,
-                                ),
+                                    ? Icons.admin_panel_settings
+                                    : Icons.military_tech,
+                                color: Colors.white,
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isAdmin
+                                        ? 'YÖNETİCİ KONTROL MERKEZİ'
+                                        : 'TİM KOMUTANLIĞI SÜZGECİ',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  Text(
+                                    isAdmin
+                                        ? 'Tüm timlerin günlük kayıtları burada toplanır'
+                                        : 'Sadece timinize ait faaliyetler gösterilmektedir',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      if (isAdmin && pendingCount > 0)
+                      if (isAdmin && pendingCount > 0) ...[
+                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -286,6 +295,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                             ),
                           ),
                         ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 16),

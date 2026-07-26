@@ -47,4 +47,3 @@ GoRouter createAppRouter({bool hasActiveSession = false}) {
     ],
   );
 }
-
