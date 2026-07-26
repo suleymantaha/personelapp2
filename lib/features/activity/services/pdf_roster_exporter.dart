@@ -51,6 +51,20 @@ class PdfRosterExporter {
   }
 
   static pw.Widget builderSummaryBox(List<MilitaryRosterRow> rows) {
+    var hazirKitaCount = 0;
+    var guluskurCount = 0;
+    var digerCount = 0;
+
+    for (final r in rows) {
+      if (r.groupCode == 'HAZIR_KITA') {
+        hazirKitaCount++;
+      } else if (r.groupCode == 'GULUSKUR') {
+        guluskurCount++;
+      } else {
+        digerCount++;
+      }
+    }
+
     final ranks = rows.map((r) => r.rutbe).toList();
     final counts = RankSummaryCounts.calculate(ranks);
 
@@ -71,6 +85,16 @@ class PdfRosterExporter {
             ),
           ),
           pw.SizedBox(height: 4),
+          pw.Text(
+            'Hazır Kıta: $hazirKitaCount Personel  •  '
+            'Gülüşkür: $guluskurCount Personel  •  '
+            'Diğer: $digerCount Personel',
+            style: const pw.TextStyle(
+              fontSize: 9,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+          pw.SizedBox(height: 3),
           pw.Text(
             'Subay: ${counts.subayCount}  •  '
             'Astsubay: ${counts.astsubayCount}  •  '
@@ -212,10 +236,10 @@ class PdfRosterExporter {
 
       final specialBorder = isSpecialGroup
           ? (isSpLast
-              ? const pw.Border(
-                  bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-                )
-              : const pw.Border())
+                ? const pw.Border(
+                    bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
+                  )
+                : const pw.Border())
           : cellBorder;
 
       var specialCellText = '';

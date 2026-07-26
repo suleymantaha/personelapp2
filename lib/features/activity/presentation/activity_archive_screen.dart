@@ -47,15 +47,23 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
 
       final filtered = assignments.where((a) => DutyOrLeaveType.isOperationalDuty(a.gorevVeyaIzin)).toList()
         ..sort((a, b) {
+          final catA = MilitaryStructureHelper.getDutyCategoryOrder(a.gorevVeyaIzin);
+          final catB = MilitaryStructureHelper.getDutyCategoryOrder(b.gorevVeyaIzin);
+          if (catA != catB) return catA.compareTo(catB);
+
           final pA = pMap[a.personelId];
           final pB = pMap[b.personelId];
-          final wA = MilitaryStructureHelper.getSquadOrderWeight(pA?.birlik ?? '', duty: a.gorevVeyaIzin);
-          final wB = MilitaryStructureHelper.getSquadOrderWeight(pB?.birlik ?? '', duty: b.gorevVeyaIzin);
-          if (wA != wB) return wA.compareTo(wB);
 
-          final orderA = MilitaryStructureHelper.getDutyGroupOrder(a.gorevVeyaIzin);
-          final orderB = MilitaryStructureHelper.getDutyGroupOrder(b.gorevVeyaIzin);
-          if (orderA != orderB) return orderA.compareTo(orderB);
+          if (catA == 10) {
+            final rA = getRankWeight(pA?.rutbe ?? '');
+            final rB = getRankWeight(pB?.rutbe ?? '');
+            if (rA != rB) return rA.compareTo(rB);
+            return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
+          }
+
+          final wA = MilitaryStructureHelper.getSquadOrderWeight(pA?.birlik ?? '');
+          final wB = MilitaryStructureHelper.getSquadOrderWeight(pB?.birlik ?? '');
+          if (wA != wB) return wA.compareTo(wB);
 
           final rA = getRankWeight(pA?.rutbe ?? '');
           final rB = getRankWeight(pB?.rutbe ?? '');
@@ -72,7 +80,15 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         final rutbe = p?.rutbe ?? '';
         final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
         final birligi = MilitaryStructureHelper.getOfficialBirlikName(p?.birlik ?? '', duty: atama.gorevVeyaIzin);
-        final digerNote = atama.aciklama ?? atama.gorevVeyaIzin;
+        final digerNote = MilitaryStructureHelper.getDigerCellText(atama.gorevVeyaIzin, aciklama: atama.aciklama);
+
+        var groupCode = 'DIGER';
+        final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
+        if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
+          groupCode = 'HAZIR_KITA';
+        } else if (dutyUpper.contains('GÜLÜŞKÜR') || dutyUpper.contains('GULUSKUR')) {
+          groupCode = 'GULUSKUR';
+        }
 
         rosterRows.add(
           MilitaryRosterRow(
@@ -80,7 +96,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
             birligi: birligi,
             rutbe: rutbe,
             adSoyad: adSoyad,
-            diger: '$digerNote (${atama.durum})',
+            diger: digerNote.isEmpty ? '' : '$digerNote (${atama.durum})',
+            groupCode: groupCode,
           ),
         );
       }
@@ -643,10 +660,24 @@ class _AssignmentDetails extends ConsumerWidget {
         filteredAssignments.where((atama) {
           return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
         }).toList()..sort((a, b) {
+          // 1. Primary Roster Category: 10 (Nöbet Heyeti) -> 20 (Operasyonel) -> 30 (Hazır Kıta) -> 40 (Gülüşkür)
+          final catA = MilitaryStructureHelper.getDutyCategoryOrder(a.gorevVeyaIzin);
+          final catB = MilitaryStructureHelper.getDutyCategoryOrder(b.gorevVeyaIzin);
+          if (catA != catB) return catA.compareTo(catB);
+
           final pA = pMap[a.personelId];
           final pB = pMap[b.personelId];
 
-          // 1. Group by official squad order ('Nöbet Heyeti' -> 'K.H' -> "1'inci Bl. K.H" -> '1-B Timi' ... '12-B Timi')
+          // 2. If both are Nöbet Heyeti (cat = 10), sort by Rank Seniority then Name
+          if (catA == 10) {
+            final rA = getRankWeight(pA?.rutbe ?? '');
+            final rB = getRankWeight(pB?.rutbe ?? '');
+            if (rA != rB) return rA.compareTo(rB);
+            return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
+          }
+
+          // 3. For Operasyonel (20), Hazır Kıta (30), and Gülüşkür (40):
+          // Group by official squad order ('K.H' -> "1'inci Bl. K.H" -> '1-B Timi' ... '12-B Timi')
           final timNameA =
               (pA?.timId != null && squadMap.containsKey(pA!.timId))
               ? squadMap[pA.timId]!
@@ -662,21 +693,16 @@ class _AssignmentDetails extends ConsumerWidget {
               ? pB.birlik
               : timNameB;
 
-          final wBirlikA = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikA, duty: a.gorevVeyaIzin);
-          final wBirlikB = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikB, duty: b.gorevVeyaIzin);
+          final wBirlikA = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikA);
+          final wBirlikB = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikB);
           if (wBirlikA != wBirlikB) return wBirlikA.compareTo(wBirlikB);
 
-          // 2. Operational duties first, Hazır Kıta and Gülüşkür at the bottom within the same squad
-          final orderA = MilitaryStructureHelper.getDutyGroupOrder(a.gorevVeyaIzin);
-          final orderB = MilitaryStructureHelper.getDutyGroupOrder(b.gorevVeyaIzin);
-          if (orderA != orderB) return orderA.compareTo(orderB);
-
-          // 3. Sort strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
+          // 4. Sort strictly by Military Rank Seniority (Subay -> Astsubay -> Uzman Jandarma -> Uzman Erbaş -> Er)
           final weightA = getRankWeight(pA?.rutbe ?? '');
           final weightB = getRankWeight(pB?.rutbe ?? '');
           if (weightA != weightB) return weightA.compareTo(weightB);
 
-          // 4. Alphabetical name sort
+          // 5. Alphabetical name sort
           return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
         });
 
@@ -696,16 +722,18 @@ class _AssignmentDetails extends ConsumerWidget {
       final officialBirlik = MilitaryStructureHelper.getOfficialBirlikName(rawBirlik, duty: atama.gorevVeyaIzin);
 
       var groupCode = 'DIGER';
-      var digerText = atama.aciklama ?? atama.gorevVeyaIzin;
       final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
       if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
         groupCode = 'HAZIR_KITA';
-        digerText = 'HAZIR KITA';
       } else if (dutyUpper.contains('GÜLÜŞKÜR') ||
           dutyUpper.contains('GULUSKUR')) {
         groupCode = 'GULUSKUR';
-        digerText = 'GÜLÜŞKÜR';
       }
+
+      final digerText = MilitaryStructureHelper.getDigerCellText(
+        atama.gorevVeyaIzin,
+        aciklama: atama.aciklama,
+      );
 
       rosterRows.add(
         MilitaryRosterRow(

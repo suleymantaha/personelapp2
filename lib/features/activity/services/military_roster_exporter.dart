@@ -212,6 +212,20 @@ class MilitaryRosterExporter {
     }
 
     // Summary Section
+    var hazirKitaCount = 0;
+    var guluskurCount = 0;
+    var digerCount = 0;
+
+    for (final r in rows) {
+      if (r.groupCode == 'HAZIR_KITA') {
+        hazirKitaCount++;
+      } else if (r.groupCode == 'GULUSKUR') {
+        guluskurCount++;
+      } else {
+        digerCount++;
+      }
+    }
+
     final ranks = rows.map((r) => r.rutbe).toList();
     final counts = RankSummaryCounts.calculate(ranks);
 
@@ -223,6 +237,12 @@ class MilitaryRosterExporter {
         '  <tr><td colspan="5" class="summary-hdr">GÖREV VE MEVCUT ÖZETİ</td></tr>',
       );
 
+    final dutySummaryStr =
+        'Hazır Kıta: $hazirKitaCount Personel  •  Gülüşkür: $guluskurCount Personel  •  Diğer: $digerCount Personel';
+    sb.writeln(
+      '  <tr><td colspan="5" class="left bold">${escapeXml(dutySummaryStr)}</td></tr>',
+    );
+
     final summaryItems = [
       if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
       if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
@@ -230,7 +250,7 @@ class MilitaryRosterExporter {
         'Uzman Jandarma: ${counts.uzmanJandarmaCount}',
       if (counts.uzmanErbasCount > 0) 'Uzman Erbaş: ${counts.uzmanErbasCount}',
       if (counts.erCount > 0) 'Er / Erbaş: ${counts.erCount}',
-      'TOPLAM MEVCUT: ${counts.totalCount}',
+      'TOPLAM MEVCUT: ${counts.totalCount} Personel',
     ];
 
     for (final item in summaryItems) {

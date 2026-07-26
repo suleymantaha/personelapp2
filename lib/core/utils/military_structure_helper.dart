@@ -53,6 +53,31 @@ class MilitaryStructureHelper {
     return timOrBirlik.isNotEmpty ? timOrBirlik : 'Asayiş Timi';
   }
 
+  /// Returns primary roster category order: 10 (Nöbet Heyeti), 20 (Operasyonel), 30 (Hazır Kıta), 40 (Gülüşkür)
+  static int getDutyCategoryOrder(String duty) {
+    final upper = duty.toUpperCase().trim();
+    if (isNobetciHeyetiDuty(duty)) return 10;
+    if (upper.contains('HAZIR KITA') || upper.contains('HAZIRKITA')) return 30;
+    if (upper.contains('GÜLÜŞKÜR') || upper.contains('GULUSKUR')) return 40;
+    return 20; // Operasyonel görevler (HEYBET, Devriye, Pusu vb.)
+  }
+
+  /// Returns text for the DİĞER (Görev/Açıklama) column based on duty category
+  static String getDigerCellText(String duty, {String? aciklama}) {
+    final upper = duty.toUpperCase().trim();
+    if (upper.contains('HAZIR KITA') || upper.contains('HAZIRKITA')) {
+      return 'HAZIR KITA';
+    }
+    if (upper.contains('GÜLÜŞKÜR') || upper.contains('GULUSKUR')) {
+      return 'GÜLÜŞKÜR';
+    }
+    if (isNobetciHeyetiDuty(duty)) {
+      final text = aciklama ?? duty;
+      return text.trim();
+    }
+    return ''; // Operasyonel görevler için DİĞER kısmına yazı yazılmayacak (BOŞ)
+  }
+
   /// Returns duty group order weight: 1 for operational/guard duties, 2 for Hazır Kıta, 3 for Gülüşkür
   static int getDutyGroupOrder(String duty) {
     final upper = duty.toUpperCase().trim();
