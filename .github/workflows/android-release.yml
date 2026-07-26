@@ -1,0 +1,98 @@
+name: Android Release Build
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch: # manuel tetikleme için
+
+permissions:
+  contents: write # Release oluşturmak için
+  artifacts: write
+
+jobs:
+  build:
+    name: Build Release APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # 1. Repository'yi checkout et
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tag'ler için gerekli
+
+      # 2. Java 17 kur (Flutter 3.x için)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      # 3. Flutter kur
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.3' # projeyi build eden sürüm
+          channel: 'stable'
+          cache: true
+
+      # 4. Dependencies indir
+      - name: Get dependencies
+        run: flutter pub get
+
+      # 5. Kod analizi (opsiyonel ama önerilir)
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      # 6. Testler (varsa)
+      - name: Run tests
+        run: flutter test --no-coverage
+
+      # 7. Release APK build et
+      - name: Build Release APK
+        run: flutter build apk --release --split-per-abi
+        # --split-per-abi: arm64-v8a, armeabi-v7a, x86_64 ayrı APK'lar (daha küçük)
+        # tek APK isterseniz: flutter build apk --release
+
+      # 8. Release App Bundle de build et (Play Store için)
+      - name: Build Release App Bundle
+        run: flutter build appbundle --release
+
+      # 9. Version bilgisini al (pubspec.yaml'dan)
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION_NAME=$(echo $VERSION | cut -d'+' -f1)" >> $GITHUB_OUTPUT
+          echo "VERSION_CODE=$(echo $VERSION | cut -d'+' -f2)" >> $GITHUB_OUTPUT
+
+      # 10. APK'ları artifact olarak yükle (Workflow run sayfasından indirilebilir)
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk-${{ steps.version.outputs.VERSION_NAME }}-${{ steps.version.outputs.VERSION_CODE }}
+          path: |
+            build/app/outputs/flutter-apk/*.apk
+            build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      # 11. Tag push edilirse GitHub Release oluştur ve APK'ları ekle
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            build/app/outputs/flutter-apk/*.apk
+            build/app/outputs/bundle/release/app-release.aab
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
