@@ -551,7 +551,29 @@ class PdfRosterExporter {
     return file;
   }
 
-  /// Displays a modal bottom sheet to select from 3 PDF styles and exports/shares the PDF
+  /// Opens interactive full-screen PDF Print Preview & Direct Printing dialog
+  static Future<void> previewAndPrintPdf({
+    required String faaliyetAdi,
+    required String tarih,
+    required List<MilitaryRosterRow> rows,
+    PdfRosterStyle style = PdfRosterStyle.verticalBlock,
+  }) async {
+    final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
+    await Printing.layoutPdf(
+      name: '${sanitizedTitle}_Listesi_$tarih',
+      onLayout: (format) async {
+        final pdf = await generateRosterPdf(
+          faaliyetAdi: faaliyetAdi,
+          tarih: tarih,
+          rows: rows,
+          style: style,
+        );
+        return pdf.save();
+      },
+    );
+  }
+
+  /// Displays a modal bottom sheet to select from 3 PDF styles and opens live print preview
   static Future<void> showStylePickerAndSharePdf(
     BuildContext context, {
     required String faaliyetAdi,
@@ -576,7 +598,7 @@ class PdfRosterExporter {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Çıktı almak istediğiniz resmi PDF düzenini seçin:',
+                  'Çıktı almak veya önizlemek istediğiniz resmi PDF düzenini seçin:',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
@@ -621,21 +643,12 @@ class PdfRosterExporter {
     );
 
     if (selectedStyle != null && context.mounted) {
-      final savedFile = await sharePdfRoster(
+      await previewAndPrintPdf(
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
         rows: rows,
         style: selectedStyle,
       );
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('✅ PDF İndirilenler klasörüne kaydedildi:\n${savedFile.path}'),
-            duration: const Duration(seconds: 4),
-          ),
-        );
-      }
     }
   }
 }
