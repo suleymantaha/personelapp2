@@ -200,6 +200,10 @@ class PdfRosterExporter {
       }
     }
 
+    const cellBorder = pw.Border(
+      bottom: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
+    );
+
     for (var i = 0; i < n; i++) {
       final r = rows[i];
       final isEven = i.isEven;
@@ -208,7 +212,13 @@ class PdfRosterExporter {
       // Birlik merge boundaries
       final bSt = birlikStart[i];
       final bEn = birlikEnd[i];
-      final isBInside = i < bEn;
+      final isBLast = i == bEn;
+
+      final birlikBorder = isBLast
+          ? const pw.Border(
+              bottom: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
+            )
+          : const pw.Border();
 
       // Determine text placement inside Birlik cell
       var birlikCellText = '';
@@ -222,7 +232,15 @@ class PdfRosterExporter {
       final spSt = specialStart[i];
       final spEn = specialEnd[i];
       final isSpecialGroup = spSt != -1;
-      final isSpInside = isSpecialGroup && i < spEn;
+      final isSpLast = isSpecialGroup && i == spEn;
+
+      final specialBorder = isSpecialGroup
+          ? (isSpLast
+                ? const pw.Border(
+                    bottom: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
+                  )
+                : const pw.Border())
+          : cellBorder;
 
       var specialCellText = '';
       var specialAlignment = pw.Alignment.center;
@@ -247,6 +265,7 @@ class PdfRosterExporter {
             // S. NU
             pw.Container(
               height: 18,
+              decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
                 horizontal: 2,
@@ -257,12 +276,13 @@ class PdfRosterExporter {
                 style: const pw.TextStyle(fontSize: 8.5),
               ),
             ),
-            // BİRLİĞİ (Dynamically Merged Cell - white cover hides inner horizontal gridlines)
+            // BİRLİĞİ (Dynamically Merged Cell)
             pw.Container(
               height: 18,
-              decoration: isBInside
-                  ? const pw.BoxDecoration(color: PdfColors.white)
-                  : null,
+              decoration: pw.BoxDecoration(
+                border: birlikBorder,
+                color: PdfColors.white,
+              ),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
                 horizontal: 3,
@@ -280,6 +300,7 @@ class PdfRosterExporter {
             // RÜTBE
             pw.Container(
               height: 18,
+              decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
                 horizontal: 2,
@@ -293,6 +314,7 @@ class PdfRosterExporter {
             // ADI SOYADI
             pw.Container(
               height: 18,
+              decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
                 horizontal: 4,
@@ -310,9 +332,10 @@ class PdfRosterExporter {
             // DİĞER (Dynamically Merged Cell for Special Duties)
             pw.Container(
               height: 18,
-              decoration: isSpInside
-                  ? const pw.BoxDecoration(color: PdfColors.white)
-                  : null,
+              decoration: pw.BoxDecoration(
+                border: specialBorder,
+                color: isSpecialGroup ? PdfColors.white : null,
+              ),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
                 horizontal: 2,
@@ -344,7 +367,6 @@ class PdfRosterExporter {
         top: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
         bottom: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
         verticalInside: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
-        horizontalInside: pw.BorderSide(width: 0.5, color: PdfColors.grey700),
       ),
       columnWidths: const {
         0: pw.FlexColumnWidth(0.8), // S. NU
