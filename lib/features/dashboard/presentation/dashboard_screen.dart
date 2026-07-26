@@ -65,7 +65,9 @@ class DashboardScreen extends ConsumerWidget {
                       Navigator.of(ctx).pop();
                       ScaffoldMessenger.of(ctx).showSnackBar(
                         SnackBar(
-                          content: const Text('Şifreniz başarıyla güncellendi!'),
+                          content: const Text(
+                            'Şifreniz başarıyla güncellendi!',
+                          ),
                           backgroundColor: context.approvedColor,
                         ),
                       );
@@ -291,7 +293,7 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(userSessionProvider);
-    final isAdmin = session?.isAdmin ?? true;
+    final isAdmin = session?.isAdmin ?? false;
     final pendingAsync = ref.watch(pendingAssignmentsProvider);
 
     final crossAxisCount = context.gridCrossAxisCount();
@@ -411,7 +413,9 @@ class DashboardScreen extends ConsumerWidget {
                       color: Colors.blue.shade700,
                       onTap: () async {
                         final db = ref.read(databaseProvider);
-                        final activityRepo = ref.read(activityRepositoryProvider);
+                        final activityRepo = ref.read(
+                          activityRepositoryProvider,
+                        );
                         await showDialog<bool>(
                           context: context,
                           builder: (ctx) => BulkImportDialog(

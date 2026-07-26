@@ -19,7 +19,7 @@ class ActivityCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(userSessionProvider);
-    final isAdmin = session?.isAdmin ?? true;
+    final isAdmin = session?.isAdmin ?? false;
     final db = ref.watch(databaseProvider);
 
     return StreamBuilder<List<FaaliyetPersonelAtamaTableData>>(

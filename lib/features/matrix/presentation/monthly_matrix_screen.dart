@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
@@ -280,7 +281,14 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
             icon: const Icon(Icons.file_download),
             tooltip: "Excel'e Aktar",
             onPressed: () {
-              final personnel = personnelAsync.value ?? [];
+              final personnel =
+                  (session != null && !session.isAdmin && session.timId != null)
+                  ? (personnelAsync.value ?? [])
+                        .where((p) => p.timId == session.timId)
+                        .toList()
+                  : (session != null && !session.isAdmin)
+                  ? <PersonelTableData>[]
+                  : (personnelAsync.value ?? []);
               final matrixData = matrixAsync.value ?? {};
               if (personnel.isEmpty) return;
 

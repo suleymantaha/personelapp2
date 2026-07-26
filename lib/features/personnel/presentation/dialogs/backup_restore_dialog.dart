@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../../core/database/database.dart';
+import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/personnel/services/personnel_backup_service.dart';
 
 class BackupRestoreDialog extends StatefulWidget {
+  const BackupRestoreDialog({required this.database, super.key});
   final AppDatabase database;
-
-  const BackupRestoreDialog({super.key, required this.database});
 
   @override
   State<BackupRestoreDialog> createState() => _BackupRestoreDialogState();
@@ -16,6 +15,12 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
   final TextEditingController _textController = TextEditingController();
   bool _isLoading = false;
   String? _statusMessage;
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
 
   Future<void> _exportBackup() async {
     setState(() {
@@ -31,7 +36,7 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
         _textController.text = jsonStr;
         _statusMessage = '✅ Personel ve Tim yedeği başarıyla oluşturuldu!';
       });
-    } catch (e) {
+    } on Object catch (e) {
       setState(() {
         _statusMessage = '❌ Hata oluştu: $e';
       });
@@ -46,7 +51,8 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
     final input = _textController.text.trim();
     if (input.isEmpty) {
       setState(() {
-        _statusMessage = '⚠️ Lütfen aktarılacak yedek metnini kutuya yapıştırın.';
+        _statusMessage =
+            '⚠️ Lütfen aktarılacak yedek metnini kutuya yapıştırın.';
       });
       return;
     }
@@ -61,9 +67,10 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
       final count = await service.importBackupJson(input);
 
       setState(() {
-        _statusMessage = '🎉 Başarılı! $count adet yeni personel ve tim veritabanına aktarıldı.';
+        _statusMessage =
+            '🎉 Başarılı! $count adet yeni personel ve tim veritabanına aktarıldı.';
       });
-    } catch (e) {
+    } on Object catch (e) {
       setState(() {
         _statusMessage = '❌ Geçersiz yedek formatı veya hata: $e';
       });
@@ -87,7 +94,11 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
           children: [
             Row(
               children: [
-                const Icon(Icons.import_export_rounded, color: Colors.teal, size: 28),
+                const Icon(
+                  Icons.import_export_rounded,
+                  color: Colors.teal,
+                  size: 28,
+                ),
                 const SizedBox(width: 10),
                 const Text(
                   'Personel Verilerini Yedekle & Geri Yükle',
@@ -142,7 +153,10 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: Text(_statusMessage!, style: const TextStyle(fontWeight: FontWeight.w600)),
+                child: Text(
+                  _statusMessage!,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
               ),
             Expanded(
               child: Stack(
@@ -152,10 +166,16 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
                     maxLines: null,
                     expands: true,
                     textAlignVertical: TextAlignVertical.top,
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                    ),
                     decoration: InputDecoration(
-                      hintText: 'Dışa aktarılan yedek koda buradan ulaşabilir veya geri yükleyeceğiniz yedeği buraya yapıştırabilirsiniz...',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      hintText:
+                          'Dışa aktarılan yedek koda buradan ulaşabilir veya geri yükleyeceğiniz yedeği buraya yapıştırabilirsiniz...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       filled: true,
                       fillColor: Colors.grey.shade50,
                     ),
@@ -165,15 +185,22 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
                       top: 8,
                       right: 8,
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: _textController.text));
-                          ScaffoldMessenger.of(context).showSnackBar(
+                        onPressed: () async {
+                          await Clipboard.setData(
+                            ClipboardData(text: _textController.text),
+                          );
+                          if (!mounted) {
+                            return;
+                          }
+                          ScaffoldMessenger.of(this.context).showSnackBar(
                             const SnackBar(content: Text('Yedek kopyalandı!')),
                           );
                         },
                         icon: const Icon(Icons.copy, size: 16),
                         label: const Text('Kopyala'),
-                        style: ElevatedButton.styleFrom(visualDensity: VisualDensity.compact),
+                        style: ElevatedButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                        ),
                       ),
                     ),
                 ],

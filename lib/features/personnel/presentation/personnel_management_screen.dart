@@ -136,7 +136,9 @@ class _PersonnelManagementScreenState
                       if (u.isEmpty || selectedSquadId == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Lütfen kullanıcı adı ve tim seçiniz.'),
+                            content: Text(
+                              'Lütfen kullanıcı adı ve tim seçiniz.',
+                            ),
                           ),
                         );
                         return;
@@ -365,7 +367,10 @@ class _PersonnelManagementScreenState
                   const SizedBox(height: 8),
                   Text(
                     '💡 Atanan Tim Komutanı ilk girişinde kendi parolasını belirleyecektir.',
-                    style: TextStyle(fontSize: 12, color: context.textSecondary),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -415,7 +420,7 @@ class _PersonnelManagementScreenState
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(userSessionProvider);
-    final isAdmin = session?.isAdmin ?? true;
+    final isAdmin = session?.isAdmin ?? false;
 
     final personnelAsync = ref.watch(allPersonnelProvider);
     final squadsAsync = ref.watch(allSquadsProvider);
@@ -435,8 +440,9 @@ class _PersonnelManagementScreenState
                   builder: (ctx) => BackupRestoreDialog(database: db),
                 );
                 if (res == true) {
-                  ref.invalidate(allPersonnelProvider);
-                  ref.invalidate(allSquadsProvider);
+                  ref
+                    ..invalidate(allPersonnelProvider)
+                    ..invalidate(allSquadsProvider);
                 }
               },
             ),
@@ -668,10 +674,14 @@ class _PersonnelManagementScreenState
                   // Filter by squad & commander permissions & search query
                   final personnelList = rawPersonnelList.where((p) {
                     // If Commander, restrict to commander's squad
-                    if (!isAdmin &&
-                        session?.timId != null &&
-                        p.timId != session?.timId) {
-                      return false;
+                    if (!isAdmin) {
+                      if (session?.timId == null) {
+                        return false;
+                      }
+
+                      if (p.timId != session?.timId) {
+                        return false;
+                      }
                     }
 
                     // Squad filter chip selection

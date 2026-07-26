@@ -22,8 +22,7 @@ class ActivityArchiveScreen extends ConsumerStatefulWidget {
       _ActivityArchiveScreenState();
 }
 
-class _ActivityArchiveScreenState
-    extends ConsumerState<ActivityArchiveScreen> {
+class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
   String _searchQuery = '';
   DateTime? _selectedDateFilter;
   int? _selectedSquadFilter; // null = Tümü
@@ -151,8 +150,10 @@ class _ActivityArchiveScreenState
       );
       return;
     }
-    final rows =
-        await _buildRosterRowsForMasterExport(activities, personnelList);
+    final rows = await _buildRosterRowsForMasterExport(
+      activities,
+      personnelList,
+    );
     final dateTitle = _selectedDateFilter != null
         ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
         : DateFormat('dd.MM.yyyy').format(DateTime.now());
@@ -177,8 +178,10 @@ class _ActivityArchiveScreenState
       );
       return;
     }
-    final rows =
-        await _buildRosterRowsForMasterExport(activities, personnelList);
+    final rows = await _buildRosterRowsForMasterExport(
+      activities,
+      personnelList,
+    );
     final dateTitle = _selectedDateFilter != null
         ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
         : DateFormat('dd.MM.yyyy').format(DateTime.now());
@@ -206,8 +209,10 @@ class _ActivityArchiveScreenState
       );
       return;
     }
-    final rows =
-        await _buildRosterRowsForMasterExport(activities, personnelList);
+    final rows = await _buildRosterRowsForMasterExport(
+      activities,
+      personnelList,
+    );
     final dateTitle = _selectedDateFilter != null
         ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
         : DateFormat('dd.MM.yyyy').format(DateTime.now());
@@ -225,7 +230,7 @@ class _ActivityArchiveScreenState
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(userSessionProvider);
-    final isAdmin = session?.isAdmin ?? true;
+    final isAdmin = session?.isAdmin ?? false;
 
     final activitiesAsync = ref.watch(filteredActivitiesProvider);
     final squadsAsync = ref.watch(allSquadsProvider);
@@ -234,7 +239,10 @@ class _ActivityArchiveScreenState
 
     final pendingCount = pendingAsync.value?.length ?? 0;
     final squads = squadsAsync.value ?? [];
-    final personnelList = personnelAsync.value ?? [];
+    final allPersonnel = personnelAsync.value ?? [];
+    final personnelList = (!isAdmin && session?.timId != null)
+        ? allPersonnel.where((p) => p.timId == session!.timId).toList()
+        : (!isAdmin ? <PersonelTableData>[] : allPersonnel);
 
     final dateFilterStr = _selectedDateFilter != null
         ? DateFormat('yyyy-MM-dd').format(_selectedDateFilter!)
@@ -324,11 +332,11 @@ class _ActivityArchiveScreenState
                 data: (activities) {
                   final filtered = activities.where((act) {
                     final nameMatch = act.faaliyetAdi.toLowerCase().contains(
-                          _searchQuery,
-                        );
+                      _searchQuery,
+                    );
                     final dateMatch = act.tarih.toLowerCase().contains(
-                          _searchQuery,
-                        );
+                      _searchQuery,
+                    );
                     final dateFilterMatch =
                         dateFilterStr == null || act.tarih == dateFilterStr;
                     return (nameMatch || dateMatch) && dateFilterMatch;

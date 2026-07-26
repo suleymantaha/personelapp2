@@ -24,6 +24,15 @@ class EditAssignmentDialog extends ConsumerStatefulWidget {
 }
 
 class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
+  static const List<String> _adminOnlyDuties = [
+    DutyOrLeaveType.heybetKomutani,
+    DutyOrLeaveType.nobSb,
+    DutyOrLeaveType.mebsNob,
+    DutyOrLeaveType.garajNob,
+    DutyOrLeaveType.ttzaNob,
+    DutyOrLeaveType.kuleNob,
+  ];
+
   late String _selectedDuty;
   late TextEditingController _noteController;
 
@@ -65,6 +74,12 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredDuties = widget.isAdmin
+        ? availableDuties
+        : availableDuties
+              .where((duty) => !_adminOnlyDuties.contains(duty))
+              .toList(growable: false);
+
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Row(
@@ -106,7 +121,7 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
                   vertical: 12,
                 ),
               ),
-              items: availableDuties.map((d) {
+              items: filteredDuties.map((d) {
                 return DropdownMenuItem(value: d, child: Text(d));
               }).toList(),
               onChanged: (val) {
