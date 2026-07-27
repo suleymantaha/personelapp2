@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/utils/military_structure_helper.dart';
 
 class ArchiveFilterBar extends StatelessWidget {
   const ArchiveFilterBar({
@@ -22,6 +23,10 @@ class ArchiveFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sortedSquads = MilitaryStructureHelper.sortSquads(
+      squads,
+      (squad) => squad.timAdi,
+    );
     return Column(
       children: [
         Padding(
@@ -71,7 +76,7 @@ class ArchiveFilterBar extends StatelessWidget {
                   onSelected: (_) => onSquadSelected(null),
                 ),
                 const SizedBox(width: 8),
-                ...squads.map((sq) {
+                ...sortedSquads.map((sq) {
                   final isSel = selectedSquadId == sq.id;
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),

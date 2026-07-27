@@ -791,7 +791,6 @@ class _PersonnelManagementScreenState
                             side: BorderSide(color: context.cardBorderColor),
                           ),
                           child: ExpansionTile(
-                            initiallyExpanded: true,
                             title: Text(
                               squadName,
                               style: TextStyle(

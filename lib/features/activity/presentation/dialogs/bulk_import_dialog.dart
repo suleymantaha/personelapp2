@@ -6,11 +6,13 @@ import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
 
 class BulkImportDialog extends StatefulWidget {
-
   const BulkImportDialog({
-    required this.database, required this.activityRepository, super.key,
+    required this.database,
+    required this.activityRepository,
+    super.key,
   });
   final AppDatabase database;
   final ActivityRepository activityRepository;
@@ -24,6 +26,7 @@ class _BulkImportDialogState extends State<BulkImportDialog>
   final TextEditingController _textController = TextEditingController();
   List<ParsedActivityBlock> _parsedBlocks = [];
   List<PersonelTableData> _allPersonnel = [];
+  List<TimTableData> _allSquads = [];
   bool _isParsing = false;
   bool _isSaving = false;
   late TabController _tabController;
@@ -43,34 +46,36 @@ class _BulkImportDialogState extends State<BulkImportDialog>
   }
 
   Future<void> _loadPersonnel() async {
-      final list = await widget.database
-          .select(widget.database.personelTable)
-          .get();
-      setState(() {
-        _allPersonnel = list;
-      });
-    }
+    final list =
+        await widget.database.select(widget.database.personelTable).get();
+    final squads = await widget.database.select(widget.database.timTable).get();
+    if (!mounted) return;
+    setState(() {
+      _allPersonnel = list;
+      _allSquads = squads;
+    });
+  }
 
-    /// Converts DutyOrLeaveType enum value back to raw activity type for display
-    /// e.g., "GÜLÜŞKÜR" -> "Gülüşkür", "HAZIR KITA" -> "Hazır Kıta", "GÖREVLİ" -> "Görev"
-    String _getRawActivityType(String dutyOrLeaveType) {
-      switch (dutyOrLeaveType.toUpperCase().trim()) {
-        case 'GÜLÜŞKÜR':
-          return 'Gülüşkür';
-        case 'HAZIR KITA':
-          return 'Hazır Kıta';
-        case 'HEYBET':
-          return 'Heybet';
-        case 'GÖREVLİ':
-          return 'Görev';
-        case 'NÖBETÇİ':
-          return 'Nöbetçi';
-        default:
-          return dutyOrLeaveType;
-      }
+  /// Converts DutyOrLeaveType enum value back to raw activity type for display
+  /// e.g., "GÜLÜŞKÜR" -> "Gülüşkür", "HAZIR KITA" -> "Hazır Kıta", "GÖREVLİ" -> "Görev"
+  String _getRawActivityType(String dutyOrLeaveType) {
+    switch (dutyOrLeaveType.toUpperCase().trim()) {
+      case 'GÜLÜŞKÜR':
+        return 'Gülüşkür';
+      case 'HAZIR KITA':
+        return 'Hazır Kıta';
+      case 'HEYBET':
+        return 'Heybet';
+      case 'GÖREVLİ':
+        return 'Görev';
+      case 'NÖBETÇİ':
+        return 'Nöbetçi';
+      default:
+        return dutyOrLeaveType;
     }
+  }
 
-    Future<void> _processText() async {
+  Future<void> _processText() async {
     final rawText = _textController.text;
     if (rawText.trim().isEmpty) return;
 
@@ -99,86 +104,87 @@ class _BulkImportDialogState extends State<BulkImportDialog>
   }
 
   Future<void> _saveAllToFaaliyet() async {
-      if (_parsedBlocks.isEmpty) return;
+    if (_parsedBlocks.isEmpty) return;
 
-      setState(() {
-        _isSaving = true;
-      });
+    setState(() {
+      _isSaving = true;
+    });
 
-      try {
-        var successCount = 0;
+    try {
+      var successCount = 0;
 
-        for (final block in _parsedBlocks) {
-          // Get raw activity type for display (parsedActivityType contains DutyOrLeaveType value)
-          final rawActivityType = _getRawActivityType(block.parsedActivityType);
+      for (final block in _parsedBlocks) {
+        // Get raw activity type for display (parsedActivityType contains DutyOrLeaveType value)
+        final rawActivityType = _getRawActivityType(block.parsedActivityType);
 
-          final title =
-              '${block.parsedTimName} - ${rawActivityType}${block.parsedTimeRange != null ? " (${block.parsedTimeRange})" : ""}';
+        final title =
+            '${block.parsedTimName} - ${rawActivityType}${block.parsedTimeRange != null ? " (${block.parsedTimeRange})" : ""}';
 
-          // parsedActivityType already contains the mapped DutyOrLeaveType value (e.g., GÜLÜŞKÜR, HAZIR KITA)
-          final gorevVeyaIzin = block.parsedActivityType;
+        // parsedActivityType already contains the mapped DutyOrLeaveType value (e.g., GÜLÜŞKÜR, HAZIR KITA)
+        final gorevVeyaIzin = block.parsedActivityType;
 
-          // Build description from time range and raw activity type
-          final descriptionParts = <String>[];
-          if (block.parsedTimeRange != null && block.parsedTimeRange!.isNotEmpty) {
-            descriptionParts.add('Saat: ${block.parsedTimeRange}');
-          }
-          if (rawActivityType.isNotEmpty) {
-            descriptionParts.add('Görev Türü: ${rawActivityType}');
-          }
-          final aciklama = descriptionParts.join(' | ');
-
-          final payload = block.personnelList
-              .where((p) => p.matchedPersonnelId != null)
-              .map(
-                (p) => {
-                  'personelId': p.matchedPersonnelId!,
-                  'gorevVeyaIzin': gorevVeyaIzin,
-                  'aciklama': aciklama,
-                },
-              )
-              .toList();
-
-          if (payload.isNotEmpty) {
-            await widget.activityRepository.createActivityWithAssignments(
-              faaliyetAdi: title,
-              tarih: block.parsedDate,
-              olusturanKullanici: 'Admin (Toplu Aktarım)',
-              personnelAssignments: payload,
-            );
-          }
-          successCount++;
+        // Build description from time range and raw activity type
+        final descriptionParts = <String>[];
+        if (block.parsedTimeRange != null &&
+            block.parsedTimeRange!.isNotEmpty) {
+          descriptionParts.add('Saat: ${block.parsedTimeRange}');
         }
+        if (rawActivityType.isNotEmpty) {
+          descriptionParts.add('Görev Türü: ${rawActivityType}');
+        }
+        final aciklama = descriptionParts.join(' | ');
 
-        if (mounted) {
-          Navigator.pop(context, true);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '$successCount adet faaliyet ve personelleri başarıyla eklendi.',
-              ),
-              backgroundColor: Colors.green.shade700,
-              behavior: SnackBarBehavior.floating,
-            ),
+        final payload = block.personnelList
+            .where((p) => p.matchedPersonnelId != null)
+            .map(
+              (p) => {
+                'personelId': p.matchedPersonnelId!,
+                'gorevVeyaIzin': gorevVeyaIzin,
+                'aciklama': aciklama,
+              },
+            )
+            .toList();
+
+        if (payload.isNotEmpty) {
+          await widget.activityRepository.createActivityWithAssignments(
+            faaliyetAdi: title,
+            tarih: block.parsedDate,
+            olusturanKullanici: 'Admin (Toplu Aktarım)',
+            personnelAssignments: payload,
           );
         }
-      } on Object catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Hata oluştu: $e'),
-              backgroundColor: Colors.red,
+        successCount++;
+      }
+
+      if (mounted) {
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '$successCount adet faaliyet ve personelleri başarıyla eklendi.',
             ),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isSaving = false;
-          });
-        }
+            backgroundColor: Colors.green.shade700,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } on Object catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
       }
     }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -448,7 +454,8 @@ class _BulkImportDialogState extends State<BulkImportDialog>
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: context.accentOrOlive.withValues(alpha: 0.08),
+                              color:
+                                  context.accentOrOlive.withValues(alpha: 0.08),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -600,7 +607,8 @@ class _BulkImportDialogState extends State<BulkImportDialog>
                     decoration: BoxDecoration(
                       color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                      border:
+                          Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -701,75 +709,85 @@ class _BulkImportDialogState extends State<BulkImportDialog>
                       ),
                       Expanded(
                         flex: 6,
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<int?>(
-                            value: item.matchedPersonnelId,
-                            isDense: true,
-                            isExpanded: true,
-                            hint: const Text(
-                              '⚠️ Eşleşmedi',
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            items: [
-                              const DropdownMenuItem<int?>(
-                                value: null,
-                                child: Text(
-                                  '-- Seçin --',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                              ..._allPersonnel.map(
-                                (p) => DropdownMenuItem<int?>(
-                                  value: p.id,
-                                  child: Text(
-                                    '${p.rutbe} ${p.adSoyad}',
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                ),
-                              ),
-                            ],
-                            onChanged: (selectedId) {
-                              if (selectedId != null) {
-                                final p = _allPersonnel.firstWhere(
-                                  (element) => element.id == selectedId,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () async {
+                            final normalizedTim = block.parsedTimName
+                                .toLowerCase()
+                                .replaceAll('timi', '')
+                                .replaceAll(' ', '');
+                            final preferredTimId = _allSquads
+                                .where(
+                                  (squad) => squad.timAdi
+                                      .toLowerCase()
+                                      .replaceAll('timi', '')
+                                      .replaceAll(' ', '')
+                                      .contains(normalizedTim),
+                                )
+                                .map((squad) => squad.id)
+                                .firstOrNull;
+                            final person = await showPersonnelPicker(
+                              context: context,
+                              personnel: _allPersonnel,
+                              squads: _allSquads,
+                              selectedPersonnelId: item.matchedPersonnelId,
+                              preferredTimId:
+                                  item.matchedTimId ?? preferredTimId,
+                            );
+                            if (person != null && mounted) {
+                              setState(() {
+                                final updatedList =
+                                    List<ParsedPersonnelItem>.from(
+                                  block.personnelList,
                                 );
-                                setState(() {
-                                  final updatedList =
-                                      List<ParsedPersonnelItem>.from(
-                                        block.personnelList,
-                                      );
-                                  updatedList[pIdx] = item.copyWith(
-                                    matchedPersonnelId: p.id,
-                                    matchedAdSoyad: p.adSoyad,
-                                    matchedRutbe: p.rutbe,
-                                    matchedTimId: p.timId,
-                                    matchConfidence: 1,
-                                  );
-                                  _parsedBlocks[blockIdx] = block.copyWith(
-                                    personnelList: updatedList,
-                                  );
-                                });
-                              }
-                            },
+                                updatedList[pIdx] = item.copyWith(
+                                  matchedPersonnelId: person.id,
+                                  matchedAdSoyad: person.adSoyad,
+                                  matchedRutbe: person.rutbe,
+                                  matchedTimId: person.timId,
+                                  matchConfidence: 1,
+                                );
+                                _parsedBlocks[blockIdx] = block.copyWith(
+                                  personnelList: updatedList,
+                                );
+                              });
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 8,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        item.isMatched
+                                            ? '${item.matchedRutbe} ${item.matchedAdSoyad}'
+                                            : 'Personel seçin',
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: item.isMatched
+                                              ? null
+                                              : Colors.red,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    const Icon(Icons.search, size: 18),
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                _MatchStatusIndicator(item: item),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        item.isMatched
-                            ? Icons.check_circle_rounded
-                            : Icons.warning_amber_rounded,
-                        color: item.isMatched
-                            ? context.approvedColor
-                            : Colors.amber.shade800,
-                        size: 18,
                       ),
                     ],
                   ),
@@ -778,6 +796,56 @@ class _BulkImportDialogState extends State<BulkImportDialog>
             }),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MatchStatusIndicator extends StatelessWidget {
+  const _MatchStatusIndicator({required this.item});
+
+  final ParsedPersonnelItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color, icon) = switch (item.matchConfidence) {
+      >= 0.9 when item.isMatched => (
+          'Eşleşti',
+          context.approvedColor,
+          Icons.check_circle_rounded,
+        ),
+      > 0 when item.isMatched => (
+          'Kontrol edin',
+          Colors.orange.shade800,
+          Icons.help_rounded,
+        ),
+      _ => (
+          'Eşleşmedi',
+          Colors.red.shade700,
+          Icons.warning_amber_rounded,
+        ),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 12),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }

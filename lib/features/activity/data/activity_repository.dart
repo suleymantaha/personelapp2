@@ -3,10 +3,246 @@ import 'package:drift/drift.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
+enum ActivityDateChangeStatus {
+  success,
+  unchanged,
+  targetDateOccupied,
+  activityNotFound,
+  invalidDate,
+}
+
+class ActivityDateChangePreview {
+  const ActivityDateChangePreview({
+    required this.status,
+    required this.oldDate,
+    required this.newDate,
+    required this.assignmentCount,
+    required this.pendingAssignmentCount,
+  });
+
+  final ActivityDateChangeStatus status;
+  final String oldDate;
+  final String newDate;
+  final int assignmentCount;
+  final int pendingAssignmentCount;
+
+  bool get canChange =>
+      status == ActivityDateChangeStatus.success ||
+      status == ActivityDateChangeStatus.unchanged;
+}
+
+class ActivityDateChangeResult extends ActivityDateChangePreview {
+  const ActivityDateChangeResult({
+    required super.status,
+    required super.oldDate,
+    required super.newDate,
+    required super.assignmentCount,
+    required super.pendingAssignmentCount,
+  });
+}
+
 class ActivityRepository {
   ActivityRepository(this.db);
 
   final AppDatabase db;
+
+  bool _isValidIsoDate(String value) {
+    if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) return false;
+    final parsed = DateTime.tryParse(value);
+    if (parsed == null) return false;
+    final canonical = '${parsed.year.toString().padLeft(4, '0')}-'
+        '${parsed.month.toString().padLeft(2, '0')}-'
+        '${parsed.day.toString().padLeft(2, '0')}';
+    return canonical == value;
+  }
+
+  Future<ActivityDateChangePreview> previewActivityDateChange({
+    required int activityId,
+    required String newDate,
+  }) async {
+    final activity = await (db.select(
+      db.gunlukFaaliyetTable,
+    )..where((tbl) => tbl.id.equals(activityId)))
+        .getSingleOrNull();
+    if (activity == null) {
+      return ActivityDateChangePreview(
+        status: ActivityDateChangeStatus.activityNotFound,
+        oldDate: '',
+        newDate: newDate,
+        assignmentCount: 0,
+        pendingAssignmentCount: 0,
+      );
+    }
+
+    final assignments = await (db.select(
+      db.faaliyetPersonelAtamaTable,
+    )..where((tbl) => tbl.faaliyetId.equals(activityId)))
+        .get();
+    if (!_isValidIsoDate(newDate)) {
+      return ActivityDateChangePreview(
+        status: ActivityDateChangeStatus.invalidDate,
+        oldDate: activity.tarih,
+        newDate: newDate,
+        assignmentCount: assignments.length,
+        pendingAssignmentCount: 0,
+      );
+    }
+    if (activity.tarih == newDate) {
+      return ActivityDateChangePreview(
+        status: ActivityDateChangeStatus.unchanged,
+        oldDate: activity.tarih,
+        newDate: newDate,
+        assignmentCount: assignments.length,
+        pendingAssignmentCount: 0,
+      );
+    }
+
+    final occupied = await (db.select(db.gunlukFaaliyetTable)
+          ..where(
+            (tbl) => tbl.tarih.equals(newDate) & tbl.id.isNotValue(activityId),
+          ))
+        .get();
+    if (occupied.isNotEmpty) {
+      return ActivityDateChangePreview(
+        status: ActivityDateChangeStatus.targetDateOccupied,
+        oldDate: activity.tarih,
+        newDate: newDate,
+        assignmentCount: assignments.length,
+        pendingAssignmentCount: 0,
+      );
+    }
+
+    final pendingCount = await _countApprovedAssignmentsBecomingPending(
+      assignments: assignments,
+      newDate: newDate,
+      movingActivityId: activityId,
+    );
+    return ActivityDateChangePreview(
+      status: ActivityDateChangeStatus.success,
+      oldDate: activity.tarih,
+      newDate: newDate,
+      assignmentCount: assignments.length,
+      pendingAssignmentCount: pendingCount,
+    );
+  }
+
+  Future<ActivityDateChangeResult> changeActivityDate({
+    required int activityId,
+    required String newDate,
+  }) {
+    return db.transaction(() async {
+      final preview = await previewActivityDateChange(
+        activityId: activityId,
+        newDate: newDate,
+      );
+      if (preview.status != ActivityDateChangeStatus.success) {
+        return ActivityDateChangeResult(
+          status: preview.status,
+          oldDate: preview.oldDate,
+          newDate: preview.newDate,
+          assignmentCount: preview.assignmentCount,
+          pendingAssignmentCount: preview.pendingAssignmentCount,
+        );
+      }
+
+      final activity = await (db.select(
+        db.gunlukFaaliyetTable,
+      )..where((tbl) => tbl.id.equals(activityId)))
+          .getSingle();
+      final assignments = await (db.select(
+        db.faaliyetPersonelAtamaTable,
+      )..where((tbl) => tbl.faaliyetId.equals(activityId)))
+          .get();
+      final reports = await db.select(db.raporKayitTable).get();
+
+      var pendingCount = 0;
+      for (final assignment in assignments) {
+        if (assignment.durum != AssignmentStatus.onaylandi) continue;
+        final hasReport = reports.any(
+          (report) =>
+              report.personelId == assignment.personelId &&
+              newDate.compareTo(report.raporBaslangic) >= 0 &&
+              newDate.compareTo(report.raporBitis) <= 0,
+        );
+        if (hasReport) {
+          await (db.update(db.faaliyetPersonelAtamaTable)
+                ..where((tbl) => tbl.id.equals(assignment.id)))
+              .write(
+            const FaaliyetPersonelAtamaTableCompanion(
+              durum: Value(AssignmentStatus.beklemede),
+            ),
+          );
+          pendingCount++;
+        }
+      }
+
+      final automaticTitle = 'Günlük Faaliyet (${activity.tarih})';
+      final newTitle = activity.faaliyetAdi == automaticTitle
+          ? 'Günlük Faaliyet ($newDate)'
+          : activity.faaliyetAdi;
+      await (db.update(
+        db.gunlukFaaliyetTable,
+      )..where((tbl) => tbl.id.equals(activityId)))
+          .write(
+        GunlukFaaliyetTableCompanion(
+          tarih: Value(newDate),
+          faaliyetAdi: Value(newTitle),
+        ),
+      );
+
+      return ActivityDateChangeResult(
+        status: ActivityDateChangeStatus.success,
+        oldDate: activity.tarih,
+        newDate: newDate,
+        assignmentCount: assignments.length,
+        pendingAssignmentCount: pendingCount,
+      );
+    });
+  }
+
+  Future<int> _countApprovedAssignmentsBecomingPending({
+    required List<FaaliyetPersonelAtamaTableData> assignments,
+    required String newDate,
+    required int movingActivityId,
+  }) async {
+    final reports = await db.select(db.raporKayitTable).get();
+    final otherRows = await (db
+            .select(
+      db.faaliyetPersonelAtamaTable,
+    )
+            .join([
+      innerJoin(
+        db.gunlukFaaliyetTable,
+        db.gunlukFaaliyetTable.id.equalsExp(
+          db.faaliyetPersonelAtamaTable.faaliyetId,
+        ),
+      ),
+    ])
+          ..where(
+            db.gunlukFaaliyetTable.tarih.equals(newDate) &
+                db.gunlukFaaliyetTable.id.isNotValue(movingActivityId) &
+                db.faaliyetPersonelAtamaTable.durum.equals(
+                  AssignmentStatus.onaylandi,
+                ),
+          ))
+        .get();
+    final occupiedPersonnelIds = otherRows
+        .map(
+          (row) => row.readTable(db.faaliyetPersonelAtamaTable).personelId,
+        )
+        .toSet();
+
+    return assignments.where((assignment) {
+      if (assignment.durum != AssignmentStatus.onaylandi) return false;
+      final hasReport = reports.any(
+        (report) =>
+            report.personelId == assignment.personelId &&
+            newDate.compareTo(report.raporBaslangic) >= 0 &&
+            newDate.compareTo(report.raporBitis) <= 0,
+      );
+      return hasReport || occupiedPersonnelIds.contains(assignment.personelId);
+    }).length;
+  }
 
   /// Watch activities with optional date range filter and pagination
   Stream<List<GunlukFaaliyetTableData>> watchAllActivities({
@@ -33,11 +269,11 @@ class ActivityRepository {
   /// Merges duplicate activity entries for the same date and cleans up orphaned duplicates
   Future<void> consolidateDuplicateActivities() async {
     await db.transaction(() async {
-      final allActs =
-          await (db.select(db.gunlukFaaliyetTable)..orderBy([
-                (tbl) => OrderingTerm(expression: tbl.id),
-              ]))
-              .get();
+      final allActs = await (db.select(db.gunlukFaaliyetTable)
+            ..orderBy([
+              (tbl) => OrderingTerm(expression: tbl.id),
+            ]))
+          .get();
 
       final seenDates = <String, int>{};
       for (final act in allActs) {
@@ -47,21 +283,24 @@ class ActivityRepository {
 
           final dupAssignments = await (db.select(
             db.faaliyetPersonelAtamaTable,
-          )..where((tbl) => tbl.faaliyetId.equals(duplicateId))).get();
+          )..where((tbl) => tbl.faaliyetId.equals(duplicateId)))
+              .get();
 
           for (final atama in dupAssignments) {
             final existsInPrimary =
-                await (db.select(db.faaliyetPersonelAtamaTable)..where(
-                      (tbl) =>
-                          tbl.faaliyetId.equals(primaryId) &
-                          tbl.personelId.equals(atama.personelId),
-                    ))
+                await (db.select(db.faaliyetPersonelAtamaTable)
+                      ..where(
+                        (tbl) =>
+                            tbl.faaliyetId.equals(primaryId) &
+                            tbl.personelId.equals(atama.personelId),
+                      ))
                     .getSingleOrNull();
 
             if (existsInPrimary == null) {
               await (db.update(
                 db.faaliyetPersonelAtamaTable,
-              )..where((tbl) => tbl.id.equals(atama.id))).write(
+              )..where((tbl) => tbl.id.equals(atama.id)))
+                  .write(
                 FaaliyetPersonelAtamaTableCompanion(
                   faaliyetId: Value(primaryId),
                 ),
@@ -69,13 +308,15 @@ class ActivityRepository {
             } else {
               await (db.delete(
                 db.faaliyetPersonelAtamaTable,
-              )..where((tbl) => tbl.id.equals(atama.id))).go();
+              )..where((tbl) => tbl.id.equals(atama.id)))
+                  .go();
             }
           }
 
           await (db.delete(
             db.gunlukFaaliyetTable,
-          )..where((tbl) => tbl.id.equals(duplicateId))).go();
+          )..where((tbl) => tbl.id.equals(duplicateId)))
+              .go();
         } else {
           seenDates[act.tarih] = act.id;
         }
@@ -85,9 +326,10 @@ class ActivityRepository {
 
   /// Watch pending duty assignments
   Stream<List<FaaliyetPersonelAtamaTableData>> watchPendingAssignments() {
-    return (db.select(db.faaliyetPersonelAtamaTable)..where(
-          (tbl) => tbl.durum.equals(AssignmentStatus.beklemede),
-        ))
+    return (db.select(db.faaliyetPersonelAtamaTable)
+          ..where(
+            (tbl) => tbl.durum.equals(AssignmentStatus.beklemede),
+          ))
         .watch();
   }
 
@@ -102,13 +344,14 @@ class ActivityRepository {
           db.faaliyetPersonelAtamaTable.faaliyetId,
         ),
       ),
-    ])..where(db.gunlukFaaliyetTable.tarih.equals(dateStr));
+    ])
+      ..where(db.gunlukFaaliyetTable.tarih.equals(dateStr));
 
     return query.watch().map(
-      (rows) => rows
-          .map((row) => row.readTable(db.faaliyetPersonelAtamaTable))
-          .toList(),
-    );
+          (rows) => rows
+              .map((row) => row.readTable(db.faaliyetPersonelAtamaTable))
+              .toList(),
+        );
   }
 
   /// Watch all activities for a specific team/squad
@@ -126,7 +369,8 @@ class ActivityRepository {
           db.faaliyetPersonelAtamaTable.personelId,
         ),
       ),
-    ])..where(db.personelTable.timId.equals(timId));
+    ])
+      ..where(db.personelTable.timId.equals(timId));
 
     return query.watch().map((rows) {
       final map = <int, GunlukFaaliyetTableData>{};
@@ -150,7 +394,8 @@ class ActivityRepository {
       // 1. Check if an activity record already exists for this date
       final existingActs = await (db.select(
         db.gunlukFaaliyetTable,
-      )..where((tbl) => tbl.tarih.equals(tarih))).get();
+      )..where((tbl) => tbl.tarih.equals(tarih)))
+          .get();
 
       int actId;
       if (existingActs.isNotEmpty) {
@@ -158,16 +403,15 @@ class ActivityRepository {
         // Optionally update activity title if needed
         await (db.update(
           db.gunlukFaaliyetTable,
-        )..where((tbl) => tbl.id.equals(actId))).write(
+        )..where((tbl) => tbl.id.equals(actId)))
+            .write(
           GunlukFaaliyetTableCompanion(
             faaliyetAdi: Value(faaliyetAdi),
             olusturanKullanici: Value(olusturanKullanici),
           ),
         );
       } else {
-        actId = await db
-            .into(db.gunlukFaaliyetTable)
-            .insert(
+        actId = await db.into(db.gunlukFaaliyetTable).insert(
               GunlukFaaliyetTableCompanion.insert(
                 faaliyetAdi: faaliyetAdi,
                 tarih: tarih,
@@ -199,7 +443,8 @@ class ActivityRepository {
             db.faaliyetPersonelAtamaTable.faaliyetId,
           ),
         ),
-      ])..where(db.gunlukFaaliyetTable.tarih.equals(tarih));
+      ])
+        ..where(db.gunlukFaaliyetTable.tarih.equals(tarih));
 
       final existingRows = await query.get();
       final existingAssignments = existingRows.map((row) {
@@ -238,17 +483,19 @@ class ActivityRepository {
         }
 
         // Check if assignment already exists for this activity & personnel
-        final currentAssignment =
-            await (db.select(db.faaliyetPersonelAtamaTable)..where(
-                  (tbl) =>
-                      tbl.faaliyetId.equals(actId) & tbl.personelId.equals(pId),
-                ))
-                .getSingleOrNull();
+        final currentAssignment = await (db
+                .select(db.faaliyetPersonelAtamaTable)
+              ..where(
+                (tbl) =>
+                    tbl.faaliyetId.equals(actId) & tbl.personelId.equals(pId),
+              ))
+            .getSingleOrNull();
 
         if (currentAssignment != null) {
           await (db.update(
             db.faaliyetPersonelAtamaTable,
-          )..where((tbl) => tbl.id.equals(currentAssignment.id))).write(
+          )..where((tbl) => tbl.id.equals(currentAssignment.id)))
+              .write(
             FaaliyetPersonelAtamaTableCompanion(
               gorevVeyaIzin: Value(gorev),
               durum: Value(evaluatedStatus),
@@ -256,9 +503,7 @@ class ActivityRepository {
             ),
           );
         } else {
-          await db
-              .into(db.faaliyetPersonelAtamaTable)
-              .insert(
+          await db.into(db.faaliyetPersonelAtamaTable).insert(
                 FaaliyetPersonelAtamaTableCompanion.insert(
                   faaliyetId: actId,
                   personelId: pId,
@@ -276,30 +521,32 @@ class ActivityRepository {
 
   /// Approve all pending assignments for a specific activity
   Future<int> approveAllAssignmentsForActivity(int activityId) async {
-    return (db.update(db.faaliyetPersonelAtamaTable)..where(
-          (tbl) =>
-              tbl.faaliyetId.equals(activityId) &
-              tbl.durum.equals(AssignmentStatus.beklemede),
-        ))
+    return (db.update(db.faaliyetPersonelAtamaTable)
+          ..where(
+            (tbl) =>
+                tbl.faaliyetId.equals(activityId) &
+                tbl.durum.equals(AssignmentStatus.beklemede),
+          ))
         .write(
-          const FaaliyetPersonelAtamaTableCompanion(
-            durum: Value(AssignmentStatus.onaylandi),
-          ),
-        );
+      const FaaliyetPersonelAtamaTableCompanion(
+        durum: Value(AssignmentStatus.onaylandi),
+      ),
+    );
   }
 
   /// Reject all pending assignments for a specific activity
   Future<int> rejectAllAssignmentsForActivity(int activityId) async {
-    return (db.update(db.faaliyetPersonelAtamaTable)..where(
-          (tbl) =>
-              tbl.faaliyetId.equals(activityId) &
-              tbl.durum.equals(AssignmentStatus.beklemede),
-        ))
+    return (db.update(db.faaliyetPersonelAtamaTable)
+          ..where(
+            (tbl) =>
+                tbl.faaliyetId.equals(activityId) &
+                tbl.durum.equals(AssignmentStatus.beklemede),
+          ))
         .write(
-          const FaaliyetPersonelAtamaTableCompanion(
-            durum: Value(AssignmentStatus.reddedildi),
-          ),
-        );
+      const FaaliyetPersonelAtamaTableCompanion(
+        durum: Value(AssignmentStatus.reddedildi),
+      ),
+    );
   }
 
   /// Approve or Reject a pending assignment
@@ -313,7 +560,8 @@ class ActivityRepository {
   Future<int> deleteAssignment(int assignmentId) {
     return (db.delete(
       db.faaliyetPersonelAtamaTable,
-    )..where((tbl) => tbl.id.equals(assignmentId))).go();
+    )..where((tbl) => tbl.id.equals(assignmentId)))
+        .go();
   }
 
   /// Update assignment duty type, note, and status
@@ -325,7 +573,8 @@ class ActivityRepository {
   }) {
     return (db.update(
       db.faaliyetPersonelAtamaTable,
-    )..where((tbl) => tbl.id.equals(assignmentId))).write(
+    )..where((tbl) => tbl.id.equals(assignmentId)))
+        .write(
       FaaliyetPersonelAtamaTableCompanion(
         gorevVeyaIzin: Value(gorevVeyaIzin),
         aciklama: Value(aciklama),
@@ -365,7 +614,8 @@ class ActivityRepository {
           db.faaliyetPersonelAtamaTable.faaliyetId,
         ),
       ),
-    ])..where(db.gunlukFaaliyetTable.tarih.equals(tarih));
+    ])
+      ..where(db.gunlukFaaliyetTable.tarih.equals(tarih));
 
     final existingRows = await query.get();
     final existingAssignments = existingRows.map((row) {
@@ -392,9 +642,7 @@ class ActivityRepository {
       evaluatedStatus = AssignmentStatus.beklemede;
     }
 
-    return db
-        .into(db.faaliyetPersonelAtamaTable)
-        .insert(
+    return db.into(db.faaliyetPersonelAtamaTable).insert(
           FaaliyetPersonelAtamaTableCompanion.insert(
             faaliyetId: faaliyetId,
             personelId: personelId,
@@ -412,9 +660,7 @@ class ActivityRepository {
     required String raporBitis,
     String? aciklama,
   }) {
-    return db
-        .into(db.raporKayitTable)
-        .insert(
+    return db.into(db.raporKayitTable).insert(
           RaporKayitTableCompanion.insert(
             personelId: personelId,
             raporBaslangic: raporBaslangic,

@@ -27,6 +27,23 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
   DateTime? _selectedDateFilter;
   int? _selectedSquadFilter; // null = Tümü
 
+  String _buildExportDateTitle(
+    List<GunlukFaaliyetTableData> activities,
+  ) {
+    final dates = activities.map((activity) => activity.tarih).toSet().toList()
+      ..sort();
+    if (dates.isEmpty) {
+      return DateFormat('dd.MM.yyyy').format(DateTime.now());
+    }
+    String display(String isoDate) {
+      final parsed = DateTime.tryParse(isoDate);
+      return parsed == null ? isoDate : DateFormat('dd.MM.yyyy').format(parsed);
+    }
+
+    if (dates.length == 1) return display(dates.single);
+    return '${display(dates.first)} - ${display(dates.last)}';
+  }
+
   Future<List<MilitaryRosterRow>> _buildRosterRowsForMasterExport(
     List<GunlukFaaliyetTableData> activities,
     List<PersonelTableData> personnelList,
@@ -42,7 +59,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
     for (final act in activities) {
       final assignments = await (db.select(
         db.faaliyetPersonelAtamaTable,
-      )..where((tbl) => tbl.faaliyetId.equals(act.id))).get();
+      )..where((tbl) => tbl.faaliyetId.equals(act.id)))
+          .get();
 
       for (final a in assignments) {
         if (!seenAssignmentIds.contains(a.id) &&
@@ -78,15 +96,19 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       final timNameB = (pB?.timId != null && squadMap.containsKey(pB!.timId))
           ? squadMap[pB.timId]!
           : '';
-      final rawBirlikA = (pA?.birlik != null && pA!.birlik.isNotEmpty)
-          ? pA.birlik
-          : timNameA;
-      final rawBirlikB = (pB?.birlik != null && pB!.birlik.isNotEmpty)
-          ? pB.birlik
-          : timNameB;
+      final birlikA = MilitaryStructureHelper.getRosterBirlikName(
+        timName: timNameA,
+        birlik: pA?.birlik ?? '',
+        duty: a.gorevVeyaIzin,
+      );
+      final birlikB = MilitaryStructureHelper.getRosterBirlikName(
+        timName: timNameB,
+        birlik: pB?.birlik ?? '',
+        duty: b.gorevVeyaIzin,
+      );
 
-      final wA = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikA);
-      final wB = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikB);
+      final wA = MilitaryStructureHelper.getSquadOrderWeight(birlikA);
+      final wB = MilitaryStructureHelper.getSquadOrderWeight(birlikB);
       if (wA != wB) return wA.compareTo(wB);
 
       final rA = getRankWeight(pA?.rutbe ?? '');
@@ -105,11 +127,9 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       final timName = (p?.timId != null && squadMap.containsKey(p!.timId))
           ? squadMap[p.timId]!
           : '';
-      final rawBirlik = (p?.birlik != null && p!.birlik.isNotEmpty)
-          ? p.birlik
-          : timName;
-      final birligi = MilitaryStructureHelper.getOfficialBirlikName(
-        rawBirlik,
+      final birligi = MilitaryStructureHelper.getRosterBirlikName(
+        timName: timName,
+        birlik: p?.birlik ?? '',
         duty: atama.gorevVeyaIzin,
       );
       final digerNote = MilitaryStructureHelper.getDigerCellText(
@@ -154,9 +174,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       activities,
       personnelList,
     );
-    final dateTitle = _selectedDateFilter != null
-        ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
-        : DateFormat('dd.MM.yyyy').format(DateTime.now());
+    final dateTitle = _buildExportDateTitle(activities);
     final mainActivityName = activities.length == 1
         ? activities.first.faaliyetAdi
         : 'GÜNLÜK TÜM FAALİYETLER';
@@ -182,9 +200,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       activities,
       personnelList,
     );
-    final dateTitle = _selectedDateFilter != null
-        ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
-        : DateFormat('dd.MM.yyyy').format(DateTime.now());
+    final dateTitle = _buildExportDateTitle(activities);
     final mainActivityName = activities.length == 1
         ? activities.first.faaliyetAdi
         : 'GÜNLÜK TÜM FAALİYETLER';
@@ -213,9 +229,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       activities,
       personnelList,
     );
-    final dateTitle = _selectedDateFilter != null
-        ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
-        : DateFormat('dd.MM.yyyy').format(DateTime.now());
+    final dateTitle = _buildExportDateTitle(activities);
     final mainActivityName = activities.length == 1
         ? activities.first.faaliyetAdi
         : 'GÜNLÜK TÜM FAALİYETLER';
@@ -307,8 +321,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                 );
               },
               loading: () => const SizedBox.shrink(),
-                            error: (err, _) => const SizedBox.shrink(),
-                          ),
+              error: (err, _) => const SizedBox.shrink(),
+            ),
 
             // Filters Bar: Search & Squad Tabs for Admin
             ArchiveFilterBar(
@@ -332,11 +346,11 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                 data: (activities) {
                   final filtered = activities.where((act) {
                     final nameMatch = act.faaliyetAdi.toLowerCase().contains(
-                      _searchQuery,
-                    );
+                          _searchQuery,
+                        );
                     final dateMatch = act.tarih.toLowerCase().contains(
-                      _searchQuery,
-                    );
+                          _searchQuery,
+                        );
                     final dateFilterMatch =
                         dateFilterStr == null || act.tarih == dateFilterStr;
                     return (nameMatch || dateMatch) && dateFilterMatch;
@@ -365,6 +379,12 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                       return ActivityCard(
                         activity: act,
                         selectedSquadId: _selectedSquadFilter,
+                        onDateChanged: (newDate) {
+                          final parsed = DateTime.tryParse(newDate);
+                          if (parsed != null) {
+                            setState(() => _selectedDateFilter = parsed);
+                          }
+                        },
                       );
                     },
                   );

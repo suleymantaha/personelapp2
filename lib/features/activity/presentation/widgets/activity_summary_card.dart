@@ -1,20 +1,143 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
 
 class ActivityCard extends ConsumerWidget {
   const ActivityCard({
     required this.activity,
+    required this.onDateChanged,
     this.selectedSquadId,
     super.key,
   });
 
   final GunlukFaaliyetTableData activity;
+  final ValueChanged<String> onDateChanged;
   final int? selectedSquadId;
+
+  Future<void> _changeDate(
+    BuildContext context,
+    WidgetRef ref,
+    int assignmentCount,
+  ) async {
+    final currentDate = DateTime.tryParse(activity.tarih) ?? DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: currentDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (picked == null || !context.mounted) return;
+    final newDate = DateFormat('yyyy-MM-dd').format(picked);
+    final repository = ref.read(activityRepositoryProvider);
+    final preview = await repository.previewActivityDateChange(
+      activityId: activity.id,
+      newDate: newDate,
+    );
+    if (!context.mounted) return;
+
+    if (preview.status == ActivityDateChangeStatus.unchanged) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Faaliyet zaten seçilen tarihte.')),
+      );
+      return;
+    }
+    if (preview.status == ActivityDateChangeStatus.targetDateOccupied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${DateFormat('dd.MM.yyyy').format(picked)} tarihinde zaten '
+            'faaliyet kaydı var. Önce hedef kaydı düzenleyin.',
+          ),
+          backgroundColor: context.pendingColor,
+        ),
+      );
+      return;
+    }
+    if (!preview.canChange) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tarih değişikliği hazırlanamadı.'),
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Faaliyet Tarihini Değiştir'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${DateFormat('dd.MM.yyyy').format(currentDate)} → '
+              '${DateFormat('dd.MM.yyyy').format(picked)}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text('$assignmentCount personel yeni tarihe taşınacak.'),
+            if (preview.pendingAssignmentCount > 0) ...[
+              const SizedBox(height: 8),
+              Text(
+                '${preview.pendingAssignmentCount} personel rapor/görev '
+                'çakışması nedeniyle yeniden onaya alınacak.',
+                style: TextStyle(color: context.pendingColor),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('İPTAL'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('TARİHİ DEĞİŞTİR'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final result = await repository.changeActivityDate(
+      activityId: activity.id,
+      newDate: newDate,
+    );
+    if (!context.mounted) return;
+    if (result.status == ActivityDateChangeStatus.success) {
+      onDateChanged(result.newDate);
+      final pendingMessage = result.pendingAssignmentCount > 0
+          ? ' ${result.pendingAssignmentCount} personel yeniden onay bekliyor.'
+          : '';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${result.assignmentCount} personel '
+            '${DateFormat('dd.MM.yyyy').format(picked)} tarihine taşındı.'
+            '$pendingMessage',
+          ),
+          backgroundColor: context.approvedColor,
+        ),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Tarih değiştirilemedi. Hedef tarih yeniden kontrol edilmelidir.',
+        ),
+        backgroundColor: context.rejectedColor,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,7 +148,8 @@ class ActivityCard extends ConsumerWidget {
     return StreamBuilder<List<FaaliyetPersonelAtamaTableData>>(
       stream: (db.select(
         db.faaliyetPersonelAtamaTable,
-      )..where((tbl) => tbl.faaliyetId.equals(activity.id))).watch(),
+      )..where((tbl) => tbl.faaliyetId.equals(activity.id)))
+          .watch(),
       builder: (context, snapshot) {
         final assignments = snapshot.data ?? [];
         final hasPending = assignments.any(
@@ -132,6 +256,18 @@ class ActivityCard extends ConsumerWidget {
                         ),
                       IconButton(
                         icon: Icon(
+                          Icons.edit_calendar_outlined,
+                          color: context.accentOrOlive,
+                        ),
+                        tooltip: 'Faaliyet Tarihini Değiştir',
+                        onPressed: () => _changeDate(
+                          context,
+                          ref,
+                          assignments.length,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
                           Icons.delete_outline,
                           color: context.rejectedColor,
                         ),
@@ -163,7 +299,8 @@ class ActivityCard extends ConsumerWidget {
                           if (confirm == true) {
                             await (db.delete(
                               db.gunlukFaaliyetTable,
-                            )..where((tbl) => tbl.id.equals(activity.id))).go();
+                            )..where((tbl) => tbl.id.equals(activity.id)))
+                                .go();
                           }
                         },
                       ),
