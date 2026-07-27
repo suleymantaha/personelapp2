@@ -7,6 +7,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/widgets/personnel_form_dialog.dart';
 
@@ -694,13 +695,16 @@ class _PersonnelManagementScreenState
                     }
 
                     // Search query filter
-                    if (_searchQuery.isNotEmpty) {
-                      final q = _searchQuery.toLowerCase();
-                      final nameMatch = p.adSoyad.toLowerCase().contains(q);
-                      final rankMatch = p.rutbe.toLowerCase().contains(q);
-                      final unitMatch = p.birlik.toLowerCase().contains(q);
-                      if (!nameMatch && !rankMatch && !unitMatch) return false;
-                    }
+                                        if (_searchQuery.isNotEmpty) {
+                                          // Use fuzzy matching for better search results
+                                          final matches = PersonnelFuzzyMatcher.searchPersonnel(
+                                            _searchQuery,
+                                            [p],
+                                            threshold: 0.3, // Lower threshold for filtering
+                                            maxResults: 1,
+                                          );
+                                          if (matches.isEmpty) return false;
+                                        }
 
                     return true;
                   }).toList();
@@ -820,14 +824,14 @@ class _PersonnelManagementScreenState
                                 color: context.cardBorderColor,
                               ),
                               ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: members.length,
-                                separatorBuilder: (_, _) => Divider(
-                                  height: 1,
-                                  color: context.cardBorderColor,
-                                ),
-                                itemBuilder: (context, index) {
+                                                              shrinkWrap: true,
+                                                              physics: const NeverScrollableScrollPhysics(),
+                                                              itemCount: members.length,
+                                                              separatorBuilder: (context, _) => Divider(
+                                                                height: 1,
+                                                                color: context.cardBorderColor,
+                                                              ),
+                                                              itemBuilder: (context, index) {
                                   final p = members[index];
 
                                   return ListTile(

@@ -43,15 +43,34 @@ class _BulkImportDialogState extends State<BulkImportDialog>
   }
 
   Future<void> _loadPersonnel() async {
-    final list = await widget.database
-        .select(widget.database.personelTable)
-        .get();
-    setState(() {
-      _allPersonnel = list;
-    });
-  }
+      final list = await widget.database
+          .select(widget.database.personelTable)
+          .get();
+      setState(() {
+        _allPersonnel = list;
+      });
+    }
 
-  Future<void> _processText() async {
+    /// Converts DutyOrLeaveType enum value back to raw activity type for display
+    /// e.g., "GÜLÜŞKÜR" -> "Gülüşkür", "HAZIR KITA" -> "Hazır Kıta", "GÖREVLİ" -> "Görev"
+    String _getRawActivityType(String dutyOrLeaveType) {
+      switch (dutyOrLeaveType.toUpperCase().trim()) {
+        case 'GÜLÜŞKÜR':
+          return 'Gülüşkür';
+        case 'HAZIR KITA':
+          return 'Hazır Kıta';
+        case 'HEYBET':
+          return 'Heybet';
+        case 'GÖREVLİ':
+          return 'Görev';
+        case 'NÖBETÇİ':
+          return 'Nöbetçi';
+        default:
+          return dutyOrLeaveType;
+      }
+    }
+
+    Future<void> _processText() async {
     final rawText = _textController.text;
     if (rawText.trim().isEmpty) return;
 
@@ -80,70 +99,86 @@ class _BulkImportDialogState extends State<BulkImportDialog>
   }
 
   Future<void> _saveAllToFaaliyet() async {
-    if (_parsedBlocks.isEmpty) return;
+      if (_parsedBlocks.isEmpty) return;
 
-    setState(() {
-      _isSaving = true;
-    });
+      setState(() {
+        _isSaving = true;
+      });
 
-    try {
-      var successCount = 0;
+      try {
+        var successCount = 0;
 
-      for (final block in _parsedBlocks) {
-        final title =
-            '${block.parsedTimName} - ${block.parsedActivityType}${block.parsedTimeRange != null ? " (${block.parsedTimeRange})" : ""}';
+        for (final block in _parsedBlocks) {
+          // Get raw activity type for display (parsedActivityType contains DutyOrLeaveType value)
+          final rawActivityType = _getRawActivityType(block.parsedActivityType);
 
-        final payload = block.personnelList
-            .where((p) => p.matchedPersonnelId != null)
-            .map(
-              (p) => {
-                'personelId': p.matchedPersonnelId!,
-                'gorevVeyaIzin': 'GÖREVLİ',
-                'aciklama': block.parsedTimeRange ?? block.parsedActivityType,
-              },
-            )
-            .toList();
+          final title =
+              '${block.parsedTimName} - ${rawActivityType}${block.parsedTimeRange != null ? " (${block.parsedTimeRange})" : ""}';
 
-        if (payload.isNotEmpty) {
-          await widget.activityRepository.createActivityWithAssignments(
-            faaliyetAdi: title,
-            tarih: block.parsedDate,
-            olusturanKullanici: 'Admin (Toplu Aktarım)',
-            personnelAssignments: payload,
+          // parsedActivityType already contains the mapped DutyOrLeaveType value (e.g., GÜLÜŞKÜR, HAZIR KITA)
+          final gorevVeyaIzin = block.parsedActivityType;
+
+          // Build description from time range and raw activity type
+          final descriptionParts = <String>[];
+          if (block.parsedTimeRange != null && block.parsedTimeRange!.isNotEmpty) {
+            descriptionParts.add('Saat: ${block.parsedTimeRange}');
+          }
+          if (rawActivityType.isNotEmpty) {
+            descriptionParts.add('Görev Türü: ${rawActivityType}');
+          }
+          final aciklama = descriptionParts.join(' | ');
+
+          final payload = block.personnelList
+              .where((p) => p.matchedPersonnelId != null)
+              .map(
+                (p) => {
+                  'personelId': p.matchedPersonnelId!,
+                  'gorevVeyaIzin': gorevVeyaIzin,
+                  'aciklama': aciklama,
+                },
+              )
+              .toList();
+
+          if (payload.isNotEmpty) {
+            await widget.activityRepository.createActivityWithAssignments(
+              faaliyetAdi: title,
+              tarih: block.parsedDate,
+              olusturanKullanici: 'Admin (Toplu Aktarım)',
+              personnelAssignments: payload,
+            );
+          }
+          successCount++;
+        }
+
+        if (mounted) {
+          Navigator.pop(context, true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '$successCount adet faaliyet ve personelleri başarıyla eklendi.',
+              ),
+              backgroundColor: Colors.green.shade700,
+              behavior: SnackBarBehavior.floating,
+            ),
           );
         }
-        successCount++;
-      }
-
-      if (mounted) {
-        Navigator.pop(context, true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '$successCount adet faaliyet ve personelleri başarıyla eklendi.',
+      } on Object catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Hata oluştu: $e'),
+              backgroundColor: Colors.red,
             ),
-            backgroundColor: Colors.green.shade700,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } on Object catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Hata oluştu: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isSaving = false;
+          });
+        }
       }
     }
-  }
 
   @override
   Widget build(BuildContext context) {

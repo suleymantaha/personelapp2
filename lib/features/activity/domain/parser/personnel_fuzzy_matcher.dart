@@ -1,3 +1,4 @@
+import 'package:fuzzy/fuzzy.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
@@ -44,21 +45,22 @@ class PersonnelFuzzyMatcher {
           matchedAdSoyad: p.adSoyad,
           matchedRutbe: p.rutbe,
           matchedTimId: p.timId,
-          matchConfidence: 1,
+          matchConfidence: 1.0,
         );
       }
     }
 
-    // 2. Token Set Match (ad/soyad yer değişse de tüm kelimeler eşleşiyor mu?)
+    // 2. Token Set Match (all tokens match regardless of order)
     final rawTokens = rawNameClean
         .split(' ')
         .where((e) => e.isNotEmpty)
         .toSet();
 
     for (final p in dbList) {
-      final dbTokens = _sanitizeString(
-        p.adSoyad,
-      ).split(' ').where((e) => e.isNotEmpty).toSet();
+      final dbTokens = _sanitizeString(p.adSoyad)
+          .split(' ')
+          .where((e) => e.isNotEmpty)
+          .toSet();
 
       if (rawTokens.length == dbTokens.length &&
           rawTokens.containsAll(dbTokens)) {
@@ -67,26 +69,60 @@ class PersonnelFuzzyMatcher {
           matchedAdSoyad: p.adSoyad,
           matchedRutbe: p.rutbe,
           matchedTimId: p.timId,
-          matchConfidence: 0.9,
+          matchConfidence: 0.95,
         );
       }
     }
 
-    // 3. Partial Token Overlap Match (En az 2 kelime veya soyad+ad eşleşmesi)
+    // 3. First Letter + Surname Match (e.g., "S. Taha BİRİNCİ" matches "TAHA BİRİNCİ")
+    final firstLetterMatch = _tryFirstLetterSurnameMatch(rawNameClean, rawTokens, dbList);
+    if (firstLetterMatch != null) {
+      return item.copyWith(
+        matchedPersonnelId: firstLetterMatch.id,
+        matchedAdSoyad: firstLetterMatch.adSoyad,
+        matchedRutbe: firstLetterMatch.rutbe,
+        matchedTimId: firstLetterMatch.timId,
+        matchConfidence: 0.9,
+      );
+    }
+
+    // 4. Token Subset Match (all query tokens found in DB name)
+    final tokenSubsetMatch = _tryTokenSubsetMatch(rawTokens, dbList);
+    if (tokenSubsetMatch != null) {
+      return item.copyWith(
+        matchedPersonnelId: tokenSubsetMatch.id,
+        matchedAdSoyad: tokenSubsetMatch.adSoyad,
+        matchedRutbe: tokenSubsetMatch.rutbe,
+        matchedTimId: tokenSubsetMatch.timId,
+        matchConfidence: 0.85,
+      );
+    }
+
+    // 5. Fuzzy Match (Levenshtein/Jaro-Winkler) using fuzzy package
+    final fuzzyMatch = _tryFuzzyMatch(rawNameClean, dbList);
+    if (fuzzyMatch != null) {
+      return item.copyWith(
+        matchedPersonnelId: fuzzyMatch.id,
+        matchedAdSoyad: fuzzyMatch.adSoyad,
+        matchedRutbe: fuzzyMatch.rutbe,
+        matchedTimId: fuzzyMatch.timId,
+        matchConfidence: 0.75,
+      );
+    }
+
+    // 6. Partial Token Overlap Match (at least 2 tokens or surname+name match)
     PersonelTableData? bestMatch;
-    // maxScore must be typed as double because score calculation yields a double.
-    // ignore: omit_local_variable_types, prefer_int_literals
     double maxScore = 0.0;
 
     for (final p in dbList) {
-      final dbTokens = _sanitizeString(
-        p.adSoyad,
-      ).split(' ').where((e) => e.isNotEmpty).toSet();
+      final dbTokens = _sanitizeString(p.adSoyad)
+          .split(' ')
+          .where((e) => e.isNotEmpty)
+          .toSet();
       final intersection = rawTokens.intersection(dbTokens);
 
       if (intersection.isNotEmpty) {
-        final score =
-            intersection.length /
+        final score = intersection.length /
             (rawTokens.length > dbTokens.length
                 ? rawTokens.length
                 : dbTokens.length);
@@ -103,11 +139,184 @@ class PersonnelFuzzyMatcher {
         matchedAdSoyad: bestMatch.adSoyad,
         matchedRutbe: bestMatch.rutbe,
         matchedTimId: bestMatch.timId,
-        matchConfidence: 0.7 + (maxScore * 0.2),
+        matchConfidence: 0.6 + (maxScore * 0.2),
       );
     }
 
     return item;
+  }
+
+  /// Matches "S. Taha BİRİNCİ" with "TAHA BİRİNCİ" by checking if first token is initial + surname match
+  PersonelTableData? _tryFirstLetterSurnameMatch(
+    String rawNameClean,
+    Set<String> rawTokens,
+    List<PersonelTableData> dbList,
+  ) {
+    if (rawTokens.length < 2) return null;
+
+    // Check if first token is a single letter (initial)
+    final firstToken = rawTokens.firstWhere(
+      (t) => t.isNotEmpty,
+      orElse: () => '',
+    );
+    if (firstToken.length != 1) return null;
+
+    // Remaining tokens should match a DB entry's tokens
+    final remainingTokens = rawTokens.where((t) => t != firstToken).toSet();
+    if (remainingTokens.isEmpty) return null;
+
+    for (final p in dbList) {
+      final dbTokens = _sanitizeString(p.adSoyad)
+          .split(' ')
+          .where((e) => e.isNotEmpty)
+          .toSet();
+
+      // Check if DB tokens contain all remaining tokens
+      if (remainingTokens.length <= dbTokens.length &&
+          remainingTokens.containsAll(dbTokens.intersection(remainingTokens))) {
+        // Also verify the first letter matches the first name's initial
+        final dbFirstToken = dbTokens.firstWhere(
+          (t) => t.isNotEmpty,
+          orElse: () => '',
+        );
+        if (dbFirstToken.isNotEmpty && dbFirstToken.startsWith(firstToken)) {
+          return p;
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Matches when all query tokens are found in DB name (subset match)
+  PersonelTableData? _tryTokenSubsetMatch(
+    Set<String> rawTokens,
+    List<PersonelTableData> dbList,
+  ) {
+    for (final p in dbList) {
+      final dbTokens = _sanitizeString(p.adSoyad)
+          .split(' ')
+          .where((e) => e.isNotEmpty)
+          .toSet();
+
+      // All raw tokens must be present in DB tokens
+      if (rawTokens.isNotEmpty && dbTokens.containsAll(rawTokens)) {
+        return p;
+      }
+    }
+    return null;
+  }
+
+  /// Fuzzy matching using Levenshtein distance via fuzzy package
+  PersonelTableData? _tryFuzzyMatch(
+    String rawNameClean,
+    List<PersonelTableData> dbList,
+  ) {
+    // Build list of sanitized names for fuzzy search
+    final nameList = dbList.map((p) => _sanitizeString(p.adSoyad)).toList();
+    
+    // Use fuzzy package for Levenshtein-based matching
+    final fuzzy = Fuzzy<String>(nameList, options: FuzzyOptions<String>(
+      shouldSort: true,
+      threshold: 0.6,
+      tokenize: false,
+    ));
+
+    final results = fuzzy.search(rawNameClean);
+    
+        if (results.isNotEmpty) {
+          final bestMatch = results.first;
+          if (bestMatch.score >= 0.6) {
+            // Find the personnel with this sanitized name
+            try {
+              return dbList.firstWhere(
+                (p) => _sanitizeString(p.adSoyad) == bestMatch.item,
+              );
+            } catch (_) {
+              return null;
+            }
+          }
+        }
+
+          // Fallback: Jaro-Winkler for short names (better for initials)
+    if (rawNameClean.length <= 20) {
+      return _tryJaroWinklerMatch(rawNameClean, dbList);
+    }
+
+    return null;
+  }
+
+  PersonelTableData? _tryJaroWinklerMatch(
+    String rawNameClean,
+    List<PersonelTableData> dbList,
+  ) {
+    double bestScore = 0.0;
+    PersonelTableData? bestMatch;
+
+    for (final p in dbList) {
+      final dbNameClean = _sanitizeString(p.adSoyad);
+      final score = _jaroWinklerDistance(rawNameClean, dbNameClean);
+      if (score > bestScore && score >= 0.75) { // Higher threshold for Jaro-Winkler
+        bestScore = score;
+        bestMatch = p;
+      }
+    }
+
+    return bestMatch;
+  }
+
+  /// Jaro-Winkler distance implementation (better for short strings with common prefixes)
+  double _jaroWinklerDistance(String s1, String s2) {
+    if (s1 == s2) return 1.0;
+    if (s1.isEmpty || s2.isEmpty) return 0.0;
+
+    // Jaro distance
+    final matchDistance = (s1.length > s2.length ? s1.length : s2.length) ~/ 2 - 1;
+    if (matchDistance < 0) return 0.0;
+
+    final s1Matches = List<bool>.filled(s1.length, false);
+    final s2Matches = List<bool>.filled(s2.length, false);
+
+    int matches = 0;
+    int transpositions = 0;
+
+    for (int i = 0; i < s1.length; i++) {
+      final start = (i - matchDistance).clamp(0, s2.length - 1);
+      final end = (i + matchDistance + 1).clamp(0, s2.length);
+
+      for (int j = start; j < end; j++) {
+        if (!s2Matches[j] && s1[i] == s2[j]) {
+          s1Matches[i] = true;
+          s2Matches[j] = true;
+          matches++;
+          break;
+        }
+      }
+    }
+
+    if (matches == 0) return 0.0;
+
+    int k = 0;
+    for (int i = 0; i < s1.length; i++) {
+      if (s1Matches[i]) {
+        while (!s2Matches[k]) k++;
+        if (s1[i] != s2[k]) transpositions++;
+        k++;
+      }
+    }
+
+    final jaro = (matches / s1.length +
+            matches / s2.length +
+            (matches - transpositions / 2) / matches) /
+        3;
+
+    // Winkler adjustment
+    int prefixLength = 0;
+    final minLen = s1.length < s2.length ? s1.length : s2.length;
+    for (int i = 0; i < minLen && i < 4; i++) {
+      if (s1[i] == s2[i]) prefixLength++;
+    }
+
+    return jaro + (0.1 * prefixLength * (1 - jaro));
   }
 
   static String _sanitizeString(String input) {
@@ -119,7 +328,159 @@ class PersonnelFuzzyMatcher {
         .replaceAll('ş', 's')
         .replaceAll('ö', 'o')
         .replaceAll('ç', 'c')
+        // Remove punctuation but keep spaces and letters/numbers
         .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
+        // Normalize multiple spaces
+        .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
   }
+
+  /// Public static method for external search/filter usage
+  /// Returns personnel list filtered and ranked by fuzzy match score
+  static List<PersonelTableData> searchPersonnel(
+    String query,
+    List<PersonelTableData> personnelList, {
+    double threshold = 0.4,
+    int maxResults = 50,
+  }) {
+    if (query.trim().isEmpty) {
+      return personnelList.take(maxResults).toList();
+    }
+
+    final cleanQuery = _sanitizeString(query);
+    final queryTokens = cleanQuery.split(' ').where((e) => e.isNotEmpty).toSet();
+
+    final scoredResults = <_ScoredPersonnel>[];
+
+    for (final p in personnelList) {
+      final cleanName = _sanitizeString(p.adSoyad);
+      final nameTokens = cleanName.split(' ').where((e) => e.isNotEmpty).toSet();
+
+      double score = 0.0;
+
+      // 1. Exact match
+      if (cleanName == cleanQuery) {
+        score = 1.0;
+      }
+      // 2. Starts with query
+      else if (cleanName.startsWith(cleanQuery)) {
+        score = 0.95;
+      }
+      // 3. Token subset match (all query tokens in name)
+      else if (queryTokens.isNotEmpty && nameTokens.containsAll(queryTokens)) {
+        score = 0.9;
+      }
+      // 4. First letter + surname match
+      else if (queryTokens.length >= 2) {
+        final firstToken = queryTokens.first;
+        if (firstToken.length == 1) {
+          final remainingTokens = queryTokens.where((t) => t != firstToken).toSet();
+          if (remainingTokens.isNotEmpty && nameTokens.containsAll(remainingTokens)) {
+            final nameFirstToken = nameTokens.first;
+            if (nameFirstToken.startsWith(firstToken)) {
+              score = 0.85;
+            }
+          }
+        }
+      }
+      // 5. Fuzzy match (Levenshtein via fuzzy package)
+      else {
+        final fuzzy = Fuzzy<String>([cleanName], options: FuzzyOptions<String>(
+          shouldSort: true,
+          threshold: 0.5,
+          tokenize: false,
+        ));
+        final results = fuzzy.search(cleanQuery);
+        if (results.isNotEmpty) {
+          score = results.first.score * 0.8; // Weight fuzzy match lower
+        }
+      }
+      // 6. Token overlap (partial match)
+      if (score < 0.5 && queryTokens.isNotEmpty) {
+        final intersection = queryTokens.intersection(nameTokens);
+        if (intersection.isNotEmpty) {
+          final overlapScore = intersection.length /
+              (queryTokens.length > nameTokens.length ? queryTokens.length : nameTokens.length);
+          if (overlapScore > score) {
+            score = overlapScore * 0.6;
+          }
+        }
+      }
+      // 7. Jaro-Winkler for short queries
+      if (score < 0.5 && cleanQuery.length <= 20) {
+        final jwScore = _jaroWinklerStatic(cleanQuery, cleanName);
+        if (jwScore > score) {
+          score = jwScore * 0.7;
+        }
+      }
+
+      if (score >= threshold) {
+        scoredResults.add(_ScoredPersonnel(p, score));
+      }
+    }
+
+    // Sort by score descending
+    scoredResults.sort((a, b) => b.score.compareTo(a.score));
+
+    return scoredResults.take(maxResults).map((s) => s.personnel).toList();
+  }
+
+  static double _jaroWinklerStatic(String s1, String s2) {
+    if (s1 == s2) return 1.0;
+    if (s1.isEmpty || s2.isEmpty) return 0.0;
+
+    final matchDistance = (s1.length > s2.length ? s1.length : s2.length) ~/ 2 - 1;
+    if (matchDistance < 0) return 0.0;
+
+    final s1Matches = List<bool>.filled(s1.length, false);
+    final s2Matches = List<bool>.filled(s2.length, false);
+
+    int matches = 0;
+    int transpositions = 0;
+
+    for (int i = 0; i < s1.length; i++) {
+      final start = (i - matchDistance).clamp(0, s2.length - 1);
+      final end = (i + matchDistance + 1).clamp(0, s2.length);
+
+      for (int j = start; j < end; j++) {
+        if (!s2Matches[j] && s1[i] == s2[j]) {
+          s1Matches[i] = true;
+          s2Matches[j] = true;
+          matches++;
+          break;
+        }
+      }
+    }
+
+    if (matches == 0) return 0.0;
+
+    int k = 0;
+    for (int i = 0; i < s1.length; i++) {
+      if (s1Matches[i]) {
+        while (!s2Matches[k]) k++;
+        if (s1[i] != s2[k]) transpositions++;
+        k++;
+      }
+    }
+
+    final jaro = (matches / s1.length +
+            matches / s2.length +
+            (matches - transpositions / 2) / matches) /
+        3;
+
+    int prefixLength = 0;
+    final minLen = s1.length < s2.length ? s1.length : s2.length;
+    for (int i = 0; i < minLen && i < 4; i++) {
+      if (s1[i] == s2[i]) prefixLength++;
+    }
+
+    return jaro + (0.1 * prefixLength * (1 - jaro));
+  }
+}
+
+class _ScoredPersonnel {
+  final PersonelTableData personnel;
+  final double score;
+
+  _ScoredPersonnel(this.personnel, this.score);
 }

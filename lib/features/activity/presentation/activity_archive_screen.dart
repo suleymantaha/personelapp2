@@ -307,8 +307,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                 );
               },
               loading: () => const SizedBox.shrink(),
-              error: (_, _) => const SizedBox.shrink(),
-            ),
+                            error: (err, _) => const SizedBox.shrink(),
+                          ),
 
             // Filters Bar: Search & Squad Tabs for Admin
             ArchiveFilterBar(
