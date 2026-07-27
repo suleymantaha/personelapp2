@@ -1,4 +1,5 @@
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
+import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
 class BulkTextParser {
   static const List<String> knownRanks = [
@@ -10,7 +11,82 @@ class BulkTextParser {
     'J. Uzm. Çvş',
     'J.Uzm Çvş.',
     'J.Uzm.Çvş',
+    'J.Uzm.Çvş',
   ];
+
+  /// Extracts activity type from title line (returns raw type like "Gülüşkür", "Hazır Kıta", etc.)
+  static String extractActivityType(String titleLine) {
+    final lowerLine = titleLine.toLowerCase();
+    if (lowerLine.contains('gülüşkür')) {
+      return 'Gülüşkür';
+    } else if (lowerLine.contains('hazır kıta')) {
+      return 'Hazır Kıta';
+    } else if (lowerLine.contains('heybet')) {
+      return 'Heybet';
+    } else if (lowerLine.contains('ihtiyat')) {
+      return 'İhtiyat';
+    } else if (lowerLine.contains('devriye')) {
+      return 'Devriye';
+    } else {
+      return 'Görev';
+    }
+  }
+
+  /// Maps parsed activity type strings to DutyOrLeaveType constants (for database storage)
+  static String mapActivityTypeToDutyOrLeave(String activityType) {
+    final lower = activityType.toLowerCase().trim();
+    switch (lower) {
+      case 'gülüşkür':
+        return DutyOrLeaveType.guluskur; // 'GÜLÜŞKÜR'
+      case 'hazır kıta':
+        return DutyOrLeaveType.hazirKita; // 'HAZIR KITA'
+      case 'heybet':
+        return DutyOrLeaveType.heybet; // 'HEYBET'
+      case 'ihtiyat':
+        return DutyOrLeaveType.gorevli; // 'GÖREVLİ' (İhtiyat is a duty type)
+      case 'devriye':
+        return DutyOrLeaveType.gorevli; // 'GÖREVLİ' (Devriye is a patrol duty)
+      case 'görev':
+        return DutyOrLeaveType.gorevli; // 'GÖREVLİ'
+      case 'nöbetçi':
+        return DutyOrLeaveType.nobetci; // 'NÖBETÇİ'
+      default:
+        return DutyOrLeaveType.gorevli; // Default fallback
+    }
+  }
+
+  /// Parses title line to extract tim name, raw activity type, and date
+  static Map<String, dynamic> parseTitle(String titleLine, String defaultDate) {
+    final result = <String, dynamic>{
+      'timName': 'Genel',
+      'activityType': 'Görev', // raw activity type for display
+      'date': defaultDate,
+    };
+
+    // Extract Tim name (e.g. 6/B, 7-B, 11-B)
+    final timReg = RegExp(r'(\d{1,2}\s*[\\/-]?\s*[A-ZÇĞİÖŞÜ]+)', caseSensitive: false).firstMatch(titleLine);
+    if (timReg != null) {
+      var tim = timReg.group(1)!.replaceAll(' ', '').toUpperCase();
+      if (!tim.contains('/') && tim.contains('-')) {
+        tim = tim.replaceAll('-', '/');
+      }
+      result['timName'] = tim;
+    }
+
+    // Extract raw Activity Type (for display)
+    result['activityType'] = extractActivityType(titleLine);
+
+    // Extract date from header line if present
+    final dateMatch = RegExp(r'(\d{1,2})[\\.\\/](\d{1,2})[\\.\\/](\d{4})').firstMatch(titleLine);
+    if (dateMatch != null) {
+      final day = dateMatch.group(1)!.padLeft(2, '0');
+      final month = dateMatch.group(2)!.padLeft(2, '0');
+      final year = dateMatch.group(3)!;
+      result['date'] = '$year-$month-$day';
+    }
+
+    return result;
+  }
 
   static List<ParsedActivityBlock> parse(String rawText) {
     if (rawText.trim().isEmpty) return [];
@@ -22,7 +98,7 @@ class BulkTextParser {
     final blocks = <ParsedActivityBlock>[];
 
     var currentTim = 'Genel';
-    var currentActivityType = 'GÖREVLİ';
+    var currentActivityType = mapActivityTypeToDutyOrLeave('Görev'); // Default mapped to DutyOrLeaveType
     var currentDate = _formatDate(DateTime.now());
     String? currentTimeRange;
     final currentPersonnel = <ParsedPersonnelItem>[];
@@ -35,7 +111,7 @@ class BulkTextParser {
       if (line.isEmpty) continue;
 
       // Check if line is a date (e.g. 25.07.2026, 26.07.2026 Cumartesi)
-      final dateMatch = RegExp(r'(\d{1,2})[\.\/](\d{1,2})[\.\/](\d{4})').firstMatch(line);
+      final dateMatch = RegExp(r'(\d{1,2})[\\.\\/](\d{1,2})[\\.\\/](\d{4})').firstMatch(line);
       if (dateMatch != null && !_isPersonnelLine(line)) {
         final day = dateMatch.group(1)!.padLeft(2, '0');
         final month = dateMatch.group(2)!.padLeft(2, '0');
@@ -47,7 +123,7 @@ class BulkTextParser {
 
       // Check if line is a Header/Title line (e.g. 6 / B Gülüşkür isim listesi, 7-B Hazır Kıta Listesi)
       final titleMatch = RegExp(
-        r'(\d{1,2}\s*[\/-]?\s*[A-ZÇĞİÖŞÜ]+)\s+(.*?)(?:isim|İsim)?\s*(?:listesi|Listesi)?',
+        r'(\d{1,2}\s*[\\/-]?\s*[A-ZÇĞİÖŞÜ]+)\s+(.*?)(?:isim|İsim)?\s*(?:listesi|Listesi)?',
         caseSensitive: false,
       ).firstMatch(line);
 
@@ -84,36 +160,18 @@ class BulkTextParser {
           currentDate = '$year-$month-$day';
         }
 
-        // Extract Tim name (e.g. 6/B, 7-B, 11-B)
-        final timReg = RegExp(r'(\d{1,2}\s*[\/-]?\s*[A-ZÇĞİÖŞÜ]+)', caseSensitive: false).firstMatch(line);
-        if (timReg != null) {
-          currentTim = timReg.group(1)!.replaceAll(' ', '').toUpperCase();
-          if (!currentTim.contains('/') && currentTim.contains('-')) {
-            currentTim = currentTim.replaceAll('-', '/');
-          }
-        }
-
-        // Extract Activity Type
-        final lowerLine = line.toLowerCase();
-        if (lowerLine.contains('gülüşkür')) {
-          currentActivityType = 'Gülüşkür';
-        } else if (lowerLine.contains('hazır kıta')) {
-          currentActivityType = 'Hazır Kıta';
-        } else if (lowerLine.contains('heybet')) {
-          currentActivityType = 'Heybet';
-        } else if (lowerLine.contains('ihtiyat')) {
-          currentActivityType = 'İhtiyat';
-        } else if (lowerLine.contains('devriye')) {
-          currentActivityType = 'Devriye';
-        } else {
-          currentActivityType = 'Görev';
-        }
+        // Use parseTitle to extract timName, raw activityType, and date, then map to DutyOrLeaveType
+        final titleData = parseTitle(line, defaultDate);
+        currentTim = titleData['timName'] as String;
+        final rawActivityType = titleData['activityType'] as String;
+        currentActivityType = mapActivityTypeToDutyOrLeave(rawActivityType);
+        currentDate = titleData['date'] as String;
 
         continue;
       }
 
       // Check if line is a Time Range line (e.g. 08.00-19.30, 08:00/20:00)
-      final timeMatch = RegExp(r'(\d{2}[\.:]\d{2})\s*[-\/]\s*(\d{2}[\.:]\d{2})').firstMatch(line);
+      final timeMatch = RegExp(r'(\d{2}[\\.:]\d{2})\s*[-\\/]\s*(\d{2}[\\.:]\d{2})').firstMatch(line);
       if (timeMatch != null) {
         // If previous personnel exists before new shift time, push previous block
         if (currentPersonnel.isNotEmpty) {
@@ -168,7 +226,7 @@ class BulkTextParser {
       return true;
     }
     // Check if line starts with index number followed by rank or capital name: "1- Erdem BUYAR" or "1) J.Asb"
-    if (RegExp(r'^\d+[\.\)-]\s*(?:J\.|[A-ZÇĞİÖŞÜ])').hasMatch(line.trim()) && !lower.contains('listesi')) {
+    if (RegExp(r'^\d+[\\.\\)-]\s*(?:J\.|[A-ZÇĞİÖŞÜ])').hasMatch(line.trim()) && !lower.contains('listesi')) {
       return true;
     }
     return false;
@@ -179,7 +237,7 @@ class BulkTextParser {
     var content = line.trim();
     var index = defaultIndex;
 
-    final indexMatch = RegExp(r'^(\d+)[\.\)-]?\s*').firstMatch(content);
+    final indexMatch = RegExp(r'^(\d+)[\\.\\)-]?\s*').firstMatch(content);
     if (indexMatch != null) {
       index = int.tryParse(indexMatch.group(1)!) ?? defaultIndex;
       content = content.substring(indexMatch.group(0)!.length).trim();

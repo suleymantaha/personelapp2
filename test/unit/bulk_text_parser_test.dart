@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
+import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
 void main() {
   test('BulkTextParser should correctly parse sample military text format', () {
@@ -31,15 +32,15 @@ void main() {
 4- J.Uzm.Çvş. Orhan YENTÜRK
 5- J.Uzm.Çvş. Vahit KARACA
 6- J.Uzm.Çvş. Sefa YÜCEL
-7- J.Uzm.Çvş. Soner SAMUR
-8- J.Uzm.Çvş. Mesut KOÇ
+7- J.Uzm.Çvş. Mesut KOÇ
+8- J.Uzm.Çvş. Soner SAMUR
 9- J.Uzm.Çvş. Seit Abdulveli TÜRKOĞLU
 3B- 26.07.2026 *Gülüşkür* İsim Listesi 
 
 08:00/20:00
 
 1-J.Asb.Üçvş. Gökhan GÖKMEN
-2-J.Uzm.Çvş. Murat Dursun HÜNERCİ  
+2-J.Uzm.Çvş. Murat Dursun HÜNERCİ 
 3-J.Uzm.Çvş. Nevzat GÜL 
 4-J.Uzm.Çvş. Onur ÇELİK 
 5-J.Uzm.Çvş. Ömer SAVAŞ 
@@ -51,7 +52,7 @@ void main() {
 
     // Block 1
     expect(blocks[0].parsedTimName, equals('6/B'));
-    expect(blocks[0].parsedActivityType, equals('Gülüşkür'));
+    expect(blocks[0].parsedActivityType, equals(DutyOrLeaveType.guluskur)); // Mapped to DutyOrLeaveType
     expect(blocks[0].parsedDate, equals('2026-07-25'));
     expect(blocks[0].parsedTimeRange, equals('08:00 - 19:30'));
     expect(blocks[0].personnelList.length, equals(4));
@@ -65,7 +66,7 @@ void main() {
 
     // Block 3
     expect(blocks[2].parsedTimName, equals('7/B'));
-    expect(blocks[2].parsedActivityType, equals('Hazır Kıta'));
+    expect(blocks[2].parsedActivityType, equals(DutyOrLeaveType.hazirKita)); // Mapped to DutyOrLeaveType
     expect(blocks[2].personnelList.length, equals(9));
     expect(blocks[2].personnelList[0].rawName, equals('Ferdi ERDOĞAN'));
   });

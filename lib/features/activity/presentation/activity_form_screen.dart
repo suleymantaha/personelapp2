@@ -377,15 +377,15 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                     color: context.cardBorderColor,
                                   ),
                                   ListView.separated(
-                                    shrinkWrap: true,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    itemCount: members.length,
-                                    separatorBuilder: (_, _) => Divider(
-                                      height: 1,
-                                      color: context.cardBorderColor,
-                                    ),
-                                    itemBuilder: (context, index) {
+                                                                      shrinkWrap: true,
+                                                                      physics:
+                                                                          const NeverScrollableScrollPhysics(),
+                                                                      itemCount: members.length,
+                                                                      separatorBuilder: (context, index) => Divider(
+                                                                        height: 1,
+                                                                        color: context.cardBorderColor,
+                                                                      ),
+                                                                      itemBuilder: (context, index) {
                                       final p = members[index];
                                       final currentSelection =
                                           _assignments[p.id];
@@ -513,12 +513,12 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                   );
 
                   return ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: personnelList.length,
-                    separatorBuilder: (_, _) =>
-                        Divider(color: context.cardBorderColor),
-                    itemBuilder: (context, index) {
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemCount: personnelList.length,
+                                      separatorBuilder: (context, _) =>
+                                          Divider(color: context.cardBorderColor),
+                                      itemBuilder: (context, index) {
                       final p = personnelList[index];
                       final currentSelection = _assignments[p.id];
 
