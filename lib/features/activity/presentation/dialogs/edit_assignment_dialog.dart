@@ -160,6 +160,8 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
             ),
           ),
           onPressed: () async {
+            final actor = ref.read(userSessionProvider);
+            if (actor == null) return;
             final repo = ref.read(activityRepositoryProvider);
             final note = _noteController.text.trim();
             final newStatus = widget.isAdmin
@@ -170,6 +172,7 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
               gorevVeyaIzin: _selectedDuty,
               aciklama: note.isNotEmpty ? note : null,
               newStatus: newStatus,
+              actor: actor,
             );
             if (context.mounted) {
               Navigator.of(context).pop(true);

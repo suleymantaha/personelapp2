@@ -153,6 +153,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
                                 await repo.updateAssignmentStatus(
                                   atama.id,
                                   AssignmentStatus.reddedildi,
+                                  actor: session!,
                                 );
                               },
                               child: const Text('REDDET'),
@@ -169,6 +170,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
                                 );
                                 final result = await repo.approveAssignment(
                                   atama.id,
+                                  actor: session!,
                                 );
                                 if (context.mounted &&
                                     result.blockedCount > 0) {

@@ -462,7 +462,10 @@ class ActivityAssignmentDetails extends ConsumerWidget {
 
                             if (confirm == true) {
                               final repo = ref.read(activityRepositoryProvider);
-                              await repo.deleteAssignment(atama.id);
+                              await repo.deleteAssignment(
+                                atama.id,
+                                actor: session!,
+                              );
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -489,6 +492,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                             final repo = ref.read(activityRepositoryProvider);
                             final result = await repo.approveAssignment(
                               atama.id,
+                              actor: session!,
                             );
                             if (context.mounted && result.blockedCount > 0) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -516,6 +520,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                             await repo.updateAssignmentStatus(
                               atama.id,
                               AssignmentStatus.reddedildi,
+                              actor: session!,
                             );
                           },
                         ),

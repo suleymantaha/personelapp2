@@ -1,0 +1,88 @@
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:personelapp2/core/auth/domain/authorization_exception.dart';
+import 'package:personelapp2/core/auth/domain/user_session.dart';
+import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/features/activity/data/activity_repository.dart';
+import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
+
+void main() {
+  late AppDatabase database;
+  late ActivityRepository repository;
+  late int assignmentId;
+
+  const admin = UserSessionState(
+    username: 'admin',
+    role: UserRole.admin,
+  );
+  const commander = UserSessionState(
+    username: 'komutan',
+    role: UserRole.teamCommander,
+    timId: 1,
+  );
+
+  setUp(() async {
+    database = AppDatabase(NativeDatabase.memory());
+    repository = ActivityRepository(database);
+    final personId = await database.into(database.personelTable).insert(
+          PersonelTableCompanion.insert(
+            adSoyad: 'Yetki Testi',
+            rutbe: 'J.Uzm.Çvş.',
+            birlik: '6/B',
+            kayitTarihi: '2026-07-28',
+          ),
+        );
+    final activityId = await database.into(database.gunlukFaaliyetTable).insert(
+          GunlukFaaliyetTableCompanion.insert(
+            faaliyetAdi: 'Yetki',
+            tarih: '2026-07-28',
+            olusturanKullanici: 'komutan',
+            olusturmaTarihi: '2026-07-28T00:00:00',
+          ),
+        );
+    assignmentId =
+        await database.into(database.faaliyetPersonelAtamaTable).insert(
+              FaaliyetPersonelAtamaTableCompanion.insert(
+                faaliyetId: activityId,
+                personelId: personId,
+                gorevVeyaIzin: 'GÖREVLİ',
+                durum: AssignmentStatus.beklemede,
+              ),
+            );
+  });
+
+  tearDown(() => database.close());
+
+  test('commander cannot approve or delete assignments', () async {
+    await expectLater(
+      Future<ApprovalResult>.sync(
+        () => repository.approveAssignment(assignmentId, actor: commander),
+      ),
+      throwsA(isA<AuthorizationException>()),
+    );
+    expect(
+      () => repository.deleteAssignment(assignmentId, actor: commander),
+      throwsA(isA<AuthorizationException>()),
+    );
+
+    final row = await (database.select(
+      database.faaliyetPersonelAtamaTable,
+    )..where((table) => table.id.equals(assignmentId)))
+        .getSingle();
+    expect(row.durum, AssignmentStatus.beklemede);
+  });
+
+  test('admin can approve and delete assignments', () async {
+    final approval = await repository.approveAssignment(
+      assignmentId,
+      actor: admin,
+    );
+    final deleted = await repository.deleteAssignment(
+      assignmentId,
+      actor: admin,
+    );
+
+    expect(approval.approvedCount, 1);
+    expect(deleted, 1);
+  });
+}

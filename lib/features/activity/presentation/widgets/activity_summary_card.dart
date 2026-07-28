@@ -272,6 +272,7 @@ class ActivityCard extends ConsumerWidget {
                                     final result = await repo
                                         .approveAllAssignmentsForActivity(
                                       activity.id,
+                                      actor: session!,
                                     );
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context)

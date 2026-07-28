@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:drift/drift.dart';
+import 'package:personelapp2/core/auth/domain/authorization_exception.dart';
+import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/domain/duty_coverage.dart';
@@ -103,6 +105,14 @@ class ActivityRepository {
   ActivityRepository(this.db);
 
   final AppDatabase db;
+
+  void _requireAdmin(UserSessionState actor) {
+    if (!actor.isAdmin) {
+      throw const AuthorizationException(
+        'Bu işlem yalnızca yöneticiler tarafından yapılabilir.',
+      );
+    }
+  }
 
   String _normalizeActivityName(String value) =>
       value.trim().replaceAll(RegExp(r'\s+'), ' ').toUpperCase();
@@ -654,14 +664,20 @@ class ActivityRepository {
     return activityId;
   }
 
-  Future<ApprovalResult> approveAssignment(int assignmentId) {
+  Future<ApprovalResult> approveAssignment(
+    int assignmentId, {
+    required UserSessionState actor,
+  }) {
+    _requireAdmin(actor);
     return db
         .transaction(() => _approveAssignmentWithinTransaction(assignmentId));
   }
 
   Future<ApprovalResult> approveAllAssignmentsForActivity(
-    int activityId,
-  ) {
+    int activityId, {
+    required UserSessionState actor,
+  }) {
+    _requireAdmin(actor);
     return db.transaction(() async {
       final pending = await (db.select(
         db.faaliyetPersonelAtamaTable,
@@ -775,7 +791,11 @@ class ActivityRepository {
   }
 
   /// Reject all pending assignments for a specific activity
-  Future<int> rejectAllAssignmentsForActivity(int activityId) async {
+  Future<int> rejectAllAssignmentsForActivity(
+    int activityId, {
+    required UserSessionState actor,
+  }) async {
+    _requireAdmin(actor);
     return (db.update(db.faaliyetPersonelAtamaTable)
           ..where(
             (tbl) =>
@@ -792,10 +812,12 @@ class ActivityRepository {
   /// Approve or Reject a pending assignment
   Future<int> updateAssignmentStatus(
     int assignmentId,
-    String newStatus,
-  ) async {
+    String newStatus, {
+    required UserSessionState actor,
+  }) async {
+    _requireAdmin(actor);
     if (newStatus == AssignmentStatus.onaylandi) {
-      final result = await approveAssignment(assignmentId);
+      final result = await approveAssignment(assignmentId, actor: actor);
       return result.approvedCount;
     }
     return (db.update(db.faaliyetPersonelAtamaTable)
@@ -804,7 +826,11 @@ class ActivityRepository {
   }
 
   /// Delete a single personnel assignment from an activity
-  Future<int> deleteAssignment(int assignmentId) {
+  Future<int> deleteAssignment(
+    int assignmentId, {
+    required UserSessionState actor,
+  }) {
+    _requireAdmin(actor);
     return (db.delete(
       db.faaliyetPersonelAtamaTable,
     )..where((tbl) => tbl.id.equals(assignmentId)))
@@ -817,7 +843,9 @@ class ActivityRepository {
     required String gorevVeyaIzin,
     required String newStatus,
     String? aciklama,
+    required UserSessionState actor,
   }) {
+    _requireAdmin(actor);
     return (db.update(
       db.faaliyetPersonelAtamaTable,
     )..where((tbl) => tbl.id.equals(assignmentId)))

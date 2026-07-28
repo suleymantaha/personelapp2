@@ -1,10 +1,15 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
 void main() {
+  const admin = UserSessionState(
+    username: 'admin',
+    role: UserRole.admin,
+  );
   late AppDatabase database;
   late ActivityRepository repository;
   late int personId;
@@ -81,8 +86,14 @@ void main() {
     final first = rows.singleWhere((item) => item.faaliyetId == firstId);
     final second = rows.singleWhere((item) => item.faaliyetId == secondId);
 
-    final firstResult = await repository.approveAssignment(first.id);
-    final secondResult = await repository.approveAssignment(second.id);
+    final firstResult = await repository.approveAssignment(
+      first.id,
+      actor: admin,
+    );
+    final secondResult = await repository.approveAssignment(
+      second.id,
+      actor: admin,
+    );
 
     expect(firstResult.approvedCount, 1);
     expect(secondResult.blockedCount, 1);
