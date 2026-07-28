@@ -9,12 +9,11 @@ import 'package:personelapp2/features/matrix/data/matrix_repository.dart';
 import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 import 'package:personelapp2/features/personnel/data/personnel_repository.dart';
 
-AppDatabase? _singletonDb;
-
-/// Database Instance Provider (Singleton)
+/// Database instance whose lifecycle is owned by the provider container.
 final databaseProvider = Provider<AppDatabase>((ref) {
-  ref.keepAlive();
-  return _singletonDb ??= AppDatabase();
+  final database = AppDatabase();
+  ref.onDispose(database.close);
+  return database;
 });
 
 /// Repositories
