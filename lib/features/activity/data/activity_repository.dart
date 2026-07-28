@@ -5,6 +5,9 @@ import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/domain/duty_coverage.dart';
+import 'package:personelapp2/features/activity/domain/models/activity_create_request.dart';
+
+export 'package:personelapp2/features/activity/domain/models/activity_create_request.dart';
 
 enum ActivityDateChangeStatus {
   success,
@@ -41,22 +44,6 @@ class ActivityDateChangeResult extends ActivityDateChangePreview {
     required super.assignmentCount,
     required super.pendingAssignmentCount,
   });
-}
-
-class ActivityCreateRequest {
-  const ActivityCreateRequest({
-    required this.faaliyetAdi,
-    required this.tarih,
-    required this.olusturanKullanici,
-    required this.personnelAssignments,
-    this.isCommander = false,
-  });
-
-  final String faaliyetAdi;
-  final String tarih;
-  final String olusturanKullanici;
-  final List<Map<String, dynamic>> personnelAssignments;
-  final bool isCommander;
 }
 
 class ApprovalResult {
@@ -117,8 +104,8 @@ class ActivityRepository {
   String _normalizeActivityName(String value) =>
       value.trim().replaceAll(RegExp(r'\s+'), ' ').toUpperCase();
 
-  String _normalizeNote(Object? value) {
-    final note = value?.toString().trim() ?? '';
+  String _normalizeNote(String? value) {
+    final note = value?.trim() ?? '';
     return note.replaceAll(RegExp(r'\s+'), ' ');
   }
 
@@ -379,7 +366,7 @@ class ActivityRepository {
     required String faaliyetAdi,
     required String tarih,
     required String olusturanKullanici,
-    required List<Map<String, dynamic>> personnelAssignments,
+    required List<PersonnelAssignmentInput> personnelAssignments,
     bool isCommander = false,
   }) {
     return db.transaction(
@@ -398,7 +385,7 @@ class ActivityRepository {
   Future<List<ExistingActivityMatch>> findMatchingActivities({
     required String faaliyetAdi,
     required String tarih,
-    required List<Map<String, dynamic>> personnelAssignments,
+    required List<PersonnelAssignmentInput> personnelAssignments,
   }) async {
     final activities = await (db.select(
       db.gunlukFaaliyetTable,
@@ -425,15 +412,15 @@ class ActivityRepository {
       var differentCount = 0;
       final seen = <int>{};
       for (final item in personnelAssignments) {
-        final personId = int.tryParse(item['personelId'].toString());
-        if (personId == null || !seen.add(personId)) continue;
+        final personId = item.personnelId;
+        if (!seen.add(personId)) continue;
         final current = byPersonnel[personId];
         if (current == null) {
           newCount++;
         } else if (current.gorevVeyaIzin.trim() ==
-                item['gorevVeyaIzin'].toString().trim() &&
+                item.duty.trim() &&
             _normalizeNote(current.aciklama) ==
-                _normalizeNote(item['aciklama'])) {
+                _normalizeNote(item.note)) {
           unchangedCount++;
         } else {
           differentCount++;
@@ -454,7 +441,7 @@ class ActivityRepository {
 
   Future<ActivityMergeResult> mergeAssignmentsIntoActivity({
     required int activityId,
-    required List<Map<String, dynamic>> personnelAssignments,
+    required List<PersonnelAssignmentInput> personnelAssignments,
     required bool updateDifferentAssignments,
     bool isCommander = false,
   }) {
@@ -479,10 +466,10 @@ class ActivityRepository {
       final seen = <int>{};
 
       for (final item in personnelAssignments) {
-        final personId = int.tryParse(item['personelId'].toString());
-        final duty = item['gorevVeyaIzin']?.toString().trim() ?? '';
-        if (personId == null || duty.isEmpty || !seen.add(personId)) continue;
-        final note = _normalizeNote(item['aciklama']);
+        final personId = item.personnelId;
+        final duty = item.duty.trim();
+        if (duty.isEmpty || !seen.add(personId)) continue;
+        final note = _normalizeNote(item.note);
         final current = byPersonnel[personId];
         if (current != null) {
           final isSame = current.gorevVeyaIzin.trim() == duty &&
@@ -619,16 +606,9 @@ class ActivityRepository {
     final seenPersonnel = <int>{};
 
     for (final item in request.personnelAssignments) {
-      final rawPersonnelId = item['personelId'];
-      final rawDuty = item['gorevVeyaIzin'];
-      if (rawPersonnelId == null || rawDuty == null) continue;
-      final personnelId = rawPersonnelId is int
-          ? rawPersonnelId
-          : int.tryParse(rawPersonnelId.toString());
-      final duty = rawDuty.toString().trim();
-      if (personnelId == null ||
-          duty.isEmpty ||
-          !seenPersonnel.add(personnelId)) {
+      final personnelId = item.personnelId;
+      final duty = item.duty.trim();
+      if (duty.isEmpty || !seenPersonnel.add(personnelId)) {
         continue;
       }
 
@@ -647,7 +627,7 @@ class ActivityRepository {
               personelId: personnelId,
               gorevVeyaIzin: duty,
               durum: status,
-              aciklama: Value(item['aciklama'] as String?),
+              aciklama: Value(item.note),
             ),
           );
       existingAssignments.add(

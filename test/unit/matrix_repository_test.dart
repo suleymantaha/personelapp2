@@ -36,11 +36,7 @@ void main() {
       tarih: '2026-07-15',
       olusturanKullanici: 'admin',
       personnelAssignments: [
-        {
-          'personelId': pId,
-          'gorevVeyaIzin': 'GÖREVLİ',
-          'aciklama': null,
-        },
+        PersonnelAssignmentInput(personnelId: pId, duty: 'GÖREVLİ'),
       ],
     );
 
@@ -71,11 +67,7 @@ void main() {
         tarih: '2026-07-20',
         olusturanKullanici: 'admin',
         personnelAssignments: [
-          {
-            'personelId': pId,
-            'gorevVeyaIzin': 'NÖBETÇİ',
-            'aciklama': null,
-          },
+          PersonnelAssignmentInput(personnelId: pId, duty: 'NÖBETÇİ'),
         ],
       );
 
@@ -99,11 +91,7 @@ void main() {
       tarih: '2026-07-31',
       olusturanKullanici: 'admin',
       personnelAssignments: [
-        {
-          'personelId': pId,
-          'gorevVeyaIzin': 'HAZIR KITA',
-          'aciklama': null,
-        },
+        PersonnelAssignmentInput(personnelId: pId, duty: 'HAZIR KITA'),
       ],
     );
 

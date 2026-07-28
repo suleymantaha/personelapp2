@@ -52,12 +52,9 @@ void main() {
     expect(request.faaliyetAdi, 'Günlük Tüm Faaliyetler');
     expect(request.tarih, '2026-07-28');
     expect(request.personnelAssignments, hasLength(2));
+    expect(request.personnelAssignments.first.duty, 'HAZIR KITA');
     expect(
-      request.personnelAssignments.first,
-      containsPair('gorevVeyaIzin', 'HAZIR KITA'),
-    );
-    expect(
-      request.personnelAssignments.first['aciklama'],
+      request.personnelAssignments.first.note,
       contains('08:00 - 19:30'),
     );
   });

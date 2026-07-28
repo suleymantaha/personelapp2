@@ -29,11 +29,8 @@ void main() {
 
   tearDown(() => database.close());
 
-  Map<String, dynamic> assignment(String duty) => {
-        'personelId': personId,
-        'gorevVeyaIzin': duty,
-        'aciklama': null,
-      };
+  PersonnelAssignmentInput assignment(String duty) =>
+      PersonnelAssignmentInput(personnelId: personId, duty: duty);
 
   test('aynı tarih ve isimde faaliyetler bağımsız kimliklerle saklanır',
       () async {
@@ -123,11 +120,10 @@ void main() {
     );
     final payload = [
       assignment('HAZIR KITA'),
-      {
-        'personelId': secondPersonId,
-        'gorevVeyaIzin': 'HAZIR KITA',
-        'aciklama': null,
-      },
+      PersonnelAssignmentInput(
+        personnelId: secondPersonId,
+        duty: 'HAZIR KITA',
+      ),
     ];
 
     final matches = await repository.findMatchingActivities(
@@ -163,11 +159,11 @@ void main() {
       personnelAssignments: [assignment('GÖREVLİ')],
     );
     final changed = [
-      {
-        'personelId': personId,
-        'gorevVeyaIzin': 'NÖBETÇİ',
-        'aciklama': 'Gece vardiyası',
-      },
+      PersonnelAssignmentInput(
+        personnelId: personId,
+        duty: 'NÖBETÇİ',
+        note: 'Gece vardiyası',
+      ),
     ];
 
     final skipped = await repository.mergeAssignmentsIntoActivity(

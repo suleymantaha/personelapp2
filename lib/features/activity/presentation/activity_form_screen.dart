@@ -180,11 +180,11 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
       e,
     ) {
       final note = _notes[e.key]?.trim();
-      return {
-        'personelId': e.key,
-        'gorevVeyaIzin': e.value,
-        'aciklama': (note != null && note.isNotEmpty) ? note : null,
-      };
+      return PersonnelAssignmentInput(
+        personnelId: e.key,
+        duty: e.value,
+        note: (note != null && note.isNotEmpty) ? note : null,
+      );
     }).toList();
 
     if (payload.isEmpty) {

@@ -17,11 +17,8 @@ void main() {
           ),
         );
 
-    Map<String, dynamic> assignment(int id) => {
-          'personelId': id,
-          'gorevVeyaIzin': 'GÖREVLİ',
-          'aciklama': null,
-        };
+    PersonnelAssignmentInput assignment(int id) =>
+        PersonnelAssignmentInput(personnelId: id, duty: 'GÖREVLİ');
 
     await expectLater(
       repository.createActivitiesWithAssignments([

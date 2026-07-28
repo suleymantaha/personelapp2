@@ -1,4 +1,4 @@
-import 'package:personelapp2/features/activity/data/activity_repository.dart';
+import 'package:personelapp2/features/activity/domain/models/activity_create_request.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
 class BulkImportDuplicate {
@@ -76,7 +76,7 @@ class BulkActivityImportPreparer {
         );
       }
 
-      final payload = <Map<String, dynamic>>[];
+      final payload = <PersonnelAssignmentInput>[];
       for (final occurrence in occurrences.values) {
         if (occurrence.length != 1) continue;
         final item = occurrence.single;
@@ -85,11 +85,13 @@ class BulkActivityImportPreparer {
           'Görev Türü: ${item.block.parsedActivityType}',
           if (time != null && time.isNotEmpty) 'Saat: $time',
         ].join(' | ');
-        payload.add({
-          'personelId': item.person.matchedPersonnelId,
-          'gorevVeyaIzin': item.block.parsedActivityType,
-          'aciklama': note,
-        });
+        payload.add(
+          PersonnelAssignmentInput(
+            personnelId: item.person.matchedPersonnelId!,
+            duty: item.block.parsedActivityType,
+            note: note,
+          ),
+        );
       }
 
       if (payload.isNotEmpty) {
