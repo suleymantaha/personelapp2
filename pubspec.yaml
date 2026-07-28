@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 dependencies:
   crypto: ^3.0.6
+  cryptography: 2.9.0
   cupertino_icons: ^1.0.8
   drift: ^2.34.2
   excel: ^4.0.6

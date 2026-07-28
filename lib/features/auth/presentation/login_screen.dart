@@ -116,9 +116,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       final p1 = pass1Ctrl.text.trim();
                       final p2 = pass2Ctrl.text.trim();
 
-                      if (p1.isEmpty || p1.length < 4) {
+                      if (p1.length < 12) {
                         setDialogState(
-                          () => errorText = 'Parola en az 4 karakter olmalıdır.',
+                          () => errorText =
+                              'Parola en az 12 karakter olmalıdır.',
                         );
                         return;
                       }
@@ -192,7 +193,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         return;
       }
 
-      if (PasswordHasher.verifyPassword(password, user.sifre)) {
+      final verification = await PasswordHasher.verifyPassword(
+        password,
+        user.sifre,
+        username: user.kullaniciAdi,
+      );
+      if (verification.matches) {
+        if (verification.needsRehash) {
+          final repo = ref.read(personnelRepositoryProvider);
+          await repo.updateUserPassword(
+            kullaniciAdi: user.kullaniciAdi,
+            newPassword: password,
+          );
+        }
         await _loginUserSession(user);
       } else {
         if (mounted) {

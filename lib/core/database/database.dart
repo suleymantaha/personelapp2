@@ -57,10 +57,16 @@ class AppDatabase extends _$AppDatabase {
         await into(kullaniciTable).insert(
           KullaniciTableCompanion.insert(
             kullaniciAdi: 'admin',
-            sifre: const Value('123456'),
+            sifre: const Value(''),
             rol: 'yönetici',
           ),
         );
+      } else if (adminUser.sifre == '123456') {
+        // Invalidate the legacy well-known credential. The existing first-login
+        // flow will require a new password before creating a session.
+        await (update(kullaniciTable)
+              ..where((table) => table.id.equals(adminUser.id)))
+            .write(const KullaniciTableCompanion(sifre: Value('')));
       }
 
       final existingSquads = await select(timTable).get();
