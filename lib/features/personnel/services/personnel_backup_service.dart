@@ -6,13 +6,19 @@ class PersonnelBackupService {
   PersonnelBackupService(this.db);
   final AppDatabase db;
 
+  static const int backupVersion = 1;
+  static const int maxBackupBytes = 2 * 1024 * 1024;
+  static const int maxSquadCount = 1000;
+  static const int maxPersonnelCount = 10000;
+  static const int maxTextLength = 250;
+
   /// Export all personnel and squads into JSON backup string
   Future<String> exportBackupJson() async {
     final personnelList = await db.select(db.personelTable).get();
     final timList = await db.select(db.timTable).get();
 
     final data = {
-      'version': 1,
+      'version': backupVersion,
       'exportedAt': DateTime.now().toIso8601String(),
       'squads': timList
           .map(
@@ -42,15 +48,28 @@ class PersonnelBackupService {
 
   /// Import personnel and squads from JSON string
   Future<int> importBackupJson(String jsonString) async {
+    if (utf8.encode(jsonString).length > maxBackupBytes) {
+      throw const FormatException('Yedek dosyası izin verilen boyutu aşıyor.');
+    }
     final decoded = jsonDecode(jsonString);
     if (decoded is! Map<String, Object?>) {
       throw const FormatException(
         'Yedek verisi beklenen JSON nesnesi formatinda degil.',
       );
     }
+    if (decoded['version'] != backupVersion) {
+      throw const FormatException('Yedek sürümü desteklenmiyor.');
+    }
 
-    final squads = _readObjectList(decoded['squads']);
-    final personnel = _readObjectList(decoded['personnel']);
+    final squads = _readObjectList(decoded['squads'], fieldName: 'squads');
+    final personnel = _readObjectList(
+      decoded['personnel'],
+      fieldName: 'personnel',
+    );
+    if (squads.length > maxSquadCount ||
+        personnel.length > maxPersonnelCount) {
+      throw const FormatException('Yedek çok fazla kayıt içeriyor.');
+    }
 
     var importedCount = 0;
 
@@ -131,9 +150,15 @@ class PersonnelBackupService {
     return importedCount;
   }
 
-  List<Map<String, Object?>> _readObjectList(Object? value) {
+  List<Map<String, Object?>> _readObjectList(
+    Object? value, {
+    required String fieldName,
+  }) {
     if (value is! List) {
-      return const <Map<String, Object?>>[];
+      throw FormatException('$fieldName alanı bir liste olmalıdır.');
+    }
+    if (value.any((item) => item is! Map<Object?, Object?>)) {
+      throw FormatException('$fieldName alanında geçersiz kayıt var.');
     }
 
     return value
@@ -152,7 +177,11 @@ class PersonnelBackupService {
     String fallback = '',
   }) {
     final value = data[key];
-    return value?.toString() ?? fallback;
+    if (value == null) return fallback;
+    if (value is! String || value.length > maxTextLength) {
+      throw FormatException('$key alanı geçersiz.');
+    }
+    return value;
   }
 
   int? _readNullableInt(Map<String, Object?> data, String key) {

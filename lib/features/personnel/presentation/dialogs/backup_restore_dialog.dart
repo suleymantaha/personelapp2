@@ -37,10 +37,10 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
         _textController.text = jsonStr;
         _statusMessage = '✅ Personel ve Tim yedeği başarıyla oluşturuldu!';
       });
-    } on Object catch (e) {
+    } on Object catch (_) {
       if (!mounted) return;
       setState(() {
-        _statusMessage = '❌ Hata oluştu: $e';
+        _statusMessage = '❌ Yedek oluşturulamadı. Lütfen tekrar deneyin.';
       });
     } finally {
       if (mounted) {
@@ -75,10 +75,10 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
         _statusMessage =
             '🎉 Başarılı! $count adet yeni personel ve tim veritabanına aktarıldı.';
       });
-    } on Object catch (e) {
+    } on Object catch (_) {
       if (!mounted) return;
       setState(() {
-        _statusMessage = '❌ Geçersiz yedek formatı veya hata: $e';
+        _statusMessage = '❌ Yedek doğrulanamadı veya içe aktarılamadı.';
       });
     } finally {
       if (mounted) {
