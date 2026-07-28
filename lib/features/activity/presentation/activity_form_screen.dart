@@ -19,6 +19,17 @@ class ActivityFormScreen extends ConsumerStatefulWidget {
 
 class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
   DateTime _selectedDate = DateTime.now();
+  final TextEditingController _activityNameController = TextEditingController();
+
+  static const _activityTemplates = [
+    'Heybet',
+    'Hazır Kıta',
+    'Gülüşkür',
+    'Nöbet',
+    'Devriye',
+    'Görev',
+    'Diğer',
+  ];
 
   // Maps personelId to selected DutyType
   final Map<int, String> _assignments = {};
@@ -27,8 +38,15 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
 
   Future<void> _submitActivity() async {
     final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
-    final name = 'Günlük Faaliyet ($dateStr)';
+    final name = _activityNameController.text.trim();
     final userSession = ref.read(userSessionProvider);
+
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Faaliyet adı zorunludur.')),
+      );
+      return;
+    }
 
     final payload = _assignments.entries.where((e) => e.value.isNotEmpty).map((
       e,
@@ -68,13 +86,18 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
-          backgroundColor: isCommander
-              ? context.pendingColor
-              : context.approvedColor,
+          backgroundColor:
+              isCommander ? context.pendingColor : context.approvedColor,
         ),
       );
       Navigator.of(context).pop();
     }
+  }
+
+  @override
+  void dispose() {
+    _activityNameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -179,6 +202,35 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+              TextField(
+                controller: _activityNameController,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                  labelText: 'Faaliyet Adı *',
+                  hintText: 'Örn. Hazır Kıta',
+                  prefixIcon: Icon(Icons.assignment_outlined),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: _activityTemplates
+                    .map(
+                      (template) => ActionChip(
+                        label: Text(template),
+                        onPressed: () {
+                          setState(() {
+                            _activityNameController.text =
+                                template == 'Diğer' ? '' : template;
+                          });
+                        },
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 16),
 
               Text(
                 isAdmin
@@ -196,11 +248,11 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                   // If Commander, strictly filter by their squad
                   final personnelList = (!isAdmin && session?.timId != null)
                       ? rawPersonnelList
-                            .where((p) => p.timId == session?.timId)
-                            .toList()
+                          .where((p) => p.timId == session?.timId)
+                          .toList()
                       : (!isAdmin && session?.timId == null)
-                      ? <PersonelTableData>[]
-                      : rawPersonnelList;
+                          ? <PersonelTableData>[]
+                          : rawPersonnelList;
 
                   if (!isAdmin && session?.timId == null) {
                     return Padding(
@@ -244,12 +296,12 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                             final nameB = squadMap[b] ?? '';
                             final wA =
                                 MilitaryStructureHelper.getSquadOrderWeight(
-                                  nameA,
-                                );
+                              nameA,
+                            );
                             final wB =
                                 MilitaryStructureHelper.getSquadOrderWeight(
-                                  nameB,
-                                );
+                              nameB,
+                            );
                             if (wA != wB) return wA.compareTo(wB);
                             return nameA.compareTo(nameB);
                           });
@@ -377,15 +429,16 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                     color: context.cardBorderColor,
                                   ),
                                   ListView.separated(
-                                                                      shrinkWrap: true,
-                                                                      physics:
-                                                                          const NeverScrollableScrollPhysics(),
-                                                                      itemCount: members.length,
-                                                                      separatorBuilder: (context, index) => Divider(
-                                                                        height: 1,
-                                                                        color: context.cardBorderColor,
-                                                                      ),
-                                                                      itemBuilder: (context, index) {
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    itemCount: members.length,
+                                    separatorBuilder: (context, index) =>
+                                        Divider(
+                                      height: 1,
+                                      color: context.cardBorderColor,
+                                    ),
+                                    itemBuilder: (context, index) {
                                       final p = members[index];
                                       final currentSelection =
                                           _assignments[p.id];
@@ -433,12 +486,12 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                             ),
                                             ConstrainedBox(
                                               constraints: BoxConstraints(
-                                                maxWidth: context
-                                                    .responsiveValue(
-                                                      mobile: 135,
-                                                      tablet: 180,
-                                                      desktop: 220,
-                                                    ),
+                                                maxWidth:
+                                                    context.responsiveValue(
+                                                  mobile: 135,
+                                                  tablet: 180,
+                                                  desktop: 220,
+                                                ),
                                               ),
                                               child: DropdownButton<String>(
                                                 value: currentSelection,
@@ -456,11 +509,10 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                                 items: availableDuties.map((d) {
                                                   final isAdminOnly =
                                                       adminOnlyDuties.contains(
-                                                        d,
-                                                      );
+                                                    d,
+                                                  );
                                                   return DropdownMenuItem<
-                                                    String
-                                                  >(
+                                                      String>(
                                                     value: d,
                                                     child: Text(
                                                       d,
@@ -472,9 +524,9 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                                             : FontWeight.normal,
                                                         color: isAdminOnly
                                                             ? context
-                                                                  .accentOrOlive
+                                                                .accentOrOlive
                                                             : context
-                                                                  .textPrimary,
+                                                                .textPrimary,
                                                       ),
                                                     ),
                                                   );
@@ -513,12 +565,12 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                   );
 
                   return ListView.separated(
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: personnelList.length,
-                                      separatorBuilder: (context, _) =>
-                                          Divider(color: context.cardBorderColor),
-                                      itemBuilder: (context, index) {
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: personnelList.length,
+                    separatorBuilder: (context, _) =>
+                        Divider(color: context.cardBorderColor),
+                    itemBuilder: (context, index) {
                       final p = personnelList[index];
                       final currentSelection = _assignments[p.id];
 
@@ -589,8 +641,8 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                                         ),
                                       ),
                                       items: availableDuties.map((d) {
-                                        final isAdminOnly = adminOnlyDuties
-                                            .contains(d);
+                                        final isAdminOnly =
+                                            adminOnlyDuties.contains(d);
                                         return DropdownMenuItem<String>(
                                           value: d,
                                           child: Text(

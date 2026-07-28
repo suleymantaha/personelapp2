@@ -132,15 +132,17 @@ void main() {
       );
 
       final matrix = await matrixRepository.watchMonthlyMatrix('2026-07').first;
-      expect(matrix[approvedPerson]?[27], equals(null));
+      expect(matrix[approvedPerson]?[27], isNull);
+      expect(matrix[approvedPerson]?[28]?.displayCode, 'B');
       expect(
-        matrix[approvedPerson]?[28],
-        '${DutyOrLeaveType.heybet} (beklemede)',
+        matrix[approvedPerson]?[28]?.entries.single.duty,
+        DutyOrLeaveType.heybet,
       );
     },
   );
 
-  test('blocks an occupied target date without changing any data', () async {
+  test('moves beside an existing target-date activity without merging',
+      () async {
     final personnelId = await addPersonnel('Korunan Personel');
     final sourceId = await addActivity('2026-07-27');
     final targetId = await addActivity('2026-07-28');
@@ -154,7 +156,7 @@ void main() {
       activityId: sourceId,
       newDate: '2026-07-28',
     );
-    expect(result.status, ActivityDateChangeStatus.targetDateOccupied);
+    expect(result.status, ActivityDateChangeStatus.success);
 
     final source = await (db.select(db.gunlukFaaliyetTable)
           ..where((table) => table.id.equals(sourceId)))
@@ -165,7 +167,7 @@ void main() {
     final assignment = await (db.select(db.faaliyetPersonelAtamaTable)
           ..where((table) => table.id.equals(assignmentId)))
         .getSingle();
-    expect(source.tarih, '2026-07-27');
+    expect(source.tarih, '2026-07-28');
     expect(target.tarih, '2026-07-28');
     expect(assignment.faaliyetId, sourceId);
     expect(assignment.durum, AssignmentStatus.onaylandi);

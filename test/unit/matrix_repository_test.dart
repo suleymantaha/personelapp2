@@ -21,9 +21,7 @@ void main() {
 
   test('Monthly matrix should map personnel duties to day numbers', () async {
     // Insert personnel
-    final pId = await db
-        .into(db.personelTable)
-        .insert(
+    final pId = await db.into(db.personelTable).insert(
           PersonelTableCompanion.insert(
             adSoyad: 'Hasan Uzun',
             rutbe: 'YÜZBAŞI',
@@ -49,15 +47,14 @@ void main() {
     final matrixMap = await matrixRepo.watchMonthlyMatrix('2026-07').first;
 
     expect(matrixMap.containsKey(pId), isTrue);
-    expect(matrixMap[pId]?[15], equals('GÖREVLİ'));
+    expect(matrixMap[pId]?[15]?.displayCode, equals('X'));
+    expect(matrixMap[pId]?[15]?.entries.single.duty, equals('GÖREVLİ'));
   });
 
   test(
     'Monthly matrix should reactively update when new assignments are added',
     () async {
-      final pId = await db
-          .into(db.personelTable)
-          .insert(
+      final pId = await db.into(db.personelTable).insert(
             PersonelTableCompanion.insert(
               adSoyad: 'Ali Kaya',
               rutbe: 'TEĞMEN',
@@ -83,7 +80,38 @@ void main() {
       );
 
       final updatedMap = await stream.first;
-      expect(updatedMap[pId]?[20], equals('NÖBETÇİ'));
+      expect(updatedMap[pId]?[20]?.displayCode, equals('X'));
+      expect(updatedMap[pId]?[21], isNull);
     },
   );
+
+  test('24 saatlik görev sonraki ayın ilk gününe devam eder', () async {
+    final pId = await db.into(db.personelTable).insert(
+          PersonelTableCompanion.insert(
+            adSoyad: 'Ay Sonu Personeli',
+            rutbe: 'J.Uzm.Çvş.',
+            birlik: '6/B',
+            kayitTarihi: '2026-07-01',
+          ),
+        );
+    await actRepo.createActivityWithAssignments(
+      faaliyetAdi: 'Hazır Kıta',
+      tarih: '2026-07-31',
+      olusturanKullanici: 'admin',
+      personnelAssignments: [
+        {
+          'personelId': pId,
+          'gorevVeyaIzin': 'HAZIR KITA',
+          'aciklama': null,
+        },
+      ],
+    );
+
+    final july = await matrixRepo.watchMonthlyMatrix('2026-07').first;
+    final august = await matrixRepo.watchMonthlyMatrix('2026-08').first;
+
+    expect(july[pId]?[31]?.displayCode, 'X');
+    expect(august[pId]?[1]?.displayCode, 'X');
+    expect(august[pId]?[1]?.entries.single.isContinuationDay, isTrue);
+  });
 }

@@ -7,6 +7,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 import 'package:personelapp2/features/matrix/services/excel_xml_generator.dart';
 
 class MonthlyMatrixScreen extends ConsumerStatefulWidget {
@@ -20,20 +21,59 @@ class MonthlyMatrixScreen extends ConsumerStatefulWidget {
 class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
   DateTime _selectedMonth = DateTime.now();
 
-  String _getAbbreviation(String status) {
-    if (status.contains('beklemede')) return 'B';
-    if (status.contains('GÖREV') ||
-        status.contains('NÖBET') ||
-        status.contains('HAZIR KITA') ||
-        status.contains('GÜLÜŞKÜR') ||
-        status.contains('HEYBET')) {
-      return 'X';
-    }
-    if (status.contains('İZİN')) return 'İZ';
-    if (status.contains('İSTİRAHAT')) return 'İST';
-    if (status.contains('RAPOR')) return 'RAP';
-    if (status.contains('SEVK')) return 'SVK';
-    return '-';
+  String _getAbbreviation(MatrixDayCell? cell) => cell?.displayCode ?? '-';
+
+  String _statusForColor(MatrixDayCell? cell) {
+    if (cell == null) return '';
+    if (cell.displayCode == 'B') return 'beklemede';
+    if (cell.displayCode == 'X') return 'GÖREVLİ';
+    return switch (cell.displayCode) {
+      'İZ' => 'İZİN',
+      'İST' => 'İSTİRAHAT',
+      'RAP' => 'RAPOR',
+      'SVK' => 'SEVK',
+      _ => '',
+    };
+  }
+
+  Future<void> _showCellDetails(
+    BuildContext context,
+    PersonelTableData person,
+    int day,
+    MatrixDayCell cell,
+  ) {
+    final date = DateTime(_selectedMonth.year, _selectedMonth.month, day);
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${person.adSoyad} • ${DateFormat('dd.MM.yyyy').format(date)}',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 12),
+              ...cell.entries.map(
+                (entry) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(entry.activityName),
+                  subtitle: Text(
+                    '${entry.duty} • Asıl tarih: ${entry.sourceDate}'
+                    '${entry.isContinuationDay ? '\nÖnceki günden devam' : ''}',
+                  ),
+                  trailing: Text(entry.isPending ? 'B' : 'X'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _selectMonthYear(BuildContext context) async {
@@ -122,11 +162,11 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              childAspectRatio: 2.2,
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 8,
-                            ),
+                          crossAxisCount: 3,
+                          childAspectRatio: 2.2,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
                         itemCount: 12,
                         itemBuilder: (context, index) {
                           final isSelected = (index + 1) == tempMonth;
@@ -142,8 +182,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                 color: isSelected
                                     ? context.accentOrOlive
                                     : context
-                                          .colorScheme
-                                          .surfaceContainerHighest,
+                                        .colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: isSelected
@@ -283,12 +322,12 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
             onPressed: () {
               final personnel =
                   (session != null && !session.isAdmin && session.timId != null)
-                  ? (personnelAsync.value ?? [])
-                        .where((p) => p.timId == session.timId)
-                        .toList()
-                  : (session != null && !session.isAdmin)
-                  ? <PersonelTableData>[]
-                  : (personnelAsync.value ?? []);
+                      ? (personnelAsync.value ?? [])
+                          .where((p) => p.timId == session.timId)
+                          .toList()
+                      : (session != null && !session.isAdmin)
+                          ? <PersonelTableData>[]
+                          : (personnelAsync.value ?? []);
               final matrixData = matrixAsync.value ?? {};
               if (personnel.isEmpty) return;
 
@@ -307,8 +346,9 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
       body: personnelAsync.when(
         data: (rawPersonnelList) {
           // Role Filtering: If Commander, only show their squad's personnel
-          final personnelList =
-              (session != null && !session.isAdmin && session.timId != null)
+          final personnelList = (session != null &&
+                  !session.isAdmin &&
+                  session.timId != null)
               ? rawPersonnelList.where((p) => p.timId == session.timId).toList()
               : rawPersonnelList;
 
@@ -449,58 +489,68 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                               runSpacing: 5,
                               children: List.generate(daysInMonth, (dIndex) {
                                 final day = dIndex + 1;
-                                final status = pStatusMap[day] ?? '';
+                                final cell = pStatusMap[day];
+                                final status = _statusForColor(cell);
                                 final bgColor = context.getStatusBgColor(
                                   status,
                                 );
                                 final textColor = context.getStatusTextColor(
                                   status,
                                 );
-                                final label = _getAbbreviation(status);
-                                final isToday =
-                                    DateTime.now().year ==
+                                final label = _getAbbreviation(cell);
+                                final isToday = DateTime.now().year ==
                                         _selectedMonth.year &&
                                     DateTime.now().month ==
                                         _selectedMonth.month &&
                                     DateTime.now().day == day;
 
-                                return Container(
-                                  width: 42,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: bgColor,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: context.cellBorderColor(
-                                        isToday: isToday,
-                                      ),
-                                      width: isToday ? 2.0 : 1.0,
+                                return GestureDetector(
+                                  onTap: cell == null
+                                      ? null
+                                      : () => _showCellDetails(
+                                            context,
+                                            p,
+                                            day,
+                                            cell,
+                                          ),
+                                  child: Container(
+                                    width: 42,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 4,
                                     ),
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        '$day',
-                                        style: TextStyle(
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.bold,
-                                          color: textColor.withValues(
-                                            alpha: 0.75,
+                                    decoration: BoxDecoration(
+                                      color: bgColor,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: context.cellBorderColor(
+                                          isToday: isToday,
+                                        ),
+                                        width: isToday ? 2.0 : 1.0,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          '$day',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                            color: textColor.withValues(
+                                              alpha: 0.75,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      Text(
-                                        label,
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                          color: textColor,
+                                        Text(
+                                          label,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: textColor,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 );
                               }),
@@ -675,8 +725,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                               child: Row(
                                 children: List.generate(daysInMonth, (index) {
                                   final dayNum = index + 1;
-                                  final isTodayHeader =
-                                      DateTime.now().year ==
+                                  final isTodayHeader = DateTime.now().year ==
                                           _selectedMonth.year &&
                                       DateTime.now().month ==
                                           _selectedMonth.month &&
@@ -724,16 +773,16 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                     dIndex,
                                   ) {
                                     final day = dIndex + 1;
-                                    final status = pStatusMap[day] ?? '';
+                                    final cell = pStatusMap[day];
+                                    final status = _statusForColor(cell);
                                     final bgColor = context.getStatusBgColor(
                                       status,
                                     );
-                                    final textColor = context
-                                        .getStatusTextColor(status);
-                                    final label = _getAbbreviation(status);
+                                    final textColor =
+                                        context.getStatusTextColor(status);
+                                    final label = _getAbbreviation(cell);
 
-                                    final isToday =
-                                        DateTime.now().year ==
+                                    final isToday = DateTime.now().year ==
                                             _selectedMonth.year &&
                                         DateTime.now().month ==
                                             _selectedMonth.month &&
@@ -741,27 +790,37 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
 
                                     return SizedBox(
                                       width: 48,
-                                      child: Container(
-                                        margin: const EdgeInsets.all(2),
-                                        decoration: BoxDecoration(
-                                          color: bgColor,
-                                          borderRadius: BorderRadius.circular(
-                                            6,
-                                          ),
-                                          border: Border.all(
-                                            color: context.cellBorderColor(
-                                              isToday: isToday,
+                                      child: GestureDetector(
+                                        onTap: cell == null
+                                            ? null
+                                            : () => _showCellDetails(
+                                                  context,
+                                                  p,
+                                                  day,
+                                                  cell,
+                                                ),
+                                        child: Container(
+                                          margin: const EdgeInsets.all(2),
+                                          decoration: BoxDecoration(
+                                            color: bgColor,
+                                            borderRadius: BorderRadius.circular(
+                                              6,
                                             ),
-                                            width: isToday ? 2.0 : 1.2,
+                                            border: Border.all(
+                                              color: context.cellBorderColor(
+                                                isToday: isToday,
+                                              ),
+                                              width: isToday ? 2.0 : 1.2,
+                                            ),
                                           ),
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          label,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                            color: textColor,
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            label,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13,
+                                              color: textColor,
+                                            ),
                                           ),
                                         ),
                                       ),

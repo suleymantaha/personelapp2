@@ -111,57 +111,62 @@ class _BulkImportDialogState extends State<BulkImportDialog>
     });
 
     try {
-      var successCount = 0;
-
+      final grouped = <String, List<ParsedActivityBlock>>{};
       for (final block in _parsedBlocks) {
-        // Get raw activity type for display (parsedActivityType contains DutyOrLeaveType value)
-        final rawActivityType = _getRawActivityType(block.parsedActivityType);
+        final normalizedType = block.parsedActivityType.trim().toUpperCase();
+        final normalizedTime = block.parsedTimeRange?.trim() ?? '';
+        final key = '${block.parsedDate}|$normalizedType|$normalizedTime';
+        grouped.putIfAbsent(key, () => []).add(block);
+      }
 
+      final requests = <ActivityCreateRequest>[];
+      for (final blocks in grouped.values) {
+        final first = blocks.first;
+        final rawActivityType = _getRawActivityType(first.parsedActivityType);
+        final timeRange = first.parsedTimeRange?.trim();
         final title =
-            '${block.parsedTimName} - ${rawActivityType}${block.parsedTimeRange != null ? " (${block.parsedTimeRange})" : ""}';
-
-        // parsedActivityType already contains the mapped DutyOrLeaveType value (e.g., GÜLÜŞKÜR, HAZIR KITA)
-        final gorevVeyaIzin = block.parsedActivityType;
-
-        // Build description from time range and raw activity type
+            '$rawActivityType${timeRange == null || timeRange.isEmpty ? "" : " ($timeRange)"}';
         final descriptionParts = <String>[];
-        if (block.parsedTimeRange != null &&
-            block.parsedTimeRange!.isNotEmpty) {
-          descriptionParts.add('Saat: ${block.parsedTimeRange}');
+        if (timeRange != null && timeRange.isNotEmpty) {
+          descriptionParts.add('Saat: $timeRange');
         }
-        if (rawActivityType.isNotEmpty) {
-          descriptionParts.add('Görev Türü: ${rawActivityType}');
-        }
+        descriptionParts.add('Görev Türü: $rawActivityType');
         final aciklama = descriptionParts.join(' | ');
 
-        final payload = block.personnelList
-            .where((p) => p.matchedPersonnelId != null)
-            .map(
-              (p) => {
-                'personelId': p.matchedPersonnelId!,
-                'gorevVeyaIzin': gorevVeyaIzin,
-                'aciklama': aciklama,
-              },
-            )
-            .toList();
-
+        final seenPersonnel = <int>{};
+        final payload = <Map<String, dynamic>>[];
+        for (final block in blocks) {
+          for (final person in block.personnelList) {
+            final personId = person.matchedPersonnelId;
+            if (personId == null || !seenPersonnel.add(personId)) continue;
+            payload.add({
+              'personelId': personId,
+              'gorevVeyaIzin': first.parsedActivityType,
+              'aciklama': aciklama,
+            });
+          }
+        }
         if (payload.isNotEmpty) {
-          await widget.activityRepository.createActivityWithAssignments(
-            faaliyetAdi: title,
-            tarih: block.parsedDate,
-            olusturanKullanici: 'Admin (Toplu Aktarım)',
-            personnelAssignments: payload,
+          requests.add(
+            ActivityCreateRequest(
+              faaliyetAdi: title,
+              tarih: first.parsedDate,
+              olusturanKullanici: 'Admin (Toplu Aktarım)',
+              personnelAssignments: payload,
+            ),
           );
         }
-        successCount++;
       }
+
+      await widget.activityRepository.createActivitiesWithAssignments(requests);
 
       if (mounted) {
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '$successCount adet faaliyet ve personelleri başarıyla eklendi.',
+              '${_parsedBlocks.length} blok → ${requests.length} faaliyet '
+              'başarıyla eklendi.',
             ),
             backgroundColor: Colors.green.shade700,
             behavior: SnackBarBehavior.floating,

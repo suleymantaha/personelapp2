@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/matrix/data/matrix_repository.dart';
+import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 import 'package:personelapp2/features/personnel/data/personnel_repository.dart';
 
 AppDatabase? _singletonDb;
@@ -90,8 +91,11 @@ final matrixRepositoryProvider = Provider<MatrixRepository>((ref) {
   return MatrixRepository(ref.watch(databaseProvider));
 });
 
-final StreamProviderFamily<Map<int, Map<int, String>>, String>
+final StreamProviderFamily<Map<int, Map<int, MatrixDayCell>>, String>
 monthlyMatrixProvider =
-    StreamProvider.family<Map<int, Map<int, String>>, String>((ref, yearMonth) {
+    StreamProvider.family<Map<int, Map<int, MatrixDayCell>>, String>((
+      ref,
+      yearMonth,
+    ) {
       return ref.watch(matrixRepositoryProvider).watchMonthlyMatrix(yearMonth);
     });

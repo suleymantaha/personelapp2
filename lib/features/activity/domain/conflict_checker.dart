@@ -1,3 +1,5 @@
+import 'package:personelapp2/features/activity/domain/duty_coverage.dart';
+
 /// Personnel assignment status enum string representation
 class AssignmentStatus {
   static const String onaylandi = 'onaylandi';
@@ -85,13 +87,19 @@ class ConflictChecker {
   static String evaluateAssignmentStatus({
     required int personelId,
     required String targetDate, // YYYY-MM-DD
+    required String targetDuty,
     required List<PersonnelReport> reports,
     required List<ExistingDutyAssignment> existingAssignments,
+    int? excludeAssignmentId,
+    int? excludeActivityId,
   }) {
-    // 1. Raporlu kontrolü
+    final targetDates = DutyCoverage.coveredDates(
+      startDate: targetDate,
+      duty: targetDuty,
+    );
     final hasActiveReport = reports.any(
       (report) =>
-          report.personelId == personelId && report.coversDate(targetDate),
+          report.personelId == personelId && targetDates.any(report.coversDate),
     );
 
     if (hasActiveReport) {
@@ -99,12 +107,22 @@ class ConflictChecker {
     }
 
     // 2. Mükerrer onaylı görev kontrolü
-    final hasDuplicateApprovedDuty = existingAssignments.any(
-      (assignment) =>
-          assignment.personelId == personelId &&
-          assignment.tarih == targetDate &&
-          assignment.durum == AssignmentStatus.onaylandi,
-    );
+    final hasDuplicateApprovedDuty =
+        DutyOrLeaveType.isOperationalDuty(targetDuty) &&
+            existingAssignments.any(
+              (assignment) =>
+                  assignment.personelId == personelId &&
+                  assignment.durum == AssignmentStatus.onaylandi &&
+                  DutyOrLeaveType.isOperationalDuty(assignment.gorevVeyaIzin) &&
+                  assignment.id != excludeAssignmentId &&
+                  assignment.faaliyetId != excludeActivityId &&
+                  DutyCoverage.overlaps(
+                    firstDate: assignment.tarih,
+                    firstDuty: assignment.gorevVeyaIzin,
+                    secondDate: targetDate,
+                    secondDuty: targetDuty,
+                  ),
+            );
 
     if (hasDuplicateApprovedDuty) {
       return AssignmentStatus.beklemede;

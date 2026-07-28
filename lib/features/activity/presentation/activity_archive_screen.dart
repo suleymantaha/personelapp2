@@ -170,19 +170,26 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       );
       return;
     }
-    final rows = await _buildRosterRowsForMasterExport(
-      activities,
-      personnelList,
-    );
     final dateTitle = _buildExportDateTitle(activities);
-    final mainActivityName = activities.length == 1
-        ? activities.first.faaliyetAdi
-        : 'GÜNLÜK TÜM FAALİYETLER';
+    final sections = <MasterActivityData>[];
+    for (final activity in activities) {
+      sections.add(
+        MasterActivityData(
+          faaliyetAdi: activity.faaliyetAdi,
+          tarih: activity.tarih,
+          olusturanKullanici: activity.olusturanKullanici,
+          rows: await _buildRosterRowsForMasterExport(
+            [activity],
+            personnelList,
+          ),
+        ),
+      );
+    }
 
-    await MilitaryRosterExporter.shareExcelRoster(
-      faaliyetAdi: mainActivityName,
-      tarih: dateTitle,
-      rows: rows,
+    await MilitaryRosterExporter.shareMasterDailyExcel(
+      title: 'GÜNLÜK TÜM FAALİYETLER',
+      dateStr: dateTitle,
+      activities: sections,
     );
   }
 
@@ -368,25 +375,46 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                     );
                   }
 
-                  return ListView.builder(
+                  filtered.sort((a, b) {
+                    final dateOrder = b.tarih.compareTo(a.tarih);
+                    return dateOrder != 0 ? dateOrder : b.id.compareTo(a.id);
+                  });
+                  final grouped = <String, List<GunlukFaaliyetTableData>>{};
+                  for (final activity in filtered) {
+                    grouped.putIfAbsent(activity.tarih, () => []).add(activity);
+                  }
+
+                  return ListView(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 4,
                     ),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final act = filtered[index];
-                      return ActivityCard(
-                        activity: act,
-                        selectedSquadId: _selectedSquadFilter,
-                        onDateChanged: (newDate) {
-                          final parsed = DateTime.tryParse(newDate);
-                          if (parsed != null) {
-                            setState(() => _selectedDateFilter = parsed);
-                          }
-                        },
-                      );
-                    },
+                    children: [
+                      for (final day in grouped.entries) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 14, 4, 8),
+                          child: Text(
+                            '${DateFormat('dd MMMM').format(DateTime.parse(day.key))}'
+                            ' • ${day.value.length} faaliyet',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        for (final act in day.value)
+                          ActivityCard(
+                            activity: act,
+                            selectedSquadId: _selectedSquadFilter,
+                            onDateChanged: (newDate) {
+                              final parsed = DateTime.tryParse(newDate);
+                              if (parsed != null) {
+                                setState(() => _selectedDateFilter = parsed);
+                              }
+                            },
+                          ),
+                      ],
+                    ],
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),

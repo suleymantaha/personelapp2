@@ -47,18 +47,6 @@ class ActivityCard extends ConsumerWidget {
       );
       return;
     }
-    if (preview.status == ActivityDateChangeStatus.targetDateOccupied) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${DateFormat('dd.MM.yyyy').format(picked)} tarihinde zaten '
-            'faaliyet kaydı var. Önce hedef kaydı düzenleyin.',
-          ),
-          backgroundColor: context.pendingColor,
-        ),
-      );
-      return;
-    }
     if (!preview.canChange) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -152,6 +140,18 @@ class ActivityCard extends ConsumerWidget {
           .watch(),
       builder: (context, snapshot) {
         final assignments = snapshot.data ?? [];
+        final personnel = ref.watch(allPersonnelProvider).value ?? [];
+        if (selectedSquadId != null &&
+            snapshot.hasData &&
+            !assignments.any(
+              (assignment) => personnel.any(
+                (person) =>
+                    person.id == assignment.personelId &&
+                    person.timId == selectedSquadId,
+              ),
+            )) {
+          return const SizedBox.shrink();
+        }
         final hasPending = assignments.any(
           (a) => a.durum == AssignmentStatus.beklemede,
         );
@@ -239,16 +239,24 @@ class ActivityCard extends ConsumerWidget {
                           tooltip: 'Tümünü Onayla',
                           onPressed: () async {
                             final repo = ref.read(activityRepositoryProvider);
-                            await repo.approveAllAssignmentsForActivity(
+                            final result =
+                                await repo.approveAllAssignmentsForActivity(
                               activity.id,
                             );
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: const Text(
-                                    'Faaliyet atamaları onaylandı!',
+                                  content: Text(
+                                    result.blockedCount == 0
+                                        ? '${result.approvedCount} atama onaylandı.'
+                                        : '${result.approvedCount} onaylandı, '
+                                            '${result.blockedCount} çakışma '
+                                            'nedeniyle beklemede kaldı: '
+                                            '${result.conflictDescriptions.join(', ')}',
                                   ),
-                                  backgroundColor: context.approvedColor,
+                                  backgroundColor: result.blockedCount == 0
+                                      ? context.approvedColor
+                                      : context.pendingColor,
                                 ),
                               );
                             }

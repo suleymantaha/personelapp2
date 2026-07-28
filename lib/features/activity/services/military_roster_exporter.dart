@@ -452,9 +452,8 @@ class MilitaryRosterExporter {
 
         if (isSpecialGroup) {
           if (j == 0) {
-            final mergeAttr = mergeCount > 0
-                ? ' ss:MergeDown="$mergeCount"'
-                : '';
+            final mergeAttr =
+                mergeCount > 0 ? ' ss:MergeDown="$mergeCount"' : '';
             buffer.writeln(
               '    <Cell$mergeAttr ss:StyleID="DataCellCenterBold"><Data ss:Type="String">${escapeXml(r.diger)}</Data></Cell>',
             );
@@ -722,8 +721,8 @@ class MilitaryRosterExporter {
 
     for (final item in summaryItems) {
       sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
-        )
+        CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+      )
         ..value = TextCellValue(item)
         ..cellStyle = cellLeftStyle;
       sheet.merge(
@@ -817,8 +816,8 @@ class MilitaryRosterExporter {
     for (final act in activities) {
       currentRow++; // Spacing
       sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
-        )
+        CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+      )
         ..value = TextCellValue(
           '${act.faaliyetAdi.toUpperCase()} (${act.tarih})',
         )
@@ -831,8 +830,8 @@ class MilitaryRosterExporter {
 
       for (var c = 0; c < headers.length; c++) {
         sheet.cell(
-            CellIndex.indexByColumnRow(columnIndex: c, rowIndex: currentRow),
-          )
+          CellIndex.indexByColumnRow(columnIndex: c, rowIndex: currentRow),
+        )
           ..value = TextCellValue(headers[c])
           ..cellStyle = headerStyle;
       }
@@ -840,28 +839,28 @@ class MilitaryRosterExporter {
 
       for (final r in act.rows) {
         sheet.cell(
-            CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
-          )
+          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+        )
           ..value = IntCellValue(r.sNu)
           ..cellStyle = cellCenterStyle;
         sheet.cell(
-            CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow),
-          )
+          CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow),
+        )
           ..value = TextCellValue(r.birligi)
           ..cellStyle = cellCenterStyle;
         sheet.cell(
-            CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow),
-          )
+          CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow),
+        )
           ..value = TextCellValue(r.rutbe)
           ..cellStyle = cellCenterStyle;
         sheet.cell(
-            CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow),
-          )
+          CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow),
+        )
           ..value = TextCellValue(r.adSoyad)
           ..cellStyle = cellLeftStyle;
         sheet.cell(
-            CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
-          )
+          CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
+        )
           ..value = TextCellValue(r.diger)
           ..cellStyle = cellLeftStyle;
         currentRow++;
@@ -893,7 +892,10 @@ class MilitaryRosterExporter {
 
     final dir = await getTemporaryDirectory();
     final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-    final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.xlsx');
+    final exportId = DateTime.now().millisecondsSinceEpoch;
+    final file = File(
+      '${dir.path}/${sanitizedTitle}_Listesi_${tarih}_$exportId.xlsx',
+    );
     await file.writeAsBytes(bytes);
 
     await SharePlus.instance.share(
@@ -965,7 +967,10 @@ class MilitaryRosterExporter {
     );
 
     final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/Gunluk_Tum_Faaliyetler_$dateStr.xlsx');
+    final exportId = DateTime.now().millisecondsSinceEpoch;
+    final file = File(
+      '${dir.path}/Gunluk_Tum_Faaliyetler_${dateStr}_$exportId.xlsx',
+    );
     await file.writeAsBytes(bytes);
 
     await SharePlus.instance.share(

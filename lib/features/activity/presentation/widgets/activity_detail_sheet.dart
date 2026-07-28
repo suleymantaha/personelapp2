@@ -487,10 +487,19 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                           tooltip: 'Onayla',
                           onPressed: () async {
                             final repo = ref.read(activityRepositoryProvider);
-                            await repo.updateAssignmentStatus(
+                            final result = await repo.approveAssignment(
                               atama.id,
-                              AssignmentStatus.onaylandi,
                             );
+                            if (context.mounted && result.blockedCount > 0) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Onaylanamadı: '
+                                    '${result.conflictDescriptions.join(', ')}',
+                                  ),
+                                ),
+                              );
+                            }
                           },
                         ),
                         IconButton(
