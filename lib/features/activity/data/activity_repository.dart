@@ -398,12 +398,23 @@ class ActivityRepository {
               _normalizeActivityName(activity.faaliyetAdi) == normalizedName,
         )
         .toList();
+    if (matches.isEmpty) return const [];
+    final assignments = await (db.select(
+      db.faaliyetPersonelAtamaTable,
+    )..where((table) => table.faaliyetId.isIn(matches.map((item) => item.id))))
+        .get();
+    final assignmentsByActivity =
+        <int, List<FaaliyetPersonelAtamaTableData>>{};
+    for (final assignment in assignments) {
+      assignmentsByActivity
+          .putIfAbsent(assignment.faaliyetId, () => [])
+          .add(assignment);
+    }
     final result = <ExistingActivityMatch>[];
     for (final activity in matches) {
-      final existing = await (db.select(
-        db.faaliyetPersonelAtamaTable,
-      )..where((table) => table.faaliyetId.equals(activity.id)))
-          .get();
+      final existing =
+          assignmentsByActivity[activity.id] ??
+              const <FaaliyetPersonelAtamaTableData>[];
       final byPersonnel = {
         for (final assignment in existing) assignment.personelId: assignment,
       };
@@ -667,11 +678,25 @@ class ActivityRepository {
                   tbl.durum.equals(AssignmentStatus.beklemede),
             ))
           .get();
+      if (pending.isEmpty) {
+        return const ApprovalResult(approvedCount: 0, blockedCount: 0);
+      }
+      final activity = await (db.select(
+        db.gunlukFaaliyetTable,
+      )..where((table) => table.id.equals(activityId)))
+          .getSingle();
+      final existingAssignments = await _loadExistingAssignments();
+      final reports = await _loadDomainReports();
       var approvedCount = 0;
       var blockedCount = 0;
       final descriptions = <String>[];
       for (final assignment in pending) {
-        final result = await _approveAssignmentWithinTransaction(assignment.id);
+        final result = await _approveAssignmentWithContext(
+          assignment: assignment,
+          activity: activity,
+          existingAssignments: existingAssignments,
+          reports: reports,
+        );
         approvedCount += result.approvedCount;
         blockedCount += result.blockedCount;
         descriptions.addAll(result.conflictDescriptions);
@@ -700,6 +725,20 @@ class ActivityRepository {
         .getSingle();
     final existingAssignments = await _loadExistingAssignments();
     final reports = await _loadDomainReports();
+    return _approveAssignmentWithContext(
+      assignment: assignment,
+      activity: activity,
+      existingAssignments: existingAssignments,
+      reports: reports,
+    );
+  }
+
+  Future<ApprovalResult> _approveAssignmentWithContext({
+    required FaaliyetPersonelAtamaTableData assignment,
+    required GunlukFaaliyetTableData activity,
+    required List<ExistingDutyAssignment> existingAssignments,
+    required List<PersonnelReport> reports,
+  }) async {
     final status = ConflictChecker.evaluateAssignmentStatus(
       personelId: assignment.personelId,
       targetDate: activity.tarih,
@@ -721,12 +760,26 @@ class ActivityRepository {
     }
     await (db.update(
       db.faaliyetPersonelAtamaTable,
-    )..where((tbl) => tbl.id.equals(assignmentId)))
+    )..where((tbl) => tbl.id.equals(assignment.id)))
         .write(
       const FaaliyetPersonelAtamaTableCompanion(
         durum: Value(AssignmentStatus.onaylandi),
       ),
     );
+    final index = existingAssignments.indexWhere(
+      (existing) => existing.id == assignment.id,
+    );
+    if (index >= 0) {
+      final existing = existingAssignments[index];
+      existingAssignments[index] = ExistingDutyAssignment(
+        id: existing.id,
+        faaliyetId: existing.faaliyetId,
+        personelId: existing.personelId,
+        tarih: existing.tarih,
+        gorevVeyaIzin: existing.gorevVeyaIzin,
+        durum: AssignmentStatus.onaylandi,
+      );
+    }
     return const ApprovalResult(approvedCount: 1, blockedCount: 0);
   }
 
