@@ -193,28 +193,33 @@ class _BulkImportDialogState extends State<BulkImportDialog>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
     final isMobile = screenWidth < 768;
+    final isKeyboardVisible = mediaQuery.viewInsets.bottom > 0;
 
     return Dialog(
       insetPadding: EdgeInsets.symmetric(
         horizontal: isMobile ? 12 : 24,
-        vertical: isMobile ? 24 : 32,
+        vertical: isKeyboardVisible ? 8 : (isMobile ? 24 : 32),
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: Container(
-          width: isMobile ? screenWidth : screenWidth * 0.85,
-          height: MediaQuery.of(context).size.height * 0.9,
-          color: Theme.of(context).scaffoldBackgroundColor,
-          child: Column(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: mediaQuery.size.height * 0.9),
+          child: SizedBox(
+            width: isMobile ? screenWidth : screenWidth * 0.85,
+            height: double.infinity,
+            child: ColoredBox(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Column(
             children: [
               // Dialog Header Banner
               Container(
-                padding: const EdgeInsets.symmetric(
+                padding: EdgeInsets.symmetric(
                   horizontal: 20,
-                  vertical: 16,
+                  vertical: isKeyboardVisible ? 10 : 16,
                 ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -239,27 +244,29 @@ class _BulkImportDialogState extends State<BulkImportDialog>
                       ),
                     ),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Metinden Toplu Aktarım',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: isKeyboardVisible ? 16 : 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
-                          SizedBox(height: 2),
-                          Text(
-                            'WhatsApp / Telegram nöbet listelerini yapıştırıp akıllı ayrıştırın',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white70,
+                          if (!isKeyboardVisible) ...[
+                            const SizedBox(height: 2),
+                            const Text(
+                              'WhatsApp / Telegram nöbet listelerini yapıştırıp akıllı ayrıştırın',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white70,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          ],
                         ],
                       ),
                     ),
@@ -280,16 +287,20 @@ class _BulkImportDialogState extends State<BulkImportDialog>
                   indicatorColor: context.accentOrOlive,
                   indicatorWeight: 3,
                   tabs: [
-                    const Tab(
-                      icon: Icon(Icons.text_fields),
+                    Tab(
+                      icon: isKeyboardVisible
+                          ? null
+                          : const Icon(Icons.text_fields),
                       text: '1. Metin Yapıştır',
                     ),
                     Tab(
-                      icon: Badge(
-                        isLabelVisible: _parsedBlocks.isNotEmpty,
-                        label: Text(_parsedBlocks.length.toString()),
-                        child: const Icon(Icons.preview_rounded),
-                      ),
+                      icon: isKeyboardVisible
+                          ? null
+                          : Badge(
+                              isLabelVisible: _parsedBlocks.isNotEmpty,
+                              label: Text(_parsedBlocks.length.toString()),
+                              child: const Icon(Icons.preview_rounded),
+                            ),
                       text: '2. Kart Önizleme',
                     ),
                   ],
@@ -301,7 +312,10 @@ class _BulkImportDialogState extends State<BulkImportDialog>
                     ? TabBarView(
                         controller: _tabController,
                         children: [
-                          _buildInputSection(isMobile: true),
+                          _buildInputSection(
+                            isMobile: true,
+                            isKeyboardVisible: isKeyboardVisible,
+                          ),
                           _buildPreviewSection(isMobile: true),
                         ],
                       )
@@ -312,7 +326,10 @@ class _BulkImportDialogState extends State<BulkImportDialog>
                           children: [
                             Expanded(
                               flex: 4,
-                              child: _buildInputSection(isMobile: false),
+                              child: _buildInputSection(
+                                isMobile: false,
+                                isKeyboardVisible: isKeyboardVisible,
+                              ),
                             ),
                             const SizedBox(width: 20),
                             const VerticalDivider(width: 1),
@@ -327,14 +344,19 @@ class _BulkImportDialogState extends State<BulkImportDialog>
               ),
             ],
           ),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildInputSection({required bool isMobile}) {
+  Widget _buildInputSection({
+    required bool isMobile,
+    required bool isKeyboardVisible,
+  }) {
     return Padding(
-      padding: EdgeInsets.all(isMobile ? 16 : 0),
+      padding: EdgeInsets.all(isMobile ? (isKeyboardVisible ? 12 : 16) : 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -352,7 +374,27 @@ class _BulkImportDialogState extends State<BulkImportDialog>
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          if (!isKeyboardVisible) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              decoration: BoxDecoration(
+                color: context.accentOrOlive.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Tarih, görev türü ve personel listesini içeren mesajı '
+                'olduğu gibi yapıştırabilirsiniz.',
+                style: TextStyle(
+                  color: context.accentOrOlive,
+                  fontSize: 12,
+                  height: 1.3,
+                ),
+              ),
+            ),
+          ],
+          SizedBox(height: isKeyboardVisible ? 8 : 10),
           Expanded(
             child: TextField(
               controller: _textController,
@@ -360,13 +402,25 @@ class _BulkImportDialogState extends State<BulkImportDialog>
               expands: true,
               textAlignVertical: TextAlignVertical.top,
               style: const TextStyle(fontSize: 13, height: 1.4),
+              cursorColor: context.accentOrOlive,
+              scrollPadding: const EdgeInsets.only(bottom: 80),
               decoration: InputDecoration(
-                hintText:
-                    'WhatsApp veya mesaj metnini yapıştırın...\n\nÖrnek:\n6 / B Gülüşkür isim listesi\n25.07.2026\n1-J.Asb.üçvş. Erdem BUYAR\n2-J.Uzm.Çvş. Erol SARI...',
-                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                hintText: 'Mesaj metnini buraya yapıştırın…',
+                hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide(color: context.cardBorderColor),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: context.cardBorderColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(
+                    color: context.accentOrOlive,
+                    width: 2,
+                  ),
                 ),
                 filled: true,
                 fillColor: Theme.of(context).cardColor,

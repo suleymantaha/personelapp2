@@ -8,7 +8,23 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
+import 'package:personelapp2/features/matrix/domain/matrix_personnel_order.dart';
 import 'package:personelapp2/features/matrix/services/excel_xml_generator.dart';
+
+class _MobileMatrixListEntry {
+  const _MobileMatrixListEntry.header(this.teamName, this.memberCount)
+      : person = null;
+
+  const _MobileMatrixListEntry.person(this.person)
+      : teamName = null,
+        memberCount = null;
+
+  final String? teamName;
+  final int? memberCount;
+  final PersonelTableData? person;
+
+  bool get isHeader => person == null;
+}
 
 class MonthlyMatrixScreen extends ConsumerStatefulWidget {
   const MonthlyMatrixScreen({super.key});
@@ -255,6 +271,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
   Widget build(BuildContext context) {
     final yearMonthStr = DateFormat('yyyy-MM').format(_selectedMonth);
     final personnelAsync = ref.watch(allPersonnelProvider);
+    final squads = ref.watch(allSquadsProvider).valueOrNull ?? const [];
     final matrixAsync = ref.watch(monthlyMatrixProvider(yearMonthStr));
     final session = ref.watch(userSessionProvider);
 
@@ -320,7 +337,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
             icon: const Icon(Icons.file_download),
             tooltip: "Excel'e Aktar",
             onPressed: () {
-              final personnel =
+              final filteredPersonnel =
                   (session != null && !session.isAdmin && session.timId != null)
                       ? (personnelAsync.value ?? [])
                           .where((p) => p.timId == session.timId)
@@ -328,6 +345,10 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                       : (session != null && !session.isAdmin)
                           ? <PersonelTableData>[]
                           : (personnelAsync.value ?? []);
+              final personnel = orderMatrixPersonnel(
+                filteredPersonnel,
+                squads,
+              );
               final matrixData = matrixAsync.value ?? {};
               if (personnel.isEmpty) return;
 
@@ -346,11 +367,15 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
       body: personnelAsync.when(
         data: (rawPersonnelList) {
           // Role Filtering: If Commander, only show their squad's personnel
-          final personnelList = (session != null &&
+          final filteredPersonnel = (session != null &&
                   !session.isAdmin &&
                   session.timId != null)
               ? rawPersonnelList.where((p) => p.timId == session.timId).toList()
               : rawPersonnelList;
+          final personnelList = orderMatrixPersonnel(
+            filteredPersonnel,
+            squads,
+          );
 
           if (personnelList.isEmpty) {
             return const Center(
@@ -361,11 +386,78 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
           final matrixData = matrixAsync.value ?? {};
 
           if (context.isMobile) {
+            final squadNames = {
+              for (final squad in squads) squad.id: squad.timAdi,
+            };
+            final groupedPersonnel = <int?, List<PersonelTableData>>{};
+            for (final person in personnelList) {
+              groupedPersonnel.putIfAbsent(person.timId, () => []).add(person);
+            }
+            final mobileEntries = <_MobileMatrixListEntry>[
+              for (final group in groupedPersonnel.entries) ...[
+                _MobileMatrixListEntry.header(
+                  group.key == null
+                      ? 'Timsiz Personel'
+                      : (squadNames[group.key] ?? 'Bilinmeyen Tim'),
+                  group.value.length,
+                ),
+                for (final person in group.value)
+                  _MobileMatrixListEntry.person(person),
+              ],
+            ];
+
             return ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: personnelList.length,
+              itemCount: mobileEntries.length,
               itemBuilder: (context, index) {
-                final p = personnelList[index];
+                final entry = mobileEntries[index];
+                if (entry.isHeader) {
+                  return Container(
+                    key: ValueKey(
+                      'matrix-team-header-${entry.teamName}',
+                    ),
+                    margin: const EdgeInsets.fromLTRB(12, 10, 12, 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.accentOrOlive,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.groups_rounded,
+                          size: 20,
+                          color: context.onAccentOrOlive,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            entry.teamName!,
+                            style: TextStyle(
+                              color: context.onAccentOrOlive,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '${entry.memberCount} kişi',
+                          style: TextStyle(
+                            color: context.onAccentOrOlive,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final p = entry.person!;
+                final personnelIndex = personnelList.indexOf(p);
                 final pStatusMap = matrixData[p.id] ?? {};
                 final dutyCount = pStatusMap.values
                     .where((s) => _getAbbreviation(s) == 'X')
@@ -400,7 +492,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        '${index + 1}',
+                        '${personnelIndex + 1}',
                         style: TextStyle(
                           color: context.onAccentOrOlive,
                           fontWeight: FontWeight.bold,

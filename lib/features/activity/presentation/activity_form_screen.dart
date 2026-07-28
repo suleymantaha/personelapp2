@@ -7,8 +7,23 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
+
+enum _ExistingActivityAction { merge, createNew }
+
+class _ExistingActivityChoice {
+  const _ExistingActivityChoice({
+    required this.action,
+    this.activityId,
+    this.updateDifferentAssignments = false,
+  });
+
+  final _ExistingActivityAction action;
+  final int? activityId;
+  final bool updateDifferentAssignments;
+}
 
 class ActivityFormScreen extends ConsumerStatefulWidget {
   const ActivityFormScreen({super.key});
@@ -35,6 +50,116 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
   final Map<int, String> _assignments = {};
   // Maps personelId to custom notes
   final Map<int, String> _notes = {};
+
+  Future<_ExistingActivityChoice?> _chooseExistingActivity(
+    List<ExistingActivityMatch> matches,
+  ) {
+    var selectedId = matches.first.activity.id;
+    var updateDifferent = false;
+    return showDialog<_ExistingActivityChoice>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final selected = matches.firstWhere(
+            (match) => match.activity.id == selectedId,
+          );
+          return AlertDialog(
+            title: const Text('Aynı faaliyet zaten var'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${selected.activity.tarih} tarihinde '
+                    '“${selected.activity.faaliyetAdi}” adlı '
+                    '${matches.length} kayıt bulundu.',
+                  ),
+                  const SizedBox(height: 12),
+                  if (matches.length > 1)
+                    DropdownButtonFormField<int>(
+                      initialValue: selectedId,
+                      decoration: const InputDecoration(
+                        labelText: 'Güncellenecek faaliyet',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: matches
+                          .map(
+                            (match) => DropdownMenuItem(
+                              value: match.activity.id,
+                              child: Text(
+                                '#${match.activity.id} • '
+                                '${match.activity.faaliyetAdi}',
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setDialogState(() {
+                            selectedId = value;
+                            updateDifferent = false;
+                          });
+                        }
+                      },
+                    ),
+                  if (matches.length > 1) const SizedBox(height: 12),
+                  Text('${selected.newPersonnelCount} yeni personel eklenecek'),
+                  Text(
+                    '${selected.unchangedPersonnelCount} personel zaten kayıtlı',
+                  ),
+                  Text(
+                    '${selected.differentPersonnelCount} personelin '
+                    'görev/not bilgisi farklı',
+                  ),
+                  if (selected.differentPersonnelCount > 0)
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: updateDifferent,
+                      title: const Text(
+                        'Farklı görev/not bilgilerini güncelle',
+                      ),
+                      subtitle: const Text(
+                        'Seçilmezse mevcut bilgiler korunur.',
+                      ),
+                      onChanged: (value) => setDialogState(
+                        () => updateDifferent = value ?? false,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('İPTAL'),
+              ),
+              OutlinedButton(
+                onPressed: () => Navigator.pop(
+                  dialogContext,
+                  const _ExistingActivityChoice(
+                    action: _ExistingActivityAction.createNew,
+                  ),
+                ),
+                child: const Text('YENİ FAALİYET OLUŞTUR'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(
+                  dialogContext,
+                  _ExistingActivityChoice(
+                    action: _ExistingActivityAction.merge,
+                    activityId: selectedId,
+                    updateDifferentAssignments: updateDifferent,
+                  ),
+                ),
+                child: const Text('MEVCUDA EKLE'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 
   Future<void> _submitActivity() async {
     final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
@@ -70,19 +195,51 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
 
     final repo = ref.read(activityRepositoryProvider);
     final isCommander = userSession?.isAdmin != true;
-
-    await repo.createActivityWithAssignments(
+    final matches = await repo.findMatchingActivities(
       faaliyetAdi: name,
       tarih: dateStr,
-      olusturanKullanici: userSession?.username ?? 'admin',
       personnelAssignments: payload,
-      isCommander: isCommander,
     );
+    if (!mounted) return;
+
+    ActivityMergeResult? mergeResult;
+    if (matches.isNotEmpty) {
+      final choice = await _chooseExistingActivity(matches);
+      if (choice == null || !mounted) return;
+      if (choice.action == _ExistingActivityAction.merge) {
+        mergeResult = await repo.mergeAssignmentsIntoActivity(
+          activityId: choice.activityId!,
+          personnelAssignments: payload,
+          updateDifferentAssignments: choice.updateDifferentAssignments,
+          isCommander: isCommander,
+        );
+      } else {
+        await repo.createActivityWithAssignments(
+          faaliyetAdi: name,
+          tarih: dateStr,
+          olusturanKullanici: userSession?.username ?? 'admin',
+          personnelAssignments: payload,
+          isCommander: isCommander,
+        );
+      }
+    } else {
+      await repo.createActivityWithAssignments(
+        faaliyetAdi: name,
+        tarih: dateStr,
+        olusturanKullanici: userSession?.username ?? 'admin',
+        personnelAssignments: payload,
+        isCommander: isCommander,
+      );
+    }
 
     if (mounted) {
-      final msg = isCommander
-          ? 'Faaliyet Kaydedildi! Admin onayına gönderildi.'
-          : 'Faaliyet Çizelgesi Kaydedildi & Çakışma Denetimi Yapıldı!';
+      final msg = mergeResult != null
+          ? '${mergeResult.addedCount} personel eklendi, '
+              '${mergeResult.updatedCount} güncellendi, '
+              '${mergeResult.skippedCount} kayıt korundu.'
+          : isCommander
+              ? 'Faaliyet Kaydedildi! Admin onayına gönderildi.'
+              : 'Faaliyet Çizelgesi Kaydedildi & Çakışma Denetimi Yapıldı!';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(msg),
