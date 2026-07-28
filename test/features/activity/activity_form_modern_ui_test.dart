@@ -32,7 +32,7 @@ void main() {
         userSessionProvider.overrideWith(
           (ref) => const UserSessionState(
             username: 'admin',
-            role: 'yönetici',
+            role: UserRole.admin,
           ),
         ),
         allPersonnelProvider.overrideWith(

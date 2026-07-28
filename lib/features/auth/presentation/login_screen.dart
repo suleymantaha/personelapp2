@@ -38,7 +38,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       var session = ref.read(userSessionProvider);
       if (session == null) {
         try {
-          session = await SessionStorage.loadSession();
+          final db = ref.read(databaseProvider);
+          session = await SessionStorage.loadValidatedSession(db);
           if (session != null) {
             ref.read(userSessionProvider.notifier).state = session;
           }
@@ -162,9 +163,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       timId = squad?.id;
     }
 
+    final role = UserRole.fromStorageValue(user.rol);
+    if (role == null) {
+      throw StateError('Desteklenmeyen kullanıcı rolü: ${user.rol}');
+    }
     final session = UserSessionState(
       username: user.kullaniciAdi,
-      role: user.rol,
+      role: role,
       timId: timId,
     );
 
