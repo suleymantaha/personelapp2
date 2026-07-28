@@ -31,19 +31,23 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
     try {
       final service = PersonnelBackupService(widget.database);
       final jsonStr = await service.exportBackupJson();
+      if (!mounted) return;
 
       setState(() {
         _textController.text = jsonStr;
         _statusMessage = '✅ Personel ve Tim yedeği başarıyla oluşturuldu!';
       });
     } on Object catch (e) {
+      if (!mounted) return;
       setState(() {
         _statusMessage = '❌ Hata oluştu: $e';
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -65,19 +69,23 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
     try {
       final service = PersonnelBackupService(widget.database);
       final count = await service.importBackupJson(input);
+      if (!mounted) return;
 
       setState(() {
         _statusMessage =
             '🎉 Başarılı! $count adet yeni personel ve tim veritabanına aktarıldı.';
       });
     } on Object catch (e) {
+      if (!mounted) return;
       setState(() {
         _statusMessage = '❌ Geçersiz yedek formatı veya hata: $e';
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

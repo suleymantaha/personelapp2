@@ -440,9 +440,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                   firstDate: DateTime(2020),
                   lastDate: DateTime(2030),
                 );
-                if (picked != null) {
-                  setState(() => _selectedDateFilter = picked);
-                }
+                if (!mounted || picked == null) return;
+                setState(() => _selectedDateFilter = picked);
               },
             ),
         ],

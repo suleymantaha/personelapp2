@@ -69,6 +69,7 @@ class _BulkImportDialogState extends State<BulkImportDialog>
       final initialBlocks = BulkTextParser.parse(rawText);
       final fuzzyMatcher = PersonnelFuzzyMatcher(widget.database);
       final matchedBlocks = await fuzzyMatcher.matchBlocks(initialBlocks);
+      if (!mounted) return;
 
       setState(() {
         _parsedBlocks = matchedBlocks;
@@ -79,9 +80,11 @@ class _BulkImportDialogState extends State<BulkImportDialog>
         }
       });
     } finally {
-      setState(() {
-        _isParsing = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isParsing = false;
+        });
+      }
     }
   }
 
@@ -91,6 +94,7 @@ class _BulkImportDialogState extends State<BulkImportDialog>
     final preparation = BulkActivityImportPreparer.prepare(_parsedBlocks);
     if (preparation.duplicates.isNotEmpty) {
       await _showDuplicatePersonnelDialog(preparation.duplicates);
+      if (!mounted) return;
       return;
     }
 

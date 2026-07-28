@@ -298,7 +298,9 @@ class PersonnelFuzzyMatcher {
     int k = 0;
     for (int i = 0; i < s1.length; i++) {
       if (s1Matches[i]) {
-        while (!s2Matches[k]) k++;
+        while (!s2Matches[k]) {
+          k++;
+        }
         if (s1[i] != s2[k]) transpositions++;
         k++;
       }
@@ -457,7 +459,9 @@ class PersonnelFuzzyMatcher {
     int k = 0;
     for (int i = 0; i < s1.length; i++) {
       if (s1Matches[i]) {
-        while (!s2Matches[k]) k++;
+        while (!s2Matches[k]) {
+          k++;
+        }
         if (s1[i] != s2[k]) transpositions++;
         k++;
       }
