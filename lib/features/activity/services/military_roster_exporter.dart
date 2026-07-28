@@ -67,8 +67,11 @@ class MilitaryRosterExporter {
         .replaceAll('ISIM LISTESI', '')
         .trim();
 
-    // Default to HEYBET TEPE PUSU FAALİYETİ if contains GÜNLÜK FAALİYET or empty
-    if (nameStr.isEmpty ||
+    final isCombinedDailyRoster = nameStr.contains('GÜNLÜK TÜM FAALİYET') ||
+        nameStr.contains('GUNLUK TUM FAALIYET');
+    if (isCombinedDailyRoster) {
+      nameStr = 'GÜNLÜK TÜM FAALİYETLER';
+    } else if (nameStr.isEmpty ||
         nameStr.contains('GÜNLÜK FAALİYET') ||
         nameStr.contains('GUNLUK FAALIYET')) {
       nameStr = 'HEYBET TEPE PUSU FAALİYETİ';

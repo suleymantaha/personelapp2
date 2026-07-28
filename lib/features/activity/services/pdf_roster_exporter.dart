@@ -44,8 +44,11 @@ class PdfRosterExporter {
         .replaceAll('ISIM LISTESI', '')
         .trim();
 
-    // Default to HEYBET TEPE PUSU FAALİYETİ if contains GÜNLÜK FAALİYET or empty
-    if (nameStr.isEmpty ||
+    final isCombinedDailyRoster = nameStr.contains('GÜNLÜK TÜM FAALİYET') ||
+        nameStr.contains('GUNLUK TUM FAALIYET');
+    if (isCombinedDailyRoster) {
+      nameStr = 'GÜNLÜK TÜM FAALİYETLER';
+    } else if (nameStr.isEmpty ||
         nameStr.contains('GÜNLÜK FAALİYET') ||
         nameStr.contains('GUNLUK FAALIYET')) {
       nameStr = 'HEYBET TEPE PUSU FAALİYETİ';
@@ -527,12 +530,32 @@ class PdfRosterExporter {
     );
   }
 
+  static Future<void> printPdfRoster({
+    required String faaliyetAdi,
+    required String tarih,
+    required List<MilitaryRosterRow> rows,
+    PdfRosterStyle style = PdfRosterStyle.verticalBlock,
+  }) async {
+    final pdf = await generateRosterPdf(
+      faaliyetAdi: faaliyetAdi,
+      tarih: tarih,
+      rows: rows,
+      style: style,
+    );
+    final bytes = await pdf.save();
+    await Printing.layoutPdf(
+      name: '$faaliyetAdi - $tarih',
+      onLayout: (_) async => bytes,
+    );
+  }
+
   /// Displays a modal bottom sheet to select from 3 PDF styles and exports/shares the PDF
   static Future<void> showStylePickerAndSharePdf(
     BuildContext context, {
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
+    bool printDirectly = false,
   }) async {
     final selectedStyle = await showModalBottomSheet<PdfRosterStyle>(
       context: context,
@@ -624,12 +647,36 @@ class PdfRosterExporter {
     );
 
     if (selectedStyle != null && context.mounted) {
-      await sharePdfRoster(
-        faaliyetAdi: faaliyetAdi,
-        tarih: tarih,
-        rows: rows,
-        style: selectedStyle,
-      );
+      if (printDirectly) {
+        await printPdfRoster(
+          faaliyetAdi: faaliyetAdi,
+          tarih: tarih,
+          rows: rows,
+          style: selectedStyle,
+        );
+      } else {
+        await sharePdfRoster(
+          faaliyetAdi: faaliyetAdi,
+          tarih: tarih,
+          rows: rows,
+          style: selectedStyle,
+        );
+      }
     }
+  }
+
+  static Future<void> showStylePickerAndPrintPdf(
+    BuildContext context, {
+    required String faaliyetAdi,
+    required String tarih,
+    required List<MilitaryRosterRow> rows,
+  }) {
+    return showStylePickerAndSharePdf(
+      context,
+      faaliyetAdi: faaliyetAdi,
+      tarih: tarih,
+      rows: rows,
+      printDirectly: true,
+    );
   }
 }

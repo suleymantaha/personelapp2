@@ -13,12 +13,20 @@ class ActivityCard extends ConsumerWidget {
     required this.activity,
     required this.onDateChanged,
     this.selectedSquadId,
+    this.selectionMode = false,
+    this.isSelected = false,
+    this.onLongPress,
+    this.onSelectionToggle,
     super.key,
   });
 
   final GunlukFaaliyetTableData activity;
   final ValueChanged<String> onDateChanged;
   final int? selectedSquadId;
+  final bool selectionMode;
+  final bool isSelected;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onSelectionToggle;
 
   Future<void> _changeDate(
     BuildContext context,
@@ -173,155 +181,185 @@ class ActivityCard extends ConsumerWidget {
           statusIcon = Icons.cancel_outlined;
         }
 
-        return Card(
-          elevation: 2,
-          margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(
-              color: statusColor.withValues(alpha: 0.5),
-              width: 1.5,
-            ),
-          ),
-          child: ExpansionTile(
-            leading: CircleAvatar(
-              backgroundColor: statusColor,
-              child: Icon(statusIcon, color: Colors.white, size: 20),
-            ),
-            title: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    activity.faaliyetAdi,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: statusColor.withValues(alpha: 0.4),
-                    ),
-                  ),
-                  child: Text(
-                    statusLabel,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            subtitle: Text(
-              '${activity.tarih} • Yazan: ${activity.olusturanKullanici}',
-              style: TextStyle(fontSize: 12, color: context.textSecondary),
-            ),
-            trailing: isAdmin
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (hasPending)
-                        IconButton(
-                          icon: Icon(
-                            Icons.done_all,
-                            color: context.approvedColor,
-                          ),
-                          tooltip: 'Tümünü Onayla',
-                          onPressed: () async {
-                            final repo = ref.read(activityRepositoryProvider);
-                            final result =
-                                await repo.approveAllAssignmentsForActivity(
-                              activity.id,
-                            );
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    result.blockedCount == 0
-                                        ? '${result.approvedCount} atama onaylandı.'
-                                        : '${result.approvedCount} onaylandı, '
-                                            '${result.blockedCount} çakışma '
-                                            'nedeniyle beklemede kaldı: '
-                                            '${result.conflictDescriptions.join(', ')}',
-                                  ),
-                                  backgroundColor: result.blockedCount == 0
-                                      ? context.approvedColor
-                                      : context.pendingColor,
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.edit_calendar_outlined,
-                          color: context.accentOrOlive,
-                        ),
-                        tooltip: 'Faaliyet Tarihini Değiştir',
-                        onPressed: () => _changeDate(
-                          context,
-                          ref,
-                          assignments.length,
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.delete_outline,
-                          color: context.rejectedColor,
-                        ),
-                        tooltip: 'Faaliyeti Sil',
-                        onPressed: () async {
-                          final confirm = await showDialog<bool>(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Faaliyeti Sil'),
-                              content: Text(
-                                '${activity.faaliyetAdi} (${activity.tarih}) faaliyet kaydı silinecektir. Emin misiniz?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(ctx).pop(false),
-                                  child: const Text('İPTAL'),
-                                ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: context.rejectedColor,
-                                  ),
-                                  onPressed: () => Navigator.of(ctx).pop(true),
-                                  child: const Text('SİL'),
-                                ),
-                              ],
-                            ),
-                          );
-
-                          if (confirm == true) {
-                            await (db.delete(
-                              db.gunlukFaaliyetTable,
-                            )..where((tbl) => tbl.id.equals(activity.id)))
-                                .go();
-                          }
-                        },
-                      ),
-                    ],
-                  )
+        return GestureDetector(
+          key: Key('activity-card-${activity.id}'),
+          behavior: HitTestBehavior.opaque,
+          onLongPress: onLongPress,
+          onTap: selectionMode ? onSelectionToggle : null,
+          child: Card(
+            elevation: isSelected ? 5 : 2,
+            color: isSelected
+                ? context.accentOrOlive.withValues(alpha: 0.12)
                 : null,
-            children: [
-              ActivityAssignmentDetails(
-                activity: activity,
-                assignments: assignments,
-                selectedSquadId: selectedSquadId,
+            margin: const EdgeInsets.only(bottom: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: BorderSide(
+                color: isSelected
+                    ? context.accentOrOlive
+                    : statusColor.withValues(alpha: 0.5),
+                width: isSelected ? 2.5 : 1.5,
               ),
-            ],
+            ),
+            child: IgnorePointer(
+              ignoring: selectionMode,
+              child: ExpansionTile(
+                leading: CircleAvatar(
+                  backgroundColor: statusColor,
+                  child: Icon(statusIcon, color: Colors.white, size: 20),
+                ),
+                title: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        activity.faaliyetAdi,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: statusColor.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: Text(
+                        statusLabel,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                subtitle: Text(
+                  '${activity.tarih} • Yazan: ${activity.olusturanKullanici}',
+                  style: TextStyle(fontSize: 12, color: context.textSecondary),
+                ),
+                trailing: selectionMode
+                    ? Icon(
+                        isSelected
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
+                        color: isSelected
+                            ? context.accentOrOlive
+                            : context.textSecondary,
+                      )
+                    : isAdmin
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (hasPending)
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.done_all,
+                                    color: context.approvedColor,
+                                  ),
+                                  tooltip: 'Tümünü Onayla',
+                                  onPressed: () async {
+                                    final repo =
+                                        ref.read(activityRepositoryProvider);
+                                    final result = await repo
+                                        .approveAllAssignmentsForActivity(
+                                      activity.id,
+                                    );
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            result.blockedCount == 0
+                                                ? '${result.approvedCount} atama onaylandı.'
+                                                : '${result.approvedCount} onaylandı, '
+                                                    '${result.blockedCount} çakışma '
+                                                    'nedeniyle beklemede kaldı: '
+                                                    '${result.conflictDescriptions.join(', ')}',
+                                          ),
+                                          backgroundColor:
+                                              result.blockedCount == 0
+                                                  ? context.approvedColor
+                                                  : context.pendingColor,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.edit_calendar_outlined,
+                                  color: context.accentOrOlive,
+                                ),
+                                tooltip: 'Faaliyet Tarihini Değiştir',
+                                onPressed: () => _changeDate(
+                                  context,
+                                  ref,
+                                  assignments.length,
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.delete_outline,
+                                  color: context.rejectedColor,
+                                ),
+                                tooltip: 'Faaliyeti Sil',
+                                onPressed: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Faaliyeti Sil'),
+                                      content: Text(
+                                        '${activity.faaliyetAdi} (${activity.tarih}) faaliyet kaydı silinecektir. Emin misiniz?',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(false),
+                                          child: const Text('İPTAL'),
+                                        ),
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                context.rejectedColor,
+                                          ),
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(true),
+                                          child: const Text('SİL'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (confirm == true) {
+                                    await (db.delete(
+                                      db.gunlukFaaliyetTable,
+                                    )..where((tbl) =>
+                                            tbl.id.equals(activity.id)))
+                                        .go();
+                                  }
+                                },
+                              ),
+                            ],
+                          )
+                        : null,
+                children: [
+                  ActivityAssignmentDetails(
+                    activity: activity,
+                    assignments: assignments,
+                    selectedSquadId: selectedSquadId,
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },

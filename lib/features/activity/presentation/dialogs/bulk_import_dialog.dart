@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
+import 'package:personelapp2/features/activity/domain/bulk_activity_import_preparer.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
@@ -56,25 +57,6 @@ class _BulkImportDialogState extends State<BulkImportDialog>
     });
   }
 
-  /// Converts DutyOrLeaveType enum value back to raw activity type for display
-  /// e.g., "GÜLÜŞKÜR" -> "Gülüşkür", "HAZIR KITA" -> "Hazır Kıta", "GÖREVLİ" -> "Görev"
-  String _getRawActivityType(String dutyOrLeaveType) {
-    switch (dutyOrLeaveType.toUpperCase().trim()) {
-      case 'GÜLÜŞKÜR':
-        return 'Gülüşkür';
-      case 'HAZIR KITA':
-        return 'Hazır Kıta';
-      case 'HEYBET':
-        return 'Heybet';
-      case 'GÖREVLİ':
-        return 'Görev';
-      case 'NÖBETÇİ':
-        return 'Nöbetçi';
-      default:
-        return dutyOrLeaveType;
-    }
-  }
-
   Future<void> _processText() async {
     final rawText = _textController.text;
     if (rawText.trim().isEmpty) return;
@@ -106,66 +88,28 @@ class _BulkImportDialogState extends State<BulkImportDialog>
   Future<void> _saveAllToFaaliyet() async {
     if (_parsedBlocks.isEmpty) return;
 
+    final preparation = BulkActivityImportPreparer.prepare(_parsedBlocks);
+    if (preparation.duplicates.isNotEmpty) {
+      await _showDuplicatePersonnelDialog(preparation.duplicates);
+      return;
+    }
+
     setState(() {
       _isSaving = true;
     });
 
     try {
-      final grouped = <String, List<ParsedActivityBlock>>{};
-      for (final block in _parsedBlocks) {
-        final normalizedType = block.parsedActivityType.trim().toUpperCase();
-        final normalizedTime = block.parsedTimeRange?.trim() ?? '';
-        final key = '${block.parsedDate}|$normalizedType|$normalizedTime';
-        grouped.putIfAbsent(key, () => []).add(block);
-      }
-
-      final requests = <ActivityCreateRequest>[];
-      for (final blocks in grouped.values) {
-        final first = blocks.first;
-        final rawActivityType = _getRawActivityType(first.parsedActivityType);
-        final timeRange = first.parsedTimeRange?.trim();
-        final title =
-            '$rawActivityType${timeRange == null || timeRange.isEmpty ? "" : " ($timeRange)"}';
-        final descriptionParts = <String>[];
-        if (timeRange != null && timeRange.isNotEmpty) {
-          descriptionParts.add('Saat: $timeRange');
-        }
-        descriptionParts.add('Görev Türü: $rawActivityType');
-        final aciklama = descriptionParts.join(' | ');
-
-        final seenPersonnel = <int>{};
-        final payload = <Map<String, dynamic>>[];
-        for (final block in blocks) {
-          for (final person in block.personnelList) {
-            final personId = person.matchedPersonnelId;
-            if (personId == null || !seenPersonnel.add(personId)) continue;
-            payload.add({
-              'personelId': personId,
-              'gorevVeyaIzin': first.parsedActivityType,
-              'aciklama': aciklama,
-            });
-          }
-        }
-        if (payload.isNotEmpty) {
-          requests.add(
-            ActivityCreateRequest(
-              faaliyetAdi: title,
-              tarih: first.parsedDate,
-              olusturanKullanici: 'Admin (Toplu Aktarım)',
-              personnelAssignments: payload,
-            ),
-          );
-        }
-      }
-
-      await widget.activityRepository.createActivitiesWithAssignments(requests);
+      await widget.activityRepository.createActivitiesWithAssignments(
+        preparation.requests,
+      );
 
       if (mounted) {
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '${_parsedBlocks.length} blok → ${requests.length} faaliyet '
+              '${_parsedBlocks.length} blok → ${preparation.requests.length} '
+              'günlük faaliyet '
               'başarıyla eklendi.',
             ),
             backgroundColor: Colors.green.shade700,
@@ -191,6 +135,51 @@ class _BulkImportDialogState extends State<BulkImportDialog>
     }
   }
 
+  Future<void> _showDuplicatePersonnelDialog(
+    List<BulkImportDuplicate> duplicates,
+  ) {
+    final squadNames = {for (final squad in _allSquads) squad.id: squad.timAdi};
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Tekrarlanan Personel Var'),
+        content: SizedBox(
+          width: 520,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Aynı personel aynı tarihte birden fazla görevde bulunuyor. '
+                  'Aktarmadan önce önizlemedeki tekrarları düzeltin.',
+                ),
+                const SizedBox(height: 12),
+                for (final duplicate in duplicates)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.warning_amber_rounded),
+                    title: Text(duplicate.personnelName),
+                    subtitle: Text(
+                      '${duplicate.date} • '
+                      '${squadNames[duplicate.teamId] ?? 'Timsiz'}\n'
+                      '${duplicate.assignments.join(' / ')}',
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('ÖNİZLEMEYE DÖN'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
@@ -214,136 +203,136 @@ class _BulkImportDialogState extends State<BulkImportDialog>
             child: ColoredBox(
               color: Theme.of(context).scaffoldBackgroundColor,
               child: Column(
-            children: [
-              // Dialog Header Banner
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: isKeyboardVisible ? 10 : 16,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      context.accentOrOlive,
-                      context.accentOrOlive.withValues(alpha: 0.85),
-                    ],
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.paste_rounded,
-                        color: Colors.white,
-                        size: 24,
+                children: [
+                  // Dialog Header Banner
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: isKeyboardVisible ? 10 : 16,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          context.accentOrOlive,
+                          context.accentOrOlive.withValues(alpha: 0.85),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Metinden Toplu Aktarım',
-                            style: TextStyle(
-                              fontSize: isKeyboardVisible ? 16 : 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          if (!isKeyboardVisible) ...[
-                            const SizedBox(height: 2),
-                            const Text(
-                              'WhatsApp / Telegram nöbet listelerini yapıştırıp akıllı ayrıştırın',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.white70,
+                          child: const Icon(
+                            Icons.paste_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Metinden Toplu Aktarım',
+                                style: TextStyle(
+                                  fontSize: isKeyboardVisible ? 16 : 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-
-              // TabBar for Mobile or Split Layout for Desktop/Tablet
-              if (isMobile)
-                TabBar(
-                  controller: _tabController,
-                  labelColor: context.accentOrOlive,
-                  unselectedLabelColor: Colors.grey,
-                  indicatorColor: context.accentOrOlive,
-                  indicatorWeight: 3,
-                  tabs: [
-                    Tab(
-                      icon: isKeyboardVisible
-                          ? null
-                          : const Icon(Icons.text_fields),
-                      text: '1. Metin Yapıştır',
-                    ),
-                    Tab(
-                      icon: isKeyboardVisible
-                          ? null
-                          : Badge(
-                              isLabelVisible: _parsedBlocks.isNotEmpty,
-                              label: Text(_parsedBlocks.length.toString()),
-                              child: const Icon(Icons.preview_rounded),
-                            ),
-                      text: '2. Kart Önizleme',
-                    ),
-                  ],
-                ),
-
-              // Main Body Content
-              Expanded(
-                child: isMobile
-                    ? TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _buildInputSection(
-                            isMobile: true,
-                            isKeyboardVisible: isKeyboardVisible,
+                              if (!isKeyboardVisible) ...[
+                                const SizedBox(height: 2),
+                                const Text(
+                                  'WhatsApp / Telegram nöbet listelerini yapıştırıp akıllı ayrıştırın',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white70,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ],
                           ),
-                          _buildPreviewSection(isMobile: true),
-                        ],
-                      )
-                    : Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              flex: 4,
-                              child: _buildInputSection(
-                                isMobile: false,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // TabBar for Mobile or Split Layout for Desktop/Tablet
+                  if (isMobile)
+                    TabBar(
+                      controller: _tabController,
+                      labelColor: context.accentOrOlive,
+                      unselectedLabelColor: Colors.grey,
+                      indicatorColor: context.accentOrOlive,
+                      indicatorWeight: 3,
+                      tabs: [
+                        Tab(
+                          icon: isKeyboardVisible
+                              ? null
+                              : const Icon(Icons.text_fields),
+                          text: '1. Metin Yapıştır',
+                        ),
+                        Tab(
+                          icon: isKeyboardVisible
+                              ? null
+                              : Badge(
+                                  isLabelVisible: _parsedBlocks.isNotEmpty,
+                                  label: Text(_parsedBlocks.length.toString()),
+                                  child: const Icon(Icons.preview_rounded),
+                                ),
+                          text: '2. Kart Önizleme',
+                        ),
+                      ],
+                    ),
+
+                  // Main Body Content
+                  Expanded(
+                    child: isMobile
+                        ? TabBarView(
+                            controller: _tabController,
+                            children: [
+                              _buildInputSection(
+                                isMobile: true,
                                 isKeyboardVisible: isKeyboardVisible,
                               ),
+                              _buildPreviewSection(isMobile: true),
+                            ],
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: _buildInputSection(
+                                    isMobile: false,
+                                    isKeyboardVisible: isKeyboardVisible,
+                                  ),
+                                ),
+                                const SizedBox(width: 20),
+                                const VerticalDivider(width: 1),
+                                const SizedBox(width: 20),
+                                Expanded(
+                                  flex: 6,
+                                  child: _buildPreviewSection(isMobile: false),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 20),
-                            const VerticalDivider(width: 1),
-                            const SizedBox(width: 20),
-                            Expanded(
-                              flex: 6,
-                              child: _buildPreviewSection(isMobile: false),
-                            ),
-                          ],
-                        ),
-                      ),
+                          ),
+                  ),
+                ],
               ),
-            ],
-          ),
             ),
           ),
         ),
@@ -571,7 +560,9 @@ class _BulkImportDialogState extends State<BulkImportDialog>
                     )
                   : const Icon(Icons.check_circle_rounded),
               label: Text(
-                'Tümünü Faaliyet Raporuna Aktar (${_parsedBlocks.length} Kart)',
+                '${_parsedBlocks.length} blok → '
+                '${_parsedBlocks.map((block) => block.parsedDate).toSet().length} '
+                'günlük faaliyet',
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
