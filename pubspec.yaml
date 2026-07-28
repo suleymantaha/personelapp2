@@ -45,8 +45,7 @@ dependencies:
   printing: ^5.14.3
   share_plus: ^13.2.1
   shared_preferences: ^2.5.5
-  sqlite3_flutter_libs: ^0.6.0+eol
-
+  sqlite3: 3.5.0
 dependency_overrides:
   archive: ^3.6.1
 
