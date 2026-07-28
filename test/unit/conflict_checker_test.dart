@@ -64,6 +64,48 @@ void main() {
       },
     );
 
+    test('pending leave also reserves the covered day', () {
+      final status = ConflictChecker.evaluateAssignmentStatus(
+        personelId: 1,
+        targetDate: '2026-07-21',
+        targetDuty: DutyOrLeaveType.sevk,
+        reports: [],
+        existingAssignments: [
+          const ExistingDutyAssignment(
+            id: 1,
+            faaliyetId: 10,
+            personelId: 1,
+            tarih: '2026-07-21',
+            gorevVeyaIzin: DutyOrLeaveType.izinli,
+            durum: AssignmentStatus.beklemede,
+          ),
+        ],
+      );
+
+      expect(status, AssignmentStatus.beklemede);
+    });
+
+    test('rejected record does not reserve the day', () {
+      final status = ConflictChecker.evaluateAssignmentStatus(
+        personelId: 1,
+        targetDate: '2026-07-21',
+        targetDuty: DutyOrLeaveType.gorevli,
+        reports: [],
+        existingAssignments: [
+          const ExistingDutyAssignment(
+            id: 1,
+            faaliyetId: 10,
+            personelId: 1,
+            tarih: '2026-07-21',
+            gorevVeyaIzin: DutyOrLeaveType.izinli,
+            durum: AssignmentStatus.reddedildi,
+          ),
+        ],
+      );
+
+      expect(status, AssignmentStatus.onaylandi);
+    });
+
     test(
       'isOperationalDuty should return false for leave, rest, report, referral and true for active duties',
       () {

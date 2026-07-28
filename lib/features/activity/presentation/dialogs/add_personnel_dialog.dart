@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
 
@@ -38,6 +39,7 @@ class _AddPersonnelToActivityDialogState
   int? _selectedPersonnelId;
   String _selectedDuty = DutyOrLeaveType.gorevli;
   final _noteController = TextEditingController();
+  late final Future<Map<int, String>> _reservationDescriptions;
 
   static const List<String> availableDuties = [
     DutyOrLeaveType.heybetKomutani,
@@ -57,6 +59,14 @@ class _AddPersonnelToActivityDialogState
     DutyOrLeaveType.sevk,
     DutyOrLeaveType.diger,
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _reservationDescriptions = ref
+        .read(activityRepositoryProvider)
+        .getDailyReservationDescriptions(widget.activity.tarih);
+  }
 
   @override
   void dispose() {
@@ -122,66 +132,70 @@ class _AddPersonnelToActivityDialogState
                 ),
               )
             else ...[
-              InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () async {
-                  final selected = await showPersonnelPicker(
-                    context: context,
-                    personnel: candidatePersonnel,
-                    squads: widget.isAdmin
-                        ? allSquads
-                        : allSquads
-                            .where((squad) => squad.id == session?.timId)
-                            .toList(),
-                    selectedPersonnelId: _selectedPersonnelId,
-                    preferredTimId: widget.isAdmin ? null : session?.timId,
-                  );
-                  if (selected != null && mounted) {
-                    setState(() => _selectedPersonnelId = selected.id);
-                  }
-                },
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    labelText: 'Personel Seçiniz',
-                    suffixIcon: const Icon(Icons.search_rounded),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+              FutureBuilder<Map<int, String>>(
+                future: _reservationDescriptions,
+                builder: (context, reservationSnapshot) => InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () async {
+                    final selected = await showPersonnelPicker(
+                      context: context,
+                      personnel: candidatePersonnel,
+                      squads: widget.isAdmin
+                          ? allSquads
+                          : allSquads
+                              .where((squad) => squad.id == session?.timId)
+                              .toList(),
+                      selectedPersonnelId: _selectedPersonnelId,
+                      preferredTimId: widget.isAdmin ? null : session?.timId,
+                      disabledReasons: reservationSnapshot.data ?? const {},
+                    );
+                    if (selected != null && mounted) {
+                      setState(() => _selectedPersonnelId = selected.id);
+                    }
+                  },
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'Personel Seçiniz',
+                      suffixIcon: const Icon(Icons.search_rounded),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  child: Builder(
-                    builder: (context) {
-                      final selected = candidatePersonnel
-                          .where((p) => p.id == _selectedPersonnelId)
-                          .firstOrNull;
-                      if (selected == null) {
-                        return Text(
-                          'İsim veya tim ile personel bulun',
-                          style: TextStyle(color: context.textSecondary),
+                    child: Builder(
+                      builder: (context) {
+                        final selected = candidatePersonnel
+                            .where((p) => p.id == _selectedPersonnelId)
+                            .firstOrNull;
+                        if (selected == null) {
+                          return Text(
+                            'İsim veya tim ile personel bulun',
+                            style: TextStyle(color: context.textSecondary),
+                          );
+                        }
+                        final squadName = allSquads
+                            .where((s) => s.id == selected.timId)
+                            .map((s) => s.timAdi)
+                            .firstOrNull;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${selected.rutbe} ${selected.adSoyad}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              '${selected.rutbe} • ${squadName ?? 'Tim Dışı'}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: context.textSecondary,
+                              ),
+                            ),
+                          ],
                         );
-                      }
-                      final squadName = allSquads
-                          .where((s) => s.id == selected.timId)
-                          .map((s) => s.timAdi)
-                          .firstOrNull;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${selected.rutbe} ${selected.adSoyad}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            '${selected.rutbe} • ${squadName ?? 'Tim Dışı'}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: context.textSecondary,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -237,16 +251,24 @@ class _AddPersonnelToActivityDialogState
                     final actor = ref.read(userSessionProvider);
                     if (actor == null) return;
                     final note = _noteController.text.trim();
-                    await repo.addSingleAssignment(
-                      faaliyetId: widget.activity.id,
-                      personelId: _selectedPersonnelId!,
-                      gorevVeyaIzin: _selectedDuty,
-                      aciklama: note.isNotEmpty ? note : null,
-                      tarih: widget.activity.tarih,
-                      actor: actor,
-                    );
-                    if (context.mounted) {
-                      Navigator.of(context).pop(true);
+                    try {
+                      await repo.addSingleAssignment(
+                        faaliyetId: widget.activity.id,
+                        personelId: _selectedPersonnelId!,
+                        gorevVeyaIzin: _selectedDuty,
+                        aciklama: note.isNotEmpty ? note : null,
+                        tarih: widget.activity.tarih,
+                        actor: actor,
+                      );
+                      if (context.mounted) {
+                        Navigator.of(context).pop(true);
+                      }
+                    } on AssignmentConflictException catch (error) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(error.message)),
+                        );
+                      }
                     }
                   },
             child: const Text('EKLE'),

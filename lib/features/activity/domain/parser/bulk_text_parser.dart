@@ -1,300 +1,497 @@
-import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
+import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
 typedef ParsedActivityTitle = ({
-  String timName,
+  String? timName,
   String activityType,
-  String date,
+  String? date,
+  bool activityTypeKnown,
 });
 
+enum BulkParseIssueSeverity { warning, error }
+
+class BulkParseIssue {
+  const BulkParseIssue({
+    required this.lineNumber,
+    required this.rawLine,
+    required this.code,
+    required this.message,
+    required this.severity,
+  });
+
+  final int lineNumber;
+  final String rawLine;
+  final String code;
+  final String message;
+  final BulkParseIssueSeverity severity;
+
+  bool get isBlocking => severity == BulkParseIssueSeverity.error;
+}
+
+class BulkParseResult {
+  const BulkParseResult({
+    required this.blocks,
+    required this.issues,
+  });
+
+  final List<ParsedActivityBlock> blocks;
+  final List<BulkParseIssue> issues;
+
+  bool get hasBlockingIssues => issues.any((issue) => issue.isBlocking);
+}
+
 class BulkTextParser {
-  static const List<String> knownRanks = [
-    'J.Asb.Kd.Üçvş.',
-    'J.Asb.Kd.Çvş.',
-    'J.Asb.Üçvş.',
-    'J.Asb.Çvş.',
-    'J.Uzm.Çvş.',
-    'J. Uzm. Çvş',
-    'J.Uzm Çvş.',
-    'J.Uzm.Çvş',
-    'J.Uzm.Çvş',
-  ];
+  static final RegExp _datePattern =
+      RegExp(r'(?<!\d)(\d{1,2})[./](\d{1,2})[./](\d{4})(?!\d)');
+  static final RegExp _dateOnlyPattern = RegExp(
+    r'^\s*\d{1,2}[./]\d{1,2}[./]\d{4}(?:\s+[A-Za-zÇĞİÖŞÜçğıöşü]+)?\s*$',
+    caseSensitive: false,
+  );
+  static final RegExp _teamPattern = RegExp(
+    r'(?<!\d)(\d{1,2})\s*(?:[/\-]\s*([A-Za-zÇĞİÖŞÜçğıöşü]+)|([A-Za-zÇĞİÖŞÜçğıöşü]+))',
+    caseSensitive: false,
+  );
+  static final RegExp _numberedPersonnelPattern =
+      RegExp(r'^\s*(\d+)\s*([.)\-:])\s*(.+)$');
+  static final RegExp _bulletPattern = RegExp(r'^\s*[•●▪◦]\s*');
+  static final RegExp _timeRangePattern = RegExp(
+    r'(?<!\d)(\d{1,2})[.:](\d{2})\s*[-/]\s*(\d{1,2})[.:](\d{2})(?!\d)',
+  );
+  static final RegExp _timeLikePattern =
+      RegExp(r'\d{1,2}[.:]\d{1,2}\s*[-/]\s*\d{1,2}[.:]\d{1,2}');
+  static final RegExp _messageMetadataPattern = RegExp(
+    r'^\s*(?:\[\d{1,2}[.:]\d{2}(?:,\s*\d{1,2}[./]\d{1,2}[./]\d{2,4})?\]|'
+    r'\d{1,2}[.:]\d{2}\s*[-–—]\s*[A-Za-zÇĞİÖŞÜçğıöşü][^:]{0,59}:)',
+  );
+  static final RegExp _rankPattern = RegExp(
+    r'^(J\s*[.]?\s*(?:Asb|Uzm)\s*[.]?\s*(?:Kd\s*[.]?\s*)?'
+    r'(?:Üçvş|Ucv[sş]?|Çvş|Cv[sş]?)\s*[.]?)\s*',
+    caseSensitive: false,
+  );
 
-  /// Extracts activity type from title line (returns raw type like "Gülüşkür", "Hazır Kıta", etc.)
-  static String extractActivityType(String titleLine) {
-    final lowerLine = titleLine.toLowerCase();
-    if (lowerLine.contains('gülüşkür')) {
-      return 'Gülüşkür';
-    } else if (lowerLine.contains('hazır kıta')) {
-      return 'Hazır Kıta';
-    } else if (lowerLine.contains('heybet')) {
-      return 'Heybet';
-    } else if (lowerLine.contains('ihtiyat')) {
-      return 'İhtiyat';
-    } else if (lowerLine.contains('devriye')) {
-      return 'Devriye';
-    } else {
-      return 'Görev';
-    }
-  }
+  static const Map<String, String> _activityTypes = {
+    'gülüşkür': DutyOrLeaveType.guluskur,
+    'guluskur': DutyOrLeaveType.guluskur,
+    'hazır kıta': DutyOrLeaveType.hazirKita,
+    'hazir kita': DutyOrLeaveType.hazirKita,
+    'heybet': DutyOrLeaveType.heybet,
+    'ihtiyat': DutyOrLeaveType.gorevli,
+    'devriye': DutyOrLeaveType.gorevli,
+    'görev': DutyOrLeaveType.gorevli,
+    'gorev': DutyOrLeaveType.gorevli,
+    'nöbetçi': DutyOrLeaveType.nobetci,
+    'nobetci': DutyOrLeaveType.nobetci,
+  };
 
-  /// Maps parsed activity type strings to DutyOrLeaveType constants (for database storage)
-  static String mapActivityTypeToDutyOrLeave(String activityType) {
-    final lower = activityType.toLowerCase().trim();
-    switch (lower) {
-      case 'gülüşkür':
-        return DutyOrLeaveType.guluskur; // 'GÜLÜŞKÜR'
-      case 'hazır kıta':
-        return DutyOrLeaveType.hazirKita; // 'HAZIR KITA'
-      case 'heybet':
-        return DutyOrLeaveType.heybet; // 'HEYBET'
-      case 'ihtiyat':
-        return DutyOrLeaveType.gorevli; // 'GÖREVLİ' (İhtiyat is a duty type)
-      case 'devriye':
-        return DutyOrLeaveType.gorevli; // 'GÖREVLİ' (Devriye is a patrol duty)
-      case 'görev':
-        return DutyOrLeaveType.gorevli; // 'GÖREVLİ'
-      case 'nöbetçi':
-        return DutyOrLeaveType.nobetci; // 'NÖBETÇİ'
-      default:
-        return DutyOrLeaveType.gorevli; // Default fallback
-    }
-  }
+  static const Map<String, String> _activityDisplayNames = {
+    'gülüşkür': 'Gülüşkür',
+    'guluskur': 'Gülüşkür',
+    'hazır kıta': 'Hazır Kıta',
+    'hazir kita': 'Hazır Kıta',
+    'heybet': 'Heybet',
+    'ihtiyat': 'İhtiyat',
+    'devriye': 'Devriye',
+    'görev': 'Görev',
+    'gorev': 'Görev',
+    'nöbetçi': 'Nöbetçi',
+    'nobetci': 'Nöbetçi',
+  };
 
-  /// Parses title line to extract tim name, raw activity type, and date
   static ParsedActivityTitle parseTitle(
-    String titleLine,
-    String defaultDate,
-  ) {
-    var teamName = 'Genel';
-    var activityType = 'Görev';
-    var date = defaultDate;
-
-    // Extract Tim name (e.g. 6/B, 7-B, 11-B)
-    final timReg = RegExp(r'(\d{1,2}\s*[\\/-]?\s*[A-ZÇĞİÖŞÜ]+)', caseSensitive: false).firstMatch(titleLine);
-    if (timReg != null) {
-      var tim = timReg.group(1)!.replaceAll(' ', '').toUpperCase();
-      if (!tim.contains('/') && tim.contains('-')) {
-        tim = tim.replaceAll('-', '/');
-      }
-      teamName = tim;
-    }
-
-    // Extract raw Activity Type (for display)
-    activityType = extractActivityType(titleLine);
-
-    // Extract date from header line if present
-    final dateMatch = RegExp(r'(\d{1,2})[\\.\\/](\d{1,2})[\\.\\/](\d{4})').firstMatch(titleLine);
-    if (dateMatch != null) {
-      final day = dateMatch.group(1)!.padLeft(2, '0');
-      final month = dateMatch.group(2)!.padLeft(2, '0');
-      final year = dateMatch.group(3)!;
-      date = '$year-$month-$day';
-    }
-
+    String titleLine, [
+    String? defaultDate,
+  ]) {
+    final normalized = _normalizeLine(titleLine);
+    final teamName = _extractTeam(normalized);
+    final activity = _extractActivity(normalized);
+    final parsedDate = _parseDateMatch(_datePattern.firstMatch(normalized));
     return (
       timName: teamName,
-      activityType: activityType,
-      date: date,
+      activityType: activity.$1,
+      date: parsedDate ?? defaultDate,
+      activityTypeKnown: activity.$2,
     );
   }
 
-  static List<ParsedActivityBlock> parse(String rawText) {
-    if (rawText.trim().isEmpty) return [];
+  static String extractActivityType(String titleLine) =>
+      _extractActivity(_normalizeLine(titleLine)).$1;
 
-    // Clean markdown characters like *, _
-    final cleanText = rawText.replaceAll('*', '').replaceAll('_', '');
-    final lines = cleanText.split(RegExp(r'\r?\n'));
+  static String mapActivityTypeToDutyOrLeave(String activityType) =>
+      _activityTypes[_fold(activityType).trim()] ?? activityType.trim();
 
+  static BulkParseResult parse(
+    String rawText, {
+    String? defaultDate,
+  }) {
+    final issues = <BulkParseIssue>[];
     final blocks = <ParsedActivityBlock>[];
+    final personnel = <ParsedPersonnelItem>[];
 
-    var currentTim = 'Genel';
-    var currentActivityType = mapActivityTypeToDutyOrLeave('Görev'); // Default mapped to DutyOrLeaveType
-    var currentDate = _formatDate(DateTime.now());
-    String? currentTimeRange;
-    final currentPersonnel = <ParsedPersonnelItem>[];
-    var currentRawTitle = '';
-
-    var defaultDate = _formatDate(DateTime.now());
-
-    for (var i = 0; i < lines.length; i++) {
-      final line = lines[i].trim();
-      if (line.isEmpty) continue;
-
-      // Check if line is a date (e.g. 25.07.2026, 26.07.2026 Cumartesi)
-      final dateMatch = RegExp(r'(\d{1,2})[\\.\\/](\d{1,2})[\\.\\/](\d{4})').firstMatch(line);
-      if (dateMatch != null && !_isPersonnelLine(line)) {
-        final day = dateMatch.group(1)!.padLeft(2, '0');
-        final month = dateMatch.group(2)!.padLeft(2, '0');
-        final year = dateMatch.group(3)!;
-        defaultDate = '$year-$month-$day';
-        currentDate = defaultDate;
-        continue;
-      }
-
-      // Check if line is a Header/Title line (e.g. 6 / B Gülüşkür isim listesi, 7-B Hazır Kıta Listesi)
-      final titleMatch = RegExp(
-        r'(\d{1,2}\s*[\\/-]?\s*[A-ZÇĞİÖŞÜ]+)\s+(.*?)(?:isim|İsim)?\s*(?:listesi|Listesi)?',
-        caseSensitive: false,
-      ).firstMatch(line);
-
-      final isHeaderKeyword = line.toLowerCase().contains('listesi') ||
-          line.toLowerCase().contains('timi') ||
-          line.toLowerCase().contains('hazır kıta') ||
-          line.toLowerCase().contains('heybet') ||
-          line.toLowerCase().contains('gülüşkür') ||
-          line.toLowerCase().contains('ihtiyat');
-
-      if ((titleMatch != null || isHeaderKeyword) && !_isPersonnelLine(line)) {
-        // Save previous block if exists
-        if (currentPersonnel.isNotEmpty) {
-          blocks.add(ParsedActivityBlock(
-            rawTitle: currentRawTitle,
-            parsedTimName: currentTim,
-            parsedActivityType: currentActivityType,
-            parsedDate: currentDate,
-            parsedTimeRange: currentTimeRange,
-            personnelList: List.from(currentPersonnel),
-          ));
-          currentPersonnel.clear();
-          currentTimeRange = null;
-        }
-
-        currentRawTitle = line;
-        currentDate = defaultDate; // fallback
-
-        // Extract date from header line if present
-        if (dateMatch != null) {
-          final day = dateMatch.group(1)!.padLeft(2, '0');
-          final month = dateMatch.group(2)!.padLeft(2, '0');
-          final year = dateMatch.group(3)!;
-          currentDate = '$year-$month-$day';
-        }
-
-        // Use parseTitle to extract timName, raw activityType, and date, then map to DutyOrLeaveType
-        final titleData = parseTitle(line, defaultDate);
-        currentTim = titleData.timName;
-        final rawActivityType = titleData.activityType;
-        currentActivityType = mapActivityTypeToDutyOrLeave(rawActivityType);
-        currentDate = titleData.date;
-
-        continue;
-      }
-
-      // Check if line is a Time Range line (e.g. 08.00-19.30, 08:00/20:00)
-      final timeMatch = RegExp(r'(\d{2}[\\.:]\d{2})\s*[-\\/]\s*(\d{2}[\\.:]\d{2})').firstMatch(line);
-      if (timeMatch != null) {
-        // If previous personnel exists before new shift time, push previous block
-        if (currentPersonnel.isNotEmpty) {
-          blocks.add(ParsedActivityBlock(
-            rawTitle: currentRawTitle,
-            parsedTimName: currentTim,
-            parsedActivityType: currentActivityType,
-            parsedDate: currentDate,
-            parsedTimeRange: currentTimeRange,
-            personnelList: List.from(currentPersonnel),
-          ));
-          currentPersonnel.clear();
-        }
-
-        final start = timeMatch.group(1)!.replaceAll('.', ':');
-        final end = timeMatch.group(2)!.replaceAll('.', ':');
-        currentTimeRange = '$start - $end';
-        continue;
-      }
-
-      // Parse personnel line
-      if (_isPersonnelLine(line)) {
-        final item = _parsePersonnelLine(line, currentPersonnel.length + 1);
-        if (item != null) {
-          currentPersonnel.add(item);
-        }
-      }
+    if (rawText.trim().isEmpty) {
+      issues.add(const BulkParseIssue(
+        lineNumber: 0,
+        rawLine: '',
+        code: 'empty_input',
+        message: 'Ayrıştırılacak metin boş.',
+        severity: BulkParseIssueSeverity.error,
+      ));
+      return BulkParseResult(blocks: blocks, issues: issues);
     }
 
-    // Add last block
-    if (currentPersonnel.isNotEmpty) {
-      blocks.add(ParsedActivityBlock(
-        rawTitle: currentRawTitle.isEmpty ? 'Ayrıştırılan Faaliyet' : currentRawTitle,
-        parsedTimName: currentTim,
-        parsedActivityType: currentActivityType,
-        parsedDate: currentDate,
-        parsedTimeRange: currentTimeRange,
-        personnelList: currentPersonnel,
+    String? currentTeam;
+    String? currentDate = _validateDefaultDate(defaultDate);
+    String? currentActivity;
+    var currentActivityKnown = false;
+    String? currentTimeRange;
+    var currentTitle = '';
+    var currentHeaderLine = 0;
+    var currentHeaderRawLine = '';
+    var nextIndex = 1;
+
+    void addIssue({
+      required int line,
+      required String raw,
+      required String code,
+      required String message,
+      required BulkParseIssueSeverity severity,
+    }) {
+      issues.add(BulkParseIssue(
+        lineNumber: line,
+        rawLine: raw,
+        code: code,
+        message: message,
+        severity: severity,
       ));
     }
 
-    return blocks;
-  }
-
-  static bool _isPersonnelLine(String line) {
-    final lower = line.toLowerCase();
-    if (lower.contains('j.asb') ||
-        lower.contains('j.uzm') ||
-        lower.contains('uzm.çvş') ||
-        lower.contains('asb.') ||
-        lower.contains('çvş')) {
-      return true;
+    void flushBlock() {
+      if (personnel.isEmpty) return;
+      final line = currentHeaderLine == 0 ? 1 : currentHeaderLine;
+      final raw = currentHeaderRawLine;
+      if (currentDate == null) {
+        addIssue(
+          line: line,
+          raw: raw,
+          code: 'missing_date',
+          message: 'Bu personel grubu için geçerli bir tarih bulunamadı.',
+          severity: BulkParseIssueSeverity.error,
+        );
+      }
+      if (currentTeam == null) {
+        addIssue(
+          line: line,
+          raw: raw,
+          code: 'unknown_team',
+          message: 'Takım/tim bilgisi tanınamadı.',
+          severity: BulkParseIssueSeverity.warning,
+        );
+      }
+      if (!currentActivityKnown) {
+        addIssue(
+          line: line,
+          raw: raw,
+          code: 'unknown_activity',
+          message: 'Görev türü tanınamadı.',
+          severity: BulkParseIssueSeverity.warning,
+        );
+      }
+      blocks.add(ParsedActivityBlock(
+        rawTitle: currentTitle.isEmpty ? 'Ayrıştırılan Faaliyet' : currentTitle,
+        parsedTimName: currentTeam ?? '',
+        parsedActivityType: currentActivity ?? '',
+        parsedDate: currentDate ?? '',
+        parsedTimeRange: currentTimeRange,
+        personnelList: List<ParsedPersonnelItem>.unmodifiable(personnel),
+      ));
+      personnel.clear();
+      nextIndex = 1;
     }
-    // Check if line starts with index number followed by rank or capital name: "1- Erdem BUYAR" or "1) J.Asb"
-    if (RegExp(r'^\d+[\\.\\)-]\s*(?:J\.|[A-ZÇĞİÖŞÜ])').hasMatch(line.trim()) && !lower.contains('listesi')) {
-      return true;
+
+    final rawLines =
+        rawText.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
+    for (var lineIndex = 0; lineIndex < rawLines.length; lineIndex++) {
+      final rawLine = rawLines[lineIndex];
+      final lineNumber = lineIndex + 1;
+      final line = _normalizeLine(rawLine);
+      if (line.isEmpty || _messageMetadataPattern.hasMatch(line)) continue;
+
+      final dateMatch = _datePattern.firstMatch(line);
+      final looksLikeHeader = _isHeader(line);
+
+      if (looksLikeHeader) {
+        flushBlock();
+        currentTitle = line;
+        currentHeaderLine = lineNumber;
+        currentHeaderRawLine = rawLine;
+        currentTimeRange = null;
+
+        final title = parseTitle(line, currentDate);
+        currentTeam = title.timName;
+        currentActivityKnown = title.activityTypeKnown;
+        currentActivity = title.activityTypeKnown
+            ? mapActivityTypeToDutyOrLeave(title.activityType)
+            : title.activityType;
+        if (dateMatch != null) {
+          final parsedDate = _parseDateMatch(dateMatch);
+          if (parsedDate == null) {
+            currentDate = null;
+            addIssue(
+              line: lineNumber,
+              raw: rawLine,
+              code: 'invalid_date',
+              message: 'Başlıktaki tarih geçerli değil.',
+              severity: BulkParseIssueSeverity.error,
+            );
+          } else {
+            currentDate = parsedDate;
+          }
+        }
+        continue;
+      }
+
+      if (_dateOnlyPattern.hasMatch(line)) {
+        flushBlock();
+        final parsedDate = _parseDateMatch(dateMatch);
+        if (parsedDate == null) {
+          currentDate = null;
+          addIssue(
+            line: lineNumber,
+            raw: rawLine,
+            code: 'invalid_date',
+            message: 'Tarih geçerli değil.',
+            severity: BulkParseIssueSeverity.error,
+          );
+        } else {
+          currentDate = parsedDate;
+        }
+        continue;
+      }
+
+      final timeMatch = _timeRangePattern.firstMatch(line);
+      if (timeMatch != null || _timeLikePattern.hasMatch(line)) {
+        flushBlock();
+        final parsedTime = _parseTimeRange(timeMatch);
+        if (parsedTime == null) {
+          currentTimeRange = null;
+          addIssue(
+            line: lineNumber,
+            raw: rawLine,
+            code: 'invalid_time',
+            message: 'Saat aralığı geçerli değil.',
+            severity: BulkParseIssueSeverity.error,
+          );
+        } else {
+          currentTimeRange = parsedTime;
+        }
+        continue;
+      }
+
+      final personnelCandidate = _personnelCandidate(line);
+      if (personnelCandidate != null) {
+        final parsed = _parsePersonnelLine(
+          personnelCandidate.content,
+          personnelCandidate.index ?? nextIndex,
+        );
+        if (parsed == null) {
+          addIssue(
+            line: lineNumber,
+            raw: rawLine,
+            code: 'invalid_personnel',
+            message: 'Personel satırı çözümlenemedi.',
+            severity: BulkParseIssueSeverity.error,
+          );
+        } else {
+          personnel.add(parsed.item);
+          nextIndex = parsed.item.rawIndex + 1;
+          if (!parsed.rankKnown) {
+            addIssue(
+              line: lineNumber,
+              raw: rawLine,
+              code: 'unknown_rank',
+              message: 'Rütbe tanınamadı; ham personel adı korundu.',
+              severity: BulkParseIssueSeverity.warning,
+            );
+          }
+        }
+        continue;
+      }
+
+      if (_looksLikeBrokenPersonnel(line)) {
+        addIssue(
+          line: lineNumber,
+          raw: rawLine,
+          code: 'invalid_personnel',
+          message: 'Personel satırı çözümlenemedi.',
+          severity: BulkParseIssueSeverity.error,
+        );
+      }
     }
-    return false;
-  }
 
-  static ParsedPersonnelItem? _parsePersonnelLine(String line, int defaultIndex) {
-    // Clean leading index like 1-, 1), 1., 10.
-    var content = line.trim();
-    var index = defaultIndex;
-
-    final indexMatch = RegExp(r'^(\d+)[\\.\\)-]?\s*').firstMatch(content);
-    if (indexMatch != null) {
-      index = int.tryParse(indexMatch.group(1)!) ?? defaultIndex;
-      content = content.substring(indexMatch.group(0)!.length).trim();
+    flushBlock();
+    if (blocks.isEmpty &&
+        !issues.any((issue) => issue.code == 'invalid_personnel')) {
+      addIssue(
+        line: 0,
+        raw: '',
+        code: 'no_blocks',
+        message: 'Metinde aktarılabilecek personel bloğu bulunamadı.',
+        severity: BulkParseIssueSeverity.error,
+      );
     }
-
-    // Extract rank
-    var rank = 'J.Uzm.Çvş.';
-    var name = content;
-
-    final rankRegex = RegExp(
-      r'^(J\.\s*Asb\.\s*(?:Kd\.\s*)?(?:Üçvş\.|Çvş\.)|J\.\s*Uzm\.\s*Çvş\.|J\.\s*Uzm\s*Çvş\.|J\.\s*Uzm\.\s*Çvş|J\.\s*Asb\.\s*Çvş\.)',
-      caseSensitive: false,
+    return BulkParseResult(
+      blocks: List<ParsedActivityBlock>.unmodifiable(blocks),
+      issues: List<BulkParseIssue>.unmodifiable(issues),
     );
+  }
 
-    final rankMatch = rankRegex.firstMatch(content);
-    if (rankMatch != null) {
-      rank = rankMatch.group(0)!.trim();
-      name = content.substring(rankMatch.group(0)!.length).trim();
+  static String _normalizeLine(String input) => input
+      .replaceAll('\u00a0', ' ')
+      .replaceAll('\t', ' ')
+      .replaceAll(RegExp('[–—−]'), '-')
+      .replaceAll(RegExp(r'[*_`~]'), '')
+      .replaceFirst(RegExp(r'^\s*>\s?'), '')
+      .replaceFirst(_bulletPattern, '')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+
+  static bool _isHeader(String line) {
+    final folded = _fold(line);
+    final hasHeaderWord = folded.contains('listesi') ||
+        RegExp(r'\bliste\b').hasMatch(folded) ||
+        folded.contains('isim list') ||
+        folded.contains('timi') ||
+        folded.contains(' tim ');
+    final hasActivity = _activityTypes.keys.any((key) => folded.contains(key));
+    return hasHeaderWord || (hasActivity && _extractTeam(line) != null);
+  }
+
+  static String? _extractTeam(String line) {
+    final match = _teamPattern.firstMatch(line);
+    if (match == null) {
+      final timMatch =
+          RegExp(r'(?<!\d)(\d{1,2})\s*[.]?\s*tim(?:i)?\b', caseSensitive: false)
+              .firstMatch(_fold(line));
+      return timMatch?.group(1);
     }
+    final number = match.group(1)!;
+    final suffix = (match.group(2) ?? match.group(3))!.toUpperCase();
+    return match.group(2) != null ? '$number/$suffix' : '$number$suffix';
+  }
 
-    // Normalize rank string
-    rank = _normalizeRank(rank);
+  static (String, bool) _extractActivity(String line) {
+    final folded = _fold(line);
+    for (final entry in _activityDisplayNames.entries) {
+      if (folded.contains(entry.key)) return (entry.value, true);
+    }
+    return (_extractUnknownActivity(line), false);
+  }
 
-    if (name.isEmpty) return null;
+  static String _extractUnknownActivity(String line) => line
+      .replaceAll(_datePattern, '')
+      .replaceAll(_teamPattern, '')
+      .replaceAll(
+        RegExp(r'\b(?:isim\s+)?(?:liste|listesi)\b', caseSensitive: false),
+        '',
+      )
+      .trim();
 
-    return ParsedPersonnelItem(
-      rawIndex: index,
-      rawRank: rank,
-      rawName: name,
+  static String _fold(String value) =>
+      value.toLowerCase().replaceAll('ı', 'i').replaceAll('İ', 'i');
+
+  static String? _parseDateMatch(RegExpMatch? match) {
+    if (match == null) return null;
+    final day = int.parse(match.group(1)!);
+    final month = int.parse(match.group(2)!);
+    final year = int.parse(match.group(3)!);
+    final date = DateTime(year, month, day);
+    if (date.year != year || date.month != month || date.day != day) {
+      return null;
+    }
+    return '${year.toString().padLeft(4, '0')}-'
+        '${month.toString().padLeft(2, '0')}-'
+        '${day.toString().padLeft(2, '0')}';
+  }
+
+  static String? _validateDefaultDate(String? value) {
+    if (value == null) return null;
+    final parsed = DateTime.tryParse(value);
+    if (parsed == null || value != _formatDate(parsed)) return null;
+    return value;
+  }
+
+  static String? _parseTimeRange(RegExpMatch? match) {
+    if (match == null) return null;
+    final startHour = int.parse(match.group(1)!);
+    final startMinute = int.parse(match.group(2)!);
+    final endHour = int.parse(match.group(3)!);
+    final endMinute = int.parse(match.group(4)!);
+    if (startHour > 23 || endHour > 23 || startMinute > 59 || endMinute > 59) {
+      return null;
+    }
+    return '${startHour.toString().padLeft(2, '0')}:'
+        '${startMinute.toString().padLeft(2, '0')} - '
+        '${endHour.toString().padLeft(2, '0')}:'
+        '${endMinute.toString().padLeft(2, '0')}';
+  }
+
+  static ({String content, int? index})? _personnelCandidate(String line) {
+    final numbered = _numberedPersonnelPattern.firstMatch(line);
+    if (numbered != null) {
+      return (
+        content: numbered.group(3)!.trim(),
+        index: int.tryParse(numbered.group(1)!),
+      );
+    }
+    if (_rankPattern.hasMatch(line)) return (content: line, index: null);
+    return null;
+  }
+
+  static bool _looksLikeBrokenPersonnel(String line) =>
+      RegExp(r'^\d+\s*[.)\-:]').hasMatch(line) ||
+      _fold(line).startsWith('j.asb') ||
+      _fold(line).startsWith('j.uzm');
+
+  static ({ParsedPersonnelItem item, bool rankKnown})? _parsePersonnelLine(
+    String content,
+    int index,
+  ) {
+    final rankMatch = _rankPattern.firstMatch(content);
+    final rankKnown = rankMatch != null;
+    final rank = rankKnown ? _normalizeRank(rankMatch.group(1)!) : '';
+    final name =
+        (rankKnown ? content.substring(rankMatch.end) : content).trim();
+    if (name.isEmpty || !RegExp(r'[A-Za-zÇĞİÖŞÜçğıöşü]').hasMatch(name)) {
+      return null;
+    }
+    return (
+      item: ParsedPersonnelItem(
+        rawIndex: index,
+        rawRank: rank,
+        rawName: name,
+      ),
+      rankKnown: rankKnown,
     );
   }
 
   static String _normalizeRank(String rank) {
-    final clean = rank.replaceAll(' ', '').toLowerCase();
-    if (clean.contains('kd.üçvş') || clean.contains('kd.üçvş.')) return 'J.Asb.Kd.Üçvş.';
-    if (clean.contains('üçvş')) return 'J.Asb.Üçvş.';
-    if (clean.contains('kd.çvş')) return 'J.Asb.Kd.Çvş.';
-    if (clean.contains('asb.çvş')) return 'J.Asb.Çvş.';
-    if (clean.contains('uzm')) return 'J.Uzm.Çvş.';
-    return rank;
+    final clean = _fold(rank).replaceAll(RegExp(r'[\s.]'), '');
+    if (clean.contains('asbkdüçvş') || clean.contains('asbkducvs')) {
+      return 'J.Asb.Kd.Üçvş.';
+    }
+    if (clean.contains('asbkdçvş') || clean.contains('asbkdcvs')) {
+      return 'J.Asb.Kd.Çvş.';
+    }
+    if (clean.contains('asbüçvş') || clean.contains('asbucvs')) {
+      return 'J.Asb.Üçvş.';
+    }
+    if (clean.contains('asbçvş') || clean.contains('asbcvs')) {
+      return 'J.Asb.Çvş.';
+    }
+    return 'J.Uzm.Çvş.';
   }
 
-  static String _formatDate(DateTime dt) {
-    final y = dt.year.toString().padLeft(4, '0');
-    final m = dt.month.toString().padLeft(2, '0');
-    final d = dt.day.toString().padLeft(2, '0');
-    return '$y-$m-$d';
-  }
+  static String _formatDate(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
 }

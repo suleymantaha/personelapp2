@@ -27,10 +27,8 @@ String normalizeRank(String rawRutbe) {
 
   final upper = trimmed.toUpperCase().replaceAll(' ', '').replaceAll('.', '');
   for (final rank in kAskeriRutbeler) {
-    final rankUpper = rank
-        .toUpperCase()
-        .replaceAll(' ', '')
-        .replaceAll('.', '');
+    final rankUpper =
+        rank.toUpperCase().replaceAll(' ', '').replaceAll('.', '');
     if (rankUpper == upper || rankUpper.replaceFirst('J', '') == upper) {
       return rank;
     }
@@ -126,4 +124,8 @@ class RankSummaryCounts {
   final int uzmanErbasCount;
   final int erCount;
   final int totalCount;
+
+  int get uzmanCount => uzmanJandarmaCount + uzmanErbasCount;
+
+  int get digerCount => totalCount - subayCount - astsubayCount - uzmanCount;
 }

@@ -1,4 +1,12 @@
 class MilitaryStructureHelper {
+  static int? _teamNumber(String value) {
+    final normalized = value.toUpperCase().replaceAll('İ', 'I').trim();
+    final match = RegExp(
+      r'(?:^|\D)(1[0-2]|[1-9])\s*(?:[-/]|\.?\s*TIM)',
+    ).firstMatch(normalized);
+    return match == null ? null : int.tryParse(match.group(1)!);
+  }
+
   /// Maps squad/tim name or raw birlik text to its parent Jandarma Bölük (Company) title
   static String getBolukName(String timOrBirlik) {
     final s = timOrBirlik.toUpperCase().trim();
@@ -26,7 +34,14 @@ class MilitaryStructureHelper {
       return 'K.H';
     }
 
-    // Extract numbers like 1, 2, 3, 4 -> 1'inci Bl.
+    final teamNumber = _teamNumber(s);
+    if (teamNumber != null) {
+      if (teamNumber <= 4) return "1'inci Bl.";
+      if (teamNumber <= 8) return "2'nci Bl.";
+      return "3'üncü Bl.";
+    }
+
+    // Extract legacy company/team labels.
     if (s.contains('1-B') ||
         s.contains('2-B') ||
         s.contains('3-B') ||
@@ -171,15 +186,9 @@ class MilitaryStructureHelper {
       return 'K.H';
     }
 
-    // 4. Tim matches (1-B through 12-B)
-    for (var i = 1; i <= 12; i++) {
-      if (upper.contains('$i-B') ||
-          upper.contains('$i. TİM') ||
-          upper.contains('$i.TIM') ||
-          upper.contains('$i TİM')) {
-        return '$i-B Timi';
-      }
-    }
+    // 4. Tim matches (1-B, 1/B, "1 / B", "1. Tim", etc.)
+    final teamNumber = _teamNumber(upper);
+    if (teamNumber != null) return '$teamNumber-B Timi';
 
     // 5. Exact match fallback with officialSquadOrder
     for (final official in officialSquadOrder) {
@@ -200,6 +209,8 @@ class MilitaryStructureHelper {
     required String birlik,
     required String duty,
   }) {
+    if (isNobetciHeyetiDuty(duty)) return 'Nöbet Heyeti';
+
     final dutyUpper = duty.toUpperCase().trim();
     final isCompanyDuty = dutyUpper.contains('HAZIR KITA') ||
         dutyUpper.contains('HAZIRKITA') ||
@@ -210,7 +221,7 @@ class MilitaryStructureHelper {
     if (isCompanyDuty) {
       return getBolukName(teamOrFallback);
     }
-    return getOfficialBirlikName(teamOrFallback);
+    return getOfficialBirlikName(teamOrFallback, duty: duty);
   }
 
   /// Official Jandarma Squad/Tim ordering
@@ -237,6 +248,17 @@ class MilitaryStructureHelper {
   /// Returns weight/index for sorting squads according to official military order
   static int getSquadOrderWeight(String squadName, {String? duty}) {
     final officialName = getOfficialBirlikName(squadName, duty: duty);
+
+    // Special-duty rows use parent-company labels. These labels previously all
+    // fell through to 999, so rank sorting could interleave companies and split
+    // the consecutive blocks required by PDF/Excel cell merging.
+    final companyIndex = const {
+      "1'inci Bl.": 2,
+      "2'nci Bl.": 7,
+      "3'üncü Bl.": 12,
+    }[officialName];
+    if (companyIndex != null) return companyIndex;
+
     final idx = officialSquadOrder.indexOf(officialName);
     if (idx != -1) return idx;
 

@@ -103,10 +103,23 @@ class ActivityCard extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await repository.changeActivityDate(
-      activityId: activity.id,
-      newDate: newDate,
-    );
+    ActivityDateChangeResult result;
+    try {
+      result = await repository.changeActivityDate(
+        activityId: activity.id,
+        newDate: newDate,
+      );
+    } on AssignmentConflictException catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.message),
+            backgroundColor: context.rejectedColor,
+          ),
+        );
+      }
+      return;
+    }
     if (!context.mounted) return;
     if (result.status == ActivityDateChangeStatus.success) {
       onDateChanged(result.newDate);

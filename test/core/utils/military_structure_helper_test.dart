@@ -32,6 +32,33 @@ void main() {
 
       expect(result, "2'nci Bl.");
     });
+
+    test('normalizes slash and spaced team variants', () {
+      for (final team in ['6/B', '6 / B', '6-B', '6-B Timi']) {
+        expect(
+          MilitaryStructureHelper.getRosterBirlikName(
+            timName: team,
+            birlik: '',
+            duty: 'GÜLÜŞKÜR',
+          ),
+          "2'nci Bl.",
+        );
+        expect(
+          MilitaryStructureHelper.getOfficialBirlikName(team),
+          '6-B Timi',
+        );
+      }
+    });
+
+    test('uses Nöbet Heyeti instead of a KH fallback unit', () {
+      final result = MilitaryStructureHelper.getRosterBirlikName(
+        timName: '',
+        birlik: 'KH',
+        duty: 'NÖBETÇİ HEYETİ',
+      );
+
+      expect(result, 'Nöbet Heyeti');
+    });
   });
 
   group('roster duty rules', () {
@@ -64,6 +91,17 @@ void main() {
           aciklama: '  ',
         ),
         'Nöbetçi Heyeti',
+      );
+    });
+
+    test('orders parent companies separately for contiguous special rows', () {
+      expect(
+        MilitaryStructureHelper.getSquadOrderWeight("1'inci Bl."),
+        lessThan(MilitaryStructureHelper.getSquadOrderWeight("2'nci Bl.")),
+      );
+      expect(
+        MilitaryStructureHelper.getSquadOrderWeight("2'nci Bl."),
+        lessThan(MilitaryStructureHelper.getSquadOrderWeight("3'üncü Bl.")),
       );
     });
   });

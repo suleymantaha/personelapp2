@@ -29,6 +29,46 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
   final Set<int> _selectedActivityIds = {};
   bool _selectionMode = false;
 
+  Future<void> _showConflictAudit() async {
+    final conflicts = await ref
+        .read(activityRepositoryProvider)
+        .auditExistingDailyConflicts();
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Geçmiş Kayıt Çakışma Denetimi'),
+        content: SizedBox(
+          width: 600,
+          child: conflicts.isEmpty
+              ? const Text('Çakışan geçmiş kayıt bulunamadı.')
+              : SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Bu liste salt okunurdur; hiçbir kayıt silinmedi.',
+                      ),
+                      const SizedBox(height: 12),
+                      for (final conflict in conflicts)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text('• $conflict'),
+                        ),
+                    ],
+                  ),
+                ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('KAPAT'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _startSelection(int activityId) {
     setState(() {
       _selectionMode = true;
@@ -210,25 +250,16 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       return;
     }
     final dateTitle = _buildExportDateTitle(activities);
-    final sections = <MasterActivityData>[];
-    for (final activity in activities) {
-      sections.add(
-        MasterActivityData(
-          faaliyetAdi: activity.faaliyetAdi,
-          tarih: activity.tarih,
-          olusturanKullanici: activity.olusturanKullanici,
-          rows: await _buildRosterRowsForMasterExport(
-            [activity],
-            personnelList,
-          ),
-        ),
-      );
-    }
-
-    await MilitaryRosterExporter.shareMasterDailyExcel(
-      title: 'GÜNLÜK TÜM FAALİYETLER',
-      dateStr: dateTitle,
-      activities: sections,
+    final rows = await _buildRosterRowsForMasterExport(
+      activities,
+      personnelList,
+    );
+    await MilitaryRosterExporter.shareExcelRoster(
+      faaliyetAdi: activities.length == 1
+          ? activities.first.faaliyetAdi
+          : 'GÜNLÜK TÜM FAALİYETLER',
+      tarih: dateTitle,
+      rows: rows,
     );
   }
 
@@ -423,6 +454,12 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
               icon: const Icon(Icons.clear),
               tooltip: 'Tarih Filtresini Temizle',
               onPressed: () => setState(() => _selectedDateFilter = null),
+            ),
+          if (!_selectionMode && isAdmin)
+            IconButton(
+              icon: const Icon(Icons.fact_check_outlined),
+              tooltip: 'Geçmiş Çakışmaları Denetle',
+              onPressed: _showConflictAudit,
             ),
           if (!_selectionMode)
             IconButton(
