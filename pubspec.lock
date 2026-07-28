@@ -193,6 +193,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
+  cryptography:
+    dependency: "direct main"
+    description:
+      name: cryptography
+      sha256: "3eda3029d34ec9095a27a198ac9785630fe525c0eb6a49f3d575272f8e792ef0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.9.0"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -529,7 +537,7 @@ packages:
     source: hosted
     version: "2.2.0"
   path:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path
       sha256: "75cca69d1490965be98c73ceaea117e8a04dd21217b37b292c9ddbec0d955bc5"
@@ -806,21 +814,13 @@ packages:
     source: hosted
     version: "1.10.2"
   sqlite3:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: sqlite3
       sha256: c73fd75df1332d76a6257f4823ae4df9c791f522b97e4a60cbcad214de1becf4
       url: "https://pub.dev"
     source: hosted
     version: "3.5.0"
-  sqlite3_flutter_libs:
-    dependency: "direct main"
-    description:
-      name: sqlite3_flutter_libs
-      sha256: "3ed7553eee7bb368f8950f58ba29f634e06e813c029aff6a0d60862b96de8454"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.6.0+eol"
   sqlparser:
     dependency: transitive
     description:

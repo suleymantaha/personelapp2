@@ -7,6 +7,7 @@ void main() {
       final status = ConflictChecker.evaluateAssignmentStatus(
         personelId: 1,
         targetDate: '2026-07-21',
+        targetDuty: DutyOrLeaveType.gorevli,
         reports: [],
         existingAssignments: [],
       );
@@ -28,6 +29,7 @@ void main() {
         final status = ConflictChecker.evaluateAssignmentStatus(
           personelId: 1,
           targetDate: '2026-07-21',
+          targetDuty: DutyOrLeaveType.gorevli,
           reports: reports,
           existingAssignments: [],
         );
@@ -53,6 +55,7 @@ void main() {
         final status = ConflictChecker.evaluateAssignmentStatus(
           personelId: 1,
           targetDate: '2026-07-21',
+          targetDuty: DutyOrLeaveType.gorevli,
           reports: [],
           existingAssignments: existingAssignments,
         );

@@ -1,16 +1,19 @@
+export 'package:personelapp2/core/auth/domain/user_session.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/matrix/data/matrix_repository.dart';
+import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 import 'package:personelapp2/features/personnel/data/personnel_repository.dart';
 
-AppDatabase? _singletonDb;
-
-/// Database Instance Provider (Singleton)
+/// Database instance whose lifecycle is owned by the provider container.
 final databaseProvider = Provider<AppDatabase>((ref) {
-  ref.keepAlive();
-  return _singletonDb ??= AppDatabase();
+  final database = AppDatabase();
+  ref.onDispose(database.close);
+  return database;
 });
 
 /// Repositories
@@ -21,21 +24,6 @@ final personnelRepositoryProvider = Provider<PersonnelRepository>((ref) {
 final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
   return ActivityRepository(ref.watch(databaseProvider));
 });
-
-/// Current Logged-in User Session State
-class UserSessionState {
-  const UserSessionState({
-    required this.username,
-    required this.role,
-    this.timId,
-  });
-
-  final String username;
-  final String role; // 'yönetici' veya 'tim_komutani'
-  final int? timId;
-
-  bool get isAdmin => role == 'yönetici';
-}
 
 final userSessionProvider = StateProvider<UserSessionState?>((ref) => null);
 
@@ -90,8 +78,11 @@ final matrixRepositoryProvider = Provider<MatrixRepository>((ref) {
   return MatrixRepository(ref.watch(databaseProvider));
 });
 
-final StreamProviderFamily<Map<int, Map<int, String>>, String>
+final StreamProviderFamily<Map<int, Map<int, MatrixDayCell>>, String>
 monthlyMatrixProvider =
-    StreamProvider.family<Map<int, Map<int, String>>, String>((ref, yearMonth) {
+    StreamProvider.family<Map<int, Map<int, MatrixDayCell>>, String>((
+      ref,
+      yearMonth,
+    ) {
       return ref.watch(matrixRepositoryProvider).watchMonthlyMatrix(yearMonth);
     });

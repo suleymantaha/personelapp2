@@ -427,13 +427,6 @@ class DashboardScreen extends ConsumerWidget {
                       },
                     ),
                     _MenuCard(
-                      icon: Icons.group_add,
-                      title: 'Yeni Tim Ekle',
-                      subtitle: 'Tim & Komutan Ekle',
-                      color: context.tealColor,
-                      onTap: () => context.push('/personnel-management'),
-                    ),
-                    _MenuCard(
                       icon: Icons.assignment_turned_in,
                       title: 'Bekleyen Onaylar',
                       subtitle: 'Çakışma denetimi',

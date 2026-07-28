@@ -52,9 +52,8 @@ class PendingApprovalsScreen extends ConsumerWidget {
                 final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
                 final rutbeText = p?.rutbe ?? '';
                 final birlikInfo = p?.birlik ?? '';
-                final fullPersonName = rutbeText.isNotEmpty
-                    ? '$rutbeText $nameText'
-                    : nameText;
+                final fullPersonName =
+                    rutbeText.isNotEmpty ? '$rutbeText $nameText' : nameText;
                 final squadInfo = birlikInfo.isNotEmpty ? ' ($birlikInfo)' : '';
 
                 return Card(
@@ -154,6 +153,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
                                 await repo.updateAssignmentStatus(
                                   atama.id,
                                   AssignmentStatus.reddedildi,
+                                  actor: session!,
                                 );
                               },
                               child: const Text('REDDET'),
@@ -168,10 +168,21 @@ class PendingApprovalsScreen extends ConsumerWidget {
                                 final repo = ref.read(
                                   activityRepositoryProvider,
                                 );
-                                await repo.updateAssignmentStatus(
+                                final result = await repo.approveAssignment(
                                   atama.id,
-                                  AssignmentStatus.onaylandi,
+                                  actor: session!,
                                 );
+                                if (context.mounted &&
+                                    result.blockedCount > 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Onaylanamadı: '
+                                        '${result.conflictDescriptions.join(', ')}',
+                                      ),
+                                    ),
+                                  );
+                                }
                               },
                               child: const Text('ONAYLA'),
                             ),

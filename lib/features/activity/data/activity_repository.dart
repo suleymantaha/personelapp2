@@ -1,12 +1,302 @@
 import 'dart:async';
 import 'package:drift/drift.dart';
+import 'package:personelapp2/core/auth/domain/authorization_exception.dart';
+import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
+import 'package:personelapp2/features/activity/domain/duty_coverage.dart';
+import 'package:personelapp2/features/activity/domain/models/activity_create_request.dart';
+
+export 'package:personelapp2/features/activity/domain/models/activity_create_request.dart';
+
+enum ActivityDateChangeStatus {
+  success,
+  unchanged,
+  activityNotFound,
+  invalidDate,
+}
+
+class ActivityDateChangePreview {
+  const ActivityDateChangePreview({
+    required this.status,
+    required this.oldDate,
+    required this.newDate,
+    required this.assignmentCount,
+    required this.pendingAssignmentCount,
+  });
+
+  final ActivityDateChangeStatus status;
+  final String oldDate;
+  final String newDate;
+  final int assignmentCount;
+  final int pendingAssignmentCount;
+
+  bool get canChange =>
+      status == ActivityDateChangeStatus.success ||
+      status == ActivityDateChangeStatus.unchanged;
+}
+
+class ActivityDateChangeResult extends ActivityDateChangePreview {
+  const ActivityDateChangeResult({
+    required super.status,
+    required super.oldDate,
+    required super.newDate,
+    required super.assignmentCount,
+    required super.pendingAssignmentCount,
+  });
+}
+
+class ApprovalResult {
+  const ApprovalResult({
+    required this.approvedCount,
+    required this.blockedCount,
+    this.conflictDescriptions = const [],
+  });
+
+  final int approvedCount;
+  final int blockedCount;
+  final List<String> conflictDescriptions;
+
+  bool get isFullyApproved => blockedCount == 0;
+}
+
+class ExistingActivityMatch {
+  const ExistingActivityMatch({
+    required this.activity,
+    required this.newPersonnelCount,
+    required this.unchangedPersonnelCount,
+    required this.differentPersonnelCount,
+  });
+
+  final GunlukFaaliyetTableData activity;
+  final int newPersonnelCount;
+  final int unchangedPersonnelCount;
+  final int differentPersonnelCount;
+}
+
+class ActivityMergeResult {
+  const ActivityMergeResult({
+    required this.activityId,
+    required this.addedCount,
+    required this.updatedCount,
+    required this.skippedCount,
+  });
+
+  final int activityId;
+  final int addedCount;
+  final int updatedCount;
+  final int skippedCount;
+}
 
 class ActivityRepository {
   ActivityRepository(this.db);
 
   final AppDatabase db;
+
+  void _requireAdmin(UserSessionState actor) {
+    if (!actor.isAdmin) {
+      throw const AuthorizationException(
+        'Bu işlem yalnızca yöneticiler tarafından yapılabilir.',
+      );
+    }
+  }
+
+  Future<void> _requirePersonnelScope(
+    UserSessionState actor,
+    List<PersonnelAssignmentInput> assignments,
+  ) async {
+    final personnelIds = assignments.map((item) => item.personnelId).toSet();
+    if (personnelIds.isEmpty) return;
+
+    final personnel = await (db.select(
+      db.personelTable,
+    )..where((table) => table.id.isIn(personnelIds))).get();
+    if (personnel.length != personnelIds.length) {
+      throw const AuthorizationException(
+        'Atama listesindeki personelden biri bulunamadı.',
+      );
+    }
+    if (actor.isAdmin) return;
+
+    final teamId = actor.timId;
+    if (teamId == null || personnel.any((person) => person.timId != teamId)) {
+      throw const AuthorizationException(
+        'Tim komutanı yalnızca kendi timindeki personele atama yapabilir.',
+      );
+    }
+  }
+
+  String _normalizeActivityName(String value) =>
+      value.trim().replaceAll(RegExp(r'\s+'), ' ').toUpperCase();
+
+  String _normalizeNote(String? value) {
+    final note = value?.trim() ?? '';
+    return note.replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  bool _isValidIsoDate(String value) {
+    if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) return false;
+    final parsed = DateTime.tryParse(value);
+    if (parsed == null) return false;
+    final canonical = '${parsed.year.toString().padLeft(4, '0')}-'
+        '${parsed.month.toString().padLeft(2, '0')}-'
+        '${parsed.day.toString().padLeft(2, '0')}';
+    return canonical == value;
+  }
+
+  Future<ActivityDateChangePreview> previewActivityDateChange({
+    required int activityId,
+    required String newDate,
+  }) async {
+    final activity = await (db.select(
+      db.gunlukFaaliyetTable,
+    )..where((tbl) => tbl.id.equals(activityId)))
+        .getSingleOrNull();
+    if (activity == null) {
+      return ActivityDateChangePreview(
+        status: ActivityDateChangeStatus.activityNotFound,
+        oldDate: '',
+        newDate: newDate,
+        assignmentCount: 0,
+        pendingAssignmentCount: 0,
+      );
+    }
+
+    final assignments = await (db.select(
+      db.faaliyetPersonelAtamaTable,
+    )..where((tbl) => tbl.faaliyetId.equals(activityId)))
+        .get();
+    if (!_isValidIsoDate(newDate)) {
+      return ActivityDateChangePreview(
+        status: ActivityDateChangeStatus.invalidDate,
+        oldDate: activity.tarih,
+        newDate: newDate,
+        assignmentCount: assignments.length,
+        pendingAssignmentCount: 0,
+      );
+    }
+    if (activity.tarih == newDate) {
+      return ActivityDateChangePreview(
+        status: ActivityDateChangeStatus.unchanged,
+        oldDate: activity.tarih,
+        newDate: newDate,
+        assignmentCount: assignments.length,
+        pendingAssignmentCount: 0,
+      );
+    }
+
+    final pendingCount = await _countApprovedAssignmentsBecomingPending(
+      assignments: assignments,
+      newDate: newDate,
+      movingActivityId: activityId,
+    );
+    return ActivityDateChangePreview(
+      status: ActivityDateChangeStatus.success,
+      oldDate: activity.tarih,
+      newDate: newDate,
+      assignmentCount: assignments.length,
+      pendingAssignmentCount: pendingCount,
+    );
+  }
+
+  Future<ActivityDateChangeResult> changeActivityDate({
+    required int activityId,
+    required String newDate,
+  }) {
+    return db.transaction(() async {
+      final preview = await previewActivityDateChange(
+        activityId: activityId,
+        newDate: newDate,
+      );
+      if (preview.status != ActivityDateChangeStatus.success) {
+        return ActivityDateChangeResult(
+          status: preview.status,
+          oldDate: preview.oldDate,
+          newDate: preview.newDate,
+          assignmentCount: preview.assignmentCount,
+          pendingAssignmentCount: preview.pendingAssignmentCount,
+        );
+      }
+
+      final activity = await (db.select(
+        db.gunlukFaaliyetTable,
+      )..where((tbl) => tbl.id.equals(activityId)))
+          .getSingle();
+      final assignments = await (db.select(
+        db.faaliyetPersonelAtamaTable,
+      )..where((tbl) => tbl.faaliyetId.equals(activityId)))
+          .get();
+      final reports = await _loadDomainReports();
+      final existingAssignments = await _loadExistingAssignments();
+
+      var pendingCount = 0;
+      for (final assignment in assignments) {
+        if (assignment.durum != AssignmentStatus.onaylandi) continue;
+        final status = ConflictChecker.evaluateAssignmentStatus(
+          personelId: assignment.personelId,
+          targetDate: newDate,
+          targetDuty: assignment.gorevVeyaIzin,
+          reports: reports,
+          existingAssignments: existingAssignments,
+          excludeActivityId: activityId,
+        );
+        if (status == AssignmentStatus.beklemede) {
+          await (db.update(db.faaliyetPersonelAtamaTable)
+                ..where((tbl) => tbl.id.equals(assignment.id)))
+              .write(
+            const FaaliyetPersonelAtamaTableCompanion(
+              durum: Value(AssignmentStatus.beklemede),
+            ),
+          );
+          pendingCount++;
+        }
+      }
+
+      final automaticTitle = 'Günlük Faaliyet (${activity.tarih})';
+      final newTitle = activity.faaliyetAdi == automaticTitle
+          ? 'Günlük Faaliyet ($newDate)'
+          : activity.faaliyetAdi;
+      await (db.update(
+        db.gunlukFaaliyetTable,
+      )..where((tbl) => tbl.id.equals(activityId)))
+          .write(
+        GunlukFaaliyetTableCompanion(
+          tarih: Value(newDate),
+          faaliyetAdi: Value(newTitle),
+        ),
+      );
+
+      return ActivityDateChangeResult(
+        status: ActivityDateChangeStatus.success,
+        oldDate: activity.tarih,
+        newDate: newDate,
+        assignmentCount: assignments.length,
+        pendingAssignmentCount: pendingCount,
+      );
+    });
+  }
+
+  Future<int> _countApprovedAssignmentsBecomingPending({
+    required List<FaaliyetPersonelAtamaTableData> assignments,
+    required String newDate,
+    required int movingActivityId,
+  }) async {
+    final reports = await _loadDomainReports();
+    final existingAssignments = await _loadExistingAssignments();
+
+    return assignments.where((assignment) {
+      if (assignment.durum != AssignmentStatus.onaylandi) return false;
+      final status = ConflictChecker.evaluateAssignmentStatus(
+        personelId: assignment.personelId,
+        targetDate: newDate,
+        targetDuty: assignment.gorevVeyaIzin,
+        reports: reports,
+        existingAssignments: existingAssignments,
+        excludeActivityId: movingActivityId,
+      );
+      return status == AssignmentStatus.beklemede;
+    }).length;
+  }
 
   /// Watch activities with optional date range filter and pagination
   Stream<List<GunlukFaaliyetTableData>> watchAllActivities({
@@ -30,64 +320,20 @@ class ActivityRepository {
     return query.watch();
   }
 
-  /// Merges duplicate activity entries for the same date and cleans up orphaned duplicates
+  @Deprecated(
+    'Aynı tarihte birden fazla faaliyet desteklenir. '
+    'Tarih bazlı birleştirme veri kaybına yol açar.',
+  )
   Future<void> consolidateDuplicateActivities() async {
-    await db.transaction(() async {
-      final allActs =
-          await (db.select(db.gunlukFaaliyetTable)..orderBy([
-                (tbl) => OrderingTerm(expression: tbl.id),
-              ]))
-              .get();
-
-      final seenDates = <String, int>{};
-      for (final act in allActs) {
-        if (seenDates.containsKey(act.tarih)) {
-          final primaryId = seenDates[act.tarih]!;
-          final duplicateId = act.id;
-
-          final dupAssignments = await (db.select(
-            db.faaliyetPersonelAtamaTable,
-          )..where((tbl) => tbl.faaliyetId.equals(duplicateId))).get();
-
-          for (final atama in dupAssignments) {
-            final existsInPrimary =
-                await (db.select(db.faaliyetPersonelAtamaTable)..where(
-                      (tbl) =>
-                          tbl.faaliyetId.equals(primaryId) &
-                          tbl.personelId.equals(atama.personelId),
-                    ))
-                    .getSingleOrNull();
-
-            if (existsInPrimary == null) {
-              await (db.update(
-                db.faaliyetPersonelAtamaTable,
-              )..where((tbl) => tbl.id.equals(atama.id))).write(
-                FaaliyetPersonelAtamaTableCompanion(
-                  faaliyetId: Value(primaryId),
-                ),
-              );
-            } else {
-              await (db.delete(
-                db.faaliyetPersonelAtamaTable,
-              )..where((tbl) => tbl.id.equals(atama.id))).go();
-            }
-          }
-
-          await (db.delete(
-            db.gunlukFaaliyetTable,
-          )..where((tbl) => tbl.id.equals(duplicateId))).go();
-        } else {
-          seenDates[act.tarih] = act.id;
-        }
-      }
-    });
+    // Intentionally left as a safe no-op for legacy callers.
   }
 
   /// Watch pending duty assignments
   Stream<List<FaaliyetPersonelAtamaTableData>> watchPendingAssignments() {
-    return (db.select(db.faaliyetPersonelAtamaTable)..where(
-          (tbl) => tbl.durum.equals(AssignmentStatus.beklemede),
-        ))
+    return (db.select(db.faaliyetPersonelAtamaTable)
+          ..where(
+            (tbl) => tbl.durum.equals(AssignmentStatus.beklemede),
+          ))
         .watch();
   }
 
@@ -102,13 +348,14 @@ class ActivityRepository {
           db.faaliyetPersonelAtamaTable.faaliyetId,
         ),
       ),
-    ])..where(db.gunlukFaaliyetTable.tarih.equals(dateStr));
+    ])
+      ..where(db.gunlukFaaliyetTable.tarih.equals(dateStr));
 
     return query.watch().map(
-      (rows) => rows
-          .map((row) => row.readTable(db.faaliyetPersonelAtamaTable))
-          .toList(),
-    );
+          (rows) => rows
+              .map((row) => row.readTable(db.faaliyetPersonelAtamaTable))
+              .toList(),
+        );
   }
 
   /// Watch all activities for a specific team/squad
@@ -126,7 +373,8 @@ class ActivityRepository {
           db.faaliyetPersonelAtamaTable.personelId,
         ),
       ),
-    ])..where(db.personelTable.timId.equals(timId));
+    ])
+      ..where(db.personelTable.timId.equals(timId));
 
     return query.watch().map((rows) {
       final map = <int, GunlukFaaliyetTableData>{};
@@ -143,177 +391,524 @@ class ActivityRepository {
     required String faaliyetAdi,
     required String tarih,
     required String olusturanKullanici,
-    required List<Map<String, dynamic>> personnelAssignments,
-    bool isCommander = false,
-  }) async {
+    required List<PersonnelAssignmentInput> personnelAssignments,
+    required UserSessionState actor,
+  }) {
     return db.transaction(() async {
-      // 1. Check if an activity record already exists for this date
-      final existingActs = await (db.select(
-        db.gunlukFaaliyetTable,
-      )..where((tbl) => tbl.tarih.equals(tarih))).get();
-
-      int actId;
-      if (existingActs.isNotEmpty) {
-        actId = existingActs.first.id;
-        // Optionally update activity title if needed
-        await (db.update(
-          db.gunlukFaaliyetTable,
-        )..where((tbl) => tbl.id.equals(actId))).write(
-          GunlukFaaliyetTableCompanion(
-            faaliyetAdi: Value(faaliyetAdi),
-            olusturanKullanici: Value(olusturanKullanici),
-          ),
-        );
-      } else {
-        actId = await db
-            .into(db.gunlukFaaliyetTable)
-            .insert(
-              GunlukFaaliyetTableCompanion.insert(
-                faaliyetAdi: faaliyetAdi,
-                tarih: tarih,
-                olusturanKullanici: olusturanKullanici,
-                olusturmaTarihi: DateTime.now().toIso8601String(),
-              ),
-            );
-      }
-
-      // Fetch active reports
-      final rawReports = await db.select(db.raporKayitTable).get();
-      final domainReports = rawReports
-          .map(
-            (r) => PersonnelReport(
-              id: r.id,
-              personelId: r.personelId,
-              raporBaslangic: r.raporBaslangic,
-              raporBitis: r.raporBitis,
-              aciklama: r.aciklama,
-            ),
-          )
-          .toList();
-
-      // Fetch existing approved assignments on this date
-      final query = db.select(db.faaliyetPersonelAtamaTable).join([
-        innerJoin(
-          db.gunlukFaaliyetTable,
-          db.gunlukFaaliyetTable.id.equalsExp(
-            db.faaliyetPersonelAtamaTable.faaliyetId,
-          ),
+      await _requirePersonnelScope(actor, personnelAssignments);
+      return _createActivityWithinTransaction(
+        ActivityCreateRequest(
+          faaliyetAdi: faaliyetAdi,
+          tarih: tarih,
+          olusturanKullanici: olusturanKullanici,
+          personnelAssignments: personnelAssignments,
         ),
-      ])..where(db.gunlukFaaliyetTable.tarih.equals(tarih));
-
-      final existingRows = await query.get();
-      final existingAssignments = existingRows.map((row) {
-        final atama = row.readTable(db.faaliyetPersonelAtamaTable);
-        final faal = row.readTable(db.gunlukFaaliyetTable);
-        return ExistingDutyAssignment(
-          id: atama.id,
-          faaliyetId: atama.faaliyetId,
-          personelId: atama.personelId,
-          tarih: faal.tarih,
-          gorevVeyaIzin: atama.gorevVeyaIzin,
-          durum: atama.durum,
-        );
-      }).toList();
-
-      // 2. Evaluate and upsert each assignment
-      for (final item in personnelAssignments) {
-        final rawPid = item['personelId'];
-        final rawGorev = item['gorevVeyaIzin'];
-        if (rawPid == null || rawGorev == null) continue;
-
-        final pId = rawPid is int ? rawPid : int.tryParse(rawPid.toString());
-        final gorev = rawGorev.toString();
-        if (pId == null || gorev.isEmpty) continue;
-
-        var evaluatedStatus = ConflictChecker.evaluateAssignmentStatus(
-          personelId: pId,
-          targetDate: tarih,
-          reports: domainReports,
-          existingAssignments: existingAssignments,
-        );
-
-        // If submitted by Tim Komutanı, force status to 'beklemede' for Admin Approval
-        if (isCommander) {
-          evaluatedStatus = AssignmentStatus.beklemede;
-        }
-
-        // Check if assignment already exists for this activity & personnel
-        final currentAssignment =
-            await (db.select(db.faaliyetPersonelAtamaTable)..where(
-                  (tbl) =>
-                      tbl.faaliyetId.equals(actId) & tbl.personelId.equals(pId),
-                ))
-                .getSingleOrNull();
-
-        if (currentAssignment != null) {
-          await (db.update(
-            db.faaliyetPersonelAtamaTable,
-          )..where((tbl) => tbl.id.equals(currentAssignment.id))).write(
-            FaaliyetPersonelAtamaTableCompanion(
-              gorevVeyaIzin: Value(gorev),
-              durum: Value(evaluatedStatus),
-              aciklama: Value(item['aciklama'] as String?),
-            ),
-          );
-        } else {
-          await db
-              .into(db.faaliyetPersonelAtamaTable)
-              .insert(
-                FaaliyetPersonelAtamaTableCompanion.insert(
-                  faaliyetId: actId,
-                  personelId: pId,
-                  gorevVeyaIzin: gorev,
-                  durum: evaluatedStatus,
-                  aciklama: Value(item['aciklama'] as String?),
-                ),
-              );
-        }
-      }
-
-      return actId;
+        requiresApproval: !actor.isAdmin,
+      );
     });
   }
 
-  /// Approve all pending assignments for a specific activity
-  Future<int> approveAllAssignmentsForActivity(int activityId) async {
-    return (db.update(db.faaliyetPersonelAtamaTable)..where(
-          (tbl) =>
-              tbl.faaliyetId.equals(activityId) &
-              tbl.durum.equals(AssignmentStatus.beklemede),
-        ))
-        .write(
-          const FaaliyetPersonelAtamaTableCompanion(
-            durum: Value(AssignmentStatus.onaylandi),
+  Future<List<ExistingActivityMatch>> findMatchingActivities({
+    required String faaliyetAdi,
+    required String tarih,
+    required List<PersonnelAssignmentInput> personnelAssignments,
+  }) async {
+    final activities = await (db.select(
+      db.gunlukFaaliyetTable,
+    )..where((table) => table.tarih.equals(tarih)))
+        .get();
+    final normalizedName = _normalizeActivityName(faaliyetAdi);
+    final matches = activities
+        .where(
+          (activity) =>
+              _normalizeActivityName(activity.faaliyetAdi) == normalizedName,
+        )
+        .toList();
+    if (matches.isEmpty) return const [];
+    final assignments = await (db.select(
+      db.faaliyetPersonelAtamaTable,
+    )..where((table) => table.faaliyetId.isIn(matches.map((item) => item.id))))
+        .get();
+    final assignmentsByActivity =
+        <int, List<FaaliyetPersonelAtamaTableData>>{};
+    for (final assignment in assignments) {
+      assignmentsByActivity
+          .putIfAbsent(assignment.faaliyetId, () => [])
+          .add(assignment);
+    }
+    final result = <ExistingActivityMatch>[];
+    for (final activity in matches) {
+      final existing =
+          assignmentsByActivity[activity.id] ??
+              const <FaaliyetPersonelAtamaTableData>[];
+      final byPersonnel = {
+        for (final assignment in existing) assignment.personelId: assignment,
+      };
+      var newCount = 0;
+      var unchangedCount = 0;
+      var differentCount = 0;
+      final seen = <int>{};
+      for (final item in personnelAssignments) {
+        final personId = item.personnelId;
+        if (!seen.add(personId)) continue;
+        final current = byPersonnel[personId];
+        if (current == null) {
+          newCount++;
+        } else if (current.gorevVeyaIzin.trim() ==
+                item.duty.trim() &&
+            _normalizeNote(current.aciklama) ==
+                _normalizeNote(item.note)) {
+          unchangedCount++;
+        } else {
+          differentCount++;
+        }
+      }
+      result.add(
+        ExistingActivityMatch(
+          activity: activity,
+          newPersonnelCount: newCount,
+          unchangedPersonnelCount: unchangedCount,
+          differentPersonnelCount: differentCount,
+        ),
+      );
+    }
+    result.sort((a, b) => b.activity.id.compareTo(a.activity.id));
+    return result;
+  }
+
+  Future<ActivityMergeResult> mergeAssignmentsIntoActivity({
+    required int activityId,
+    required List<PersonnelAssignmentInput> personnelAssignments,
+    required bool updateDifferentAssignments,
+    required UserSessionState actor,
+  }) {
+    return db.transaction(() async {
+      await _requirePersonnelScope(actor, personnelAssignments);
+      final activity = await (db.select(
+        db.gunlukFaaliyetTable,
+      )..where((table) => table.id.equals(activityId)))
+          .getSingle();
+      final existingRows = await (db.select(
+        db.faaliyetPersonelAtamaTable,
+      )..where((table) => table.faaliyetId.equals(activityId)))
+          .get();
+      final byPersonnel = {
+        for (final assignment in existingRows)
+          assignment.personelId: assignment,
+      };
+      final reports = await _loadDomainReports();
+      final allAssignments = await _loadExistingAssignments();
+      var addedCount = 0;
+      var updatedCount = 0;
+      var skippedCount = 0;
+      final seen = <int>{};
+
+      for (final item in personnelAssignments) {
+        final personId = item.personnelId;
+        final duty = item.duty.trim();
+        if (duty.isEmpty || !seen.add(personId)) continue;
+        final note = _normalizeNote(item.note);
+        final current = byPersonnel[personId];
+        if (current != null) {
+          final isSame = current.gorevVeyaIzin.trim() == duty &&
+              _normalizeNote(current.aciklama) == note;
+          if (isSame || !updateDifferentAssignments) {
+            skippedCount++;
+            continue;
+          }
+          var status = ConflictChecker.evaluateAssignmentStatus(
+            personelId: personId,
+            targetDate: activity.tarih,
+            targetDuty: duty,
+            reports: reports,
+            existingAssignments: allAssignments,
+            excludeAssignmentId: current.id,
+          );
+          if (!actor.isAdmin) status = AssignmentStatus.beklemede;
+          await (db.update(
+            db.faaliyetPersonelAtamaTable,
+          )..where((table) => table.id.equals(current.id)))
+              .write(
+            FaaliyetPersonelAtamaTableCompanion(
+              gorevVeyaIzin: Value(duty),
+              aciklama: Value(note.isEmpty ? null : note),
+              durum: Value(status),
+            ),
+          );
+          updatedCount++;
+          continue;
+        }
+
+        var status = ConflictChecker.evaluateAssignmentStatus(
+          personelId: personId,
+          targetDate: activity.tarih,
+          targetDuty: duty,
+          reports: reports,
+          existingAssignments: allAssignments,
+        );
+        if (!actor.isAdmin) status = AssignmentStatus.beklemede;
+        final assignmentId =
+            await db.into(db.faaliyetPersonelAtamaTable).insert(
+                  FaaliyetPersonelAtamaTableCompanion.insert(
+                    faaliyetId: activityId,
+                    personelId: personId,
+                    gorevVeyaIzin: duty,
+                    durum: status,
+                    aciklama: Value(note.isEmpty ? null : note),
+                  ),
+                );
+        allAssignments.add(
+          ExistingDutyAssignment(
+            id: assignmentId,
+            faaliyetId: activityId,
+            personelId: personId,
+            tarih: activity.tarih,
+            gorevVeyaIzin: duty,
+            durum: status,
           ),
         );
+        addedCount++;
+      }
+      return ActivityMergeResult(
+        activityId: activityId,
+        addedCount: addedCount,
+        updatedCount: updatedCount,
+        skippedCount: skippedCount,
+      );
+    });
+  }
+
+  Future<List<int>> createActivitiesWithAssignments(
+    List<ActivityCreateRequest> requests, {
+    required UserSessionState actor,
+  }) {
+    return db.transaction(() async {
+      if (!actor.isAdmin) {
+        throw const AuthorizationException(
+          'Toplu faaliyet içe aktarma yalnızca yöneticilere açıktır.',
+        );
+      }
+      final ids = <int>[];
+      for (final request in requests) {
+        ids.add(
+          await _createActivityWithinTransaction(
+            request,
+            requiresApproval: false,
+          ),
+        );
+      }
+      return ids;
+    });
+  }
+
+  Future<List<PersonnelReport>> _loadDomainReports() async {
+    final reports = await db.select(db.raporKayitTable).get();
+    return reports
+        .map(
+          (report) => PersonnelReport(
+            id: report.id,
+            personelId: report.personelId,
+            raporBaslangic: report.raporBaslangic,
+            raporBitis: report.raporBitis,
+            aciklama: report.aciklama,
+          ),
+        )
+        .toList();
+  }
+
+  Future<List<ExistingDutyAssignment>> _loadExistingAssignments() async {
+    final rows = await db.select(db.faaliyetPersonelAtamaTable).join([
+      innerJoin(
+        db.gunlukFaaliyetTable,
+        db.gunlukFaaliyetTable.id.equalsExp(
+          db.faaliyetPersonelAtamaTable.faaliyetId,
+        ),
+      ),
+    ]).get();
+    return rows.map((row) {
+      final assignment = row.readTable(db.faaliyetPersonelAtamaTable);
+      final activity = row.readTable(db.gunlukFaaliyetTable);
+      return ExistingDutyAssignment(
+        id: assignment.id,
+        faaliyetId: assignment.faaliyetId,
+        personelId: assignment.personelId,
+        tarih: activity.tarih,
+        gorevVeyaIzin: assignment.gorevVeyaIzin,
+        durum: assignment.durum,
+      );
+    }).toList();
+  }
+
+  Future<int> _createActivityWithinTransaction(
+    ActivityCreateRequest request,
+    {
+    required bool requiresApproval,
+  }
+  ) async {
+    final activityId = await db.into(db.gunlukFaaliyetTable).insert(
+          GunlukFaaliyetTableCompanion.insert(
+            faaliyetAdi: request.faaliyetAdi,
+            tarih: request.tarih,
+            olusturanKullanici: request.olusturanKullanici,
+            olusturmaTarihi: DateTime.now().toIso8601String(),
+          ),
+        );
+    final reports = await _loadDomainReports();
+    final existingAssignments = await _loadExistingAssignments();
+    final seenPersonnel = <int>{};
+
+    for (final item in request.personnelAssignments) {
+      final personnelId = item.personnelId;
+      final duty = item.duty.trim();
+      if (duty.isEmpty || !seenPersonnel.add(personnelId)) {
+        continue;
+      }
+
+      var status = ConflictChecker.evaluateAssignmentStatus(
+        personelId: personnelId,
+        targetDate: request.tarih,
+        targetDuty: duty,
+        reports: reports,
+        existingAssignments: existingAssignments,
+      );
+      if (requiresApproval) status = AssignmentStatus.beklemede;
+
+      final assignmentId = await db.into(db.faaliyetPersonelAtamaTable).insert(
+            FaaliyetPersonelAtamaTableCompanion.insert(
+              faaliyetId: activityId,
+              personelId: personnelId,
+              gorevVeyaIzin: duty,
+              durum: status,
+              aciklama: Value(item.note),
+            ),
+          );
+      existingAssignments.add(
+        ExistingDutyAssignment(
+          id: assignmentId,
+          faaliyetId: activityId,
+          personelId: personnelId,
+          tarih: request.tarih,
+          gorevVeyaIzin: duty,
+          durum: status,
+        ),
+      );
+    }
+    return activityId;
+  }
+
+  Future<ApprovalResult> approveAssignment(
+    int assignmentId, {
+    required UserSessionState actor,
+  }) {
+    _requireAdmin(actor);
+    return db
+        .transaction(() => _approveAssignmentWithinTransaction(assignmentId));
+  }
+
+  Future<ApprovalResult> approveAllAssignmentsForActivity(
+    int activityId, {
+    required UserSessionState actor,
+  }) {
+    _requireAdmin(actor);
+    return db.transaction(() async {
+      final pending = await (db.select(
+        db.faaliyetPersonelAtamaTable,
+      )..where(
+              (tbl) =>
+                  tbl.faaliyetId.equals(activityId) &
+                  tbl.durum.equals(AssignmentStatus.beklemede),
+            ))
+          .get();
+      if (pending.isEmpty) {
+        return const ApprovalResult(approvedCount: 0, blockedCount: 0);
+      }
+      final activity = await (db.select(
+        db.gunlukFaaliyetTable,
+      )..where((table) => table.id.equals(activityId)))
+          .getSingle();
+      final existingAssignments = await _loadExistingAssignments();
+      final reports = await _loadDomainReports();
+      var approvedCount = 0;
+      var blockedCount = 0;
+      final descriptions = <String>[];
+      for (final assignment in pending) {
+        final result = await _approveAssignmentWithContext(
+          assignment: assignment,
+          activity: activity,
+          existingAssignments: existingAssignments,
+          reports: reports,
+        );
+        approvedCount += result.approvedCount;
+        blockedCount += result.blockedCount;
+        descriptions.addAll(result.conflictDescriptions);
+      }
+      return ApprovalResult(
+        approvedCount: approvedCount,
+        blockedCount: blockedCount,
+        conflictDescriptions: descriptions,
+      );
+    });
+  }
+
+  Future<ApprovalResult> _approveAssignmentWithinTransaction(
+    int assignmentId,
+  ) async {
+    final assignment = await (db.select(
+      db.faaliyetPersonelAtamaTable,
+    )..where((tbl) => tbl.id.equals(assignmentId)))
+        .getSingleOrNull();
+    if (assignment == null) {
+      return const ApprovalResult(approvedCount: 0, blockedCount: 1);
+    }
+    final activity = await (db.select(
+      db.gunlukFaaliyetTable,
+    )..where((tbl) => tbl.id.equals(assignment.faaliyetId)))
+        .getSingle();
+    final existingAssignments = await _loadExistingAssignments();
+    final reports = await _loadDomainReports();
+    return _approveAssignmentWithContext(
+      assignment: assignment,
+      activity: activity,
+      existingAssignments: existingAssignments,
+      reports: reports,
+    );
+  }
+
+  Future<ApprovalResult> _approveAssignmentWithContext({
+    required FaaliyetPersonelAtamaTableData assignment,
+    required GunlukFaaliyetTableData activity,
+    required List<ExistingDutyAssignment> existingAssignments,
+    required List<PersonnelReport> reports,
+  }) async {
+    final status = ConflictChecker.evaluateAssignmentStatus(
+      personelId: assignment.personelId,
+      targetDate: activity.tarih,
+      targetDuty: assignment.gorevVeyaIzin,
+      reports: reports,
+      existingAssignments: existingAssignments,
+      excludeAssignmentId: assignment.id,
+    );
+    if (status != AssignmentStatus.onaylandi) {
+      final descriptions = await _findConflictDescriptions(
+        assignment: assignment,
+        activity: activity,
+      );
+      return ApprovalResult(
+        approvedCount: 0,
+        blockedCount: 1,
+        conflictDescriptions: descriptions,
+      );
+    }
+    await (db.update(
+      db.faaliyetPersonelAtamaTable,
+    )..where((tbl) => tbl.id.equals(assignment.id)))
+        .write(
+      const FaaliyetPersonelAtamaTableCompanion(
+        durum: Value(AssignmentStatus.onaylandi),
+      ),
+    );
+    final index = existingAssignments.indexWhere(
+      (existing) => existing.id == assignment.id,
+    );
+    if (index >= 0) {
+      final existing = existingAssignments[index];
+      existingAssignments[index] = ExistingDutyAssignment(
+        id: existing.id,
+        faaliyetId: existing.faaliyetId,
+        personelId: existing.personelId,
+        tarih: existing.tarih,
+        gorevVeyaIzin: existing.gorevVeyaIzin,
+        durum: AssignmentStatus.onaylandi,
+      );
+    }
+    return const ApprovalResult(approvedCount: 1, blockedCount: 0);
+  }
+
+  Future<List<String>> _findConflictDescriptions({
+    required FaaliyetPersonelAtamaTableData assignment,
+    required GunlukFaaliyetTableData activity,
+  }) async {
+    if (!DutyOrLeaveType.isOperationalDuty(assignment.gorevVeyaIzin)) {
+      return const [];
+    }
+    final rows = await db.select(db.faaliyetPersonelAtamaTable).join([
+      innerJoin(
+        db.gunlukFaaliyetTable,
+        db.gunlukFaaliyetTable.id.equalsExp(
+          db.faaliyetPersonelAtamaTable.faaliyetId,
+        ),
+      ),
+    ]).get();
+    final descriptions = <String>[];
+    for (final row in rows) {
+      final other = row.readTable(db.faaliyetPersonelAtamaTable);
+      final otherActivity = row.readTable(db.gunlukFaaliyetTable);
+      if (other.id == assignment.id ||
+          other.personelId != assignment.personelId ||
+          other.durum != AssignmentStatus.onaylandi ||
+          !DutyOrLeaveType.isOperationalDuty(other.gorevVeyaIzin)) {
+        continue;
+      }
+      if (DutyCoverage.overlaps(
+        firstDate: otherActivity.tarih,
+        firstDuty: other.gorevVeyaIzin,
+        secondDate: activity.tarih,
+        secondDuty: assignment.gorevVeyaIzin,
+      )) {
+        descriptions.add(
+          '${otherActivity.tarih} • ${otherActivity.faaliyetAdi} • '
+          '${other.gorevVeyaIzin}',
+        );
+      }
+    }
+    return descriptions;
   }
 
   /// Reject all pending assignments for a specific activity
-  Future<int> rejectAllAssignmentsForActivity(int activityId) async {
-    return (db.update(db.faaliyetPersonelAtamaTable)..where(
-          (tbl) =>
-              tbl.faaliyetId.equals(activityId) &
-              tbl.durum.equals(AssignmentStatus.beklemede),
-        ))
+  Future<int> rejectAllAssignmentsForActivity(
+    int activityId, {
+    required UserSessionState actor,
+  }) async {
+    _requireAdmin(actor);
+    return (db.update(db.faaliyetPersonelAtamaTable)
+          ..where(
+            (tbl) =>
+                tbl.faaliyetId.equals(activityId) &
+                tbl.durum.equals(AssignmentStatus.beklemede),
+          ))
         .write(
-          const FaaliyetPersonelAtamaTableCompanion(
-            durum: Value(AssignmentStatus.reddedildi),
-          ),
-        );
+      const FaaliyetPersonelAtamaTableCompanion(
+        durum: Value(AssignmentStatus.reddedildi),
+      ),
+    );
   }
 
   /// Approve or Reject a pending assignment
-  Future<int> updateAssignmentStatus(int assignmentId, String newStatus) {
+  Future<int> updateAssignmentStatus(
+    int assignmentId,
+    String newStatus, {
+    required UserSessionState actor,
+  }) async {
+    _requireAdmin(actor);
+    if (newStatus == AssignmentStatus.onaylandi) {
+      final result = await approveAssignment(assignmentId, actor: actor);
+      return result.approvedCount;
+    }
     return (db.update(db.faaliyetPersonelAtamaTable)
           ..where((tbl) => tbl.id.equals(assignmentId)))
         .write(FaaliyetPersonelAtamaTableCompanion(durum: Value(newStatus)));
   }
 
   /// Delete a single personnel assignment from an activity
-  Future<int> deleteAssignment(int assignmentId) {
+  Future<int> deleteAssignment(
+    int assignmentId, {
+    required UserSessionState actor,
+  }) {
+    _requireAdmin(actor);
     return (db.delete(
       db.faaliyetPersonelAtamaTable,
-    )..where((tbl) => tbl.id.equals(assignmentId))).go();
+    )..where((tbl) => tbl.id.equals(assignmentId)))
+        .go();
   }
 
   /// Update assignment duty type, note, and status
@@ -322,10 +917,13 @@ class ActivityRepository {
     required String gorevVeyaIzin,
     required String newStatus,
     String? aciklama,
+    required UserSessionState actor,
   }) {
+    _requireAdmin(actor);
     return (db.update(
       db.faaliyetPersonelAtamaTable,
-    )..where((tbl) => tbl.id.equals(assignmentId))).write(
+    )..where((tbl) => tbl.id.equals(assignmentId)))
+        .write(
       FaaliyetPersonelAtamaTableCompanion(
         gorevVeyaIzin: Value(gorevVeyaIzin),
         aciklama: Value(aciklama),
@@ -341,68 +939,50 @@ class ActivityRepository {
     required String gorevVeyaIzin,
     required String tarih,
     String? aciklama,
-    bool isCommander = false,
+    required UserSessionState actor,
   }) async {
-    // Fetch active reports
-    final rawReports = await db.select(db.raporKayitTable).get();
-    final domainReports = rawReports
-        .map(
-          (r) => PersonnelReport(
-            id: r.id,
-            personelId: r.personelId,
-            raporBaslangic: r.raporBaslangic,
-            raporBitis: r.raporBitis,
-            aciklama: r.aciklama,
+    return db.transaction(() async {
+      await _requirePersonnelScope(
+        actor,
+        [
+          PersonnelAssignmentInput(
+            personnelId: personelId,
+            duty: gorevVeyaIzin,
+            note: aciklama,
           ),
-        )
-        .toList();
-
-    // Fetch existing approved assignments on this date
-    final query = db.select(db.faaliyetPersonelAtamaTable).join([
-      innerJoin(
-        db.gunlukFaaliyetTable,
-        db.gunlukFaaliyetTable.id.equalsExp(
-          db.faaliyetPersonelAtamaTable.faaliyetId,
-        ),
-      ),
-    ])..where(db.gunlukFaaliyetTable.tarih.equals(tarih));
-
-    final existingRows = await query.get();
-    final existingAssignments = existingRows.map((row) {
-      final atama = row.readTable(db.faaliyetPersonelAtamaTable);
-      final faal = row.readTable(db.gunlukFaaliyetTable);
-      return ExistingDutyAssignment(
-        id: atama.id,
-        faaliyetId: atama.faaliyetId,
-        personelId: atama.personelId,
-        tarih: faal.tarih,
-        gorevVeyaIzin: atama.gorevVeyaIzin,
-        durum: atama.durum,
+        ],
       );
-    }).toList();
+      final duplicate = await (db.select(
+        db.faaliyetPersonelAtamaTable,
+      )..where(
+              (tbl) =>
+                  tbl.faaliyetId.equals(faaliyetId) &
+                  tbl.personelId.equals(personelId),
+            ))
+          .getSingleOrNull();
+      if (duplicate != null) return duplicate.id;
 
-    var evaluatedStatus = ConflictChecker.evaluateAssignmentStatus(
-      personelId: personelId,
-      targetDate: tarih,
-      reports: domainReports,
-      existingAssignments: existingAssignments,
-    );
+      final reports = await _loadDomainReports();
+      final existingAssignments = await _loadExistingAssignments();
+      var status = ConflictChecker.evaluateAssignmentStatus(
+        personelId: personelId,
+        targetDate: tarih,
+        targetDuty: gorevVeyaIzin,
+        reports: reports,
+        existingAssignments: existingAssignments,
+      );
+      if (!actor.isAdmin) status = AssignmentStatus.beklemede;
 
-    if (isCommander) {
-      evaluatedStatus = AssignmentStatus.beklemede;
-    }
-
-    return db
-        .into(db.faaliyetPersonelAtamaTable)
-        .insert(
-          FaaliyetPersonelAtamaTableCompanion.insert(
-            faaliyetId: faaliyetId,
-            personelId: personelId,
-            gorevVeyaIzin: gorevVeyaIzin,
-            durum: evaluatedStatus,
-            aciklama: Value(aciklama),
-          ),
-        );
+      return db.into(db.faaliyetPersonelAtamaTable).insert(
+            FaaliyetPersonelAtamaTableCompanion.insert(
+              faaliyetId: faaliyetId,
+              personelId: personelId,
+              gorevVeyaIzin: gorevVeyaIzin,
+              durum: status,
+              aciklama: Value(aciklama),
+            ),
+          );
+    });
   }
 
   /// Save medical report
@@ -412,9 +992,7 @@ class ActivityRepository {
     required String raporBitis,
     String? aciklama,
   }) {
-    return db
-        .into(db.raporKayitTable)
-        .insert(
+    return db.into(db.raporKayitTable).insert(
           RaporKayitTableCompanion.insert(
             personelId: personelId,
             raporBaslangic: raporBaslangic,

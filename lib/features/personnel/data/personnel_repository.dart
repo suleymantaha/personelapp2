@@ -235,8 +235,8 @@ class PersonnelRepository {
   Future<int> updateUserPassword({
     required String kullaniciAdi,
     required String newPassword,
-  }) {
-    final hashedPassword = PasswordHasher.hashPassword(newPassword);
+  }) async {
+    final hashedPassword = await PasswordHasher.hashPassword(newPassword);
     return (db.update(db.kullaniciTable)
           ..where((tbl) => tbl.kullaniciAdi.equals(kullaniciAdi)))
         .write(KullaniciTableCompanion(sifre: Value(hashedPassword)));

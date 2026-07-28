@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/utils/military_structure_helper.dart';
 
 class ArchiveFilterBar extends StatelessWidget {
   const ArchiveFilterBar({
@@ -22,6 +23,10 @@ class ArchiveFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sortedSquads = MilitaryStructureHelper.sortSquads(
+      squads,
+      (squad) => squad.timAdi,
+    );
     return Column(
       children: [
         Padding(
@@ -34,13 +39,17 @@ class ArchiveFilterBar extends StatelessWidget {
                     hintText: 'Faaliyet veya Tarih Ara...',
                     prefixIcon: const Icon(Icons.search, size: 20),
                     contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10,
+                      vertical: 12,
                     ),
                     filled: true,
-                    fillColor: context.colorScheme.surfaceContainerHighest,
+                    fillColor: context.colorScheme.surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                      borderSide: BorderSide(color: context.cardBorderColor),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: context.cardBorderColor),
                     ),
                   ),
                   onChanged: onSearchChanged,
@@ -71,7 +80,7 @@ class ArchiveFilterBar extends StatelessWidget {
                   onSelected: (_) => onSquadSelected(null),
                 ),
                 const SizedBox(width: 8),
-                ...squads.map((sq) {
+                ...sortedSquads.map((sq) {
                   final isSel = selectedSquadId == sq.id;
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),

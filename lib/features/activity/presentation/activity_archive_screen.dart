@@ -26,6 +26,61 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
   String _searchQuery = '';
   DateTime? _selectedDateFilter;
   int? _selectedSquadFilter; // null = Tümü
+  final Set<int> _selectedActivityIds = {};
+  bool _selectionMode = false;
+
+  void _startSelection(int activityId) {
+    setState(() {
+      _selectionMode = true;
+      _selectedActivityIds.add(activityId);
+    });
+  }
+
+  void _toggleSelection(int activityId) {
+    setState(() {
+      if (!_selectedActivityIds.add(activityId)) {
+        _selectedActivityIds.remove(activityId);
+      }
+      if (_selectedActivityIds.isEmpty) _selectionMode = false;
+    });
+  }
+
+  void _clearSelection() {
+    setState(() {
+      _selectionMode = false;
+      _selectedActivityIds.clear();
+    });
+  }
+
+  void _pruneSelectionAfterBuild(Iterable<int> visibleActivityIds) {
+    if (!_selectionMode) return;
+    final visible = visibleActivityIds.toSet();
+    if (_selectedActivityIds.every(visible.contains)) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        _selectedActivityIds.retainAll(visible);
+        if (_selectedActivityIds.isEmpty) _selectionMode = false;
+      });
+    });
+  }
+
+  String _buildExportDateTitle(
+    List<GunlukFaaliyetTableData> activities,
+  ) {
+    final dates = activities.map((activity) => activity.tarih).toSet().toList()
+      ..sort();
+    if (dates.isEmpty) {
+      return DateFormat('dd.MM.yyyy').format(DateTime.now());
+    }
+    String display(String isoDate) {
+      final parsed = DateTime.tryParse(isoDate);
+      return parsed == null ? isoDate : DateFormat('dd.MM.yyyy').format(parsed);
+    }
+
+    if (dates.length == 1) return display(dates.single);
+    return '${display(dates.first)} - ${display(dates.last)}';
+  }
 
   Future<List<MilitaryRosterRow>> _buildRosterRowsForMasterExport(
     List<GunlukFaaliyetTableData> activities,
@@ -38,14 +93,21 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
 
     final allAssignments = <FaaliyetPersonelAtamaTableData>[];
     final seenAssignmentIds = <int>{};
+    final allowedPersonnelIds = pMap.keys.toSet();
 
     for (final act in activities) {
       final assignments = await (db.select(
         db.faaliyetPersonelAtamaTable,
-      )..where((tbl) => tbl.faaliyetId.equals(act.id))).get();
+      )..where((tbl) => tbl.faaliyetId.equals(act.id)))
+          .get();
 
       for (final a in assignments) {
-        if (!seenAssignmentIds.contains(a.id) &&
+        final person = pMap[a.personelId];
+        final isAllowedTeam = _selectedSquadFilter == null ||
+            person?.timId == _selectedSquadFilter;
+        if (allowedPersonnelIds.contains(a.personelId) &&
+            isAllowedTeam &&
+            !seenAssignmentIds.contains(a.id) &&
             DutyOrLeaveType.isOperationalDuty(a.gorevVeyaIzin)) {
           seenAssignmentIds.add(a.id);
           allAssignments.add(a);
@@ -78,15 +140,19 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       final timNameB = (pB?.timId != null && squadMap.containsKey(pB!.timId))
           ? squadMap[pB.timId]!
           : '';
-      final rawBirlikA = (pA?.birlik != null && pA!.birlik.isNotEmpty)
-          ? pA.birlik
-          : timNameA;
-      final rawBirlikB = (pB?.birlik != null && pB!.birlik.isNotEmpty)
-          ? pB.birlik
-          : timNameB;
+      final birlikA = MilitaryStructureHelper.getRosterBirlikName(
+        timName: timNameA,
+        birlik: pA?.birlik ?? '',
+        duty: a.gorevVeyaIzin,
+      );
+      final birlikB = MilitaryStructureHelper.getRosterBirlikName(
+        timName: timNameB,
+        birlik: pB?.birlik ?? '',
+        duty: b.gorevVeyaIzin,
+      );
 
-      final wA = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikA);
-      final wB = MilitaryStructureHelper.getSquadOrderWeight(rawBirlikB);
+      final wA = MilitaryStructureHelper.getSquadOrderWeight(birlikA);
+      final wB = MilitaryStructureHelper.getSquadOrderWeight(birlikB);
       if (wA != wB) return wA.compareTo(wB);
 
       final rA = getRankWeight(pA?.rutbe ?? '');
@@ -105,11 +171,9 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       final timName = (p?.timId != null && squadMap.containsKey(p!.timId))
           ? squadMap[p.timId]!
           : '';
-      final rawBirlik = (p?.birlik != null && p!.birlik.isNotEmpty)
-          ? p.birlik
-          : timName;
-      final birligi = MilitaryStructureHelper.getOfficialBirlikName(
-        rawBirlik,
+      final birligi = MilitaryStructureHelper.getRosterBirlikName(
+        timName: timName,
+        birlik: p?.birlik ?? '',
         duty: atama.gorevVeyaIzin,
       );
       final digerNote = MilitaryStructureHelper.getDigerCellText(
@@ -117,14 +181,9 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         aciklama: atama.aciklama,
       );
 
-      var groupCode = 'DIGER';
-      final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
-      if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
-        groupCode = 'HAZIR_KITA';
-      } else if (dutyUpper.contains('GÜLÜŞKÜR') ||
-          dutyUpper.contains('GULUSKUR')) {
-        groupCode = 'GULUSKUR';
-      }
+      final groupCode = MilitaryStructureHelper.getRosterGroupCode(
+        atama.gorevVeyaIzin,
+      );
 
       rosterRows.add(
         MilitaryRosterRow(
@@ -150,21 +209,26 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       );
       return;
     }
-    final rows = await _buildRosterRowsForMasterExport(
-      activities,
-      personnelList,
-    );
-    final dateTitle = _selectedDateFilter != null
-        ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
-        : DateFormat('dd.MM.yyyy').format(DateTime.now());
-    final mainActivityName = activities.length == 1
-        ? activities.first.faaliyetAdi
-        : 'GÜNLÜK TÜM FAALİYETLER';
+    final dateTitle = _buildExportDateTitle(activities);
+    final sections = <MasterActivityData>[];
+    for (final activity in activities) {
+      sections.add(
+        MasterActivityData(
+          faaliyetAdi: activity.faaliyetAdi,
+          tarih: activity.tarih,
+          olusturanKullanici: activity.olusturanKullanici,
+          rows: await _buildRosterRowsForMasterExport(
+            [activity],
+            personnelList,
+          ),
+        ),
+      );
+    }
 
-    await MilitaryRosterExporter.shareExcelRoster(
-      faaliyetAdi: mainActivityName,
-      tarih: dateTitle,
-      rows: rows,
+    await MilitaryRosterExporter.shareMasterDailyExcel(
+      title: 'GÜNLÜK TÜM FAALİYETLER',
+      dateStr: dateTitle,
+      activities: sections,
     );
   }
 
@@ -182,9 +246,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       activities,
       personnelList,
     );
-    final dateTitle = _selectedDateFilter != null
-        ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
-        : DateFormat('dd.MM.yyyy').format(DateTime.now());
+    final dateTitle = _buildExportDateTitle(activities);
     final mainActivityName = activities.length == 1
         ? activities.first.faaliyetAdi
         : 'GÜNLÜK TÜM FAALİYETLER';
@@ -213,9 +275,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       activities,
       personnelList,
     );
-    final dateTitle = _selectedDateFilter != null
-        ? DateFormat('dd.MM.yyyy').format(_selectedDateFilter!)
-        : DateFormat('dd.MM.yyyy').format(DateTime.now());
+    final dateTitle = _buildExportDateTitle(activities);
     final mainActivityName = activities.length == 1
         ? activities.first.faaliyetAdi
         : 'GÜNLÜK TÜM FAALİYETLER';
@@ -225,6 +285,77 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       tarih: dateTitle,
       rows: rows,
     );
+  }
+
+  Future<void> _printSelectedPdf(
+    List<GunlukFaaliyetTableData> activities,
+    List<PersonelTableData> personnelList,
+  ) async {
+    final rows = await _buildRosterRowsForMasterExport(
+      activities,
+      personnelList,
+    );
+    if (!mounted || rows.isEmpty) return;
+    await PdfRosterExporter.showStylePickerAndPrintPdf(
+      context,
+      faaliyetAdi: activities.length == 1
+          ? activities.first.faaliyetAdi
+          : 'GÜNLÜK TÜM FAALİYETLER',
+      tarih: _buildExportDateTitle(activities),
+      rows: rows,
+    );
+  }
+
+  Future<void> _showSelectedExportOptions(
+    List<GunlukFaaliyetTableData> activities,
+    List<PersonelTableData> personnelList,
+  ) async {
+    final selected = activities
+        .where((activity) => _selectedActivityIds.contains(activity.id))
+        .toList();
+    if (selected.isEmpty) return;
+
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf_outlined),
+              title: const Text('PDF Paylaş'),
+              onTap: () => Navigator.pop(sheetContext, 'pdf'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.print_outlined),
+              title: const Text('Doğrudan Yazdır'),
+              onTap: () => Navigator.pop(sheetContext, 'print'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.table_chart_outlined),
+              title: const Text('Excel Olarak Aktar'),
+              onTap: () => Navigator.pop(sheetContext, 'excel'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.share_outlined),
+              title: const Text('Metin Listesi Paylaş'),
+              onTap: () => Navigator.pop(sheetContext, 'text'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || action == null) return;
+    if (action == 'pdf') {
+      await _exportMasterPdf(selected, personnelList);
+    } else if (action == 'print') {
+      await _printSelectedPdf(selected, personnelList);
+    } else if (action == 'excel') {
+      await _exportMasterExcel(selected, personnelList);
+    } else if (action == 'text') {
+      await _exportMasterText(selected, personnelList);
+    }
   }
 
   @override
@@ -249,37 +380,69 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         : null;
 
     return Scaffold(
-      backgroundColor: context.colorScheme.surface,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
+        centerTitle: false,
+        titleSpacing: _selectionMode ? null : 0,
+        leading: _selectionMode
+            ? IconButton(
+                key: const Key('activity-selection-close'),
+                icon: const Icon(Icons.close),
+                tooltip: 'Seçimi Kapat',
+                onPressed: _clearSelection,
+              )
+            : null,
         title: Text(
-          isAdmin ? 'Faaliyet Arşivi' : 'Tim Faaliyet Arşivi',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          _selectionMode
+              ? '${_selectedActivityIds.length} faaliyet seçildi'
+              : (isAdmin ? 'Faaliyet Arşivi' : 'Tim Faaliyet Arşivi'),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
         ),
         actions: [
-          if (_selectedDateFilter != null)
+          if (_selectionMode)
+            IconButton(
+              key: const Key('activity-selection-export'),
+              icon: const Icon(Icons.ios_share),
+              tooltip: 'Seçilenleri Dışa Aktar',
+              onPressed: () => _showSelectedExportOptions(
+                activitiesAsync.value ?? [],
+                personnelList,
+              ),
+            )
+          else if (!context.isMobile)
+            TextButton.icon(
+              key: const Key('activity-selection-start'),
+              onPressed: () => setState(() => _selectionMode = true),
+              icon: const Icon(Icons.checklist),
+              label: const Text('Seç'),
+            ),
+          if (!_selectionMode && _selectedDateFilter != null)
             IconButton(
               icon: const Icon(Icons.clear),
               tooltip: 'Tarih Filtresini Temizle',
               onPressed: () => setState(() => _selectedDateFilter = null),
             ),
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            tooltip: 'Tarihe Göre Süz',
-            onPressed: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: _selectedDateFilter ?? DateTime.now(),
-                firstDate: DateTime(2020),
-                lastDate: DateTime(2030),
-              );
-              if (picked != null) {
+          if (!_selectionMode)
+            IconButton(
+              icon: const Icon(Icons.calendar_today),
+              tooltip: 'Tarihe Göre Süz',
+              onPressed: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedDateFilter ?? DateTime.now(),
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2030),
+                );
+                if (!mounted || picked == null) return;
                 setState(() => _selectedDateFilter = picked);
-              }
-            },
-          ),
+              },
+            ),
         ],
       ),
       body: ResponsiveCenter(
+        maxWidth: 860,
         padding: EdgeInsets.zero,
         child: Column(
           children: [
@@ -307,8 +470,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                 );
               },
               loading: () => const SizedBox.shrink(),
-                            error: (err, _) => const SizedBox.shrink(),
-                          ),
+              error: (err, _) => const SizedBox.shrink(),
+            ),
 
             // Filters Bar: Search & Squad Tabs for Admin
             ArchiveFilterBar(
@@ -317,10 +480,18 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
               selectedSquadId: _selectedSquadFilter,
               searchQuery: _searchQuery,
               onSearchChanged: (val) {
-                setState(() => _searchQuery = val.trim().toLowerCase());
+                setState(() {
+                  _searchQuery = val.trim().toLowerCase();
+                  _selectedActivityIds.clear();
+                  _selectionMode = false;
+                });
               },
               onSquadSelected: (squadId) {
-                setState(() => _selectedSquadFilter = squadId);
+                setState(() {
+                  _selectedSquadFilter = squadId;
+                  _selectedActivityIds.clear();
+                  _selectionMode = false;
+                });
               },
             ),
 
@@ -332,15 +503,18 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                 data: (activities) {
                   final filtered = activities.where((act) {
                     final nameMatch = act.faaliyetAdi.toLowerCase().contains(
-                      _searchQuery,
-                    );
+                          _searchQuery,
+                        );
                     final dateMatch = act.tarih.toLowerCase().contains(
-                      _searchQuery,
-                    );
+                          _searchQuery,
+                        );
                     final dateFilterMatch =
                         dateFilterStr == null || act.tarih == dateFilterStr;
                     return (nameMatch || dateMatch) && dateFilterMatch;
                   }).toList();
+                  _pruneSelectionAfterBuild(
+                    filtered.map((activity) => activity.id),
+                  );
 
                   if (filtered.isEmpty) {
                     return Center(
@@ -354,19 +528,50 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                     );
                   }
 
-                  return ListView.builder(
+                  filtered.sort((a, b) {
+                    final dateOrder = b.tarih.compareTo(a.tarih);
+                    return dateOrder != 0 ? dateOrder : b.id.compareTo(a.id);
+                  });
+                  final grouped = <String, List<GunlukFaaliyetTableData>>{};
+                  for (final activity in filtered) {
+                    grouped.putIfAbsent(activity.tarih, () => []).add(activity);
+                  }
+
+                  return ListView(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 4,
                     ),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final act = filtered[index];
-                      return ActivityCard(
-                        activity: act,
-                        selectedSquadId: _selectedSquadFilter,
-                      );
-                    },
+                    children: [
+                      for (final day in grouped.entries) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 14, 4, 8),
+                          child: Text(
+                            '${DateFormat('dd MMMM').format(DateTime.parse(day.key))}'
+                            ' • ${day.value.length} faaliyet',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        for (final act in day.value)
+                          ActivityCard(
+                            activity: act,
+                            selectedSquadId: _selectedSquadFilter,
+                            selectionMode: _selectionMode,
+                            isSelected: _selectedActivityIds.contains(act.id),
+                            onLongPress: () => _startSelection(act.id),
+                            onSelectionToggle: () => _toggleSelection(act.id),
+                            onDateChanged: (newDate) {
+                              final parsed = DateTime.tryParse(newDate);
+                              if (parsed != null) {
+                                setState(() => _selectedDateFilter = parsed);
+                              }
+                            },
+                          ),
+                      ],
+                    ],
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),

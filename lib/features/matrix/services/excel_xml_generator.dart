@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ExcelXmlGenerator {
@@ -18,7 +19,7 @@ class ExcelXmlGenerator {
   /// Generates a native binary .xlsx document for the monthly activity matrix
   static List<int> generateExcelBytes({
     required List<PersonelTableData> personnel,
-    required Map<int, Map<int, String>> matrixData,
+    required Map<int, Map<int, MatrixDayCell>> matrixData,
     required int year,
     required int month,
   }) {
@@ -119,38 +120,33 @@ class ExcelXmlGenerator {
       final pStatusMap = matrixData[p.id] ?? {};
 
       for (var day = 1; day <= daysInMonth; day++) {
-        final status = pStatusMap[day] ?? '-';
+        final status = pStatusMap[day]?.displayCode ?? '-';
 
         var cellText = '-';
         var styleToUse = cellNormalStyle;
 
-        if (status.contains('GÖREV') ||
-            status.contains('NÖBET') ||
-            status.contains('HAZIR KITA') ||
-            status.contains('GÜLÜŞKÜR') ||
-            status.contains('HEYBET')) {
+        if (status == 'X') {
           cellText = 'X';
           styleToUse = cellGorevliStyle;
-        } else if (status.contains('İZİN')) {
+        } else if (status == 'İZ') {
           cellText = 'İZ';
           styleToUse = cellIzinliStyle;
-        } else if (status.contains('İSTİRAHAT')) {
+        } else if (status == 'İST') {
           cellText = 'İST';
           styleToUse = cellIzinliStyle;
-        } else if (status.contains('RAPOR')) {
+        } else if (status == 'RAP') {
           cellText = 'RAP';
           styleToUse = cellRaporluStyle;
-        } else if (status.contains('SEVK')) {
+        } else if (status == 'SVK') {
           cellText = 'SVK';
           styleToUse = cellRaporluStyle;
-        } else if (status.contains('beklemede')) {
+        } else if (status == 'B') {
           cellText = 'B';
           styleToUse = cellBekleyenStyle;
         }
 
-        sheet
-            .cell(CellIndex.indexByColumnRow(
-                columnIndex: day + 2, rowIndex: rowIndex))
+        sheet.cell(CellIndex.indexByColumnRow(
+            columnIndex: day + 2, rowIndex: rowIndex))
           ..value = TextCellValue(cellText)
           ..cellStyle = styleToUse;
       }
@@ -191,7 +187,7 @@ class ExcelXmlGenerator {
   /// Exports binary .xlsx content to a temporary file and launches native share intent
   static Future<void> exportAndShareXml({
     required List<PersonelTableData> personnel,
-    required Map<int, Map<int, String>> matrixData,
+    required Map<int, Map<int, MatrixDayCell>> matrixData,
     required int year,
     required int month,
   }) async {

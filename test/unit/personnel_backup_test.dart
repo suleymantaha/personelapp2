@@ -60,4 +60,32 @@ void main() {
     expect(restoredSquads.length, equals(1));
     expect(restoredSquads.first.timAdi, equals('1/B Timi'));
   });
+
+  test('unsupported backup version is rejected without writes', () async {
+    await expectLater(
+      service.importBackupJson(
+        '{"version":2,"squads":[],"personnel":[]}',
+      ),
+      throwsA(isA<FormatException>()),
+    );
+    expect(await db.select(db.personelTable).get(), isEmpty);
+    expect(await db.select(db.timTable).get(), isEmpty);
+  });
+
+  test('malformed collection type is rejected', () async {
+    await expectLater(
+      service.importBackupJson(
+        '{"version":1,"squads":{},"personnel":[]}',
+      ),
+      throwsA(isA<FormatException>()),
+    );
+  });
+
+  test('oversized backup is rejected before parsing', () async {
+    final oversized = 'x' * (PersonnelBackupService.maxBackupBytes + 1);
+    await expectLater(
+      service.importBackupJson(oversized),
+      throwsA(isA<FormatException>()),
+    );
+  });
 }

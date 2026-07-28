@@ -8,7 +8,7 @@ class AppColors {
   static const Color accentKhaki = Color(0xFF8B9467);
 
   // Genel Arka Plan ve Yüzey Renkleri
-  static const Color backgroundLight = Color(0xFFF8F9F5);
+  static const Color backgroundLight = Color(0xFFF7F8F5);
   static const Color backgroundSecondaryLight = Color(0xFFF4F6F0);
   static const Color backgroundDark = Color(0xFF0F1410);
   static const Color cardDark = Color(0xFF1F291D);
@@ -240,10 +240,26 @@ class AppTheme {
         iconTheme: IconThemeData(color: Colors.white),
       ),
       cardTheme: CardThemeData(
-        elevation: 2,
+        elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: AppColors.lightOlive),
+          borderRadius: BorderRadius.circular(16),
         ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.lightOlive.withValues(alpha: 0.72),
+        selectedColor: AppColors.militaryOlive,
+        checkmarkColor: Colors.white,
+        labelStyle: const TextStyle(
+          color: AppColors.darkOlive,
+          fontWeight: FontWeight.w600,
+        ),
+        secondaryLabelStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+        side: BorderSide.none,
+        shape: const StadiumBorder(),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -251,7 +267,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
@@ -261,10 +277,10 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
             color: AppColors.militaryOlive,
             width: 2,

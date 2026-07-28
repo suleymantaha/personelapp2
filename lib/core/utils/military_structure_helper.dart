@@ -72,10 +72,25 @@ class MilitaryStructureHelper {
       return 'GÜLÜŞKÜR';
     }
     if (isNobetciHeyetiDuty(duty)) {
-      final text = aciklama ?? duty;
-      return text.trim();
+      final explanation = aciklama?.trim() ?? '';
+      return explanation.isNotEmpty ? explanation : duty.trim();
     }
     return ''; // Operasyonel görevler için DİĞER kısmına yazı yazılmayacak (BOŞ)
+  }
+
+  /// Returns the stable grouping code shared by PDF and Excel exporters.
+  static String getRosterGroupCode(String duty) {
+    final upper = duty.toUpperCase().trim();
+    if (upper.contains('HAZIR KITA') || upper.contains('HAZIRKITA')) {
+      return 'HAZIR_KITA';
+    }
+    if (upper.contains('GÜLÜŞKÜR') || upper.contains('GULUSKUR')) {
+      return 'GULUSKUR';
+    }
+    if (isNobetciHeyetiDuty(duty)) {
+      return 'NOBET_HEYETI';
+    }
+    return 'DIGER';
   }
 
   /// Returns duty group order weight: 1 for operational/guard duties, 2 for Hazır Kıta, 3 for Gülüşkür
@@ -89,7 +104,9 @@ class MilitaryStructureHelper {
   /// Checks if a duty string represents a guard duty (Nöbetçiler / Nöbetçi Heyeti)
   static bool isNobetciHeyetiDuty(String duty) {
     final d = duty.toUpperCase().trim();
-    if (d.contains('HAZIR KITA') || d.contains('GÜLÜŞKÜR') || d.contains('GULUSKUR')) {
+    if (d.contains('HAZIR KITA') ||
+        d.contains('GÜLÜŞKÜR') ||
+        d.contains('GULUSKUR')) {
       return false;
     }
     return d.contains('NÖB') ||
@@ -174,6 +191,28 @@ class MilitaryStructureHelper {
     return timOrBirlik;
   }
 
+  /// Returns the unit label used in PDF/Excel rosters.
+  ///
+  /// Regular duties are listed by team. Hazır Kıta and Gülüşkür are the only
+  /// duty groups that are listed by their parent company.
+  static String getRosterBirlikName({
+    required String timName,
+    required String birlik,
+    required String duty,
+  }) {
+    final dutyUpper = duty.toUpperCase().trim();
+    final isCompanyDuty = dutyUpper.contains('HAZIR KITA') ||
+        dutyUpper.contains('HAZIRKITA') ||
+        dutyUpper.contains('GÜLÜŞKÜR') ||
+        dutyUpper.contains('GULUSKUR');
+    final teamOrFallback = timName.trim().isNotEmpty ? timName : birlik;
+
+    if (isCompanyDuty) {
+      return getBolukName(teamOrFallback);
+    }
+    return getOfficialBirlikName(teamOrFallback);
+  }
+
   /// Official Jandarma Squad/Tim ordering
   static const List<String> officialSquadOrder = [
     'Nöbet Heyeti',
@@ -203,7 +242,8 @@ class MilitaryStructureHelper {
 
     // Fallback search
     for (var i = 0; i < officialSquadOrder.length; i++) {
-      if (officialSquadOrder[i].toLowerCase() == squadName.trim().toLowerCase()) {
+      if (officialSquadOrder[i].toLowerCase() ==
+          squadName.trim().toLowerCase()) {
         return i;
       }
     }
@@ -215,11 +255,12 @@ class MilitaryStructureHelper {
     List<T> squads,
     String Function(T) nameExtractor,
   ) {
-    return List<T>.from(squads)..sort((a, b) {
-      final wA = getSquadOrderWeight(nameExtractor(a));
-      final wB = getSquadOrderWeight(nameExtractor(b));
-      if (wA != wB) return wA.compareTo(wB);
-      return nameExtractor(a).compareTo(nameExtractor(b));
-    });
+    return List<T>.from(squads)
+      ..sort((a, b) {
+        final wA = getSquadOrderWeight(nameExtractor(a));
+        final wB = getSquadOrderWeight(nameExtractor(b));
+        if (wA != wB) return wA.compareTo(wB);
+        return nameExtractor(a).compareTo(nameExtractor(b));
+      });
   }
 }

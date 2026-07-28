@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:personelapp2/core/utils/official_roster_title.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:printing/printing.dart';
@@ -21,45 +22,9 @@ enum PdfRosterStyle {
 }
 
 class PdfRosterExporter {
-  /// Formats official title text: e.g. JÖH TB.K.LIĞI HEYBET TEPE PUSU FAALİYETİ İSİM LİSTESİ-24.07.2026
+  /// Formats the single official title used by PDF and Excel exports.
   static String formatOfficialTitle(String faaliyetAdi, String rawDate) {
-    var formattedDate = rawDate.trim();
-    if (formattedDate.contains('-')) {
-      final parts = formattedDate.split('T')[0].split('-');
-      if (parts.length == 3) {
-        formattedDate = '${parts[2]}.${parts[1]}.${parts[0]}';
-      }
-    }
-
-    var nameStr = faaliyetAdi.trim().toUpperCase();
-
-    // Remove any parenthesized date like (2026-07-24) or (24.07.2026)
-    nameStr = nameStr
-        .replaceAll(RegExp(r'\s*\(\d{2,4}[\.\-]\d{2}[\.\-]\d{2,4}\)\s*'), ' ')
-        .trim();
-
-    // Remove 'İSİM LİSTESİ' if present
-    nameStr = nameStr
-        .replaceAll('İSİM LİSTESİ', '')
-        .replaceAll('ISIM LISTESI', '')
-        .trim();
-
-    // Default to HEYBET TEPE PUSU FAALİYETİ if contains GÜNLÜK FAALİYET or empty
-    if (nameStr.isEmpty ||
-        nameStr.contains('GÜNLÜK FAALİYET') ||
-        nameStr.contains('GUNLUK FAALIYET')) {
-      nameStr = 'HEYBET TEPE PUSU FAALİYETİ';
-    }
-
-    // Ensure starts with JÖH TB.K.LIĞI
-    if (!nameStr.startsWith('JÖH')) {
-      nameStr = 'JÖH TB.K.LIĞI $nameStr';
-    }
-
-    // Clean multiple spaces
-    nameStr = nameStr.replaceAll(RegExp(r'\s+'), ' ').trim();
-
-    return '$nameStr-$formattedDate';
+    return OfficialRosterTitle.format(faaliyetAdi, rawDate);
   }
 
   static pw.Widget builderSummaryBox(List<MilitaryRosterRow> rows) {
@@ -81,88 +46,88 @@ class PdfRosterExporter {
     final counts = RankSummaryCounts.calculate(ranks);
 
     return pw.Container(
-          padding: const pw.EdgeInsets.all(8),
-          decoration: pw.BoxDecoration(
-            border: pw.Border.all(width: 0.8),
-            color: PdfColors.grey100,
+      padding: const pw.EdgeInsets.all(8),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(width: 0.8),
+        color: PdfColors.grey100,
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            'GÖREV VE MEVCUT ÖZETİ',
+            style: pw.TextStyle(
+              fontSize: 10,
+              fontWeight: pw.FontWeight.bold,
+            ),
           ),
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                'GÖREV VE MEVCUT ÖZETİ',
-                style: pw.TextStyle(
-                  fontSize: 10,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-              pw.SizedBox(height: 4),
-              pw.Text(
-                'Hazır Kıta: $hazirKitaCount Personel  •  '
-                'Gülüşkür: $guluskurCount Personel  •  '
-                'Diğer: $digerCount Personel',
-                style: pw.TextStyle(
-                  fontSize: 9,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-              pw.SizedBox(height: 3),
-              pw.Text(
-                'Subay: ${counts.subayCount}  •  '
-                'Astsubay: ${counts.astsubayCount}  •  '
-                'Uzman Jandarma: ${counts.uzmanJandarmaCount}  •  '
-                'Uzman Erbaş: ${counts.uzmanErbasCount}  •  '
-                'Er/Söz.Er: ${counts.erCount}  •  '
-                'TOPLAM MEVCUT: ${counts.totalCount} Personel',
-                style: pw.TextStyle(fontSize: 9),
-              ),
-            ],
+          pw.SizedBox(height: 4),
+          pw.Text(
+            'Hazır Kıta: $hazirKitaCount Personel  •  '
+            'Gülüşkür: $guluskurCount Personel  •  '
+            'Diğer: $digerCount Personel',
+            style: pw.TextStyle(
+              fontSize: 9,
+              fontWeight: pw.FontWeight.bold,
+            ),
           ),
-        );
+          pw.SizedBox(height: 3),
+          pw.Text(
+            'Subay: ${counts.subayCount}  •  '
+            'Astsubay: ${counts.astsubayCount}  •  '
+            'Uzman Jandarma: ${counts.uzmanJandarmaCount}  •  '
+            'Uzman Erbaş: ${counts.uzmanErbasCount}  •  '
+            'Er/Söz.Er: ${counts.erCount}  •  '
+            'TOPLAM MEVCUT: ${counts.totalCount} Personel',
+            style: pw.TextStyle(fontSize: 9),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Builds PDF Table based on selected PdfRosterStyle
-    static pw.Widget buildPdfTable(
-      List<MilitaryRosterRow> rows, {
-      PdfRosterStyle style = PdfRosterStyle.verticalBlock,
-    }) {
-      final headerStyle = pw.TextStyle(
-        fontSize: 9.5,
-        fontWeight: pw.FontWeight.bold,
-      );
+  static pw.Widget buildPdfTable(
+    List<MilitaryRosterRow> rows, {
+    PdfRosterStyle style = PdfRosterStyle.verticalBlock,
+  }) {
+    final headerStyle = pw.TextStyle(
+      fontSize: 9.5,
+      fontWeight: pw.FontWeight.bold,
+    );
 
-      final tableRows = <pw.TableRow>[
-        pw.TableRow(
-          decoration: const pw.BoxDecoration(color: PdfColors.grey300),
-          children: [
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
-              alignment: pw.Alignment.center,
-              child: pw.Text('S. NU', style: headerStyle),
-            ),
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
-              alignment: pw.Alignment.center,
-              child: pw.Text('BİRLİĞİ', style: headerStyle),
-            ),
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
-              alignment: pw.Alignment.center,
-              child: pw.Text('RÜTBE', style: headerStyle),
-            ),
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 4),
-              alignment: pw.Alignment.center,
-              child: pw.Text('ADI SOYADI', style: headerStyle),
-            ),
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
-              alignment: pw.Alignment.center,
-              child: pw.Text('DİĞER', style: headerStyle),
-            ),
-          ],
-        ),
-      ];
+    final tableRows = <pw.TableRow>[
+      pw.TableRow(
+        decoration: const pw.BoxDecoration(color: PdfColors.grey300),
+        children: [
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
+            alignment: pw.Alignment.center,
+            child: pw.Text('S. NU', style: headerStyle),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
+            alignment: pw.Alignment.center,
+            child: pw.Text('BİRLİĞİ', style: headerStyle),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
+            alignment: pw.Alignment.center,
+            child: pw.Text('RÜTBE', style: headerStyle),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 4),
+            alignment: pw.Alignment.center,
+            child: pw.Text('ADI SOYADI', style: headerStyle),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
+            alignment: pw.Alignment.center,
+            child: pw.Text('DİĞER', style: headerStyle),
+          ),
+        ],
+      ),
+    ];
 
     final n = rows.length;
     if (n == 0) {
@@ -234,34 +199,37 @@ class PdfRosterExporter {
             )
           : const pw.Border();
 
-      // Determine text placement inside Birlik cell
-            // Only show Birlik name for HAZIR_KITA and GULUSKUR groups
-            var birlikCellText = '';
-            final bMid = bSt + (bEn - bSt) ~/ 2;
-            final isSpecialGroup = r.groupCode == 'HAZIR_KITA' || r.groupCode == 'GULUSKUR';
-            if (i == bMid && isSpecialGroup) {
-              birlikCellText = r.birligi;
-            }
-            const birlikAlignment = pw.Alignment.center;
+      // Show every unit/team label once, centered in its merged block.
+      // Hazır Kıta and Gülüşkür rows already carry the parent company name;
+      // regular rows carry their team/unit name.
+      var birlikCellText = '';
+      final bMid = bSt + (bEn - bSt) ~/ 2;
+      if (i == bMid) {
+        birlikCellText = r.birligi;
+      }
+      const birlikAlignment = pw.Alignment.center;
 
       // Special duty merge boundaries
-            final spSt = specialStart[i];
-            final spEn = specialEnd[i];
-            final isSpSpecialGroup = spSt != -1;
-            final isSpLast = isSpSpecialGroup && i == spEn;
+      final spSt = specialStart[i];
+      final spEn = specialEnd[i];
+      final isSpSpecialGroup = spSt != -1;
+      final isSpLast = isSpSpecialGroup && i == spEn;
 
       final specialBorder = isSpSpecialGroup
-                ? (isSpLast
-                      ? const pw.Border(
-                          bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-                        )
-                      : const pw.Border())
-                : cellBorder;
+          ? (isSpLast
+              ? const pw.Border(
+                  bottom: pw.BorderSide(
+                    width: 0.6,
+                    color: PdfColors.grey800,
+                  ),
+                )
+              : const pw.Border())
+          : cellBorder;
 
-            var specialCellText = '';
-            var specialAlignment = pw.Alignment.center;
+      var specialCellText = '';
+      var specialAlignment = pw.Alignment.center;
 
-            if (isSpSpecialGroup) {
+      if (isSpSpecialGroup) {
         final spMid = spSt + (spEn - spSt) ~/ 2;
         if (i == spMid) {
           specialCellText = r.diger;
@@ -304,15 +272,15 @@ class PdfRosterExporter {
                 horizontal: 3,
               ),
               alignment: birlikAlignment,
-                            child: pw.Text(
-                              birlikCellText,
-                              textAlign: pw.TextAlign.center,
-                              style: pw.TextStyle(
-                                fontSize: 8.5,
-                                fontWeight: pw.FontWeight.bold,
-                              ),
-                            ),
-                          ),
+              child: pw.Text(
+                birlikCellText,
+                textAlign: pw.TextAlign.center,
+                style: pw.TextStyle(
+                  fontSize: 8.5,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
             // RÜTBE
             pw.Container(
               height: 18,
@@ -336,21 +304,21 @@ class PdfRosterExporter {
                 horizontal: 4,
               ),
               alignment: pw.Alignment.centerLeft,
-                            child: pw.Text(
-                              r.adSoyad,
-                              maxLines: 1,
-                              style: pw.TextStyle(
-                                fontSize: 8.5,
-                                fontWeight: pw.FontWeight.bold,
-                              ),
-                            ),
-                          ),
+              child: pw.Text(
+                r.adSoyad,
+                maxLines: 1,
+                style: pw.TextStyle(
+                  fontSize: 8.5,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
             // DİĞER (Dynamically Merged Cell for Special Duties)
             pw.Container(
               height: 18,
               decoration: pw.BoxDecoration(
                 border: specialBorder,
-                color: isSpecialGroup ? PdfColors.white : null,
+                color: isSpSpecialGroup ? PdfColors.white : null,
               ),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
@@ -360,12 +328,12 @@ class PdfRosterExporter {
               child: pw.Text(
                 specialCellText,
                 maxLines: 1,
-                textAlign: (isSpecialGroup || r.diger.trim().isEmpty)
+                textAlign: (isSpSpecialGroup || r.diger.trim().isEmpty)
                     ? pw.TextAlign.center
                     : pw.TextAlign.left,
                 style: pw.TextStyle(
                   fontSize: 8.5,
-                  fontWeight: isSpecialGroup
+                  fontWeight: isSpSpecialGroup
                       ? pw.FontWeight.bold
                       : pw.FontWeight.normal,
                 ),
@@ -438,49 +406,49 @@ class PdfRosterExporter {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(24),
         header: (context) {
-                  return pw.Column(
-                    children: [
-                      pw.Container(
-                        padding: const pw.EdgeInsets.all(8),
-                        decoration: pw.BoxDecoration(
-                          color: PdfColors.grey200,
-                          border: pw.Border.all(),
-                        ),
-                        child: pw.Center(
-                          child: pw.Text(
-                            titleText,
-                            style: pw.TextStyle(
-                              fontSize: 12,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      pw.SizedBox(height: 10),
-                    ],
-                  );
-                },
+          return pw.Column(
+            children: [
+              pw.Container(
+                padding: const pw.EdgeInsets.all(8),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey200,
+                  border: pw.Border.all(),
+                ),
+                child: pw.Center(
+                  child: pw.Text(
+                    titleText,
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 10),
+            ],
+          );
+        },
         footer: (context) {
-                  return pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(
-                        'Düzenleyen: Jandarma Görev Takip',
-                        style: pw.TextStyle(
-                          fontSize: 8,
-                          color: PdfColors.grey700,
-                        ),
-                      ),
-                      pw.Text(
-                        'Sayfa ${context.pageNumber} / ${context.pagesCount} • Tarih: $tarih',
-                        style: pw.TextStyle(
-                          fontSize: 8,
-                          color: PdfColors.grey700,
-                        ),
-                      ),
-                    ],
-                  );
-                },
+          return pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text(
+                'Düzenleyen: Jandarma Görev Takip',
+                style: pw.TextStyle(
+                  fontSize: 8,
+                  color: PdfColors.grey700,
+                ),
+              ),
+              pw.Text(
+                'Sayfa ${context.pageNumber} / ${context.pagesCount} • Tarih: $tarih',
+                style: pw.TextStyle(
+                  fontSize: 8,
+                  color: PdfColors.grey700,
+                ),
+              ),
+            ],
+          );
+        },
         build: (context) {
           return [
             buildPdfTable(rows, style: style),
@@ -510,7 +478,10 @@ class PdfRosterExporter {
 
     final dir = await getTemporaryDirectory();
     final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-    final file = File('${dir.path}/${sanitizedTitle}_Listesi_$tarih.pdf');
+    final exportId = DateTime.now().millisecondsSinceEpoch;
+    final file = File(
+      '${dir.path}/${sanitizedTitle}_Listesi_${tarih}_$exportId.pdf',
+    );
     await file.writeAsBytes(await pdf.save());
 
     await SharePlus.instance.share(
@@ -521,12 +492,32 @@ class PdfRosterExporter {
     );
   }
 
+  static Future<void> printPdfRoster({
+    required String faaliyetAdi,
+    required String tarih,
+    required List<MilitaryRosterRow> rows,
+    PdfRosterStyle style = PdfRosterStyle.verticalBlock,
+  }) async {
+    final pdf = await generateRosterPdf(
+      faaliyetAdi: faaliyetAdi,
+      tarih: tarih,
+      rows: rows,
+      style: style,
+    );
+    final bytes = await pdf.save();
+    await Printing.layoutPdf(
+      name: '$faaliyetAdi - $tarih',
+      onLayout: (_) async => bytes,
+    );
+  }
+
   /// Displays a modal bottom sheet to select from 3 PDF styles and exports/shares the PDF
   static Future<void> showStylePickerAndSharePdf(
     BuildContext context, {
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
+    bool printDirectly = false,
   }) async {
     final selectedStyle = await showModalBottomSheet<PdfRosterStyle>(
       context: context,
@@ -618,12 +609,36 @@ class PdfRosterExporter {
     );
 
     if (selectedStyle != null && context.mounted) {
-      await sharePdfRoster(
-        faaliyetAdi: faaliyetAdi,
-        tarih: tarih,
-        rows: rows,
-        style: selectedStyle,
-      );
+      if (printDirectly) {
+        await printPdfRoster(
+          faaliyetAdi: faaliyetAdi,
+          tarih: tarih,
+          rows: rows,
+          style: selectedStyle,
+        );
+      } else {
+        await sharePdfRoster(
+          faaliyetAdi: faaliyetAdi,
+          tarih: tarih,
+          rows: rows,
+          style: selectedStyle,
+        );
+      }
     }
+  }
+
+  static Future<void> showStylePickerAndPrintPdf(
+    BuildContext context, {
+    required String faaliyetAdi,
+    required String tarih,
+    required List<MilitaryRosterRow> rows,
+  }) {
+    return showStylePickerAndSharePdf(
+      context,
+      faaliyetAdi: faaliyetAdi,
+      tarih: tarih,
+      rows: rows,
+      printDirectly: true,
+    );
   }
 }

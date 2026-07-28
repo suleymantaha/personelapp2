@@ -339,38 +339,88 @@ class _PersonnelManagementScreenState
   Future<void> _showAddSquadDialog() async {
     final squadNameController = TextEditingController();
     final commanderUserController = TextEditingController();
+    var showNameError = false;
 
     try {
       await showDialog<void>(
         context: context,
-        builder: (ctx) {
-          return AlertDialog(
-            title: const Text('Yeni Tim & Komutan Yetkilendirme'),
+        builder: (ctx) => StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            icon: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: context.accentSubtleBg,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                Icons.add_moderator_rounded,
+                color: context.accentOrOlive,
+              ),
+            ),
+            title: const Text(
+              'Yeni Tim Oluştur',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    'Tim bilgilerini girin. Komutan hesabını şimdi veya daha '
+                    'sonra atayabilirsiniz.',
+                    style: context.textStyleSecondary,
+                  ),
+                  const SizedBox(height: 20),
                   TextField(
+                    key: const Key('new-squad-name-field'),
                     controller: squadNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Tim Adı (Örn: 1. Asayiş Timi)',
-                      prefixIcon: Icon(Icons.shield),
+                    onChanged: (_) {
+                      if (showNameError) {
+                        setDialogState(() => showNameError = false);
+                      }
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Tim adı',
+                      hintText: 'Örn. 1-B Timi',
+                      prefixIcon: const Icon(Icons.shield_outlined),
+                      errorText: showNameError ? 'Tim adı zorunludur' : null,
+                      filled: true,
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: commanderUserController,
                     decoration: const InputDecoration(
-                      labelText: 'Tim Komutanı Kullanıcı Adı (Opsiyonel)',
-                      prefixIcon: Icon(Icons.person),
+                      labelText: 'Komutan kullanıcı adı',
+                      hintText: 'İsteğe bağlı',
+                      prefixIcon: Icon(Icons.person_outline_rounded),
+                      filled: true,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '💡 Atanan Tim Komutanı ilk girişinde kendi parolasını belirleyecektir.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: context.textSecondary,
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: context.accentSubtleBg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          color: context.accentOrOlive,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Text(
+                            'Komutan ilk girişinde kendi parolasını belirler.',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -381,12 +431,17 @@ class _PersonnelManagementScreenState
                 onPressed: () => Navigator.of(ctx).pop(),
                 child: const Text('İPTAL'),
               ),
-              ElevatedButton(
+              FilledButton.icon(
+                key: const Key('create-squad-button'),
+                icon: const Icon(Icons.check_rounded),
                 onPressed: () async {
                   final name = squadNameController.text.trim();
                   final cUser = commanderUserController.text.trim();
 
-                  if (name.isEmpty) return;
+                  if (name.isEmpty) {
+                    setDialogState(() => showNameError = true);
+                    return;
+                  }
 
                   final repo = ref.read(personnelRepositoryProvider);
                   final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -406,11 +461,11 @@ class _PersonnelManagementScreenState
 
                   if (ctx.mounted) Navigator.of(ctx).pop();
                 },
-                child: const Text('OLUŞTUR'),
+                label: const Text('Tim Oluştur'),
               ),
             ],
-          );
-        },
+          ),
+        ),
       );
     } finally {
       squadNameController.dispose();
@@ -428,12 +483,19 @@ class _PersonnelManagementScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Personel & Tim Yönetimi'),
+        centerTitle: false,
+        titleSpacing: 0,
+        title: const Text(
+          'Personel ve Timler',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+        ),
         actions: [
-          if (isAdmin) ...[
+          if (isAdmin && !context.isMobile)
             IconButton(
               icon: const Icon(Icons.import_export_rounded),
-              tooltip: 'Verileri Yedekle & Geri Yükle',
+              tooltip: 'Yedekle ve geri yükle',
               onPressed: () async {
                 final db = ref.read(databaseProvider);
                 final res = await showDialog<bool>(
@@ -447,28 +509,77 @@ class _PersonnelManagementScreenState
                 }
               },
             ),
+          if (isAdmin && !context.isMobile)
             IconButton(
               icon: const Icon(Icons.manage_accounts),
-              tooltip: 'Komutan Yetki Devri',
+              tooltip: 'Komutan yetkileri',
               onPressed: _showCommanderDelegationDialog,
             ),
+          if (isAdmin && !context.isMobile)
             IconButton(
-              icon: const Icon(Icons.group_add),
-              tooltip: 'Tim Ekle',
+              icon: const Icon(Icons.group_add_rounded),
+              tooltip: 'Yeni tim',
               onPressed: _showAddSquadDialog,
             ),
-          ],
+          if (isAdmin && context.isMobile)
+            PopupMenuButton<String>(
+              tooltip: 'Yönetim işlemleri',
+              icon: const Icon(Icons.more_vert_rounded),
+              onSelected: (action) async {
+                if (action == 'squad') {
+                  await _showAddSquadDialog();
+                } else if (action == 'commander') {
+                  await _showCommanderDelegationDialog();
+                } else if (action == 'backup') {
+                  final db = ref.read(databaseProvider);
+                  final res = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => BackupRestoreDialog(database: db),
+                  );
+                  if (res == true) {
+                    ref
+                      ..invalidate(allPersonnelProvider)
+                      ..invalidate(allSquadsProvider);
+                  }
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: 'squad',
+                  child: ListTile(
+                    leading: Icon(Icons.group_add_rounded),
+                    title: Text('Yeni tim'),
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'commander',
+                  child: ListTile(
+                    leading: Icon(Icons.manage_accounts),
+                    title: Text('Komutan yetkileri'),
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'backup',
+                  child: ListTile(
+                    leading: Icon(Icons.import_export_rounded),
+                    title: Text('Yedekle ve geri yükle'),
+                  ),
+                ),
+              ],
+            ),
+          const SizedBox(width: 4),
         ],
       ),
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
               onPressed: _showAddPersonnelDialog,
-              icon: const Icon(Icons.person_add),
-              label: const Text('PERSONEL EKLE'),
+              icon: const Icon(Icons.person_add_alt_1_rounded),
+              label: const Text('Personel Ekle'),
             )
           : null,
       body: SingleChildScrollView(
         child: ResponsiveCenter(
+          maxWidth: 860,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -515,11 +626,12 @@ class _PersonnelManagementScreenState
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    TextButton.icon(
-                      icon: const Icon(Icons.group_add, size: 18),
-                      label: const Text('Yeni Tim'),
-                      onPressed: _showAddSquadDialog,
-                    ),
+                    if (!context.isMobile)
+                      TextButton.icon(
+                        icon: const Icon(Icons.group_add, size: 18),
+                        label: const Text('Yeni Tim'),
+                        onPressed: _showAddSquadDialog,
+                      ),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -785,36 +897,45 @@ class _PersonnelManagementScreenState
                             : (squadMap[timId] ?? 'Bilinmeyen Tim');
 
                         return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
+                          elevation: 0,
+                          margin: const EdgeInsets.only(bottom: 10),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                             side: BorderSide(color: context.cardBorderColor),
                           ),
                           child: ExpansionTile(
-                            initiallyExpanded: true,
+                            tilePadding:
+                                const EdgeInsets.fromLTRB(16, 4, 12, 4),
                             title: Text(
                               squadName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 16,
                                 color: context.accentOrOlive,
                               ),
                             ),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: context.accentOrOlive,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '${members.length} Personel',
-                                style: TextStyle(
-                                  color: context.onAccentOrOlive,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                            trailing: SizedBox(
+                              width: 100,
+                              height: 28,
+                              child: Container(
+                                alignment: Alignment.center,
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 6),
+                                decoration: BoxDecoration(
+                                  color: context.accentOrOlive,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  '${members.length} personel',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: context.onAccentOrOlive,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),

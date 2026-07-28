@@ -4,6 +4,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
 
 /// Dialog to add a single personnel to an existing activity
 class AddPersonnelToActivityDialog extends ConsumerStatefulWidget {
@@ -66,9 +67,11 @@ class _AddPersonnelToActivityDialogState
   @override
   Widget build(BuildContext context) {
     final allPersonnelAsync = ref.watch(allPersonnelProvider);
+    final allSquadsAsync = ref.watch(allSquadsProvider);
     final session = ref.watch(userSessionProvider);
 
     final allPersonnel = allPersonnelAsync.value ?? [];
+    final allSquads = allSquadsAsync.value ?? [];
     // Filter out personnel already in this activity
     var candidatePersonnel = allPersonnel
         .where((p) => !widget.existingPersonnelIds.contains(p.id))
@@ -79,17 +82,16 @@ class _AddPersonnelToActivityDialogState
       if (session?.timId == null) {
         candidatePersonnel = <PersonelTableData>[];
       } else {
-        candidatePersonnel = candidatePersonnel
-            .where((p) => p.timId == session!.timId)
-            .toList();
+        candidatePersonnel =
+            candidatePersonnel.where((p) => p.timId == session!.timId).toList();
       }
     }
 
     final filteredDuties = widget.isAdmin
         ? availableDuties
         : availableDuties
-              .where((duty) => !_adminOnlyDuties.contains(duty))
-              .toList(growable: false);
+            .where((duty) => !_adminOnlyDuties.contains(duty))
+            .toList(growable: false);
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -120,22 +122,68 @@ class _AddPersonnelToActivityDialogState
                 ),
               )
             else ...[
-              DropdownButtonFormField<int>(
-                initialValue: _selectedPersonnelId,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  labelText: 'Personel Seçiniz',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () async {
+                  final selected = await showPersonnelPicker(
+                    context: context,
+                    personnel: candidatePersonnel,
+                    squads: widget.isAdmin
+                        ? allSquads
+                        : allSquads
+                            .where((squad) => squad.id == session?.timId)
+                            .toList(),
+                    selectedPersonnelId: _selectedPersonnelId,
+                    preferredTimId: widget.isAdmin ? null : session?.timId,
+                  );
+                  if (selected != null && mounted) {
+                    setState(() => _selectedPersonnelId = selected.id);
+                  }
+                },
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: 'Personel Seçiniz',
+                    suffixIcon: const Icon(Icons.search_rounded),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Builder(
+                    builder: (context) {
+                      final selected = candidatePersonnel
+                          .where((p) => p.id == _selectedPersonnelId)
+                          .firstOrNull;
+                      if (selected == null) {
+                        return Text(
+                          'İsim veya tim ile personel bulun',
+                          style: TextStyle(color: context.textSecondary),
+                        );
+                      }
+                      final squadName = allSquads
+                          .where((s) => s.id == selected.timId)
+                          .map((s) => s.timAdi)
+                          .firstOrNull;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${selected.rutbe} ${selected.adSoyad}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '${selected.rutbe} • ${squadName ?? 'Tim Dışı'}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: context.textSecondary,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
-                items: candidatePersonnel.map((p) {
-                  return DropdownMenuItem<int>(
-                    value: p.id,
-                    child: Text('${p.rutbe} ${p.adSoyad} (${p.birlik})'),
-                  );
-                }).toList(),
-                onChanged: (val) => setState(() => _selectedPersonnelId = val),
               ),
               const SizedBox(height: 14),
               DropdownButtonFormField<String>(
@@ -186,6 +234,8 @@ class _AddPersonnelToActivityDialogState
                 ? null
                 : () async {
                     final repo = ref.read(activityRepositoryProvider);
+                    final actor = ref.read(userSessionProvider);
+                    if (actor == null) return;
                     final note = _noteController.text.trim();
                     await repo.addSingleAssignment(
                       faaliyetId: widget.activity.id,
@@ -193,7 +243,7 @@ class _AddPersonnelToActivityDialogState
                       gorevVeyaIzin: _selectedDuty,
                       aciklama: note.isNotEmpty ? note : null,
                       tarih: widget.activity.tarih,
-                      isCommander: !widget.isAdmin,
+                      actor: actor,
                     );
                     if (context.mounted) {
                       Navigator.of(context).pop(true);

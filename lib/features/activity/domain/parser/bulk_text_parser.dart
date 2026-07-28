@@ -1,6 +1,12 @@
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
+typedef ParsedActivityTitle = ({
+  String timName,
+  String activityType,
+  String date,
+});
+
 class BulkTextParser {
   static const List<String> knownRanks = [
     'J.Asb.Kd.Üçvş.',
@@ -56,12 +62,13 @@ class BulkTextParser {
   }
 
   /// Parses title line to extract tim name, raw activity type, and date
-  static Map<String, dynamic> parseTitle(String titleLine, String defaultDate) {
-    final result = <String, dynamic>{
-      'timName': 'Genel',
-      'activityType': 'Görev', // raw activity type for display
-      'date': defaultDate,
-    };
+  static ParsedActivityTitle parseTitle(
+    String titleLine,
+    String defaultDate,
+  ) {
+    var teamName = 'Genel';
+    var activityType = 'Görev';
+    var date = defaultDate;
 
     // Extract Tim name (e.g. 6/B, 7-B, 11-B)
     final timReg = RegExp(r'(\d{1,2}\s*[\\/-]?\s*[A-ZÇĞİÖŞÜ]+)', caseSensitive: false).firstMatch(titleLine);
@@ -70,11 +77,11 @@ class BulkTextParser {
       if (!tim.contains('/') && tim.contains('-')) {
         tim = tim.replaceAll('-', '/');
       }
-      result['timName'] = tim;
+      teamName = tim;
     }
 
     // Extract raw Activity Type (for display)
-    result['activityType'] = extractActivityType(titleLine);
+    activityType = extractActivityType(titleLine);
 
     // Extract date from header line if present
     final dateMatch = RegExp(r'(\d{1,2})[\\.\\/](\d{1,2})[\\.\\/](\d{4})').firstMatch(titleLine);
@@ -82,10 +89,14 @@ class BulkTextParser {
       final day = dateMatch.group(1)!.padLeft(2, '0');
       final month = dateMatch.group(2)!.padLeft(2, '0');
       final year = dateMatch.group(3)!;
-      result['date'] = '$year-$month-$day';
+      date = '$year-$month-$day';
     }
 
-    return result;
+    return (
+      timName: teamName,
+      activityType: activityType,
+      date: date,
+    );
   }
 
   static List<ParsedActivityBlock> parse(String rawText) {
@@ -162,10 +173,10 @@ class BulkTextParser {
 
         // Use parseTitle to extract timName, raw activityType, and date, then map to DutyOrLeaveType
         final titleData = parseTitle(line, defaultDate);
-        currentTim = titleData['timName'] as String;
-        final rawActivityType = titleData['activityType'] as String;
+        currentTim = titleData.timName;
+        final rawActivityType = titleData.activityType;
         currentActivityType = mapActivityTypeToDutyOrLeave(rawActivityType);
-        currentDate = titleData['date'] as String;
+        currentDate = titleData.date;
 
         continue;
       }

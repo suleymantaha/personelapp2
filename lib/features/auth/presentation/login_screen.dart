@@ -38,7 +38,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       var session = ref.read(userSessionProvider);
       if (session == null) {
         try {
-          session = await SessionStorage.loadSession();
+          final db = ref.read(databaseProvider);
+          session = await SessionStorage.loadValidatedSession(db);
           if (session != null) {
             ref.read(userSessionProvider.notifier).state = session;
           }
@@ -116,9 +117,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       final p1 = pass1Ctrl.text.trim();
                       final p2 = pass2Ctrl.text.trim();
 
-                      if (p1.isEmpty || p1.length < 4) {
+                      if (p1.length < 12) {
                         setDialogState(
-                          () => errorText = 'Parola en az 4 karakter olmalıdır.',
+                          () => errorText =
+                              'Parola en az 12 karakter olmalıdır.',
                         );
                         return;
                       }
@@ -161,9 +163,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       timId = squad?.id;
     }
 
+    final role = UserRole.fromStorageValue(user.rol);
+    if (role == null) {
+      throw StateError('Desteklenmeyen kullanıcı rolü: ${user.rol}');
+    }
     final session = UserSessionState(
       username: user.kullaniciAdi,
-      role: user.rol,
+      role: role,
       timId: timId,
     );
 
@@ -192,7 +198,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         return;
       }
 
-      if (PasswordHasher.verifyPassword(password, user.sifre)) {
+      final verification = await PasswordHasher.verifyPassword(
+        password,
+        user.sifre,
+        username: user.kullaniciAdi,
+      );
+      if (verification.matches) {
+        if (verification.needsRehash) {
+          final repo = ref.read(personnelRepositoryProvider);
+          await repo.updateUserPassword(
+            kullaniciAdi: user.kullaniciAdi,
+            newPassword: password,
+          );
+        }
         await _loginUserSession(user);
       } else {
         if (mounted) {
