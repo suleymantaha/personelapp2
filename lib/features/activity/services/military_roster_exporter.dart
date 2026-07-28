@@ -723,6 +723,8 @@ class MilitaryRosterExporter {
     final counts = RankSummaryCounts.calculate(ranks);
 
     final summaryItems = [
+      specialDutyRankSummary('Hazır Kıta', 'HAZIR_KITA', rows),
+      specialDutyRankSummary('Gülüşkür', 'GULUSKUR', rows),
       if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
       if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
       if (counts.uzmanJandarmaCount > 0)

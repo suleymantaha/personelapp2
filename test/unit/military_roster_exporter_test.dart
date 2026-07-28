@@ -260,6 +260,37 @@ void main() {
       '(Subay: 0 • Astsubay: 0 • Uzman Jandarma: 0 • '
       'Uzman Erbaş: 0 • Diğer: 1)',
     );
+
+    final excel = Excel.decodeBytes(
+      MilitaryRosterExporter.generateMilitaryExcelBytes(
+        faaliyetAdi: 'Faaliyet',
+        tarih: '29.07.2026',
+        rows: rows,
+      ),
+    );
+    final cellTexts = excel['İsim Listesi']
+        .rows
+        .expand((row) => row)
+        .map((cell) => cell?.value?.toString())
+        .whereType<String>()
+        .toList();
+
+    expect(
+      cellTexts,
+      contains(
+        'Hazır Kıta: 5 Personel '
+        '(Subay: 1 • Astsubay: 1 • Uzman Jandarma: 1 • '
+        'Uzman Erbaş: 1 • Diğer: 1)',
+      ),
+    );
+    expect(
+      cellTexts,
+      contains(
+        'Gülüşkür: 1 Personel '
+        '(Subay: 0 • Astsubay: 0 • Uzman Jandarma: 0 • '
+        'Uzman Erbaş: 0 • Diğer: 1)',
+      ),
+    );
   });
 }
 
