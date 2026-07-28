@@ -28,16 +28,10 @@ class PdfRosterExporter {
   }
 
   static pw.Widget builderSummaryBox(List<MilitaryRosterRow> rows) {
-    var hazirKitaCount = 0;
-    var guluskurCount = 0;
     var digerCount = 0;
 
     for (final r in rows) {
-      if (r.groupCode == 'HAZIR_KITA') {
-        hazirKitaCount++;
-      } else if (r.groupCode == 'GULUSKUR') {
-        guluskurCount++;
-      } else {
+      if (r.groupCode != 'HAZIR_KITA' && r.groupCode != 'GULUSKUR') {
         digerCount++;
       }
     }
@@ -63,13 +57,32 @@ class PdfRosterExporter {
           ),
           pw.SizedBox(height: 4),
           pw.Text(
-            'Hazır Kıta: $hazirKitaCount Personel  •  '
-            'Gülüşkür: $guluskurCount Personel  •  '
-            'Diğer: $digerCount Personel',
+            MilitaryRosterExporter.specialDutyRankSummary(
+              'Hazır Kıta',
+              'HAZIR_KITA',
+              rows,
+            ),
             style: pw.TextStyle(
               fontSize: 9,
               fontWeight: pw.FontWeight.bold,
             ),
+          ),
+          pw.SizedBox(height: 3),
+          pw.Text(
+            MilitaryRosterExporter.specialDutyRankSummary(
+              'Gülüşkür',
+              'GULUSKUR',
+              rows,
+            ),
+            style: pw.TextStyle(
+              fontSize: 9,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+          pw.SizedBox(height: 3),
+          pw.Text(
+            'Diğer Görevler: $digerCount Personel',
+            style: pw.TextStyle(fontSize: 9),
           ),
           pw.SizedBox(height: 3),
           pw.Text(

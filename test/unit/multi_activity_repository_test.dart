@@ -69,17 +69,14 @@ void main() {
     expect(activities, hasLength(2));
     final assignments =
         await database.select(database.faaliyetPersonelAtamaTable).get();
-    expect(
-      assignments.singleWhere((item) => item.faaliyetId == firstId).durum,
-      AssignmentStatus.onaylandi,
-    );
-    expect(
-      assignments.singleWhere((item) => item.faaliyetId == secondId).durum,
-      AssignmentStatus.beklemede,
-    );
+    expect(assignments, hasLength(1));
+    expect(assignments.single.faaliyetId, firstId);
+    expect(assignments.single.durum, AssignmentStatus.onaylandi);
+    expect(assignments.any((item) => item.faaliyetId == secondId), isFalse);
   });
 
-  test('iki bekleyen çakışmalı görevden yalnız ilki onaylanabilir', () async {
+  test('geceyi aşan görev ertesi gün ikinci kaydın yazılmasını engeller',
+      () async {
     final firstId = await repository.createActivityWithAssignments(
       faaliyetAdi: 'Hazır Kıta',
       tarih: '2026-07-28',
@@ -97,25 +94,131 @@ void main() {
     final rows =
         await database.select(database.faaliyetPersonelAtamaTable).get();
     final first = rows.singleWhere((item) => item.faaliyetId == firstId);
-    final second = rows.singleWhere((item) => item.faaliyetId == secondId);
+    expect(rows, hasLength(1));
+    expect(rows.any((item) => item.faaliyetId == secondId), isFalse);
 
     final firstResult = await repository.approveAssignment(
       first.id,
       actor: admin,
     );
-    final secondResult = await repository.approveAssignment(
-      second.id,
+
+    expect(firstResult.approvedCount, 1);
+  });
+
+  test('tekil ekleme aynı gün mevcut kayıt varsa hata verir', () async {
+    await repository.createActivityWithAssignments(
+      faaliyetAdi: 'İzin',
+      tarih: '2026-07-28',
+      olusturanKullanici: 'admin',
+      personnelAssignments: [assignment('İZİNLİ')],
+      actor: admin,
+    );
+    final otherActivityId = await repository.createActivityWithAssignments(
+      faaliyetAdi: 'Diğer',
+      tarih: '2026-07-28',
+      olusturanKullanici: 'admin',
+      personnelAssignments: const [],
       actor: admin,
     );
 
-    expect(firstResult.approvedCount, 1);
-    expect(secondResult.blockedCount, 1);
-    final persisted = await (database.select(
-      database.faaliyetPersonelAtamaTable,
-    )..where((table) => table.id.equals(second.id)))
-        .getSingle();
-    expect(persisted.durum, AssignmentStatus.beklemede);
-    expect(secondResult.conflictDescriptions, isNotEmpty);
+    expect(
+      () => repository.addSingleAssignment(
+        faaliyetId: otherActivityId,
+        personelId: personId,
+        gorevVeyaIzin: 'SEVK',
+        tarih: '2026-07-28',
+        actor: admin,
+      ),
+      throwsA(isA<AssignmentConflictException>()),
+    );
+  });
+
+  test('rapor mevcut görev gününe yazılmaz', () async {
+    await repository.createActivityWithAssignments(
+      faaliyetAdi: 'Görev',
+      tarih: '2026-07-28',
+      olusturanKullanici: 'admin',
+      personnelAssignments: [assignment('GÖREVLİ')],
+      actor: admin,
+    );
+
+    expect(
+      () => repository.addMedicalReport(
+        personelId: personId,
+        raporBaslangic: '2026-07-27',
+        raporBitis: '2026-07-29',
+      ),
+      throwsA(isA<AssignmentConflictException>()),
+    );
+  });
+
+  test('toplu kayıtta çakışanı atlar ve personel adını bildirir', () async {
+    final result = await repository.createActivitiesWithAssignments(
+      [
+        ActivityCreateRequest(
+          faaliyetAdi: 'Birinci',
+          tarih: '2026-07-28',
+          olusturanKullanici: 'admin',
+          personnelAssignments: [assignment('GÖREVLİ')],
+        ),
+        ActivityCreateRequest(
+          faaliyetAdi: 'İkinci',
+          tarih: '2026-07-28',
+          olusturanKullanici: 'admin',
+          personnelAssignments: [assignment('İZİNLİ')],
+        ),
+      ],
+      actor: admin,
+    );
+
+    expect(result.activityIds, hasLength(2));
+    expect(result.addedAssignmentCount, 1);
+    expect(result.skippedAssignmentCount, 1);
+    expect(result.conflictDescriptions.single, contains('Ali Deneme'));
+    expect(
+      await database.select(database.faaliyetPersonelAtamaTable).get(),
+      hasLength(1),
+    );
+  });
+
+  test('geçmiş çakışma denetimi kayıtları silmeden raporlar', () async {
+    final firstActivity =
+        await database.into(database.gunlukFaaliyetTable).insert(
+              GunlukFaaliyetTableCompanion.insert(
+                faaliyetAdi: 'Birinci',
+                tarih: '2026-07-28',
+                olusturanKullanici: 'admin',
+                olusturmaTarihi: '2026-07-28T08:00:00',
+              ),
+            );
+    final secondActivity =
+        await database.into(database.gunlukFaaliyetTable).insert(
+              GunlukFaaliyetTableCompanion.insert(
+                faaliyetAdi: 'İkinci',
+                tarih: '2026-07-28',
+                olusturanKullanici: 'admin',
+                olusturmaTarihi: '2026-07-28T09:00:00',
+              ),
+            );
+    for (final activityId in [firstActivity, secondActivity]) {
+      await database.into(database.faaliyetPersonelAtamaTable).insert(
+            FaaliyetPersonelAtamaTableCompanion.insert(
+              faaliyetId: activityId,
+              personelId: personId,
+              gorevVeyaIzin: 'GÖREVLİ',
+              durum: AssignmentStatus.onaylandi,
+            ),
+          );
+    }
+
+    final conflicts = await repository.auditExistingDailyConflicts();
+
+    expect(conflicts.single, contains('Ali Deneme'));
+    expect(conflicts.single, contains('2026-07-28'));
+    expect(
+      await database.select(database.faaliyetPersonelAtamaTable).get(),
+      hasLength(2),
+    );
   });
 
   test('aynı tarih ve normalize ad eşleşmesini bulup yalnız yenileri ekler',

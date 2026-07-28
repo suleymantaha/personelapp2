@@ -88,6 +88,29 @@ class ActivityMergeResult {
   final int skippedCount;
 }
 
+class ActivityBatchCreateResult {
+  const ActivityBatchCreateResult({
+    required this.activityIds,
+    required this.addedAssignmentCount,
+    required this.skippedAssignmentCount,
+    this.conflictDescriptions = const [],
+  });
+
+  final List<int> activityIds;
+  final int addedAssignmentCount;
+  final int skippedAssignmentCount;
+  final List<String> conflictDescriptions;
+}
+
+class AssignmentConflictException implements Exception {
+  const AssignmentConflictException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 class ActivityRepository {
   ActivityRepository(this.db);
 
@@ -110,7 +133,8 @@ class ActivityRepository {
 
     final personnel = await (db.select(
       db.personelTable,
-    )..where((table) => table.id.isIn(personnelIds))).get();
+    )..where((table) => table.id.isIn(personnelIds)))
+        .get();
     if (personnel.length != personnelIds.length) {
       throw const AuthorizationException(
         'Atama listesindeki personelden biri bulunamadı.',
@@ -229,9 +253,7 @@ class ActivityRepository {
       final reports = await _loadDomainReports();
       final existingAssignments = await _loadExistingAssignments();
 
-      var pendingCount = 0;
       for (final assignment in assignments) {
-        if (assignment.durum != AssignmentStatus.onaylandi) continue;
         final status = ConflictChecker.evaluateAssignmentStatus(
           personelId: assignment.personelId,
           targetDate: newDate,
@@ -241,14 +263,10 @@ class ActivityRepository {
           excludeActivityId: activityId,
         );
         if (status == AssignmentStatus.beklemede) {
-          await (db.update(db.faaliyetPersonelAtamaTable)
-                ..where((tbl) => tbl.id.equals(assignment.id)))
-              .write(
-            const FaaliyetPersonelAtamaTableCompanion(
-              durum: Value(AssignmentStatus.beklemede),
-            ),
+          throw AssignmentConflictException(
+            '$newDate tarihinde personelin başka bir kaydı bulunuyor. '
+            'Faaliyet tarihi değiştirilmedi.',
           );
-          pendingCount++;
         }
       }
 
@@ -271,7 +289,7 @@ class ActivityRepository {
         oldDate: activity.tarih,
         newDate: newDate,
         assignmentCount: assignments.length,
-        pendingAssignmentCount: pendingCount,
+        pendingAssignmentCount: 0,
       );
     });
   }
@@ -429,8 +447,7 @@ class ActivityRepository {
       db.faaliyetPersonelAtamaTable,
     )..where((table) => table.faaliyetId.isIn(matches.map((item) => item.id))))
         .get();
-    final assignmentsByActivity =
-        <int, List<FaaliyetPersonelAtamaTableData>>{};
+    final assignmentsByActivity = <int, List<FaaliyetPersonelAtamaTableData>>{};
     for (final assignment in assignments) {
       assignmentsByActivity
           .putIfAbsent(assignment.faaliyetId, () => [])
@@ -438,9 +455,8 @@ class ActivityRepository {
     }
     final result = <ExistingActivityMatch>[];
     for (final activity in matches) {
-      final existing =
-          assignmentsByActivity[activity.id] ??
-              const <FaaliyetPersonelAtamaTableData>[];
+      final existing = assignmentsByActivity[activity.id] ??
+          const <FaaliyetPersonelAtamaTableData>[];
       final byPersonnel = {
         for (final assignment in existing) assignment.personelId: assignment,
       };
@@ -454,10 +470,8 @@ class ActivityRepository {
         final current = byPersonnel[personId];
         if (current == null) {
           newCount++;
-        } else if (current.gorevVeyaIzin.trim() ==
-                item.duty.trim() &&
-            _normalizeNote(current.aciklama) ==
-                _normalizeNote(item.note)) {
+        } else if (current.gorevVeyaIzin.trim() == item.duty.trim() &&
+            _normalizeNote(current.aciklama) == _normalizeNote(item.note)) {
           unchangedCount++;
         } else {
           differentCount++;
@@ -524,6 +538,10 @@ class ActivityRepository {
             existingAssignments: allAssignments,
             excludeAssignmentId: current.id,
           );
+          if (status == AssignmentStatus.beklemede) {
+            skippedCount++;
+            continue;
+          }
           if (!actor.isAdmin) status = AssignmentStatus.beklemede;
           await (db.update(
             db.faaliyetPersonelAtamaTable,
@@ -546,6 +564,10 @@ class ActivityRepository {
           reports: reports,
           existingAssignments: allAssignments,
         );
+        if (status == AssignmentStatus.beklemede) {
+          skippedCount++;
+          continue;
+        }
         if (!actor.isAdmin) status = AssignmentStatus.beklemede;
         final assignmentId =
             await db.into(db.faaliyetPersonelAtamaTable).insert(
@@ -578,7 +600,7 @@ class ActivityRepository {
     });
   }
 
-  Future<List<int>> createActivitiesWithAssignments(
+  Future<ActivityBatchCreateResult> createActivitiesWithAssignments(
     List<ActivityCreateRequest> requests, {
     required UserSessionState actor,
   }) {
@@ -589,15 +611,50 @@ class ActivityRepository {
         );
       }
       final ids = <int>[];
+      final skipped = <({int personelId, String date, String activity})>[];
+      var addedCount = 0;
       for (final request in requests) {
-        ids.add(
-          await _createActivityWithinTransaction(
-            request,
-            requiresApproval: false,
+        final activitySkipped = <int>[];
+        final id = await _createActivityWithinTransaction(
+          request,
+          requiresApproval: false,
+          skippedPersonnelIds: activitySkipped,
+        );
+        ids.add(id);
+        final inserted = await (db.select(
+          db.faaliyetPersonelAtamaTable,
+        )..where((table) => table.faaliyetId.equals(id)))
+            .get();
+        addedCount += inserted.length;
+        skipped.addAll(
+          activitySkipped.map(
+            (personelId) => (
+              personelId: personelId,
+              date: request.tarih,
+              activity: request.faaliyetAdi,
+            ),
           ),
         );
       }
-      return ids;
+      final personnelIds = skipped.map((item) => item.personelId).toSet();
+      final personnel = personnelIds.isEmpty
+          ? const <PersonelTableData>[]
+          : await (db.select(
+              db.personelTable,
+            )..where((table) => table.id.isIn(personnelIds)))
+              .get();
+      final names = {for (final person in personnel) person.id: person.adSoyad};
+      return ActivityBatchCreateResult(
+        activityIds: ids,
+        addedAssignmentCount: addedCount,
+        skippedAssignmentCount: skipped.length,
+        conflictDescriptions: [
+          for (final item in skipped)
+            '${names[item.personelId] ?? 'Personel #${item.personelId}'}: '
+                '${item.date} tarihinde mevcut kaydı nedeniyle '
+                '${item.activity} faaliyetine eklenmedi.',
+        ],
+      );
     });
   }
 
@@ -639,12 +696,104 @@ class ActivityRepository {
     }).toList();
   }
 
-  Future<int> _createActivityWithinTransaction(
-    ActivityCreateRequest request,
-    {
-    required bool requiresApproval,
-  }
+  Future<Map<int, String>> getDailyReservationDescriptions(
+    String targetDate,
   ) async {
+    final result = <int, String>{};
+    final rows = await db.select(db.faaliyetPersonelAtamaTable).join([
+      innerJoin(
+        db.gunlukFaaliyetTable,
+        db.gunlukFaaliyetTable.id.equalsExp(
+          db.faaliyetPersonelAtamaTable.faaliyetId,
+        ),
+      ),
+    ]).get();
+    for (final row in rows) {
+      final assignment = row.readTable(db.faaliyetPersonelAtamaTable);
+      final activity = row.readTable(db.gunlukFaaliyetTable);
+      if (assignment.durum == AssignmentStatus.reddedildi ||
+          !DutyCoverage.coveredDates(
+            startDate: activity.tarih,
+            duty: assignment.gorevVeyaIzin,
+          ).contains(targetDate)) {
+        continue;
+      }
+      result.putIfAbsent(
+        assignment.personelId,
+        () => '${activity.faaliyetAdi} • ${assignment.gorevVeyaIzin}',
+      );
+    }
+    final reports = await db.select(db.raporKayitTable).get();
+    for (final report in reports) {
+      if (targetDate.compareTo(report.raporBaslangic) >= 0 &&
+          targetDate.compareTo(report.raporBitis) <= 0) {
+        result.putIfAbsent(
+          report.personelId,
+          () => 'Rapor • ${report.raporBaslangic} - ${report.raporBitis}',
+        );
+      }
+    }
+    return result;
+  }
+
+  Future<List<String>> auditExistingDailyConflicts() async {
+    final personnel = await db.select(db.personelTable).get();
+    final names = {for (final person in personnel) person.id: person.adSoyad};
+    final entriesByPersonAndDate = <String, List<String>>{};
+    final rows = await db.select(db.faaliyetPersonelAtamaTable).join([
+      innerJoin(
+        db.gunlukFaaliyetTable,
+        db.gunlukFaaliyetTable.id.equalsExp(
+          db.faaliyetPersonelAtamaTable.faaliyetId,
+        ),
+      ),
+    ]).get();
+    for (final row in rows) {
+      final assignment = row.readTable(db.faaliyetPersonelAtamaTable);
+      final activity = row.readTable(db.gunlukFaaliyetTable);
+      if (assignment.durum == AssignmentStatus.reddedildi) continue;
+      for (final date in DutyCoverage.coveredDates(
+        startDate: activity.tarih,
+        duty: assignment.gorevVeyaIzin,
+      )) {
+        entriesByPersonAndDate
+            .putIfAbsent('${assignment.personelId}|$date', () => [])
+            .add('${activity.faaliyetAdi} • ${assignment.gorevVeyaIzin}');
+      }
+    }
+    final reports = await db.select(db.raporKayitTable).get();
+    for (final report in reports) {
+      var day = DateTime.parse(report.raporBaslangic);
+      final last = DateTime.parse(report.raporBitis);
+      while (!day.isAfter(last)) {
+        final date = '${day.year.toString().padLeft(4, '0')}-'
+            '${day.month.toString().padLeft(2, '0')}-'
+            '${day.day.toString().padLeft(2, '0')}';
+        entriesByPersonAndDate
+            .putIfAbsent('${report.personelId}|$date', () => [])
+            .add('Rapor');
+        day = day.add(const Duration(days: 1));
+      }
+    }
+    final conflicts = <String>[];
+    for (final entry in entriesByPersonAndDate.entries) {
+      if (entry.value.length < 2) continue;
+      final parts = entry.key.split('|');
+      final personId = int.parse(parts.first);
+      conflicts.add(
+        '${names[personId] ?? 'Personel #$personId'} • ${parts.last}: '
+        '${entry.value.join(' | ')}',
+      );
+    }
+    conflicts.sort();
+    return conflicts;
+  }
+
+  Future<int> _createActivityWithinTransaction(
+    ActivityCreateRequest request, {
+    required bool requiresApproval,
+    List<int>? skippedPersonnelIds,
+  }) async {
     final activityId = await db.into(db.gunlukFaaliyetTable).insert(
           GunlukFaaliyetTableCompanion.insert(
             faaliyetAdi: request.faaliyetAdi,
@@ -671,6 +820,10 @@ class ActivityRepository {
         reports: reports,
         existingAssignments: existingAssignments,
       );
+      if (status == AssignmentStatus.beklemede) {
+        skippedPersonnelIds?.add(personnelId);
+        continue;
+      }
       if (requiresApproval) status = AssignmentStatus.beklemede;
 
       final assignmentId = await db.into(db.faaliyetPersonelAtamaTable).insert(
@@ -920,16 +1073,41 @@ class ActivityRepository {
     required UserSessionState actor,
   }) {
     _requireAdmin(actor);
-    return (db.update(
-      db.faaliyetPersonelAtamaTable,
-    )..where((tbl) => tbl.id.equals(assignmentId)))
-        .write(
-      FaaliyetPersonelAtamaTableCompanion(
-        gorevVeyaIzin: Value(gorevVeyaIzin),
-        aciklama: Value(aciklama),
-        durum: Value(newStatus),
-      ),
-    );
+    return db.transaction(() async {
+      final assignment = await (db.select(
+        db.faaliyetPersonelAtamaTable,
+      )..where((table) => table.id.equals(assignmentId)))
+          .getSingle();
+      final activity = await (db.select(
+        db.gunlukFaaliyetTable,
+      )..where((table) => table.id.equals(assignment.faaliyetId)))
+          .getSingle();
+      if (newStatus != AssignmentStatus.reddedildi) {
+        final status = ConflictChecker.evaluateAssignmentStatus(
+          personelId: assignment.personelId,
+          targetDate: activity.tarih,
+          targetDuty: gorevVeyaIzin,
+          reports: await _loadDomainReports(),
+          existingAssignments: await _loadExistingAssignments(),
+          excludeAssignmentId: assignmentId,
+        );
+        if (status == AssignmentStatus.beklemede) {
+          throw AssignmentConflictException(
+            '${activity.tarih} tarihinde personelin başka bir kaydı bulunuyor.',
+          );
+        }
+      }
+      return (db.update(
+        db.faaliyetPersonelAtamaTable,
+      )..where((tbl) => tbl.id.equals(assignmentId)))
+          .write(
+        FaaliyetPersonelAtamaTableCompanion(
+          gorevVeyaIzin: Value(gorevVeyaIzin),
+          aciklama: Value(aciklama),
+          durum: Value(newStatus),
+        ),
+      );
+    });
   }
 
   /// Add a single personnel assignment to an existing activity
@@ -971,6 +1149,11 @@ class ActivityRepository {
         reports: reports,
         existingAssignments: existingAssignments,
       );
+      if (status == AssignmentStatus.beklemede) {
+        throw AssignmentConflictException(
+          '$tarih tarihinde personelin başka bir görevi veya kaydı bulunuyor.',
+        );
+      }
       if (!actor.isAdmin) status = AssignmentStatus.beklemede;
 
       return db.into(db.faaliyetPersonelAtamaTable).insert(
@@ -992,13 +1175,38 @@ class ActivityRepository {
     required String raporBitis,
     String? aciklama,
   }) {
-    return db.into(db.raporKayitTable).insert(
-          RaporKayitTableCompanion.insert(
-            personelId: personelId,
-            raporBaslangic: raporBaslangic,
-            raporBitis: raporBitis,
-            aciklama: Value(aciklama),
-          ),
+    return db.transaction(() async {
+      final reports = await _loadDomainReports();
+      final assignments = await _loadExistingAssignments();
+      var day = DateTime.parse(raporBaslangic);
+      final lastDay = DateTime.parse(raporBitis);
+      while (!day.isAfter(lastDay)) {
+        final date = '${day.year.toString().padLeft(4, '0')}-'
+            '${day.month.toString().padLeft(2, '0')}-'
+            '${day.day.toString().padLeft(2, '0')}';
+        final status = ConflictChecker.evaluateAssignmentStatus(
+          personelId: personelId,
+          targetDate: date,
+          targetDuty: DutyOrLeaveType.raporlu,
+          reports: reports,
+          existingAssignments: assignments,
         );
+        if (status == AssignmentStatus.beklemede) {
+          throw AssignmentConflictException(
+            '$date tarihinde personelin başka bir görevi, izni veya raporu '
+            'bulunuyor. Rapor kaydedilmedi.',
+          );
+        }
+        day = day.add(const Duration(days: 1));
+      }
+      return db.into(db.raporKayitTable).insert(
+            RaporKayitTableCompanion.insert(
+              personelId: personelId,
+              raporBaslangic: raporBaslangic,
+              raporBitis: raporBitis,
+              aciklama: Value(aciklama),
+            ),
+          );
+    });
   }
 }

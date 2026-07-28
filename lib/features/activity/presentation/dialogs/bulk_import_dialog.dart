@@ -28,6 +28,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
     with SingleTickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
   List<ParsedActivityBlock> _parsedBlocks = [];
+  List<BulkParseIssue> _parseIssues = [];
   List<PersonelTableData> _allPersonnel = [];
   List<TimTableData> _allSquads = [];
   bool _isParsing = false;
@@ -68,14 +69,15 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
     });
 
     try {
-      final initialBlocks = BulkTextParser.parse(rawText);
+      final parseResult = BulkTextParser.parse(rawText);
       final fuzzyMatcher = PersonnelFuzzyMatcher(widget.database);
-      final matchedBlocks = await fuzzyMatcher.matchBlocks(initialBlocks);
+      final matchedBlocks = await fuzzyMatcher.matchBlocks(parseResult.blocks);
       if (!mounted) return;
 
       setState(() {
         _parsedBlocks = matchedBlocks;
-        if (_parsedBlocks.isNotEmpty) {
+        _parseIssues = parseResult.issues;
+        if (_parsedBlocks.isNotEmpty || _parseIssues.isNotEmpty) {
           _tabController.animateTo(
             1,
           ); // Auto switch to Preview tab on mobile/desktop
@@ -91,7 +93,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
   }
 
   Future<void> _saveAllToFaaliyet() async {
-    if (_parsedBlocks.isEmpty) return;
+    if (_parsedBlocks.isEmpty ||
+        _parseIssues.any((issue) => issue.isBlocking)) {
+      return;
+    }
 
     final preparation = BulkActivityImportPreparer.prepare(_parsedBlocks);
     if (preparation.duplicates.isNotEmpty) {
@@ -109,18 +114,55 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
       if (actor == null) {
         throw StateError('Oturum doğrulanamadı.');
       }
-      await widget.activityRepository.createActivitiesWithAssignments(
+      final result =
+          await widget.activityRepository.createActivitiesWithAssignments(
         preparation.requests,
         actor: actor,
       );
 
       if (mounted) {
+        if (result.skippedAssignmentCount > 0) {
+          await showDialog<void>(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+              title: const Text('Çakışan Personeller Yazılmadı'),
+              content: SizedBox(
+                width: 520,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${result.skippedAssignmentCount} personelin aynı günü '
+                        'kapsayan başka kaydı bulundu:',
+                      ),
+                      const SizedBox(height: 12),
+                      for (final description in result.conflictDescriptions)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text('• $description'),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                FilledButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('TAMAM'),
+                ),
+              ],
+            ),
+          );
+          if (!mounted) return;
+        }
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               '${_parsedBlocks.length} blok → ${preparation.requests.length} '
-              'günlük faaliyet '
+              'günlük faaliyet, ${result.addedAssignmentCount} personel '
               'başarıyla eklendi.',
             ),
             backgroundColor: Colors.green.shade700,
@@ -489,9 +531,12 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
                   ),
                 ],
               ),
-              if (_parsedBlocks.isNotEmpty)
+              if (_parsedBlocks.isNotEmpty || _parseIssues.isNotEmpty)
                 IconButton(
-                  onPressed: () => setState(() => _parsedBlocks.clear()),
+                  onPressed: () => setState(() {
+                    _parsedBlocks.clear();
+                    _parseIssues.clear();
+                  }),
                   icon: const Icon(
                     Icons.delete_outline,
                     color: Colors.redAccent,
@@ -502,6 +547,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
             ],
           ),
           const SizedBox(height: 10),
+          if (_parseIssues.isNotEmpty) ...[
+            _buildParseIssues(),
+            const SizedBox(height: 10),
+          ],
           Expanded(
             child: _parsedBlocks.isEmpty
                 ? Center(
@@ -556,40 +605,56 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
           SizedBox(
             width: double.infinity,
             height: 48,
-            child: ElevatedButton.icon(
-              onPressed: (_parsedBlocks.isEmpty || _isSaving)
-                  ? null
-                  : _saveAllToFaaliyet,
-              icon: _isSaving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.check_circle_rounded),
-              label: Text(
-                '${_parsedBlocks.length} blok → '
-                '${_parsedBlocks.map((block) => block.parsedDate).toSet().length} '
-                'günlük faaliyet',
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.approvedColor,
-                foregroundColor: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
+            child: BulkImportSaveButton(
+              blocks: _parsedBlocks,
+              issues: _parseIssues,
+              isSaving: _isSaving,
+              onPressed: _saveAllToFaaliyet,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildParseIssues() {
+    final blockingCount =
+        _parseIssues.where((issue) => issue.isBlocking).length;
+    final color =
+        blockingCount > 0 ? Colors.red.shade700 : Colors.orange.shade800;
+    return Container(
+      key: const Key('bulk-parse-issues'),
+      width: double.infinity,
+      constraints: const BoxConstraints(maxHeight: 180),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              blockingCount > 0
+                  ? '$blockingCount kritik ayrıştırma sorunu — kayıt engellendi'
+                  : 'Ayrıştırma uyarıları',
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 6),
+            for (final issue in _parseIssues)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  '${issue.lineNumber > 0 ? 'Satır ${issue.lineNumber}: ' : ''}'
+                  '${issue.message}'
+                  '${issue.rawLine.trim().isEmpty ? '' : ' — ${issue.rawLine.trim()}'}',
+                  style: TextStyle(color: color, fontSize: 12),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -856,6 +921,54 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
               );
             }),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class BulkImportSaveButton extends StatelessWidget {
+  const BulkImportSaveButton({
+    required this.blocks,
+    required this.issues,
+    required this.isSaving,
+    required this.onPressed,
+    super.key,
+  });
+
+  final List<ParsedActivityBlock> blocks;
+  final List<BulkParseIssue> issues;
+  final bool isSaving;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final isBlocked = issues.any((issue) => issue.isBlocking);
+    return ElevatedButton.icon(
+      key: const Key('bulk-import-save-button'),
+      onPressed: blocks.isEmpty || isSaving || isBlocked ? null : onPressed,
+      icon: isSaving
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            )
+          : const Icon(Icons.check_circle_rounded),
+      label: Text(
+        '${blocks.length} blok → '
+        '${blocks.map((block) => block.parsedDate).toSet().length} '
+        'günlük faaliyet',
+        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: context.approvedColor,
+        foregroundColor: Colors.white,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );

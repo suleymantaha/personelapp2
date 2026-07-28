@@ -106,4 +106,33 @@ void main() {
     );
     expect(find.textContaining('Personel Yönetimi'), findsOneWidget);
   });
+
+  testWidgets('disables personnel who already have a daily record',
+      (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: PersonnelPickerSheet(
+            personnel: personnel,
+            squads: squads,
+            preferredTimId: 1,
+            disabledReasons: {1: 'Gece Devriyesi • NÖBETÇİ'},
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.text('6-B Timi • Kayıtlı: Gece Devriyesi • NÖBETÇİ'),
+      findsOneWidget,
+    );
+    final tile = tester.widget<ListTile>(
+      find.ancestor(
+        of: find.text('J.Asb.Kd.Bçvş. İhsan DAĞLI'),
+        matching: find.byType(ListTile),
+      ),
+    );
+    expect(tile.enabled, isFalse);
+    expect(tile.onTap, isNull);
+  });
 }

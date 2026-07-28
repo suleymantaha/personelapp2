@@ -10,6 +10,7 @@ Future<PersonelTableData?> showPersonnelPicker({
   required List<TimTableData> squads,
   int? selectedPersonnelId,
   int? preferredTimId,
+  Map<int, String> disabledReasons = const {},
 }) {
   return showModalBottomSheet<PersonelTableData>(
     context: context,
@@ -21,6 +22,7 @@ Future<PersonelTableData?> showPersonnelPicker({
       squads: squads,
       selectedPersonnelId: selectedPersonnelId,
       preferredTimId: preferredTimId,
+      disabledReasons: disabledReasons,
     ),
   );
 }
@@ -31,6 +33,7 @@ class PersonnelPickerSheet extends StatefulWidget {
     required this.squads,
     this.selectedPersonnelId,
     this.preferredTimId,
+    this.disabledReasons = const {},
     super.key,
   });
 
@@ -38,6 +41,7 @@ class PersonnelPickerSheet extends StatefulWidget {
   final List<TimTableData> squads;
   final int? selectedPersonnelId;
   final int? preferredTimId;
+  final Map<int, String> disabledReasons;
 
   @override
   State<PersonnelPickerSheet> createState() => _PersonnelPickerSheetState();
@@ -79,6 +83,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
       .trim();
 
   void _select(PersonelTableData person) {
+    if (widget.disabledReasons.containsKey(person.id)) return;
     _lastSelectedTimId = person.timId;
     _recentPersonnelIds
       ..remove(person.id)
@@ -226,6 +231,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                             person: person,
                             teamName: squadNames[person.timId] ?? 'Tim Dışı',
                             selected: person.id == widget.selectedPersonnelId,
+                            disabledReason: widget.disabledReasons[person.id],
                             onTap: () => _select(person),
                           ),
                         ),
@@ -299,6 +305,8 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                                       teamName: teamName,
                                       selected: person.id ==
                                           widget.selectedPersonnelId,
+                                      disabledReason:
+                                          widget.disabledReasons[person.id],
                                       onTap: () => _select(person),
                                     ),
                                   ),
@@ -320,12 +328,14 @@ class _PersonnelTile extends StatelessWidget {
     required this.person,
     required this.teamName,
     required this.selected,
+    this.disabledReason,
     required this.onTap,
   });
 
   final PersonelTableData person;
   final String teamName;
   final bool selected;
+  final String? disabledReason;
   final VoidCallback onTap;
 
   @override
@@ -334,6 +344,7 @@ class _PersonnelTile extends StatelessWidget {
       key: Key('personnel-option-${person.id}'),
       selected: selected,
       selectedTileColor: context.accentOrOlive.withValues(alpha: 0.1),
+      enabled: disabledReason == null,
       leading: CircleAvatar(
         backgroundColor: context.accentOrOlive.withValues(alpha: 0.12),
         child: Icon(Icons.person_outline, color: context.accentOrOlive),
@@ -342,11 +353,17 @@ class _PersonnelTile extends StatelessWidget {
         '${person.rutbe} ${person.adSoyad}',
         style: const TextStyle(fontWeight: FontWeight.w600),
       ),
-      subtitle: Text('${person.rutbe} • $teamName'),
-      trailing: selected
-          ? Icon(Icons.check_circle, color: context.accentOrOlive)
-          : null,
-      onTap: onTap,
+      subtitle: Text(
+        disabledReason == null
+            ? '${person.rutbe} • $teamName'
+            : '$teamName • Kayıtlı: $disabledReason',
+      ),
+      trailing: disabledReason != null
+          ? const Icon(Icons.block, color: Colors.redAccent)
+          : selected
+              ? Icon(Icons.check_circle, color: context.accentOrOlive)
+              : null,
+      onTap: disabledReason == null ? onTap : null,
     );
   }
 }

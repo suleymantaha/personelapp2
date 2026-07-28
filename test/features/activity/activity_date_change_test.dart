@@ -56,7 +56,7 @@ void main() {
   }
 
   test(
-    'moves activity and matrix day while preserving IDs and safe statuses',
+    'blocks a date move when any personnel has a target-day record',
     () async {
       final approvedPerson = await addPersonnel('Onaylı Personel');
       final pendingPerson = await addPersonnel('Bekleyen Personel');
@@ -93,19 +93,20 @@ void main() {
       expect(preview.assignmentCount, 3);
       expect(preview.pendingAssignmentCount, 1);
 
-      final result = await repository.changeActivityDate(
-        activityId: activityId,
-        newDate: '2026-07-28',
+      await expectLater(
+        repository.changeActivityDate(
+          activityId: activityId,
+          newDate: '2026-07-28',
+        ),
+        throwsA(isA<AssignmentConflictException>()),
       );
-      expect(result.status, ActivityDateChangeStatus.success);
-      expect(result.pendingAssignmentCount, 1);
 
       final activity = await (db.select(db.gunlukFaaliyetTable)
             ..where((table) => table.id.equals(activityId)))
           .getSingle();
       expect(activity.id, activityId);
-      expect(activity.tarih, '2026-07-28');
-      expect(activity.faaliyetAdi, 'Günlük Faaliyet (2026-07-28)');
+      expect(activity.tarih, '2026-07-27');
+      expect(activity.faaliyetAdi, 'Günlük Faaliyet (2026-07-27)');
 
       final assignments = await (db.select(db.faaliyetPersonelAtamaTable)
             ..where((table) => table.faaliyetId.equals(activityId)))
@@ -120,7 +121,7 @@ void main() {
       );
       expect(
         assignments.singleWhere((item) => item.id == approvedAssignment).durum,
-        AssignmentStatus.beklemede,
+        AssignmentStatus.onaylandi,
       );
       expect(
         assignments.singleWhere((item) => item.id == pendingAssignment).durum,
@@ -132,10 +133,10 @@ void main() {
       );
 
       final matrix = await matrixRepository.watchMonthlyMatrix('2026-07').first;
-      expect(matrix[approvedPerson]?[27], isNull);
-      expect(matrix[approvedPerson]?[28]?.displayCode, 'B');
+      expect(matrix[approvedPerson]?[27]?.displayCode, 'X');
+      expect(matrix[approvedPerson]?[28], isNull);
       expect(
-        matrix[approvedPerson]?[28]?.entries.single.duty,
+        matrix[approvedPerson]?[27]?.entries.single.duty,
         DutyOrLeaveType.heybet,
       );
     },

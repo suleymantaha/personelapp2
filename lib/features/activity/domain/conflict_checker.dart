@@ -106,25 +106,23 @@ class ConflictChecker {
       return AssignmentStatus.beklemede;
     }
 
-    // 2. Mükerrer onaylı görev kontrolü
-    final hasDuplicateApprovedDuty =
-        DutyOrLeaveType.isOperationalDuty(targetDuty) &&
-            existingAssignments.any(
-              (assignment) =>
-                  assignment.personelId == personelId &&
-                  assignment.durum == AssignmentStatus.onaylandi &&
-                  DutyOrLeaveType.isOperationalDuty(assignment.gorevVeyaIzin) &&
-                  assignment.id != excludeAssignmentId &&
-                  assignment.faaliyetId != excludeActivityId &&
-                  DutyCoverage.overlaps(
-                    firstDate: assignment.tarih,
-                    firstDuty: assignment.gorevVeyaIzin,
-                    secondDate: targetDate,
-                    secondDuty: targetDuty,
-                  ),
-            );
+    // A person may have only one active record for a covered calendar day.
+    // Rejected assignments are historical and do not reserve the day.
+    final hasExistingRecord = existingAssignments.any(
+      (assignment) =>
+          assignment.personelId == personelId &&
+          assignment.durum != AssignmentStatus.reddedildi &&
+          assignment.id != excludeAssignmentId &&
+          assignment.faaliyetId != excludeActivityId &&
+          DutyCoverage.overlaps(
+            firstDate: assignment.tarih,
+            firstDuty: assignment.gorevVeyaIzin,
+            secondDate: targetDate,
+            secondDuty: targetDuty,
+          ),
+    );
 
-    if (hasDuplicateApprovedDuty) {
+    if (hasExistingRecord) {
       return AssignmentStatus.beklemede;
     }
 

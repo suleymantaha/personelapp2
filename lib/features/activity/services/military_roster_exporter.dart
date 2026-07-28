@@ -29,12 +29,28 @@ class MasterActivityData {
     required this.tarih,
     required this.olusturanKullanici,
     required this.rows,
+    this.olusturmaTarihi = '',
   });
 
   final String faaliyetAdi;
   final String tarih;
   final String olusturanKullanici;
   final List<MilitaryRosterRow> rows;
+  final String olusturmaTarihi;
+
+  String get sectionHeader {
+    final parsed = DateTime.tryParse(olusturmaTarihi);
+    final time = parsed == null
+        ? ''
+        : '${parsed.hour.toString().padLeft(2, '0')}:'
+            '${parsed.minute.toString().padLeft(2, '0')}';
+    final details = [
+      tarih,
+      if (time.isNotEmpty) time,
+      if (olusturanKullanici.trim().isNotEmpty) olusturanKullanici.trim(),
+    ].join(' - ');
+    return '${faaliyetAdi.toUpperCase()} ($details)';
+  }
 }
 
 class MilitaryRosterExporter {
@@ -48,6 +64,23 @@ class MilitaryRosterExporter {
 
   static String formatOfficialTitle(String faaliyetAdi, String rawDate) {
     return OfficialRosterTitle.format(faaliyetAdi, rawDate);
+  }
+
+  static String specialDutyRankSummary(
+    String label,
+    String groupCode,
+    List<MilitaryRosterRow> rows,
+  ) {
+    final groupRows = rows.where((row) => row.groupCode == groupCode).toList();
+    final counts = RankSummaryCounts.calculate(
+      groupRows.map((row) => row.rutbe).toList(),
+    );
+    return '$label: ${counts.totalCount} Personel '
+        '(Subay: ${counts.subayCount} • '
+        'Astsubay: ${counts.astsubayCount} • '
+        'Uzman Jandarma: ${counts.uzmanJandarmaCount} • '
+        'Uzman Erbaş: ${counts.uzmanErbasCount} • '
+        'Diğer: ${counts.digerCount})';
   }
 
   /// Generates HTML Excel file (.xls) with UTF-8 BOM for 100% native mobile & desktop opening
@@ -130,15 +163,16 @@ class MilitaryRosterExporter {
 
       var mergeCount = 0;
       while (i + mergeCount + 1 < n &&
-          _sameBirlik(rows[i + mergeCount + 1].birligi, currentBirlik)) {
+          _sameBirlik(rows[i + mergeCount + 1].birligi, currentBirlik) &&
+          rows[i + mergeCount + 1].groupCode == currentGroup) {
         mergeCount++;
       }
       final isSpecialGroup =
           (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
-          List.generate(
-            mergeCount + 1,
-            (offset) => rows[i + offset].groupCode,
-          ).every((groupCode) => groupCode == currentGroup);
+              List.generate(
+                mergeCount + 1,
+                (offset) => rows[i + offset].groupCode,
+              ).every((groupCode) => groupCode == currentGroup);
 
       final spanAttr = (mergeCount > 0) ? ' rowspan="${mergeCount + 1}"' : '';
 
@@ -180,16 +214,10 @@ class MilitaryRosterExporter {
     }
 
     // Summary Section
-    var hazirKitaCount = 0;
-    var guluskurCount = 0;
     var digerCount = 0;
 
     for (final r in rows) {
-      if (r.groupCode == 'HAZIR_KITA') {
-        hazirKitaCount++;
-      } else if (r.groupCode == 'GULUSKUR') {
-        guluskurCount++;
-      } else {
+      if (r.groupCode != 'HAZIR_KITA' && r.groupCode != 'GULUSKUR') {
         digerCount++;
       }
     }
@@ -205,13 +233,20 @@ class MilitaryRosterExporter {
         '  <tr><td colspan="5" class="summary-hdr">GÖREV VE MEVCUT ÖZETİ</td></tr>',
       );
 
-    final dutySummaryStr =
-        'Hazır Kıta: $hazirKitaCount Personel  •  Gülüşkür: $guluskurCount Personel  •  Diğer: $digerCount Personel';
-    sb.writeln(
-      '  <tr><td colspan="5" class="left bold">${escapeXml(dutySummaryStr)}</td></tr>',
-    );
+    final dutySummaryItems = [
+      specialDutyRankSummary('Hazır Kıta', 'HAZIR_KITA', rows),
+      specialDutyRankSummary('Gülüşkür', 'GULUSKUR', rows),
+      'Diğer Görevler: $digerCount Personel',
+    ];
+    for (final item in dutySummaryItems) {
+      sb.writeln(
+        '  <tr><td colspan="5" class="left bold">${escapeXml(item)}</td></tr>',
+      );
+    }
 
     final summaryItems = [
+      specialDutyRankSummary('Hazır Kıta', 'HAZIR_KITA', rows),
+      specialDutyRankSummary('Gülüşkür', 'GULUSKUR', rows),
       if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
       if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
       if (counts.uzmanJandarmaCount > 0)
@@ -388,15 +423,16 @@ class MilitaryRosterExporter {
 
       var mergeCount = 0;
       while (i + mergeCount + 1 < n &&
-          _sameBirlik(rows[i + mergeCount + 1].birligi, currentBirlik)) {
+          _sameBirlik(rows[i + mergeCount + 1].birligi, currentBirlik) &&
+          rows[i + mergeCount + 1].groupCode == currentGroup) {
         mergeCount++;
       }
       final isSpecialGroup =
           (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
-          List.generate(
-            mergeCount + 1,
-            (offset) => rows[i + offset].groupCode,
-          ).every((groupCode) => groupCode == currentGroup);
+              List.generate(
+                mergeCount + 1,
+                (offset) => rows[i + offset].groupCode,
+              ).every((groupCode) => groupCode == currentGroup);
 
       for (var j = 0; j <= mergeCount; j++) {
         final r = rows[i + j];
@@ -453,6 +489,8 @@ class MilitaryRosterExporter {
       ..writeln('   </Row>');
 
     final summaryItems = [
+      specialDutyRankSummary('Hazır Kıta', 'HAZIR_KITA', rows),
+      specialDutyRankSummary('Gülüşkür', 'GULUSKUR', rows),
       if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
       if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
       if (counts.uzmanJandarmaCount > 0)
@@ -603,15 +641,16 @@ class MilitaryRosterExporter {
 
       var mergeCount = 0;
       while (i + mergeCount + 1 < n &&
-          _sameBirlik(rows[i + mergeCount + 1].birligi, currentBirlik)) {
+          _sameBirlik(rows[i + mergeCount + 1].birligi, currentBirlik) &&
+          rows[i + mergeCount + 1].groupCode == currentGroup) {
         mergeCount++;
       }
       final isSpecialGroup =
           (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
-          List.generate(
-            mergeCount + 1,
-            (offset) => rows[i + offset].groupCode,
-          ).every((groupCode) => groupCode == currentGroup);
+              List.generate(
+                mergeCount + 1,
+                (offset) => rows[i + offset].groupCode,
+              ).every((groupCode) => groupCode == currentGroup);
 
       final startRowIndex = currentRow;
 
@@ -641,9 +680,7 @@ class MilitaryRosterExporter {
 
         // Col 4: DİĞER
         sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: rIndex))
-          ..value = !isSpecialGroup || j == 0
-              ? TextCellValue(r.diger)
-              : null
+          ..value = !isSpecialGroup || j == 0 ? TextCellValue(r.diger) : null
           ..cellStyle = isSpecialGroup ? cellCenterBoldStyle : cellLeftStyle;
       }
 
@@ -686,6 +723,8 @@ class MilitaryRosterExporter {
     final counts = RankSummaryCounts.calculate(ranks);
 
     final summaryItems = [
+      specialDutyRankSummary('Hazır Kıta', 'HAZIR_KITA', rows),
+      specialDutyRankSummary('Gülüşkür', 'GULUSKUR', rows),
       if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
       if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
       if (counts.uzmanJandarmaCount > 0)
@@ -795,7 +834,7 @@ class MilitaryRosterExporter {
         CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
       )
         ..value = TextCellValue(
-          '${act.faaliyetAdi.toUpperCase()} (${act.tarih})',
+          act.sectionHeader,
         )
         ..cellStyle = sectionHeaderStyle;
       sheet.merge(
@@ -823,15 +862,16 @@ class MilitaryRosterExporter {
             _sameBirlik(
               act.rows[rowIndex + groupLength].birligi,
               currentBirlik,
-            )) {
+            ) &&
+            act.rows[rowIndex + groupLength].groupCode == currentGroup) {
           groupLength++;
         }
         final isSpecialGroup =
             (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
-            List.generate(
-              groupLength,
-              (offset) => act.rows[rowIndex + offset].groupCode,
-            ).every((groupCode) => groupCode == currentGroup);
+                List.generate(
+                  groupLength,
+                  (offset) => act.rows[rowIndex + offset].groupCode,
+                ).every((groupCode) => groupCode == currentGroup);
 
         for (var offset = 0; offset < groupLength; offset++) {
           final r = act.rows[rowIndex + offset];
@@ -858,9 +898,8 @@ class MilitaryRosterExporter {
           sheet.cell(
             CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
           )
-            ..value = !isSpecialGroup || offset == 0
-                ? TextCellValue(r.diger)
-                : null
+            ..value =
+                !isSpecialGroup || offset == 0 ? TextCellValue(r.diger) : null
             ..cellStyle = isSpecialGroup ? cellCenterStyle : cellLeftStyle;
           currentRow++;
         }
@@ -1123,7 +1162,7 @@ class MilitaryRosterExporter {
         ..writeln('   <Row ss:Height="12"/>')
         ..writeln('   <Row ss:Height="22">')
         ..writeln(
-          '    <Cell ss:MergeAcross="4" ss:StyleID="SectionHeader"><Data ss:Type="String">${escapeXml(act.faaliyetAdi.toUpperCase())} (${act.tarih})</Data></Cell>',
+          '    <Cell ss:MergeAcross="4" ss:StyleID="SectionHeader"><Data ss:Type="String">${escapeXml(act.sectionHeader)}</Data></Cell>',
         )
         ..writeln('   </Row>')
         ..writeln('   <Row ss:Height="20">')

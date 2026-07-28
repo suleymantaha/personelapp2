@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
 /// Dialog to edit an individual personnel's duty and note
@@ -77,8 +78,8 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
     final filteredDuties = widget.isAdmin
         ? availableDuties
         : availableDuties
-              .where((duty) => !_adminOnlyDuties.contains(duty))
-              .toList(growable: false);
+            .where((duty) => !_adminOnlyDuties.contains(duty))
+            .toList(growable: false);
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -167,15 +168,23 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
             final newStatus = widget.isAdmin
                 ? AssignmentStatus.onaylandi
                 : AssignmentStatus.beklemede;
-            await repo.updateAssignmentDetails(
-              assignmentId: widget.assignment.id,
-              gorevVeyaIzin: _selectedDuty,
-              aciklama: note.isNotEmpty ? note : null,
-              newStatus: newStatus,
-              actor: actor,
-            );
-            if (context.mounted) {
-              Navigator.of(context).pop(true);
+            try {
+              await repo.updateAssignmentDetails(
+                assignmentId: widget.assignment.id,
+                gorevVeyaIzin: _selectedDuty,
+                aciklama: note.isNotEmpty ? note : null,
+                newStatus: newStatus,
+                actor: actor,
+              );
+              if (context.mounted) {
+                Navigator.of(context).pop(true);
+              }
+            } on AssignmentConflictException catch (error) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(error.message)),
+                );
+              }
             }
           },
           child: const Text('KAYDET'),

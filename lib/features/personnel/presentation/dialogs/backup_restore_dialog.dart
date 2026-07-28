@@ -91,128 +91,232 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.sizeOf(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.8,
-        height: MediaQuery.of(context).size.height * 0.75,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.import_export_rounded,
-                  color: Colors.teal,
-                  size: 28,
-                ),
-                const SizedBox(width: 10),
-                const Text(
-                  'Personel Verilerini Yedekle & Geri Yükle',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context, true),
-                ),
-              ],
-            ),
-            const Divider(),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _isLoading ? null : _exportBackup,
-                    icon: const Icon(Icons.download_rounded),
-                    label: const Text('Tüm Personelleri Dışa Aktar (Yedek Al)'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _isLoading ? null : _importBackup,
-                    icon: const Icon(Icons.upload_rounded),
-                    label: const Text('Yedekten İçe Aktar (Geri Yükle)'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade700,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (_statusMessage != null)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(10),
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Text(
-                  _statusMessage!,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            Expanded(
-              child: Stack(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 620,
+          maxHeight: screenSize.height * 0.88,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  TextField(
-                    controller: _textController,
-                    maxLines: null,
-                    expands: true,
-                    textAlignVertical: TextAlignVertical.top,
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 12,
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    decoration: InputDecoration(
-                      hintText:
-                          'Dışa aktarılan yedek koda buradan ulaşabilir veya geri yükleyeceğiniz yedeği buraya yapıştırabilirsiniz...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey.shade50,
+                    child: Icon(
+                      Icons.cloud_sync_outlined,
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Yedekleme ve geri yükleme',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Personel ve tim verilerinizi güvenle taşıyın.',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Kapat',
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(context, true),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final useRow = constraints.maxWidth >= 500;
+                  final exportButton = _ActionButton(
+                    icon: Icons.file_download_outlined,
+                    title: 'Yedek oluştur',
+                    subtitle: 'Verileri dışa aktar',
+                    color: colorScheme.primary,
+                    onPressed: _isLoading ? null : _exportBackup,
+                  );
+                  final importButton = _ActionButton(
+                    icon: Icons.file_upload_outlined,
+                    title: 'Yedeği geri yükle',
+                    subtitle: 'Kutudaki verileri içe aktar',
+                    color: colorScheme.secondary,
+                    onPressed: _isLoading ? null : _importBackup,
+                  );
+
+                  if (useRow) {
+                    return Row(
+                      children: [
+                        Expanded(child: exportButton),
+                        const SizedBox(width: 12),
+                        Expanded(child: importButton),
+                      ],
+                    );
+                  }
+                  return Column(
+                    children: [
+                      exportButton,
+                      const SizedBox(height: 10),
+                      importButton,
+                    ],
+                  );
+                },
+              ),
+              if (_isLoading) ...[
+                const SizedBox(height: 14),
+                const LinearProgressIndicator(),
+              ],
+              if (_statusMessage != null) ...[
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    _statusMessage!,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Yedek verisi',
+                      style: TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
                   if (_textController.text.isNotEmpty)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          await Clipboard.setData(
-                            ClipboardData(text: _textController.text),
-                          );
-                          if (!mounted) {
-                            return;
-                          }
-                          ScaffoldMessenger.of(this.context).showSnackBar(
-                            const SnackBar(content: Text('Yedek kopyalandı!')),
-                          );
-                        },
-                        icon: const Icon(Icons.copy, size: 16),
-                        label: const Text('Kopyala'),
-                        style: ElevatedButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      ),
+                    TextButton.icon(
+                      onPressed: _copyBackup,
+                      icon: const Icon(Icons.copy_rounded, size: 18),
+                      label: const Text('Kopyala'),
                     ),
                 ],
               ),
+              const SizedBox(height: 6),
+              Expanded(
+                child: TextField(
+                  controller: _textController,
+                  onChanged: (_) => setState(() {}),
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                  decoration: InputDecoration(
+                    hintText:
+                        'Yedek oluşturduğunuzda veri burada görünür. Geri yüklemek için daha önce kopyaladığınız yedek metnini buraya yapıştırın.',
+                    contentPadding: const EdgeInsets.all(14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainerLowest,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _copyBackup() async {
+    await Clipboard.setData(ClipboardData(text: _textController.text));
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Yedek panoya kopyalandı.')),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.color,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color color;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 68,
+      child: FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: color,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              children: [
+                Icon(icon),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),
