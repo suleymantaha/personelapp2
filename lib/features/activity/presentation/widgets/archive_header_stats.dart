@@ -28,10 +28,10 @@ class ArchiveHeaderStats extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: context.colorScheme.surfaceContainerHigh,
+        color: context.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: context.colorScheme.outlineVariant.withValues(alpha: 0.5),
+          color: context.cardBorderColor,
         ),
       ),
       child: Column(

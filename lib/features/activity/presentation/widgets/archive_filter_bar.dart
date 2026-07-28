@@ -39,13 +39,17 @@ class ArchiveFilterBar extends StatelessWidget {
                     hintText: 'Faaliyet veya Tarih Ara...',
                     prefixIcon: const Icon(Icons.search, size: 20),
                     contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10,
+                      vertical: 12,
                     ),
                     filled: true,
-                    fillColor: context.colorScheme.surfaceContainerHighest,
+                    fillColor: context.colorScheme.surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                      borderSide: BorderSide(color: context.cardBorderColor),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: context.cardBorderColor),
                     ),
                   ),
                   onChanged: onSearchChanged,

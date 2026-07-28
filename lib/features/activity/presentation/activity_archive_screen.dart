@@ -385,8 +385,10 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         : null;
 
     return Scaffold(
-      backgroundColor: context.colorScheme.surface,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
+        centerTitle: false,
+        titleSpacing: _selectionMode ? null : 0,
         leading: _selectionMode
             ? IconButton(
                 key: const Key('activity-selection-close'),
@@ -399,7 +401,9 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
           _selectionMode
               ? '${_selectedActivityIds.length} faaliyet seçildi'
               : (isAdmin ? 'Faaliyet Arşivi' : 'Tim Faaliyet Arşivi'),
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
         ),
         actions: [
           if (_selectionMode)
@@ -444,6 +448,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         ],
       ),
       body: ResponsiveCenter(
+        maxWidth: 860,
         padding: EdgeInsets.zero,
         child: Column(
           children: [
