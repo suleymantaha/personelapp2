@@ -181,14 +181,9 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         aciklama: atama.aciklama,
       );
 
-      var groupCode = 'DIGER';
-      final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
-      if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
-        groupCode = 'HAZIR_KITA';
-      } else if (dutyUpper.contains('GÜLÜŞKÜR') ||
-          dutyUpper.contains('GULUSKUR')) {
-        groupCode = 'GULUSKUR';
-      }
+      final groupCode = MilitaryStructureHelper.getRosterGroupCode(
+        atama.gorevVeyaIzin,
+      );
 
       rosterRows.add(
         MilitaryRosterRow(

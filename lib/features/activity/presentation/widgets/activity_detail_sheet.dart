@@ -122,14 +122,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
         duty: atama.gorevVeyaIzin,
       );
 
-      var groupCode = 'DIGER';
-      final dutyUpper = atama.gorevVeyaIzin.toUpperCase().trim();
-      if (dutyUpper.contains('HAZIR KITA') || dutyUpper.contains('HAZIRKITA')) {
-        groupCode = 'HAZIR_KITA';
-      } else if (dutyUpper.contains('GÜLÜŞKÜR') ||
-          dutyUpper.contains('GULUSKUR')) {
-        groupCode = 'GULUSKUR';
-      }
+      final groupCode = MilitaryStructureHelper.getRosterGroupCode(
+        atama.gorevVeyaIzin,
+      );
 
       final digerText = MilitaryStructureHelper.getDigerCellText(
         atama.gorevVeyaIzin,

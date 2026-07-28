@@ -72,10 +72,25 @@ class MilitaryStructureHelper {
       return 'GÜLÜŞKÜR';
     }
     if (isNobetciHeyetiDuty(duty)) {
-      final text = aciklama ?? duty;
-      return text.trim();
+      final explanation = aciklama?.trim() ?? '';
+      return explanation.isNotEmpty ? explanation : duty.trim();
     }
     return ''; // Operasyonel görevler için DİĞER kısmına yazı yazılmayacak (BOŞ)
+  }
+
+  /// Returns the stable grouping code shared by PDF and Excel exporters.
+  static String getRosterGroupCode(String duty) {
+    final upper = duty.toUpperCase().trim();
+    if (upper.contains('HAZIR KITA') || upper.contains('HAZIRKITA')) {
+      return 'HAZIR_KITA';
+    }
+    if (upper.contains('GÜLÜŞKÜR') || upper.contains('GULUSKUR')) {
+      return 'GULUSKUR';
+    }
+    if (isNobetciHeyetiDuty(duty)) {
+      return 'NOBET_HEYETI';
+    }
+    return 'DIGER';
   }
 
   /// Returns duty group order weight: 1 for operational/guard duties, 2 for Hazır Kıta, 3 for Gülüşkür

@@ -33,4 +33,38 @@ void main() {
       expect(result, "2'nci Bl.");
     });
   });
+
+  group('roster duty rules', () {
+    test('classifies special and guard duty groups consistently', () {
+      expect(
+        MilitaryStructureHelper.getRosterGroupCode('Hazır Kıta'),
+        'HAZIR_KITA',
+      );
+      expect(
+        MilitaryStructureHelper.getRosterGroupCode('Gülüşkür'),
+        'GULUSKUR',
+      );
+      expect(
+        MilitaryStructureHelper.getRosterGroupCode('Nöbetçi Heyeti'),
+        'NOBET_HEYETI',
+      );
+    });
+
+    test('keeps guard description and falls back to duty when it is empty', () {
+      expect(
+        MilitaryStructureHelper.getDigerCellText(
+          'Nöbetçi Heyeti',
+          aciklama: 'Ana Nizamiyede',
+        ),
+        'Ana Nizamiyede',
+      );
+      expect(
+        MilitaryStructureHelper.getDigerCellText(
+          'Nöbetçi Heyeti',
+          aciklama: '  ',
+        ),
+        'Nöbetçi Heyeti',
+      );
+    });
+  });
 }

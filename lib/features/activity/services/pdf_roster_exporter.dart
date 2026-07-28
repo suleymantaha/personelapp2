@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:personelapp2/core/utils/official_roster_title.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:printing/printing.dart';
@@ -21,48 +22,9 @@ enum PdfRosterStyle {
 }
 
 class PdfRosterExporter {
-  /// Formats official title text: e.g. JÖH TB.K.LIĞI HEYBET TEPE PUSU FAALİYETİ İSİM LİSTESİ-24.07.2026
+  /// Formats the single official title used by PDF and Excel exports.
   static String formatOfficialTitle(String faaliyetAdi, String rawDate) {
-    var formattedDate = rawDate.trim();
-    if (formattedDate.contains('-')) {
-      final parts = formattedDate.split('T')[0].split('-');
-      if (parts.length == 3) {
-        formattedDate = '${parts[2]}.${parts[1]}.${parts[0]}';
-      }
-    }
-
-    var nameStr = faaliyetAdi.trim().toUpperCase();
-
-    // Remove any parenthesized date like (2026-07-24) or (24.07.2026)
-    nameStr = nameStr
-        .replaceAll(RegExp(r'\s*\(\d{2,4}[\.\-]\d{2}[\.\-]\d{2,4}\)\s*'), ' ')
-        .trim();
-
-    // Remove 'İSİM LİSTESİ' if present
-    nameStr = nameStr
-        .replaceAll('İSİM LİSTESİ', '')
-        .replaceAll('ISIM LISTESI', '')
-        .trim();
-
-    final isCombinedDailyRoster = nameStr.contains('GÜNLÜK TÜM FAALİYET') ||
-        nameStr.contains('GUNLUK TUM FAALIYET');
-    if (isCombinedDailyRoster) {
-      nameStr = 'GÜNLÜK TÜM FAALİYETLER';
-    } else if (nameStr.isEmpty ||
-        nameStr.contains('GÜNLÜK FAALİYET') ||
-        nameStr.contains('GUNLUK FAALIYET')) {
-      nameStr = 'HEYBET TEPE PUSU FAALİYETİ';
-    }
-
-    // Ensure starts with JÖH TB.K.LIĞI
-    if (!nameStr.startsWith('JÖH')) {
-      nameStr = 'JÖH TB.K.LIĞI $nameStr';
-    }
-
-    // Clean multiple spaces
-    nameStr = nameStr.replaceAll(RegExp(r'\s+'), ' ').trim();
-
-    return '$nameStr-$formattedDate';
+    return OfficialRosterTitle.format(faaliyetAdi, rawDate);
   }
 
   static pw.Widget builderSummaryBox(List<MilitaryRosterRow> rows) {

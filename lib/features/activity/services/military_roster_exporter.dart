@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:personelapp2/core/utils/official_roster_title.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -19,7 +20,7 @@ class MilitaryRosterRow {
   final String rutbe;
   final String adSoyad;
   final String diger;
-  final String groupCode; // 'DIGER', 'HAZIR_KITA', 'GULUSKUR'
+  final String groupCode; // DIGER, NOBET_HEYETI, HAZIR_KITA, GULUSKUR
 }
 
 class MasterActivityData {
@@ -46,46 +47,7 @@ class MilitaryRosterExporter {
   }
 
   static String formatOfficialTitle(String faaliyetAdi, String rawDate) {
-    var formattedDate = rawDate.trim();
-    if (formattedDate.contains('-')) {
-      final parts = formattedDate.split('T')[0].split('-');
-      if (parts.length == 3) {
-        formattedDate = '${parts[2]}.${parts[1]}.${parts[0]}';
-      }
-    }
-
-    var nameStr = faaliyetAdi.trim().toUpperCase();
-
-    // Remove any parenthesized date like (2026-07-24) or (24.07.2026)
-    nameStr = nameStr
-        .replaceAll(RegExp(r'\s*\(\d{2,4}[\.\-]\d{2}[\.\-]\d{2,4}\)\s*'), ' ')
-        .trim();
-
-    // Remove 'İSİM LİSTESİ' if present
-    nameStr = nameStr
-        .replaceAll('İSİM LİSTESİ', '')
-        .replaceAll('ISIM LISTESI', '')
-        .trim();
-
-    final isCombinedDailyRoster = nameStr.contains('GÜNLÜK TÜM FAALİYET') ||
-        nameStr.contains('GUNLUK TUM FAALIYET');
-    if (isCombinedDailyRoster) {
-      nameStr = 'GÜNLÜK TÜM FAALİYETLER';
-    } else if (nameStr.isEmpty ||
-        nameStr.contains('GÜNLÜK FAALİYET') ||
-        nameStr.contains('GUNLUK FAALIYET')) {
-      nameStr = 'HEYBET TEPE PUSU FAALİYETİ';
-    }
-
-    // Ensure starts with JÖH TB.K.LIĞI
-    if (!nameStr.startsWith('JÖH')) {
-      nameStr = 'JÖH TB.K.LIĞI $nameStr';
-    }
-
-    // Clean multiple spaces
-    nameStr = nameStr.replaceAll(RegExp(r'\s+'), ' ').trim();
-
-    return '$nameStr-$formattedDate';
+    return OfficialRosterTitle.format(faaliyetAdi, rawDate);
   }
 
   /// Generates HTML Excel file (.xls) with UTF-8 BOM for 100% native mobile & desktop opening
@@ -165,15 +127,18 @@ class MilitaryRosterExporter {
     while (i < n) {
       final currentBirlik = rows[i].birligi;
       final currentGroup = rows[i].groupCode;
-      final isSpecialGroup =
-          currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
 
       var mergeCount = 0;
       while (i + mergeCount + 1 < n &&
-          rows[i + mergeCount + 1].birligi == currentBirlik &&
-          rows[i + mergeCount + 1].groupCode == currentGroup) {
+          _sameBirlik(rows[i + mergeCount + 1].birligi, currentBirlik)) {
         mergeCount++;
       }
+      final isSpecialGroup =
+          (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
+          List.generate(
+            mergeCount + 1,
+            (offset) => rows[i + offset].groupCode,
+          ).every((groupCode) => groupCode == currentGroup);
 
       final spanAttr = (mergeCount > 0) ? ' rowspan="${mergeCount + 1}"' : '';
 
@@ -420,15 +385,18 @@ class MilitaryRosterExporter {
     while (i < n) {
       final currentBirlik = rows[i].birligi;
       final currentGroup = rows[i].groupCode;
-      final isSpecialGroup =
-          currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
 
       var mergeCount = 0;
       while (i + mergeCount + 1 < n &&
-          rows[i + mergeCount + 1].birligi == currentBirlik &&
-          rows[i + mergeCount + 1].groupCode == currentGroup) {
+          _sameBirlik(rows[i + mergeCount + 1].birligi, currentBirlik)) {
         mergeCount++;
       }
+      final isSpecialGroup =
+          (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
+          List.generate(
+            mergeCount + 1,
+            (offset) => rows[i + offset].groupCode,
+          ).every((groupCode) => groupCode == currentGroup);
 
       for (var j = 0; j <= mergeCount; j++) {
         final r = rows[i + j];
@@ -516,7 +484,7 @@ class MilitaryRosterExporter {
     required String tarih,
     required List<MilitaryRosterRow> rows,
   }) {
-    final titleHeader = '$faaliyetAdi İSİM LİSTESİ - $tarih'.toUpperCase();
+    final titleHeader = formatOfficialTitle(faaliyetAdi, tarih);
     final sb = StringBuffer()
       ..writeln('==============================================')
       ..writeln(titleHeader)
@@ -632,15 +600,18 @@ class MilitaryRosterExporter {
     while (i < n) {
       final currentBirlik = rows[i].birligi;
       final currentGroup = rows[i].groupCode;
-      final isSpecialGroup =
-          currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
 
       var mergeCount = 0;
       while (i + mergeCount + 1 < n &&
-          rows[i + mergeCount + 1].birligi == currentBirlik &&
-          rows[i + mergeCount + 1].groupCode == currentGroup) {
+          _sameBirlik(rows[i + mergeCount + 1].birligi, currentBirlik)) {
         mergeCount++;
       }
+      final isSpecialGroup =
+          (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
+          List.generate(
+            mergeCount + 1,
+            (offset) => rows[i + offset].groupCode,
+          ).every((groupCode) => groupCode == currentGroup);
 
       final startRowIndex = currentRow;
 
@@ -655,7 +626,7 @@ class MilitaryRosterExporter {
 
         // Col 1: BİRLİĞİ
         sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rIndex))
-          ..value = TextCellValue(r.birligi)
+          ..value = j == 0 ? TextCellValue(r.birligi) : null
           ..cellStyle = cellCenterBoldStyle;
 
         // Col 2: RÜTBE
@@ -670,7 +641,9 @@ class MilitaryRosterExporter {
 
         // Col 4: DİĞER
         sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: rIndex))
-          ..value = TextCellValue(r.diger)
+          ..value = !isSpecialGroup || j == 0
+              ? TextCellValue(r.diger)
+              : null
           ..cellStyle = isSpecialGroup ? cellCenterBoldStyle : cellLeftStyle;
       }
 
@@ -840,33 +813,80 @@ class MilitaryRosterExporter {
       }
       currentRow++;
 
-      for (final r in act.rows) {
-        sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
-        )
-          ..value = IntCellValue(r.sNu)
-          ..cellStyle = cellCenterStyle;
-        sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow),
-        )
-          ..value = TextCellValue(r.birligi)
-          ..cellStyle = cellCenterStyle;
-        sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow),
-        )
-          ..value = TextCellValue(r.rutbe)
-          ..cellStyle = cellCenterStyle;
-        sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow),
-        )
-          ..value = TextCellValue(r.adSoyad)
-          ..cellStyle = cellLeftStyle;
-        sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
-        )
-          ..value = TextCellValue(r.diger)
-          ..cellStyle = cellLeftStyle;
-        currentRow++;
+      var rowIndex = 0;
+      while (rowIndex < act.rows.length) {
+        final startRowIndex = currentRow;
+        final currentBirlik = act.rows[rowIndex].birligi;
+        final currentGroup = act.rows[rowIndex].groupCode;
+        var groupLength = 1;
+        while (rowIndex + groupLength < act.rows.length &&
+            _sameBirlik(
+              act.rows[rowIndex + groupLength].birligi,
+              currentBirlik,
+            )) {
+          groupLength++;
+        }
+        final isSpecialGroup =
+            (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
+            List.generate(
+              groupLength,
+              (offset) => act.rows[rowIndex + offset].groupCode,
+            ).every((groupCode) => groupCode == currentGroup);
+
+        for (var offset = 0; offset < groupLength; offset++) {
+          final r = act.rows[rowIndex + offset];
+          sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
+          )
+            ..value = IntCellValue(r.sNu)
+            ..cellStyle = cellCenterStyle;
+          sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow),
+          )
+            ..value = offset == 0 ? TextCellValue(r.birligi) : null
+            ..cellStyle = cellCenterStyle;
+          sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow),
+          )
+            ..value = TextCellValue(r.rutbe)
+            ..cellStyle = cellCenterStyle;
+          sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow),
+          )
+            ..value = TextCellValue(r.adSoyad)
+            ..cellStyle = cellLeftStyle;
+          sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
+          )
+            ..value = !isSpecialGroup || offset == 0
+                ? TextCellValue(r.diger)
+                : null
+            ..cellStyle = isSpecialGroup ? cellCenterStyle : cellLeftStyle;
+          currentRow++;
+        }
+
+        if (groupLength > 1) {
+          sheet.merge(
+            CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: startRowIndex),
+            CellIndex.indexByColumnRow(
+              columnIndex: 1,
+              rowIndex: startRowIndex + groupLength - 1,
+            ),
+          );
+          if (isSpecialGroup) {
+            sheet.merge(
+              CellIndex.indexByColumnRow(
+                columnIndex: 4,
+                rowIndex: startRowIndex,
+              ),
+              CellIndex.indexByColumnRow(
+                columnIndex: 4,
+                rowIndex: startRowIndex + groupLength - 1,
+              ),
+            );
+          }
+        }
+        rowIndex += groupLength;
       }
     }
 
@@ -879,6 +899,15 @@ class MilitaryRosterExporter {
 
     final encoded = excel.encode();
     return encoded ?? <int>[];
+  }
+
+  static bool _sameBirlik(String first, String second) {
+    String normalize(String value) => value
+        .trim()
+        .toUpperCase()
+        .replaceAll('İ', 'I')
+        .replaceAll(RegExp(r'\s+'), ' ');
+    return normalize(first) == normalize(second);
   }
 
   /// Exports Excel roster with native binary .xlsx and triggers OS share
