@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/auth/domain/user_session.dart';
@@ -13,15 +14,28 @@ void main() {
   late AppDatabase database;
   late ActivityRepository repository;
   late int personId;
+  late UserSessionState commander;
 
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
     repository = ActivityRepository(database);
+    final teamId = await database.into(database.timTable).insert(
+          TimTableCompanion.insert(
+            timAdi: 'Test Takımı',
+            olusturmaTarihi: '2026-07-28',
+          ),
+        );
+    commander = UserSessionState(
+      username: 'komutan',
+      role: UserRole.teamCommander,
+      timId: teamId,
+    );
     personId = await database.into(database.personelTable).insert(
           PersonelTableCompanion.insert(
             adSoyad: 'Ali Deneme',
             rutbe: 'J.Uzm.Çvş.',
             birlik: '6/B',
+            timId: Value(teamId),
             kayitTarihi: '2026-07-28',
           ),
         );
@@ -39,12 +53,14 @@ void main() {
       tarih: '2026-07-28',
       olusturanKullanici: 'admin',
       personnelAssignments: [assignment('GÖREVLİ')],
+      actor: admin,
     );
     final secondId = await repository.createActivityWithAssignments(
       faaliyetAdi: 'Görev',
       tarih: '2026-07-28',
       olusturanKullanici: 'admin',
       personnelAssignments: [assignment('NÖBETÇİ')],
+      actor: admin,
     );
 
     expect(secondId, isNot(firstId));
@@ -69,14 +85,14 @@ void main() {
       tarih: '2026-07-28',
       olusturanKullanici: 'komutan',
       personnelAssignments: [assignment('HAZIR KITA')],
-      isCommander: true,
+      actor: commander,
     );
     final secondId = await repository.createActivityWithAssignments(
       faaliyetAdi: 'Devriye',
       tarih: '2026-07-29',
       olusturanKullanici: 'komutan',
       personnelAssignments: [assignment('GÖREVLİ')],
-      isCommander: true,
+      actor: commander,
     );
     final rows =
         await database.select(database.faaliyetPersonelAtamaTable).get();
@@ -117,6 +133,7 @@ void main() {
       tarih: '2026-07-28',
       olusturanKullanici: 'admin',
       personnelAssignments: [assignment('HAZIR KITA')],
+      actor: admin,
     );
     final payload = [
       assignment('HAZIR KITA'),
@@ -140,6 +157,7 @@ void main() {
       activityId: activityId,
       personnelAssignments: payload,
       updateDifferentAssignments: false,
+      actor: admin,
     );
     expect(result.addedCount, 1);
     expect(result.skippedCount, 1);
@@ -157,6 +175,7 @@ void main() {
       tarih: '2026-07-28',
       olusturanKullanici: 'admin',
       personnelAssignments: [assignment('GÖREVLİ')],
+      actor: admin,
     );
     final changed = [
       PersonnelAssignmentInput(
@@ -170,6 +189,7 @@ void main() {
       activityId: activityId,
       personnelAssignments: changed,
       updateDifferentAssignments: false,
+      actor: admin,
     );
     expect(skipped.skippedCount, 1);
     var row =
@@ -180,6 +200,7 @@ void main() {
       activityId: activityId,
       personnelAssignments: changed,
       updateDifferentAssignments: true,
+      actor: admin,
     );
     expect(updated.updatedCount, 1);
     row =

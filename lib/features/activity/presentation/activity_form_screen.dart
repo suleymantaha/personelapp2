@@ -170,6 +170,12 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
     final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
     final name = _activityNameController.text.trim();
     final userSession = ref.read(userSessionProvider);
+    if (userSession == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Oturum doğrulanamadı.')),
+      );
+      return;
+    }
 
     if (name.isEmpty) {
       setState(() => _showNameError = true);
@@ -197,7 +203,7 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
     }
 
     final repo = ref.read(activityRepositoryProvider);
-    final isCommander = userSession?.isAdmin != true;
+    final isCommander = !userSession.isAdmin;
     final matches = await repo.findMatchingActivities(
       faaliyetAdi: name,
       tarih: dateStr,
@@ -214,24 +220,24 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
           activityId: choice.activityId!,
           personnelAssignments: payload,
           updateDifferentAssignments: choice.updateDifferentAssignments,
-          isCommander: isCommander,
+          actor: userSession,
         );
       } else {
         await repo.createActivityWithAssignments(
           faaliyetAdi: name,
           tarih: dateStr,
-          olusturanKullanici: userSession?.username ?? 'admin',
+          olusturanKullanici: userSession.username,
           personnelAssignments: payload,
-          isCommander: isCommander,
+          actor: userSession,
         );
       }
     } else {
       await repo.createActivityWithAssignments(
         faaliyetAdi: name,
         tarih: dateStr,
-        olusturanKullanici: userSession?.username ?? 'admin',
+        olusturanKullanici: userSession.username,
         personnelAssignments: payload,
-        isCommander: isCommander,
+        actor: userSession,
       );
     }
 

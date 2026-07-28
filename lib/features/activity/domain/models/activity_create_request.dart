@@ -16,12 +16,10 @@ class ActivityCreateRequest {
     required this.tarih,
     required this.olusturanKullanici,
     required this.personnelAssignments,
-    this.isCommander = false,
   });
 
   final String faaliyetAdi;
   final String tarih;
   final String olusturanKullanici;
   final List<PersonnelAssignmentInput> personnelAssignments;
-  final bool isCommander;
 }

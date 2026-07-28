@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/auth/domain/authorization_exception.dart';
@@ -10,6 +11,7 @@ void main() {
   late AppDatabase database;
   late ActivityRepository repository;
   late int assignmentId;
+  late int personId;
 
   const admin = UserSessionState(
     username: 'admin',
@@ -24,11 +26,24 @@ void main() {
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
     repository = ActivityRepository(database);
-    final personId = await database.into(database.personelTable).insert(
+    await database.into(database.timTable).insert(
+          TimTableCompanion.insert(
+            timAdi: 'Komutan Takımı',
+            olusturmaTarihi: '2026-07-28',
+          ),
+        );
+    await database.into(database.timTable).insert(
+          TimTableCompanion.insert(
+            timAdi: 'Diğer Takım',
+            olusturmaTarihi: '2026-07-28',
+          ),
+        );
+    personId = await database.into(database.personelTable).insert(
           PersonelTableCompanion.insert(
             adSoyad: 'Yetki Testi',
             rutbe: 'J.Uzm.Çvş.',
             birlik: '6/B',
+            timId: const Value(2),
             kayitTarihi: '2026-07-28',
           ),
         );
@@ -84,5 +99,34 @@ void main() {
 
     expect(approval.approvedCount, 1);
     expect(deleted, 1);
+  });
+
+  test('commander cannot create assignments for another team', () async {
+    await expectLater(
+      repository.createActivityWithAssignments(
+        faaliyetAdi: 'Yetkisiz faaliyet',
+        tarih: '2026-07-29',
+        olusturanKullanici: commander.username,
+        personnelAssignments: [
+          PersonnelAssignmentInput(personnelId: personId, duty: 'GÖREVLİ'),
+        ],
+        actor: commander,
+      ),
+      throwsA(isA<AuthorizationException>()),
+    );
+    expect(
+      await database.select(database.gunlukFaaliyetTable).get(),
+      hasLength(1),
+    );
+  });
+
+  test('bulk activity import is admin only', () async {
+    await expectLater(
+      repository.createActivitiesWithAssignments(
+        const [],
+        actor: commander,
+      ),
+      throwsA(isA<AuthorizationException>()),
+    );
   });
 }

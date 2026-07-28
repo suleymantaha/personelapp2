@@ -234,6 +234,8 @@ class _AddPersonnelToActivityDialogState
                 ? null
                 : () async {
                     final repo = ref.read(activityRepositoryProvider);
+                    final actor = ref.read(userSessionProvider);
+                    if (actor == null) return;
                     final note = _noteController.text.trim();
                     await repo.addSingleAssignment(
                       faaliyetId: widget.activity.id,
@@ -241,7 +243,7 @@ class _AddPersonnelToActivityDialogState
                       gorevVeyaIzin: _selectedDuty,
                       aciklama: note.isNotEmpty ? note : null,
                       tarih: widget.activity.tarih,
-                      isCommander: !widget.isAdmin,
+                      actor: actor,
                     );
                     if (context.mounted) {
                       Navigator.of(context).pop(true);

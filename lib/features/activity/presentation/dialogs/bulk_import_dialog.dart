@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/bulk_activity_import_preparer.dart';
@@ -9,7 +11,7 @@ import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.da
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
 
-class BulkImportDialog extends StatefulWidget {
+class BulkImportDialog extends ConsumerStatefulWidget {
   const BulkImportDialog({
     required this.database,
     required this.activityRepository,
@@ -19,10 +21,10 @@ class BulkImportDialog extends StatefulWidget {
   final ActivityRepository activityRepository;
 
   @override
-  State<BulkImportDialog> createState() => _BulkImportDialogState();
+  ConsumerState<BulkImportDialog> createState() => _BulkImportDialogState();
 }
 
-class _BulkImportDialogState extends State<BulkImportDialog>
+class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
     with SingleTickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
   List<ParsedActivityBlock> _parsedBlocks = [];
@@ -103,8 +105,13 @@ class _BulkImportDialogState extends State<BulkImportDialog>
     });
 
     try {
+      final actor = ref.read(userSessionProvider);
+      if (actor == null) {
+        throw StateError('Oturum doğrulanamadı.');
+      }
       await widget.activityRepository.createActivitiesWithAssignments(
         preparation.requests,
+        actor: actor,
       );
 
       if (mounted) {

@@ -101,6 +101,31 @@ class ActivityRepository {
     }
   }
 
+  Future<void> _requirePersonnelScope(
+    UserSessionState actor,
+    List<PersonnelAssignmentInput> assignments,
+  ) async {
+    final personnelIds = assignments.map((item) => item.personnelId).toSet();
+    if (personnelIds.isEmpty) return;
+
+    final personnel = await (db.select(
+      db.personelTable,
+    )..where((table) => table.id.isIn(personnelIds))).get();
+    if (personnel.length != personnelIds.length) {
+      throw const AuthorizationException(
+        'Atama listesindeki personelden biri bulunamadı.',
+      );
+    }
+    if (actor.isAdmin) return;
+
+    final teamId = actor.timId;
+    if (teamId == null || personnel.any((person) => person.timId != teamId)) {
+      throw const AuthorizationException(
+        'Tim komutanı yalnızca kendi timindeki personele atama yapabilir.',
+      );
+    }
+  }
+
   String _normalizeActivityName(String value) =>
       value.trim().replaceAll(RegExp(r'\s+'), ' ').toUpperCase();
 
@@ -367,19 +392,20 @@ class ActivityRepository {
     required String tarih,
     required String olusturanKullanici,
     required List<PersonnelAssignmentInput> personnelAssignments,
-    bool isCommander = false,
+    required UserSessionState actor,
   }) {
-    return db.transaction(
-      () => _createActivityWithinTransaction(
+    return db.transaction(() async {
+      await _requirePersonnelScope(actor, personnelAssignments);
+      return _createActivityWithinTransaction(
         ActivityCreateRequest(
           faaliyetAdi: faaliyetAdi,
           tarih: tarih,
           olusturanKullanici: olusturanKullanici,
           personnelAssignments: personnelAssignments,
-          isCommander: isCommander,
         ),
-      ),
-    );
+        requiresApproval: !actor.isAdmin,
+      );
+    });
   }
 
   Future<List<ExistingActivityMatch>> findMatchingActivities({
@@ -454,9 +480,10 @@ class ActivityRepository {
     required int activityId,
     required List<PersonnelAssignmentInput> personnelAssignments,
     required bool updateDifferentAssignments,
-    bool isCommander = false,
+    required UserSessionState actor,
   }) {
     return db.transaction(() async {
+      await _requirePersonnelScope(actor, personnelAssignments);
       final activity = await (db.select(
         db.gunlukFaaliyetTable,
       )..where((table) => table.id.equals(activityId)))
@@ -497,7 +524,7 @@ class ActivityRepository {
             existingAssignments: allAssignments,
             excludeAssignmentId: current.id,
           );
-          if (isCommander) status = AssignmentStatus.beklemede;
+          if (!actor.isAdmin) status = AssignmentStatus.beklemede;
           await (db.update(
             db.faaliyetPersonelAtamaTable,
           )..where((table) => table.id.equals(current.id)))
@@ -519,7 +546,7 @@ class ActivityRepository {
           reports: reports,
           existingAssignments: allAssignments,
         );
-        if (isCommander) status = AssignmentStatus.beklemede;
+        if (!actor.isAdmin) status = AssignmentStatus.beklemede;
         final assignmentId =
             await db.into(db.faaliyetPersonelAtamaTable).insert(
                   FaaliyetPersonelAtamaTableCompanion.insert(
@@ -552,12 +579,23 @@ class ActivityRepository {
   }
 
   Future<List<int>> createActivitiesWithAssignments(
-    List<ActivityCreateRequest> requests,
-  ) {
+    List<ActivityCreateRequest> requests, {
+    required UserSessionState actor,
+  }) {
     return db.transaction(() async {
+      if (!actor.isAdmin) {
+        throw const AuthorizationException(
+          'Toplu faaliyet içe aktarma yalnızca yöneticilere açıktır.',
+        );
+      }
       final ids = <int>[];
       for (final request in requests) {
-        ids.add(await _createActivityWithinTransaction(request));
+        ids.add(
+          await _createActivityWithinTransaction(
+            request,
+            requiresApproval: false,
+          ),
+        );
       }
       return ids;
     });
@@ -603,6 +641,9 @@ class ActivityRepository {
 
   Future<int> _createActivityWithinTransaction(
     ActivityCreateRequest request,
+    {
+    required bool requiresApproval,
+  }
   ) async {
     final activityId = await db.into(db.gunlukFaaliyetTable).insert(
           GunlukFaaliyetTableCompanion.insert(
@@ -630,7 +671,7 @@ class ActivityRepository {
         reports: reports,
         existingAssignments: existingAssignments,
       );
-      if (request.isCommander) status = AssignmentStatus.beklemede;
+      if (requiresApproval) status = AssignmentStatus.beklemede;
 
       final assignmentId = await db.into(db.faaliyetPersonelAtamaTable).insert(
             FaaliyetPersonelAtamaTableCompanion.insert(
@@ -898,9 +939,19 @@ class ActivityRepository {
     required String gorevVeyaIzin,
     required String tarih,
     String? aciklama,
-    bool isCommander = false,
+    required UserSessionState actor,
   }) async {
     return db.transaction(() async {
+      await _requirePersonnelScope(
+        actor,
+        [
+          PersonnelAssignmentInput(
+            personnelId: personelId,
+            duty: gorevVeyaIzin,
+            note: aciklama,
+          ),
+        ],
+      );
       final duplicate = await (db.select(
         db.faaliyetPersonelAtamaTable,
       )..where(
@@ -920,7 +971,7 @@ class ActivityRepository {
         reports: reports,
         existingAssignments: existingAssignments,
       );
-      if (isCommander) status = AssignmentStatus.beklemede;
+      if (!actor.isAdmin) status = AssignmentStatus.beklemede;
 
       return db.into(db.faaliyetPersonelAtamaTable).insert(
             FaaliyetPersonelAtamaTableCompanion.insert(

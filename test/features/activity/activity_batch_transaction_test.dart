@@ -1,9 +1,14 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 
 void main() {
+  const admin = UserSessionState(
+    username: 'admin',
+    role: UserRole.admin,
+  );
   test('batch creation rolls back all dates when one request fails', () async {
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);
@@ -34,7 +39,7 @@ void main() {
           olusturanKullanici: 'admin',
           personnelAssignments: [assignment(999999)],
         ),
-      ]),
+      ], actor: admin),
       throwsA(anything),
     );
 
