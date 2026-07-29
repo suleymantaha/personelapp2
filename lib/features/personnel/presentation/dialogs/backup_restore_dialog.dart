@@ -75,10 +75,16 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
         _statusMessage =
             '🎉 Başarılı! $count adet yeni personel ve tim veritabanına aktarıldı.';
       });
-    } on Object catch (_) {
+    } on FormatException catch (error) {
       if (!mounted) return;
       setState(() {
-        _statusMessage = '❌ Yedek doğrulanamadı veya içe aktarılamadı.';
+        _statusMessage = '❌ ${error.message}';
+      });
+    } on Exception catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _statusMessage =
+            '❌ Yedek içe aktarılamadı. Veritabanı işlemini tekrar deneyin.';
       });
     } finally {
       if (mounted) {

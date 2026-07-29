@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -102,5 +104,36 @@ void main() {
       service.importBackupJson(oversized),
       throwsA(isA<FormatException>()),
     );
+  });
+
+  test('exported backup can be copied and imported into the same database',
+      () async {
+    await db.into(db.personelTable).insert(
+          PersonelTableCompanion.insert(
+            adSoyad: 'Ayşe YILMAZ',
+            rutbe: 'Astsubay',
+            birlik: 'Merkez',
+            kayitTarihi: '2026-07-29',
+          ),
+        );
+
+    final copiedBackup = await service.exportBackupJson();
+    final count = await service.importBackupJson(copiedBackup);
+
+    expect(count, 0);
+    expect(await db.select(db.personelTable).get(), hasLength(1));
+  });
+
+  test('clipboard wrappers around a valid backup are accepted', () async {
+    const backup = '{"version":1,"squads":[],"personnel":[]}';
+    final wrappedInputs = [
+      '\uFEFF$backup',
+      '```json\n$backup\n```',
+      jsonEncode(backup),
+    ];
+
+    for (final input in wrappedInputs) {
+      expect(await service.importBackupJson(input), 0);
+    }
   });
 }

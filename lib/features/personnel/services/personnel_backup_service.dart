@@ -62,10 +62,10 @@ class PersonnelBackupService {
     if (utf8.encode(jsonString).length > maxBackupBytes) {
       throw const FormatException('Yedek dosyası izin verilen boyutu aşıyor.');
     }
-    final decoded = jsonDecode(jsonString);
+    final decoded = _decodeBackup(jsonString);
     if (decoded is! Map<String, Object?>) {
       throw const FormatException(
-        'Yedek verisi beklenen JSON nesnesi formatinda degil.',
+        'Yedek verisi beklenen JSON nesnesi formatında değil.',
       );
     }
     if (decoded['version'] != backupVersion) {
@@ -194,6 +194,35 @@ class PersonnelBackupService {
     });
 
     return importedCount;
+  }
+
+  Object? _decodeBackup(String input) {
+    var normalized = input.trim();
+    if (normalized.startsWith('\uFEFF')) {
+      normalized = normalized.substring(1).trimLeft();
+    }
+
+    if (normalized.startsWith('```') && normalized.endsWith('```')) {
+      final firstLineEnd = normalized.indexOf('\n');
+      if (firstLineEnd == -1) {
+        throw const FormatException('Yedek kod bloğu boş.');
+      }
+      normalized =
+          normalized.substring(firstLineEnd + 1, normalized.length - 3).trim();
+    }
+
+    Object? decoded;
+    try {
+      decoded = jsonDecode(normalized);
+      if (decoded is String) {
+        decoded = jsonDecode(decoded.trim());
+      }
+    } on FormatException {
+      throw const FormatException(
+        'Yedek metni geçerli JSON biçiminde değil. Metnin tamamını kopyalayın.',
+      );
+    }
+    return decoded;
   }
 
   List<Map<String, Object?>> _readObjectList(
