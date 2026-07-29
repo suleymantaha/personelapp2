@@ -5,7 +5,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
-import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/edit_assignment_dialog.dart';
@@ -58,54 +58,13 @@ class ActivityAssignmentDetails extends ConsumerWidget {
     final squadsList = allSquadsAsync.value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
 
-    final operationalAssignments = filteredAssignments.where((atama) {
-      return DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin);
-    }).toList()
-      ..sort((a, b) {
-        final catA = MilitaryStructureHelper.getDutyCategoryOrder(
-          a.gorevVeyaIzin,
-        );
-        final catB = MilitaryStructureHelper.getDutyCategoryOrder(
-          b.gorevVeyaIzin,
-        );
-        if (catA != catB) return catA.compareTo(catB);
-
-        final pA = pMap[a.personelId];
-        final pB = pMap[b.personelId];
-
-        if (catA == 10) {
-          final rA = getRankWeight(pA?.rutbe ?? '');
-          final rB = getRankWeight(pB?.rutbe ?? '');
-          if (rA != rB) return rA.compareTo(rB);
-          return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
-        }
-
-        final timNameA = (pA?.timId != null && squadMap.containsKey(pA!.timId))
-            ? squadMap[pA.timId]!
-            : '';
-        final timNameB = (pB?.timId != null && squadMap.containsKey(pB!.timId))
-            ? squadMap[pB.timId]!
-            : '';
-        final birlikA = MilitaryStructureHelper.getRosterBirlikName(
-          timName: timNameA,
-          birlik: pA?.birlik ?? '',
-          duty: a.gorevVeyaIzin,
-        );
-        final birlikB = MilitaryStructureHelper.getRosterBirlikName(
-          timName: timNameB,
-          birlik: pB?.birlik ?? '',
-          duty: b.gorevVeyaIzin,
-        );
-        final wBirlikA = MilitaryStructureHelper.getSquadOrderWeight(birlikA);
-        final wBirlikB = MilitaryStructureHelper.getSquadOrderWeight(birlikB);
-        if (wBirlikA != wBirlikB) return wBirlikA.compareTo(wBirlikB);
-
-        final weightA = getRankWeight(pA?.rutbe ?? '');
-        final weightB = getRankWeight(pB?.rutbe ?? '');
-        if (weightA != weightB) return weightA.compareTo(weightB);
-
-        return (pA?.adSoyad ?? '').compareTo(pB?.adSoyad ?? '');
-      });
+    final operationalAssignments = orderAssignmentsForExport(
+      filteredAssignments.where(
+        (atama) => DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin),
+      ),
+      pMap,
+      squadMap,
+    );
 
     final rosterRows = <MilitaryRosterRow>[];
     for (var i = 0; i < operationalAssignments.length; i++) {
