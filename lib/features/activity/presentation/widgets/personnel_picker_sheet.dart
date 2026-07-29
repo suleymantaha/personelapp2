@@ -107,6 +107,9 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
         '${person.rutbe} ${person.adSoyad} ${person.birlik} $teamName',
       ).contains(normalizedQuery);
     }).toList();
+    final suggested = filtered
+        .where((person) => person.id == widget.selectedPersonnelId)
+        .firstOrNull;
 
     final grouped = <int?, List<PersonelTableData>>{};
     if (normalizedQuery.isEmpty) {
@@ -119,11 +122,6 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
     }
     for (final group in grouped.values) {
       group.sort((a, b) {
-        final aIsSelected = a.id == widget.selectedPersonnelId;
-        final bIsSelected = b.id == widget.selectedPersonnelId;
-        if (aIsSelected != bIsSelected) {
-          return aIsSelected ? -1 : 1;
-        }
         final rankComparison =
             getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe));
         if (rankComparison != 0) return rankComparison;
@@ -150,6 +148,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
         )
         .whereType<PersonelTableData>()
         .where(filtered.contains)
+        .where((person) => person.id != suggested?.id)
         .toList();
 
     return Container(
@@ -223,6 +222,28 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                 : ListView(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
                     children: [
+                      if (suggested != null) ...[
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(8, 10, 8, 6),
+                          child: Text(
+                            'Önerilen Eşleşme',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Card(
+                          clipBehavior: Clip.antiAlias,
+                          margin: EdgeInsets.zero,
+                          child: _PersonnelTile(
+                            person: suggested,
+                            teamName: squadNames[suggested.timId] ?? 'Tim Dışı',
+                            selected: true,
+                            disabledReason:
+                                widget.disabledReasons[suggested.id],
+                            onTap: () => _select(suggested),
+                          ),
+                        ),
+                        const Divider(height: 20),
+                      ],
                       if (recent.isNotEmpty && normalizedQuery.isEmpty) ...[
                         const Padding(
                           padding: EdgeInsets.fromLTRB(8, 10, 8, 6),
@@ -244,6 +265,9 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                       ],
                       ...groupIds.map((timId) {
                         final members = grouped[timId]!;
+                        final visibleMembers = members
+                            .where((person) => person.id != suggested?.id)
+                            .toList();
                         final teamName = timId == null
                             ? 'Tim Dışı'
                             : (squadNames[timId] ?? 'Bilinmeyen Tim');
@@ -304,7 +328,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                                     ),
                                   )
                                 else
-                                  ...members.map(
+                                  ...visibleMembers.map(
                                     (person) => _PersonnelTile(
                                       person: person,
                                       teamName: teamName,

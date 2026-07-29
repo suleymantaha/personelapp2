@@ -107,7 +107,7 @@ void main() {
     expect(find.textContaining('Personel Yönetimi'), findsOneWidget);
   });
 
-  testWidgets('shows the suggested personnel first in the team list',
+  testWidgets('shows the suggested personnel first in the entire list',
       (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
@@ -115,18 +115,20 @@ void main() {
           body: PersonnelPickerSheet(
             personnel: personnel,
             squads: squads,
-            selectedPersonnelId: 3,
+            selectedPersonnelId: 2,
             preferredTimId: 1,
           ),
         ),
       ),
     );
 
-    final suggestedTile = find.byKey(const Key('personnel-option-3'));
-    final otherTile = find.byKey(const Key('personnel-option-1'));
+    final suggestedTile = find.byKey(const Key('personnel-option-2'));
+    final firstTeam = find.byKey(const Key('personnel-team-1'));
+    expect(find.text('Önerilen Eşleşme'), findsOneWidget);
+    expect(suggestedTile, findsOneWidget);
     expect(
       tester.getTopLeft(suggestedTile).dy,
-      lessThan(tester.getTopLeft(otherTile).dy),
+      lessThan(tester.getTopLeft(firstTeam).dy),
     );
   });
 
