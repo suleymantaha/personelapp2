@@ -266,7 +266,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Jandarma Görev Takip',
+                      'Nizam',
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
                             fontWeight: FontWeight.bold,
@@ -275,7 +275,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      'Giriş Portalı',
+                      'Görev Yönetimi',
                       style: context.textStyleSecondary,
                     ),
                     const SizedBox(height: 32),

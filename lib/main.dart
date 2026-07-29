@@ -25,7 +25,7 @@ class PersonelApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'Jandarma Görev Takip Uygulaması',
+      title: 'Nizam',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.militaryTheme,
       darkTheme: AppTheme.darkMilitaryTheme,

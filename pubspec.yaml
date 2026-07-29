@@ -50,6 +50,7 @@ dependencies:
 dev_dependencies:
   build_runner: ^2.15.1
   drift_dev: ^2.34.4
+  flutter_launcher_icons: ^0.14.4
   flutter_lints: ^5.0.0
   flutter_test:
     sdk: flutter
@@ -94,3 +95,21 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/branding/app_icon_modern_1024.png
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: assets/branding/app_icon_modern_1024.png
+    background_color: "#24301C"
+    theme_color: "#4A5D36"
+  windows:
+    generate: true
+    image_path: assets/branding/app_icon_modern_1024.png
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: assets/branding/app_icon_modern_1024.png

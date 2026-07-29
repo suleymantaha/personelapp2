@@ -300,7 +300,7 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Jandarma Görev Paneli'),
+        title: const Text('Nizam'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
