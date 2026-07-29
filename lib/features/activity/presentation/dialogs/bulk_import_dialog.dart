@@ -12,6 +12,7 @@ import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.da
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/conflict_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
+import 'package:personelapp2/features/activity/services/bulk_import_preferences.dart';
 
 enum _BulkPreviewFilter { all, problems }
 
@@ -30,6 +31,7 @@ class BulkImportDialog extends ConsumerStatefulWidget {
 
 class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
     with SingleTickerProviderStateMixin {
+  static const _preferences = BulkImportPreferences();
   final TextEditingController _textController = TextEditingController();
   List<ParsedActivityBlock> _parsedBlocks = [];
   List<BulkParseIssue> _parseIssues = [];
@@ -41,6 +43,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
   int _deduplicatedPersonnelCount = 0;
   List<BulkDeclaredTotal> _declaredTotals = [];
   bool _keepAuditText = false;
+  bool _keepAuditTextChanged = false;
   bool _parseIssuesExpanded = false;
   _BulkPreviewFilter _previewFilter = _BulkPreviewFilter.all;
   final ScrollController _previewScrollController = ScrollController();
@@ -51,6 +54,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     unawaited(_loadPersonnel());
+    unawaited(_loadPreferences());
   }
 
   @override
@@ -88,6 +92,22 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
       _allPersonnel = list;
       _allSquads = squads;
     });
+  }
+
+  Future<void> _loadPreferences() async {
+    final keepAuditText = await _preferences.loadKeepAuditText();
+    if (!mounted) return;
+    if (!_keepAuditTextChanged) {
+      setState(() => _keepAuditText = keepAuditText);
+    }
+  }
+
+  void _setKeepAuditText(bool value) {
+    setState(() {
+      _keepAuditText = value;
+      _keepAuditTextChanged = true;
+    });
+    unawaited(_preferences.saveKeepAuditText(value));
   }
 
   Future<void> _processText() async {
@@ -778,7 +798,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
               ),
               Switch(
                 value: _keepAuditText,
-                onChanged: (value) => setState(() => _keepAuditText = value),
+                onChanged: _setKeepAuditText,
               ),
             ],
           ),
