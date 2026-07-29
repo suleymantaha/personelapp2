@@ -119,6 +119,11 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
     }
     for (final group in grouped.values) {
       group.sort((a, b) {
+        final aIsSelected = a.id == widget.selectedPersonnelId;
+        final bIsSelected = b.id == widget.selectedPersonnelId;
+        if (aIsSelected != bIsSelected) {
+          return aIsSelected ? -1 : 1;
+        }
         final rankComparison =
             getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe));
         if (rankComparison != 0) return rankComparison;

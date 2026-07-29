@@ -107,6 +107,29 @@ void main() {
     expect(find.textContaining('Personel Yönetimi'), findsOneWidget);
   });
 
+  testWidgets('shows the suggested personnel first in the team list',
+      (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: PersonnelPickerSheet(
+            personnel: personnel,
+            squads: squads,
+            selectedPersonnelId: 3,
+            preferredTimId: 1,
+          ),
+        ),
+      ),
+    );
+
+    final suggestedTile = find.byKey(const Key('personnel-option-3'));
+    final otherTile = find.byKey(const Key('personnel-option-1'));
+    expect(
+      tester.getTopLeft(suggestedTile).dy,
+      lessThan(tester.getTopLeft(otherTile).dy),
+    );
+  });
+
   testWidgets('disables personnel who already have a daily record',
       (tester) async {
     await tester.pumpWidget(
