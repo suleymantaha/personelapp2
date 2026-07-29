@@ -9,6 +9,8 @@ class ParsedPersonnelItem { // 1.0: exact, 0.7-0.9: fuzzy, 0.0: none
     this.matchedRutbe,
     this.matchedTimId,
     this.matchConfidence = 0.0,
+    this.teamMismatch = false,
+    this.reviewConfirmed = false,
   });
   final int rawIndex;
   final String rawRank;
@@ -18,8 +20,13 @@ class ParsedPersonnelItem { // 1.0: exact, 0.7-0.9: fuzzy, 0.0: none
   final String? matchedRutbe;
   final int? matchedTimId;
   final double matchConfidence;
+  final bool teamMismatch;
+  final bool reviewConfirmed;
 
   bool get isMatched => matchedPersonnelId != null;
+  bool get needsReview =>
+      !isMatched ||
+      ((matchConfidence < 0.9 || teamMismatch) && !reviewConfirmed);
 
   ParsedPersonnelItem copyWith({
     int? rawIndex,
@@ -30,6 +37,8 @@ class ParsedPersonnelItem { // 1.0: exact, 0.7-0.9: fuzzy, 0.0: none
     String? matchedRutbe,
     int? matchedTimId,
     double? matchConfidence,
+    bool? teamMismatch,
+    bool? reviewConfirmed,
   }) {
     return ParsedPersonnelItem(
       rawIndex: rawIndex ?? this.rawIndex,
@@ -40,6 +49,8 @@ class ParsedPersonnelItem { // 1.0: exact, 0.7-0.9: fuzzy, 0.0: none
       matchedRutbe: matchedRutbe ?? this.matchedRutbe,
       matchedTimId: matchedTimId ?? this.matchedTimId,
       matchConfidence: matchConfidence ?? this.matchConfidence,
+      teamMismatch: teamMismatch ?? this.teamMismatch,
+      reviewConfirmed: reviewConfirmed ?? this.reviewConfirmed,
     );
   }
 }

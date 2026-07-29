@@ -583,6 +583,7 @@ class MilitaryRosterExporter {
       backgroundColorHex: ExcelColor.fromHexString('#E8EEF5'),
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
       leftBorder: tableBorder,
       rightBorder: tableBorder,
       topBorder: tableBorder,
@@ -596,6 +597,7 @@ class MilitaryRosterExporter {
       backgroundColorHex: ExcelColor.fromHexString('#D9D9D9'),
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
       leftBorder: tableBorder,
       rightBorder: tableBorder,
       topBorder: tableBorder,
@@ -607,6 +609,7 @@ class MilitaryRosterExporter {
       fontSize: 11,
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
       leftBorder: tableBorder,
       rightBorder: tableBorder,
       topBorder: tableBorder,
@@ -619,6 +622,7 @@ class MilitaryRosterExporter {
       fontSize: 11,
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
       leftBorder: tableBorder,
       rightBorder: tableBorder,
       topBorder: tableBorder,
@@ -630,6 +634,7 @@ class MilitaryRosterExporter {
       fontSize: 11,
       horizontalAlign: HorizontalAlign.Left,
       verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
       leftBorder: tableBorder,
       rightBorder: tableBorder,
       topBorder: tableBorder,
@@ -643,6 +648,7 @@ class MilitaryRosterExporter {
       backgroundColorHex: ExcelColor.fromHexString('#D9D9D9'),
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
       leftBorder: tableBorder,
       rightBorder: tableBorder,
       topBorder: tableBorder,
@@ -658,6 +664,7 @@ class MilitaryRosterExporter {
       CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0),
       CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0),
     );
+    sheet.setRowHeight(0, 30);
 
     // Row 2: Table Headers
     final headers = ['S. NU', 'BİRLİĞİ', 'RÜTBE', 'ADI SOYADI', 'DİĞER'];
@@ -666,6 +673,7 @@ class MilitaryRosterExporter {
         ..value = TextCellValue(headers[c])
         ..cellStyle = headerStyle;
     }
+    sheet.setRowHeight(2, 24);
 
     var currentRow = 3;
     var i = 0;
@@ -718,6 +726,10 @@ class MilitaryRosterExporter {
         sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: rIndex))
           ..value = !isSpecialGroup || j == 0 ? TextCellValue(r.diger) : null
           ..cellStyle = isSpecialGroup ? cellCenterBoldStyle : cellLeftStyle;
+        sheet.setRowHeight(
+          rIndex,
+          _excelRowHeightFor(r.adSoyad, r.diger, r.rutbe),
+        );
       }
 
       if (mergeCount > 0) {
@@ -744,11 +756,8 @@ class MilitaryRosterExporter {
       i += mergeCount + 1;
     }
 
-    final printAreaEndRow = currentRow;
-
-    // Summary section is intentionally outside the worksheet print area.
     currentRow += 1;
-    _writeThreeBoxSummary(
+    final summaryEndRow = _writeThreeBoxSummary(
       sheet: sheet,
       startRow: currentRow,
       rows: rows,
@@ -766,14 +775,22 @@ class MilitaryRosterExporter {
 
     final encoded = excel.encode();
     if (encoded == null) return <int>[];
-    return _setPrintArea(
+    return _applyPrintSettings(
       encoded,
       sheetName: sheetName,
-      endRow: printAreaEndRow,
+      endRow: summaryEndRow + 1,
+      endColumn: 'F',
+      repeatHeaderRow: 3,
     );
   }
 
-  static void _writeThreeBoxSummary({
+  static double _excelRowHeightFor(String name, String detail, String rank) {
+    final longest = [name.length, detail.length, rank.length]
+        .fold<int>(0, (max, length) => length > max ? length : max);
+    return longest > 32 ? 32 : 20;
+  }
+
+  static int _writeThreeBoxSummary({
     required Sheet sheet,
     required int startRow,
     required List<MilitaryRosterRow> rows,
@@ -839,6 +856,7 @@ class MilitaryRosterExporter {
         style: contentStyle,
       );
     }
+    return startRow + maxRankLines + 1;
   }
 
   static List<String> _rankSummaryLines(RankSummaryCounts counts) => [
@@ -876,10 +894,12 @@ class MilitaryRosterExporter {
     );
   }
 
-  static List<int> _setPrintArea(
+  static List<int> _applyPrintSettings(
     List<int> bytes, {
     required String sheetName,
     required int endRow,
+    required String endColumn,
+    required int repeatHeaderRow,
   }) {
     final archive = ZipDecoder().decodeBytes(bytes);
     final workbookFile = archive.findFile('xl/workbook.xml');
@@ -893,17 +913,34 @@ class MilitaryRosterExporter {
       ),
       '',
     );
+    workbookXml = workbookXml.replaceAll(
+      RegExp(
+        r'<definedName\b[^>]*\bname="_xlnm\.Print_Titles"[^>]*>.*?</definedName>',
+        dotAll: true,
+      ),
+      '',
+    );
     final escapedSheetName = sheetName.replaceAll("'", "''");
     final printArea = '<definedName name="_xlnm.Print_Area" localSheetId="0">'
-        "'$escapedSheetName'!\$A\$1:\$E\$$endRow"
+        "'$escapedSheetName'!\$A\$1:\$$endColumn\$$endRow"
         '</definedName>';
-    if (workbookXml.contains('</definedNames>')) {
+    final printTitles =
+        '<definedName name="_xlnm.Print_Titles" localSheetId="0">'
+        "'$escapedSheetName'!\$$repeatHeaderRow:\$$repeatHeaderRow"
+        '</definedName>';
+    if (workbookXml.contains('<definedNames/>')) {
+      workbookXml = workbookXml.replaceFirst(
+        '<definedNames/>',
+        '<definedNames>$printArea$printTitles</definedNames>',
+      );
+    } else if (workbookXml.contains('</definedNames>')) {
       workbookXml = workbookXml.replaceFirst(
         '</definedNames>',
-        '$printArea</definedNames>',
+        '$printArea$printTitles</definedNames>',
       );
     } else {
-      final definedNames = '<definedNames>$printArea</definedNames>';
+      final definedNames =
+          '<definedNames>$printArea$printTitles</definedNames>';
       workbookXml = workbookXml.contains('<calcPr')
           ? workbookXml.replaceFirst('<calcPr', '$definedNames<calcPr')
           : workbookXml.replaceFirst(
@@ -920,6 +957,59 @@ class MilitaryRosterExporter {
         workbookBytes,
       ),
     );
+
+    final worksheetFile = archive.files.cast<ArchiveFile?>().firstWhere(
+          (file) =>
+              file != null &&
+              file.name.startsWith('xl/worksheets/sheet') &&
+              file.name.endsWith('.xml'),
+          orElse: () => null,
+        );
+    if (worksheetFile != null) {
+      var worksheetXml = utf8.decode(worksheetFile.content as List<int>);
+      worksheetXml = worksheetXml.replaceFirstMapped(
+        RegExp(r'<sheetView\b([^>]*)/>'),
+        (match) {
+          final attributes = (match.group(1) ?? '').trimRight();
+          if (attributes.contains('showGridLines=')) {
+            return match.group(0)!.replaceFirst(
+                  RegExp(r'showGridLines="[^"]*"'),
+                  'showGridLines="0"',
+                );
+          }
+          return '<sheetView$attributes showGridLines="0"/>';
+        },
+      );
+      worksheetXml = worksheetXml.replaceFirst(
+        RegExp(r'<pageMargins\b[^>]*/>'),
+        '<pageMargins left="0.25" right="0.25" top="0.5" bottom="0.5" '
+        'header="0.2" footer="0.2"/>'
+        '<pageSetup paperSize="9" orientation="landscape" '
+        'fitToWidth="1" fitToHeight="0"/>',
+      );
+      if (!worksheetXml.contains('<printOptions')) {
+        worksheetXml = worksheetXml.replaceFirst(
+          '<pageMargins',
+          '<printOptions horizontalCentered="1" gridLines="0"/>'
+              '<pageMargins',
+        );
+      }
+      if (!worksheetXml.contains('<sheetPr')) {
+        worksheetXml = worksheetXml.replaceFirstMapped(
+          RegExp(r'<worksheet\b[^>]*>'),
+          (match) => '${match.group(0)}<sheetPr><pageSetUpPr fitToPage="1"/>'
+              '</sheetPr>',
+        );
+      }
+      final worksheetBytes = utf8.encode(worksheetXml);
+      archive.addFile(
+        ArchiveFile(
+          worksheetFile.name,
+          worksheetBytes.length,
+          worksheetBytes,
+        ),
+      );
+    }
     return ZipEncoder().encode(archive) ?? bytes;
   }
 
@@ -948,6 +1038,7 @@ class MilitaryRosterExporter {
       backgroundColorHex: ExcelColor.fromHexString('#E8EEF5'),
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
       leftBorder: tableBorder,
       rightBorder: tableBorder,
       topBorder: tableBorder,
@@ -962,6 +1053,7 @@ class MilitaryRosterExporter {
       backgroundColorHex: ExcelColor.fromHexString('#E2EFCB'),
       horizontalAlign: HorizontalAlign.Left,
       verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
       leftBorder: tableBorder,
       rightBorder: tableBorder,
       topBorder: tableBorder,
@@ -975,6 +1067,7 @@ class MilitaryRosterExporter {
       backgroundColorHex: ExcelColor.fromHexString('#D9D9D9'),
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
       leftBorder: tableBorder,
       rightBorder: tableBorder,
       topBorder: tableBorder,
@@ -986,6 +1079,7 @@ class MilitaryRosterExporter {
       fontSize: 11,
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
       leftBorder: tableBorder,
       rightBorder: tableBorder,
       topBorder: tableBorder,
@@ -997,6 +1091,21 @@ class MilitaryRosterExporter {
       fontSize: 11,
       horizontalAlign: HorizontalAlign.Left,
       verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
+    );
+
+    final summaryHeaderStyle = CellStyle(
+      bold: true,
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 11,
+      backgroundColorHex: ExcelColor.fromHexString('#D9D9D9'),
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
       leftBorder: tableBorder,
       rightBorder: tableBorder,
       topBorder: tableBorder,
@@ -1013,6 +1122,7 @@ class MilitaryRosterExporter {
       CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
       CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
     );
+    sheet.setRowHeight(currentRow, 30);
     currentRow++;
 
     final headers = ['S. NU', 'BİRLİĞİ', 'RÜTBE', 'ADI SOYADI', 'DİĞER'];
@@ -1030,6 +1140,7 @@ class MilitaryRosterExporter {
         CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
         CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
       );
+      sheet.setRowHeight(currentRow, 28);
       currentRow++;
 
       for (var c = 0; c < headers.length; c++) {
@@ -1039,6 +1150,7 @@ class MilitaryRosterExporter {
           ..value = TextCellValue(headers[c])
           ..cellStyle = headerStyle;
       }
+      sheet.setRowHeight(currentRow, 24);
       currentRow++;
 
       var rowIndex = 0;
@@ -1090,6 +1202,10 @@ class MilitaryRosterExporter {
             ..value =
                 !isSpecialGroup || offset == 0 ? TextCellValue(r.diger) : null
             ..cellStyle = isSpecialGroup ? cellCenterStyle : cellLeftStyle;
+          sheet.setRowHeight(
+            currentRow,
+            _excelRowHeightFor(r.adSoyad, r.diger, r.rutbe),
+          );
           currentRow++;
         }
 
@@ -1118,15 +1234,33 @@ class MilitaryRosterExporter {
       }
     }
 
+    currentRow++;
+    final allRows = activities.expand((activity) => activity.rows).toList();
+    final summaryEndRow = _writeThreeBoxSummary(
+      sheet: sheet,
+      startRow: currentRow,
+      rows: allRows,
+      headerStyle: summaryHeaderStyle,
+      contentStyle: cellLeftStyle,
+    );
+
     sheet
       ..setColumnWidth(0, 10)
       ..setColumnWidth(1, 22)
       ..setColumnWidth(2, 18)
       ..setColumnWidth(3, 30)
-      ..setColumnWidth(4, 25);
+      ..setColumnWidth(4, 25)
+      ..setColumnWidth(5, 7);
 
     final encoded = excel.encode();
-    return encoded ?? <int>[];
+    if (encoded == null) return <int>[];
+    return _applyPrintSettings(
+      encoded,
+      sheetName: sheetName,
+      endRow: summaryEndRow + 1,
+      endColumn: 'F',
+      repeatHeaderRow: 4,
+    );
   }
 
   static bool _sameBirlik(String first, String second) {

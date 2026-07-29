@@ -32,10 +32,12 @@ class BulkParseResult {
   const BulkParseResult({
     required this.blocks,
     required this.issues,
+    this.ignoredLineCount = 0,
   });
 
   final List<ParsedActivityBlock> blocks;
   final List<BulkParseIssue> issues;
+  final int ignoredLineCount;
 
   bool get hasBlockingIssues => issues.any((issue) => issue.isBlocking);
 }
@@ -64,8 +66,17 @@ class BulkTextParser {
     r'\d{1,2}[.:]\d{2}\s*[-–—]\s*[A-Za-zÇĞİÖŞÜçğıöşü][^:]{0,59}:)',
   );
   static final RegExp _rankPattern = RegExp(
-    r'^(J\s*[.]?\s*(?:Asb|Uzm)\s*[.]?\s*(?:Kd\s*[.]?\s*)?'
-    r'(?:Üçvş|Ucv[sş]?|Çvş|Cv[sş]?)\s*[.]?)\s*',
+    r'^(J\s*[.]?\s*(?:(?:Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm)|'
+    r'(?:(?:Asb|Uzm)\s*[.]?\s*(?:Kd\s*[.]?\s*)?'
+    r'(?:Üçvş|Ucv[sş]?|Çvş|Cv[sş]?)))\s*[.]?)\s*',
+    caseSensitive: false,
+  );
+  static final RegExp _fullDayAnnotationPattern = RegExp(
+    r'\s*\(\s*24\s*saat\s+kalacak\s*\)\s*',
+    caseSensitive: false,
+  );
+  static final RegExp _summaryPattern = RegExp(
+    r'^\s*(?:toplam|tolam)\b',
     caseSensitive: false,
   );
 
@@ -126,6 +137,7 @@ class BulkTextParser {
     final issues = <BulkParseIssue>[];
     final blocks = <ParsedActivityBlock>[];
     final personnel = <ParsedPersonnelItem>[];
+    var ignoredLineCount = 0;
 
     if (rawText.trim().isEmpty) {
       issues.add(const BulkParseIssue(
@@ -269,10 +281,8 @@ class BulkTextParser {
 
       final timeMatch = _timeRangePattern.firstMatch(line);
       if (timeMatch != null || _timeLikePattern.hasMatch(line)) {
-        flushBlock();
-        final parsedTime = _parseTimeRange(timeMatch);
-        if (parsedTime == null) {
-          currentTimeRange = null;
+        ignoredLineCount++;
+        if (timeMatch == null || _parseTimeRange(timeMatch) == null) {
           addIssue(
             line: lineNumber,
             raw: rawLine,
@@ -280,16 +290,24 @@ class BulkTextParser {
             message: 'Saat aralığı geçerli değil.',
             severity: BulkParseIssueSeverity.error,
           );
-        } else {
-          currentTimeRange = parsedTime;
         }
+        continue;
+      }
+
+      if (_summaryPattern.hasMatch(line)) {
+        ignoredLineCount++;
         continue;
       }
 
       final personnelCandidate = _personnelCandidate(line);
       if (personnelCandidate != null) {
+        final content = personnelCandidate.content
+            .replaceAll(_fullDayAnnotationPattern, ' ')
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trim();
+        if (content != personnelCandidate.content) ignoredLineCount++;
         final parsed = _parsePersonnelLine(
-          personnelCandidate.content,
+          content,
           personnelCandidate.index ?? nextIndex,
         );
         if (parsed == null) {
@@ -341,6 +359,7 @@ class BulkTextParser {
     return BulkParseResult(
       blocks: List<ParsedActivityBlock>.unmodifiable(blocks),
       issues: List<BulkParseIssue>.unmodifiable(issues),
+      ignoredLineCount: ignoredLineCount,
     );
   }
 
@@ -475,6 +494,15 @@ class BulkTextParser {
 
   static String _normalizeRank(String rank) {
     final clean = _fold(rank).replaceAll(RegExp(r'[\s.]'), '');
+    if (clean.contains('ütğm') || clean.contains('utgm')) {
+      return 'J.Ütğm.';
+    }
+    if (clean.contains('astğm') || clean.contains('astgm')) {
+      return 'J.Astğm.';
+    }
+    if (clean.contains('tğm') || clean.contains('tgm')) {
+      return 'J.Tğm.';
+    }
     if (clean.contains('asbkdüçvş') || clean.contains('asbkducvs')) {
       return 'J.Asb.Kd.Üçvş.';
     }

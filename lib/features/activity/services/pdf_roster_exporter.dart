@@ -11,88 +11,119 @@ import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
 enum PdfRosterStyle {
-  /// Stil 1 (Dikey Blok Mimarisi - VIP Format): Sol tarafta birlik/tim için tek parça piksel ortalı dikey kutu
+  /// Stil 1: Birlik ve özel görev hücrelerini kesintisiz blok olarak gösterir.
   verticalBlock,
 
-  /// Stil 2 (Akıllı Sayfa Kırılımı): Standart 5 sütunlu tablo, taşmalarda '(Devamı)' etiketi ekler
+  /// Stil 2: Her satırı tam çizgili klasik tablo biçiminde gösterir.
   smartPageChunk,
 
-  /// Stil 3 (Askeri Şerit Başlık): Her tim/grup üstüne tam genişlikte gri bant başlık açar
+  /// Stil 3: Her tim/grubun ilk satırını gri bantla vurgular.
   headerBand,
 }
 
 class PdfRosterExporter {
+  static const _rowsPerPdfTable = 22;
+
+  static String _normalizeGroupLabel(String value) => value
+      .trim()
+      .toUpperCase()
+      .replaceAll('İ', 'I')
+      .replaceAll(RegExp(r'\s+'), ' ');
+
+  static bool _sameGroupLabel(String first, String second) =>
+      _normalizeGroupLabel(first) == _normalizeGroupLabel(second);
+
   /// Formats the single official title used by PDF and Excel exports.
   static String formatOfficialTitle(String faaliyetAdi, String rawDate) {
     return OfficialRosterTitle.format(faaliyetAdi, rawDate);
   }
 
   static pw.Widget builderSummaryBox(List<MilitaryRosterRow> rows) {
-    var digerCount = 0;
-
-    for (final r in rows) {
-      if (r.groupCode != 'HAZIR_KITA' && r.groupCode != 'GULUSKUR') {
-        digerCount++;
-      }
-    }
-
-    final ranks = rows.map((r) => r.rutbe).toList();
-    final counts = RankSummaryCounts.calculate(ranks);
-
-    return pw.Container(
-      padding: const pw.EdgeInsets.all(8),
-      decoration: pw.BoxDecoration(
-        border: pw.Border.all(width: 0.8),
-        color: PdfColors.grey100,
+    final groups = [
+      (
+        'Hazır Kıta',
+        rows.where((row) => row.groupCode == 'HAZIR_KITA').toList(),
       ),
+      (
+        'Gülüşkür',
+        rows.where((row) => row.groupCode == 'GULUSKUR').toList(),
+      ),
+      (
+        'Diğer Tüm Personel',
+        rows
+            .where(
+              (row) =>
+                  row.groupCode != 'HAZIR_KITA' && row.groupCode != 'GULUSKUR',
+            )
+            .toList(),
+      ),
+    ];
+
+    return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        for (var index = 0; index < groups.length; index++) ...[
+          if (index > 0) pw.SizedBox(width: 6),
+          pw.Expanded(
+            child: _buildSummaryColumn(
+              groups[index].$1,
+              RankSummaryCounts.calculate(
+                groups[index].$2.map((row) => row.rutbe).toList(),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  static pw.Widget _buildSummaryColumn(
+    String title,
+    RankSummaryCounts counts,
+  ) {
+    final lines = [
+      if (counts.subayCount > 0) 'SB. ${counts.subayCount}',
+      if (counts.astsubayCount > 0) 'ASB. ${counts.astsubayCount}',
+      if (counts.uzmanJandarmaCount > 0) 'UZM.J. ${counts.uzmanJandarmaCount}',
+      if (counts.uzmanErbasCount > 0) 'J.UZM.ÇVŞ. ${counts.uzmanErbasCount}',
+      if (counts.erCount > 0) 'ER/SÖZ.ER ${counts.erCount}',
+    ];
+    return pw.Container(
+      decoration: pw.BoxDecoration(border: pw.Border.all(width: 0.8)),
       child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        crossAxisAlignment: pw.CrossAxisAlignment.stretch,
         children: [
-          pw.Text(
-            'GÖREV VE MEVCUT ÖZETİ',
-            style: pw.TextStyle(
-              fontSize: 10,
-              fontWeight: pw.FontWeight.bold,
+          pw.Container(
+            padding: const pw.EdgeInsets.all(5),
+            color: PdfColors.grey300,
+            child: pw.Text(
+              title,
+              textAlign: pw.TextAlign.center,
+              style: pw.TextStyle(
+                fontSize: 9,
+                fontWeight: pw.FontWeight.bold,
+              ),
             ),
           ),
-          pw.SizedBox(height: 4),
-          pw.Text(
-            MilitaryRosterExporter.specialDutyRankSummary(
-              'Hazır Kıta',
-              'HAZIR_KITA',
-              rows,
+          pw.Padding(
+            padding: const pw.EdgeInsets.all(6),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                for (final line in lines)
+                  pw.Text(line, style: const pw.TextStyle(fontSize: 8.5)),
+                if (lines.isEmpty)
+                  pw.Text('-', style: const pw.TextStyle(fontSize: 8.5)),
+                pw.SizedBox(height: 3),
+                pw.Text(
+                  'Toplam ${counts.totalCount}',
+                  style: pw.TextStyle(
+                    fontSize: 8.5,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            style: pw.TextStyle(
-              fontSize: 9,
-              fontWeight: pw.FontWeight.bold,
-            ),
-          ),
-          pw.SizedBox(height: 3),
-          pw.Text(
-            MilitaryRosterExporter.specialDutyRankSummary(
-              'Gülüşkür',
-              'GULUSKUR',
-              rows,
-            ),
-            style: pw.TextStyle(
-              fontSize: 9,
-              fontWeight: pw.FontWeight.bold,
-            ),
-          ),
-          pw.SizedBox(height: 3),
-          pw.Text(
-            'Diğer Görevler: $digerCount Personel',
-            style: pw.TextStyle(fontSize: 9),
-          ),
-          pw.SizedBox(height: 3),
-          pw.Text(
-            'Subay: ${counts.subayCount}  •  '
-            'Astsubay: ${counts.astsubayCount}  •  '
-            'Uzman Jandarma: ${counts.uzmanJandarmaCount}  •  '
-            'Uzman Erbaş: ${counts.uzmanErbasCount}  •  '
-            'Er/Söz.Er: ${counts.erCount}  •  '
-            'TOPLAM MEVCUT: ${counts.totalCount} Personel',
-            style: pw.TextStyle(fontSize: 9),
           ),
         ],
       ),
@@ -111,6 +142,7 @@ class PdfRosterExporter {
 
     final tableRows = <pw.TableRow>[
       pw.TableRow(
+        repeat: true,
         decoration: const pw.BoxDecoration(color: PdfColors.grey300),
         children: [
           pw.Container(
@@ -159,7 +191,7 @@ class PdfRosterExporter {
       final gCode = rows[idx].groupCode;
       var endIdx = idx;
       while (endIdx + 1 < n &&
-          rows[endIdx + 1].birligi == bName &&
+          _sameGroupLabel(rows[endIdx + 1].birligi, bName) &&
           rows[endIdx + 1].groupCode == gCode) {
         endIdx++;
       }
@@ -180,7 +212,7 @@ class PdfRosterExporter {
         var endIdx = idx;
         while (endIdx + 1 < n &&
             rows[endIdx + 1].groupCode == gCode &&
-            rows[endIdx + 1].birligi == bName) {
+            _sameGroupLabel(rows[endIdx + 1].birligi, bName)) {
           endIdx++;
         }
         for (var k = idx; k <= endIdx; k++) {
@@ -199,27 +231,25 @@ class PdfRosterExporter {
 
     for (var i = 0; i < n; i++) {
       final r = rows[i];
-      const rowBgColor = PdfColors.white;
+      final isGroupStart = i == 0 ||
+          rows[i - 1].groupCode != r.groupCode ||
+          !_sameGroupLabel(rows[i - 1].birligi, r.birligi);
+      final rowBgColor = style == PdfRosterStyle.headerBand && isGroupStart
+          ? PdfColors.grey200
+          : PdfColors.white;
 
       // Birlik merge boundaries
       final bSt = birlikStart[i];
       final bEn = birlikEnd[i];
       final isBLast = i == bEn;
 
-      final birlikBorder = isBLast
-          ? const pw.Border(
-              bottom: pw.BorderSide(width: 0.6, color: PdfColors.grey800),
-            )
-          : const pw.Border();
+      final birlikBorder = isBLast ? cellBorder : const pw.Border();
 
-      // Show every unit/team label once, centered in its merged block.
-      // Hazır Kıta and Gülüşkür rows already carry the parent company name;
-      // regular rows carry their team/unit name.
-      var birlikCellText = '';
-      final bMid = bSt + (bEn - bSt) ~/ 2;
-      if (i == bMid) {
-        birlikCellText = r.birligi;
-      }
+      // Each page is built from a bounded row chunk. Recreate the merged-cell
+      // appearance inside that chunk so a group split across pages starts a
+      // fresh, correctly labelled merged block on the next page.
+      final birlikMiddle = bSt + (bEn - bSt) ~/ 2;
+      final birlikCellText = i == birlikMiddle ? r.birligi : '';
       const birlikAlignment = pw.Alignment.center;
 
       // Special duty merge boundaries
@@ -228,28 +258,17 @@ class PdfRosterExporter {
       final isSpSpecialGroup = spSt != -1;
       final isSpLast = isSpSpecialGroup && i == spEn;
 
-      final specialBorder = isSpSpecialGroup
-          ? (isSpLast
-              ? const pw.Border(
-                  bottom: pw.BorderSide(
-                    width: 0.6,
-                    color: PdfColors.grey800,
-                  ),
-                )
-              : const pw.Border())
-          : cellBorder;
+      final specialBorder =
+          isSpSpecialGroup && !isSpLast ? const pw.Border() : cellBorder;
 
-      var specialCellText = '';
+      var specialCellText = r.diger.trim().isEmpty ? '-' : r.diger;
       var specialAlignment = pw.Alignment.center;
 
       if (isSpSpecialGroup) {
-        final spMid = spSt + (spEn - spSt) ~/ 2;
-        if (i == spMid) {
-          specialCellText = r.diger;
-        }
+        final specialMiddle = spSt + (spEn - spSt) ~/ 2;
+        specialCellText = i == specialMiddle ? r.diger : '';
         specialAlignment = pw.Alignment.center;
       } else {
-        specialCellText = r.diger.trim().isEmpty ? '-' : r.diger;
         specialAlignment = r.diger.trim().isEmpty
             ? pw.Alignment.center
             : pw.Alignment.centerLeft;
@@ -257,11 +276,11 @@ class PdfRosterExporter {
 
       tableRows.add(
         pw.TableRow(
-          decoration: const pw.BoxDecoration(color: rowBgColor),
+          decoration: pw.BoxDecoration(color: rowBgColor),
           children: [
             // S. NU
             pw.Container(
-              height: 18,
+              constraints: const pw.BoxConstraints(minHeight: 18),
               decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
@@ -275,10 +294,10 @@ class PdfRosterExporter {
             ),
             // BİRLİĞİ (Dynamically Merged Cell)
             pw.Container(
-              height: 18,
+              constraints: const pw.BoxConstraints(minHeight: 18),
               decoration: pw.BoxDecoration(
                 border: birlikBorder,
-                color: PdfColors.white,
+                color: rowBgColor,
               ),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
@@ -287,16 +306,19 @@ class PdfRosterExporter {
               alignment: birlikAlignment,
               child: pw.Text(
                 birlikCellText,
+                maxLines: 2,
                 textAlign: pw.TextAlign.center,
                 style: pw.TextStyle(
                   fontSize: 8.5,
-                  fontWeight: pw.FontWeight.bold,
+                  fontWeight: style == PdfRosterStyle.smartPageChunk
+                      ? pw.FontWeight.normal
+                      : pw.FontWeight.bold,
                 ),
               ),
             ),
             // RÜTBE
             pw.Container(
-              height: 18,
+              constraints: const pw.BoxConstraints(minHeight: 18),
               decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
@@ -305,12 +327,13 @@ class PdfRosterExporter {
               alignment: pw.Alignment.center,
               child: pw.Text(
                 r.rutbe,
+                maxLines: 2,
                 style: const pw.TextStyle(fontSize: 8.5),
               ),
             ),
             // ADI SOYADI
             pw.Container(
-              height: 18,
+              constraints: const pw.BoxConstraints(minHeight: 18),
               decoration: const pw.BoxDecoration(border: cellBorder),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
@@ -319,7 +342,7 @@ class PdfRosterExporter {
               alignment: pw.Alignment.centerLeft,
               child: pw.Text(
                 r.adSoyad,
-                maxLines: 1,
+                maxLines: 2,
                 style: pw.TextStyle(
                   fontSize: 8.5,
                   fontWeight: pw.FontWeight.bold,
@@ -328,10 +351,10 @@ class PdfRosterExporter {
             ),
             // DİĞER (Dynamically Merged Cell for Special Duties)
             pw.Container(
-              height: 18,
+              constraints: const pw.BoxConstraints(minHeight: 18),
               decoration: pw.BoxDecoration(
                 border: specialBorder,
-                color: isSpSpecialGroup ? PdfColors.white : null,
+                color: rowBgColor,
               ),
               padding: const pw.EdgeInsets.symmetric(
                 vertical: 2,
@@ -340,7 +363,7 @@ class PdfRosterExporter {
               alignment: specialAlignment,
               child: pw.Text(
                 specialCellText,
-                maxLines: 1,
+                maxLines: 2,
                 textAlign: (isSpSpecialGroup || r.diger.trim().isEmpty)
                     ? pw.TextAlign.center
                     : pw.TextAlign.left,
@@ -373,6 +396,58 @@ class PdfRosterExporter {
         4: pw.FlexColumnWidth(2.5), // DİĞER
       },
       children: tableRows,
+    );
+  }
+
+  static List<pw.Widget> _buildPaginatedTables(
+    List<MilitaryRosterRow> rows, {
+    required PdfRosterStyle style,
+    required String titleText,
+  }) {
+    if (rows.isEmpty) {
+      return [
+        _buildPageTitle(titleText),
+        pw.SizedBox(height: 10),
+        buildPdfTable(rows, style: style),
+      ];
+    }
+    final tables = <pw.Widget>[];
+    for (var start = 0; start < rows.length; start += _rowsPerPdfTable) {
+      if (tables.isNotEmpty) tables.add(pw.NewPage());
+      tables
+        ..add(_buildPageTitle(titleText))
+        ..add(pw.SizedBox(height: 10));
+      tables.add(
+        buildPdfTable(
+          rows.sublist(
+            start,
+            start + _rowsPerPdfTable < rows.length
+                ? start + _rowsPerPdfTable
+                : rows.length,
+          ),
+          style: style,
+        ),
+      );
+    }
+    return tables;
+  }
+
+  static pw.Widget _buildPageTitle(String titleText) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(8),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey200,
+        border: pw.Border.all(),
+      ),
+      child: pw.Center(
+        child: pw.Text(
+          titleText,
+          style: pw.TextStyle(
+            fontSize: 12,
+            fontWeight: pw.FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 
@@ -418,29 +493,6 @@ class PdfRosterExporter {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(24),
-        header: (context) {
-          return pw.Column(
-            children: [
-              pw.Container(
-                padding: const pw.EdgeInsets.all(8),
-                decoration: pw.BoxDecoration(
-                  color: PdfColors.grey200,
-                  border: pw.Border.all(),
-                ),
-                child: pw.Center(
-                  child: pw.Text(
-                    titleText,
-                    style: pw.TextStyle(
-                      fontSize: 12,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              pw.SizedBox(height: 10),
-            ],
-          );
-        },
         footer: (context) {
           return pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -464,7 +516,14 @@ class PdfRosterExporter {
         },
         build: (context) {
           return [
-            buildPdfTable(rows, style: style),
+            ..._buildPaginatedTables(
+              rows,
+              style: style,
+              titleText: titleText,
+            ),
+            if (rows.length > _rowsPerPdfTable) pw.NewPage(),
+            if (rows.length > _rowsPerPdfTable)
+              _buildPageTitle('$titleText - GÖREV VE MEVCUT ÖZETİ'),
             pw.SizedBox(height: 12),
             builderSummaryBox(rows),
           ];
@@ -570,7 +629,7 @@ class PdfRosterExporter {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                   subtitle: const Text(
-                    'Sol tarafta tek parça birlik kutusu. Sıfır çizgi kayması ve kusursuz hizalama.',
+                    'Birlik ve özel görev alanlarını kesintisiz blok görünümünde gösterir.',
                     style: TextStyle(fontSize: 11),
                   ),
                   onTap: () => Navigator.pop(ctx, PdfRosterStyle.verticalBlock),
@@ -591,7 +650,7 @@ class PdfRosterExporter {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                   subtitle: const Text(
-                    'Klasik 5 sütunlu tablo. Sayfa taşmalarında korumalı birleştirme.',
+                    'Klasik 5 sütunlu tablo. Her satır tam çizgili ve sayfa geçişlerine dayanıklıdır.',
                     style: TextStyle(fontSize: 11),
                   ),
                   onTap: () =>
@@ -609,7 +668,7 @@ class PdfRosterExporter {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                   subtitle: const Text(
-                    'Birlik/Tim bazlı gri bant başlıklar. Maksimum okunabilirlik.',
+                    'Her Birlik/Tim grubunun ilk satırını gri bantla vurgular.',
                     style: TextStyle(fontSize: 11),
                   ),
                   onTap: () => Navigator.pop(ctx, PdfRosterStyle.headerBand),

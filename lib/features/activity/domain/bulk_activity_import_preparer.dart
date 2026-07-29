@@ -60,8 +60,29 @@ class BulkActivityImportPreparer {
         }
       }
 
-      for (final occurrence
-          in occurrences.entries.where((entry) => entry.value.length > 1)) {
+      final uniqueOccurrences = <int,
+          List<
+              ({
+                ParsedActivityBlock block,
+                ParsedPersonnelItem person,
+              })>>{};
+      for (final occurrence in occurrences.entries) {
+        final byDuty = <String,
+            ({
+              ParsedActivityBlock block,
+              ParsedPersonnelItem person,
+            })>{};
+        for (final item in occurrence.value) {
+          byDuty.putIfAbsent(
+            item.block.parsedActivityType.trim().toUpperCase(),
+            () => item,
+          );
+        }
+        uniqueOccurrences[occurrence.key] = byDuty.values.toList();
+      }
+
+      for (final occurrence in uniqueOccurrences.entries
+          .where((entry) => entry.value.length > 1)) {
         final first = occurrence.value.first.person;
         duplicates.add(
           BulkImportDuplicate(
@@ -77,14 +98,10 @@ class BulkActivityImportPreparer {
       }
 
       final payload = <PersonnelAssignmentInput>[];
-      for (final occurrence in occurrences.values) {
+      for (final occurrence in uniqueOccurrences.values) {
         if (occurrence.length != 1) continue;
         final item = occurrence.single;
-        final time = item.block.parsedTimeRange?.trim();
-        final note = [
-          'Görev Türü: ${item.block.parsedActivityType}',
-          if (time != null && time.isNotEmpty) 'Saat: $time',
-        ].join(' | ');
+        final note = 'Görev Türü: ${item.block.parsedActivityType}';
         payload.add(
           PersonnelAssignmentInput(
             personnelId: item.person.matchedPersonnelId!,

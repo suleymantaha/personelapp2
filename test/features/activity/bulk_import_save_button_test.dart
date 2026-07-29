@@ -25,6 +25,7 @@ void main() {
     WidgetTester tester, {
     required List<BulkParseIssue> issues,
     required VoidCallback onPressed,
+    bool hasUnresolvedProblems = false,
   }) {
     return tester.pumpWidget(
       MaterialApp(
@@ -32,6 +33,7 @@ void main() {
           body: BulkImportSaveButton(
             blocks: [block()],
             issues: issues,
+            hasUnresolvedProblems: hasUnresolvedProblems,
             isSaving: false,
             onPressed: onPressed,
           ),
@@ -70,5 +72,22 @@ void main() {
     expect(button.onPressed, isNotNull);
     await tester.tap(find.byKey(const Key('bulk-import-save-button')));
     expect(pressed, isTrue);
+  });
+
+  testWidgets('unmatched personnel or duplicates disable save', (tester) async {
+    var pressed = false;
+    await pumpButton(
+      tester,
+      issues: const [],
+      hasUnresolvedProblems: true,
+      onPressed: () => pressed = true,
+    );
+
+    final button = tester.widget<ElevatedButton>(
+      find.byKey(const Key('bulk-import-save-button')),
+    );
+    expect(button.onPressed, isNull);
+    await tester.tap(find.byKey(const Key('bulk-import-save-button')));
+    expect(pressed, isFalse);
   });
 }

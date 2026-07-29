@@ -11,6 +11,8 @@ class PersonnelFuzzyMatcher {
     List<ParsedActivityBlock> blocks,
   ) async {
     final allPersonnel = await database.select(database.personelTable).get();
+    final allTeams = await database.select(database.timTable).get();
+    final teamNames = {for (final team in allTeams) team.id: team.timAdi};
 
     final matchedBlocks = <ParsedActivityBlock>[];
 
@@ -18,7 +20,12 @@ class PersonnelFuzzyMatcher {
       final matchedPersonnelList = <ParsedPersonnelItem>[];
 
       for (final item in block.personnelList) {
-        final matchedItem = _matchPersonnel(item, allPersonnel);
+        final matchedItem = _matchPersonnel(
+          item,
+          allPersonnel,
+          parsedTeamName: block.parsedTimName,
+          teamNames: teamNames,
+        );
         matchedPersonnelList.add(matchedItem);
       }
 
@@ -30,8 +37,10 @@ class PersonnelFuzzyMatcher {
 
   ParsedPersonnelItem _matchPersonnel(
     ParsedPersonnelItem item,
-    List<PersonelTableData> dbList,
-  ) {
+    List<PersonelTableData> dbList, {
+    required String parsedTeamName,
+    required Map<int, String> teamNames,
+  }) {
     if (dbList.isEmpty) return item;
 
     final rawNameClean = _sanitizeString(item.rawName);
@@ -40,13 +49,7 @@ class PersonnelFuzzyMatcher {
     for (final p in dbList) {
       final dbNameClean = _sanitizeString(p.adSoyad);
       if (dbNameClean == rawNameClean) {
-        return item.copyWith(
-          matchedPersonnelId: p.id,
-          matchedAdSoyad: p.adSoyad,
-          matchedRutbe: p.rutbe,
-          matchedTimId: p.timId,
-          matchConfidence: 1.0,
-        );
+        return _withMatch(item, p, 1, parsedTeamName, teamNames);
       }
     }
 
@@ -64,50 +67,38 @@ class PersonnelFuzzyMatcher {
 
       if (rawTokens.length == dbTokens.length &&
           rawTokens.containsAll(dbTokens)) {
-        return item.copyWith(
-          matchedPersonnelId: p.id,
-          matchedAdSoyad: p.adSoyad,
-          matchedRutbe: p.rutbe,
-          matchedTimId: p.timId,
-          matchConfidence: 0.95,
-        );
+        return _withMatch(item, p, 0.95, parsedTeamName, teamNames);
       }
     }
 
     // 3. First Letter + Surname Match (e.g., "S. Taha BİRİNCİ" matches "TAHA BİRİNCİ")
     final firstLetterMatch = _tryFirstLetterSurnameMatch(rawNameClean, rawTokens, dbList);
     if (firstLetterMatch != null) {
-      return item.copyWith(
-        matchedPersonnelId: firstLetterMatch.id,
-        matchedAdSoyad: firstLetterMatch.adSoyad,
-        matchedRutbe: firstLetterMatch.rutbe,
-        matchedTimId: firstLetterMatch.timId,
-        matchConfidence: 0.9,
+      return _withMatch(
+        item,
+        firstLetterMatch,
+        0.9,
+        parsedTeamName,
+        teamNames,
       );
     }
 
     // 4. Token Subset Match (all query tokens found in DB name)
     final tokenSubsetMatch = _tryTokenSubsetMatch(rawTokens, dbList);
     if (tokenSubsetMatch != null) {
-      return item.copyWith(
-        matchedPersonnelId: tokenSubsetMatch.id,
-        matchedAdSoyad: tokenSubsetMatch.adSoyad,
-        matchedRutbe: tokenSubsetMatch.rutbe,
-        matchedTimId: tokenSubsetMatch.timId,
-        matchConfidence: 0.85,
+      return _withMatch(
+        item,
+        tokenSubsetMatch,
+        0.85,
+        parsedTeamName,
+        teamNames,
       );
     }
 
     // 5. Fuzzy Match (Levenshtein/Jaro-Winkler) using fuzzy package
     final fuzzyMatch = _tryFuzzyMatch(rawNameClean, dbList);
     if (fuzzyMatch != null) {
-      return item.copyWith(
-        matchedPersonnelId: fuzzyMatch.id,
-        matchedAdSoyad: fuzzyMatch.adSoyad,
-        matchedRutbe: fuzzyMatch.rutbe,
-        matchedTimId: fuzzyMatch.timId,
-        matchConfidence: 0.75,
-      );
+      return _withMatch(item, fuzzyMatch, 0.75, parsedTeamName, teamNames);
     }
 
     // 6. Partial Token Overlap Match (at least 2 tokens or surname+name match)
@@ -134,16 +125,48 @@ class PersonnelFuzzyMatcher {
     }
 
     if (bestMatch != null) {
-      return item.copyWith(
-        matchedPersonnelId: bestMatch.id,
-        matchedAdSoyad: bestMatch.adSoyad,
-        matchedRutbe: bestMatch.rutbe,
-        matchedTimId: bestMatch.timId,
-        matchConfidence: 0.6 + (maxScore * 0.2),
+      return _withMatch(
+        item,
+        bestMatch,
+        0.6 + (maxScore * 0.2),
+        parsedTeamName,
+        teamNames,
       );
     }
 
     return item;
+  }
+
+  ParsedPersonnelItem _withMatch(
+    ParsedPersonnelItem item,
+    PersonelTableData personnel,
+    double confidence,
+    String parsedTeamName,
+    Map<int, String> teamNames,
+  ) {
+    final storedTeam =
+        personnel.timId == null ? null : teamNames[personnel.timId!];
+    final parsedTeamNumber = _teamNumber(parsedTeamName);
+    final storedTeamNumber = _teamNumber(storedTeam ?? '');
+    return item.copyWith(
+      matchedPersonnelId: personnel.id,
+      matchedAdSoyad: personnel.adSoyad,
+      matchedRutbe: personnel.rutbe,
+      matchedTimId: personnel.timId,
+      matchConfidence: confidence,
+      teamMismatch: parsedTeamNumber != null &&
+          storedTeamNumber != null &&
+          parsedTeamNumber != storedTeamNumber,
+      reviewConfirmed: false,
+    );
+  }
+
+  static int? _teamNumber(String value) {
+    final match = RegExp(
+      r'(?<!\d)(\d{1,2})\s*(?:[/\-]|[.]?\s*tim)',
+      caseSensitive: false,
+    ).firstMatch(value);
+    return match == null ? null : int.tryParse(match.group(1)!);
   }
 
   /// Matches "S. Taha BİRİNCİ" with "TAHA BİRİNCİ" by checking if first token is initial + surname match

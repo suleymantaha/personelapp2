@@ -345,7 +345,7 @@ void main() {
     expect(texts, isNot(contains('ER/SÖZ.ER 0')));
   });
 
-  test('Excel print area ends at the last personnel row before summary', () {
+  test('Excel print settings include summary and repeat table headers', () {
     final rows = _specialRows('HAZIR_KITA', 'HAZIR KITA');
     final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
       faaliyetAdi: 'Faaliyet',
@@ -360,10 +360,94 @@ void main() {
       workbookXml,
       contains(
         '<definedName name="_xlnm.Print_Area" localSheetId="0">'
-        "'İsim Listesi'!\$A\$1:\$E\$5"
+        "'İsim Listesi'!\$A\$1:\$F\$9"
         '</definedName>',
       ),
     );
+    expect(
+      workbookXml,
+      contains(
+        '<definedName name="_xlnm.Print_Titles" localSheetId="0">'
+        "'İsim Listesi'!\$3:\$3"
+        '</definedName>',
+      ),
+    );
+
+    final worksheet = archive.files.firstWhere(
+      (file) =>
+          file.name.startsWith('xl/worksheets/sheet') &&
+          file.name.endsWith('.xml'),
+    );
+    final worksheetXml = utf8.decode(worksheet.content as List<int>);
+    expect(worksheetXml, contains('showGridLines="0"'));
+    expect(worksheetXml, contains('<pageSetUpPr fitToPage="1"/>'));
+    expect(
+      worksheetXml,
+      contains(
+        '<pageSetup paperSize="9" orientation="landscape" '
+        'fitToWidth="1" fitToHeight="0"/>',
+      ),
+    );
+  });
+
+  test('Excel wraps long text and increases row height', () {
+    final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
+      faaliyetAdi: 'Çok Uzun Faaliyet Başlığı İle Yazdırma Kontrolü',
+      tarih: '29.07.2026',
+      rows: [
+        MilitaryRosterRow(
+          sNu: 1,
+          birligi: 'Çok Uzun Birlik ve Tim Açıklaması',
+          rutbe: 'J.UZM.ÇVŞ.',
+          adSoyad: 'Çok Uzun İsimli Bir Personelin Tam Adı Soyadı',
+          diger: 'Ana Nizamiye ve çevre emniyeti için uzun görev açıklaması',
+        ),
+      ],
+    );
+    final excel = Excel.decodeBytes(bytes);
+    final sheet = excel['İsim Listesi'];
+
+    expect(
+      sheet.cell(CellIndex.indexByString('D4')).cellStyle?.wrap,
+      TextWrapping.WrapText,
+    );
+    expect(sheet.getRowHeight(3), greaterThan(20));
+  });
+
+  test('master Excel includes a global summary and print configuration', () {
+    final bytes = MilitaryRosterExporter.generateMasterDailyExcelBytes(
+      title: 'Tüm Faaliyetler',
+      activities: [
+        MasterActivityData(
+          faaliyetAdi: 'Görev',
+          tarih: '29.07.2026',
+          olusturanKullanici: 'Test',
+          rows: [
+            _summaryRow(1, 'HAZIR_KITA', 'J.Yzb.'),
+            _summaryRow(2, 'GULUSKUR', 'J.Er'),
+            _summaryRow(3, 'DIGER', 'J.Uzm.Çvş.'),
+          ],
+        ),
+      ],
+    );
+    final excel = Excel.decodeBytes(bytes);
+    final texts = excel['Tüm Faaliyetler']
+        .rows
+        .expand((row) => row)
+        .map((cell) => cell?.value?.toString())
+        .whereType<String>()
+        .toList();
+    expect(
+      texts,
+      containsAll(['Hazır Kıta', 'Gülüşkür', 'Diğer Tüm Personel']),
+    );
+
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final workbookXml = utf8.decode(
+      archive.findFile('xl/workbook.xml')!.content as List<int>,
+    );
+    expect(workbookXml, contains("'Tüm Faaliyetler'!\$4:\$4"));
+    expect(workbookXml, contains("'Tüm Faaliyetler'!\$A\$1:\$F\$"));
   });
 }
 
