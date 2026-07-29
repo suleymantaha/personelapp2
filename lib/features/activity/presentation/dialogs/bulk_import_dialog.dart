@@ -9,6 +9,7 @@ import 'package:personelapp2/features/activity/domain/bulk_activity_import_prepa
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/conflict_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
 
 enum _BulkPreviewFilter { all, problems }
@@ -152,35 +153,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
         if (result.skippedAssignmentCount > 0) {
           await showDialog<void>(
             context: context,
-            builder: (dialogContext) => AlertDialog(
-              title: const Text('Çakışan Personeller Yazılmadı'),
-              content: SizedBox(
-                width: 520,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${result.skippedAssignmentCount} personelin aynı günü '
-                        'kapsayan başka kaydı bulundu:',
-                      ),
-                      const SizedBox(height: 12),
-                      for (final description in result.conflictDescriptions)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Text('• $description'),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                FilledButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('TAMAM'),
-                ),
-              ],
+            builder: (_) => ConflictPersonnelDialog(
+              descriptions: result.conflictDescriptions,
             ),
           );
           if (!mounted) return;
