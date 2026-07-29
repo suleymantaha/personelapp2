@@ -1064,6 +1064,26 @@ class ActivityRepository {
         .go();
   }
 
+  /// Delete multiple personnel assignments from the same activity.
+  Future<int> deleteAssignments(
+    Iterable<int> assignmentIds, {
+    required UserSessionState actor,
+  }) {
+    _requireAdmin(actor);
+    final ids = assignmentIds.toSet();
+    if (ids.isEmpty) return Future.value(0);
+    return db.transaction(() async {
+      var deleted = 0;
+      for (final id in ids) {
+        deleted += await (db.delete(
+          db.faaliyetPersonelAtamaTable,
+        )..where((tbl) => tbl.id.equals(id)))
+            .go();
+      }
+      return deleted;
+    });
+  }
+
   /// Update assignment duty type, note, and status
   Future<int> updateAssignmentDetails({
     required int assignmentId,

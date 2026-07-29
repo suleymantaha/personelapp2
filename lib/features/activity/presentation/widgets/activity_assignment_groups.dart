@@ -11,6 +11,8 @@ class ActivityAssignmentGroups extends StatefulWidget {
     required this.squadNames,
     required this.assignmentBuilder,
     this.selectedSquadId,
+    this.onExportSelected,
+    this.onDeleteSelected,
     super.key,
   });
 
@@ -18,6 +20,12 @@ class ActivityAssignmentGroups extends StatefulWidget {
   final Map<int, PersonelTableData> personnelById;
   final Map<int, String> squadNames;
   final int? selectedSquadId;
+  final Future<void> Function(
+    List<FaaliyetPersonelAtamaTableData> assignments,
+  )? onExportSelected;
+  final Future<void> Function(
+    List<FaaliyetPersonelAtamaTableData> assignments,
+  )? onDeleteSelected;
   final Widget Function(FaaliyetPersonelAtamaTableData assignment)
       assignmentBuilder;
 
@@ -29,6 +37,7 @@ class ActivityAssignmentGroups extends StatefulWidget {
 class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
   int? _expandedSquadId;
   bool _hasExpandedTimDisi = false;
+  final Set<int?> _selectedSquadIds = {};
 
   @override
   void initState() {
@@ -77,66 +86,133 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
       });
 
     return Column(
-      children: squadIds.map((squadId) {
-        final assignments = grouped[squadId]!;
-        final teamName = squadId == null
-            ? 'Tim Dışı'
-            : (widget.squadNames[squadId] ?? 'Bilinmeyen Tim');
-        final expanded =
-            squadId == null ? _hasExpandedTimDisi : _expandedSquadId == squadId;
+      children: [
+        if (_selectedSquadIds.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${_selectedSquadIds.length} tim seçildi',
+                    style: TextStyle(
+                      color: context.accentOrOlive,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                if (widget.onExportSelected != null)
+                  FilledButton.tonalIcon(
+                    key: const Key('export-selected-teams'),
+                    onPressed: () => widget.onExportSelected!(
+                      [
+                        for (final id in _selectedSquadIds) ...?grouped[id],
+                      ],
+                    ),
+                    icon: const Icon(Icons.print_outlined, size: 18),
+                    label: const Text('Yazdır'),
+                  ),
+                if (widget.onDeleteSelected != null) ...[
+                  const SizedBox(width: 6),
+                  IconButton.filledTonal(
+                    key: const Key('delete-selected-teams'),
+                    tooltip: 'Seçilen timleri faaliyetten sil',
+                    onPressed: () async {
+                      final selectedAssignments = [
+                        for (final id in _selectedSquadIds) ...?grouped[id],
+                      ];
+                      await widget.onDeleteSelected!(selectedAssignments);
+                      if (mounted) {
+                        setState(_selectedSquadIds.clear);
+                      }
+                    },
+                    icon: Icon(
+                      Icons.delete_outline,
+                      color: context.rejectedColor,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ...squadIds.map((squadId) {
+          final assignments = grouped[squadId]!;
+          final teamName = squadId == null
+              ? 'Tim Dışı'
+              : (widget.squadNames[squadId] ?? 'Bilinmeyen Tim');
+          final expanded = squadId == null
+              ? _hasExpandedTimDisi
+              : _expandedSquadId == squadId;
 
-        return Card(
-          key: Key('activity-team-card-$squadId'),
-          clipBehavior: Clip.antiAlias,
-          margin: const EdgeInsets.only(bottom: 8),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: BorderSide(color: context.cardBorderColor),
-          ),
-          child: Column(
-            children: [
-              ListTile(
-                key: Key('activity-team-header-$squadId'),
-                dense: true,
-                leading: Icon(
-                  Icons.shield_outlined,
-                  size: 19,
-                  color: context.accentOrOlive,
-                ),
-                title: Text(
-                  '$teamName — ${assignments.length} kişi',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
+          return Card(
+            key: Key('activity-team-card-$squadId'),
+            clipBehavior: Clip.antiAlias,
+            margin: const EdgeInsets.only(bottom: 8),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: context.cardBorderColor),
+            ),
+            child: Column(
+              children: [
+                ListTile(
+                  key: Key('activity-team-header-$squadId'),
+                  dense: true,
+                  leading: Icon(
+                    Icons.shield_outlined,
+                    size: 19,
+                    color: context.accentOrOlive,
                   ),
-                ),
-                trailing: Icon(
-                  expanded ? Icons.expand_less : Icons.expand_more,
-                ),
-                onTap: () => setState(() {
-                  if (squadId == null) {
-                    _hasExpandedTimDisi = !_hasExpandedTimDisi;
-                    _expandedSquadId = null;
-                  } else {
-                    _expandedSquadId = expanded ? null : squadId;
-                    _hasExpandedTimDisi = false;
-                  }
-                }),
-              ),
-              if (expanded)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
-                  child: Column(
-                    children: assignments
-                        .map(widget.assignmentBuilder)
-                        .toList(growable: false),
+                  title: Text(
+                    '$teamName — ${assignments.length} kişi',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Checkbox(
+                        key: Key('activity-team-select-$squadId'),
+                        value: _selectedSquadIds.contains(squadId),
+                        onChanged: (selected) => setState(() {
+                          if (selected ?? false) {
+                            _selectedSquadIds.add(squadId);
+                          } else {
+                            _selectedSquadIds.remove(squadId);
+                          }
+                        }),
+                      ),
+                      Icon(
+                        expanded ? Icons.expand_less : Icons.expand_more,
+                      ),
+                    ],
+                  ),
+                  onTap: () => setState(() {
+                    if (squadId == null) {
+                      _hasExpandedTimDisi = !_hasExpandedTimDisi;
+                      _expandedSquadId = null;
+                    } else {
+                      _expandedSquadId = expanded ? null : squadId;
+                      _hasExpandedTimDisi = false;
+                    }
+                  }),
                 ),
-            ],
-          ),
-        );
-      }).toList(growable: false),
+                if (expanded)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
+                    child: Column(
+                      children: assignments
+                          .map(widget.assignmentBuilder)
+                          .toList(growable: false),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        }),
+      ],
     );
   }
 }

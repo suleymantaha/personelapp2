@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
+
+import 'package:archive/archive.dart';
 import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:personelapp2/core/utils/official_roster_title.dart';
@@ -54,6 +57,12 @@ class MasterActivityData {
 }
 
 class MilitaryRosterExporter {
+  static const _summaryGroups = [
+    ('Hazır Kıta', 'HAZIR_KITA'),
+    ('Gülüşkür', 'GULUSKUR'),
+    ('Diğer Tüm Personel', 'DIGER_TUM_PERSONEL'),
+  ];
+
   static String escapeXml(String value) {
     return value
         .replaceAll('&', '&amp;')
@@ -561,6 +570,10 @@ class MilitaryRosterExporter {
     }
 
     final titleHeader = formatOfficialTitle(faaliyetAdi, tarih);
+    final tableBorder = Border(
+      borderStyle: BorderStyle.Thin,
+      borderColorHex: ExcelColor.fromHexString('#000000'),
+    );
 
     final titleStyle = CellStyle(
       bold: true,
@@ -570,6 +583,10 @@ class MilitaryRosterExporter {
       backgroundColorHex: ExcelColor.fromHexString('#E8EEF5'),
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
     );
 
     final headerStyle = CellStyle(
@@ -579,6 +596,10 @@ class MilitaryRosterExporter {
       backgroundColorHex: ExcelColor.fromHexString('#D9D9D9'),
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
     );
 
     final cellCenterStyle = CellStyle(
@@ -586,6 +607,10 @@ class MilitaryRosterExporter {
       fontSize: 11,
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
     );
 
     final cellCenterBoldStyle = CellStyle(
@@ -594,6 +619,10 @@ class MilitaryRosterExporter {
       fontSize: 11,
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
     );
 
     final cellLeftStyle = CellStyle(
@@ -601,16 +630,23 @@ class MilitaryRosterExporter {
       fontSize: 11,
       horizontalAlign: HorizontalAlign.Left,
       verticalAlign: VerticalAlign.Center,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
     );
 
-    final summaryHdrStyle = CellStyle(
+    final summaryHeaderStyle = CellStyle(
       bold: true,
       fontFamily: getFontFamily(FontFamily.Calibri),
       fontSize: 11,
-      fontColorHex: ExcelColor.fromHexString('#2D5A27'),
-      backgroundColorHex: ExcelColor.fromHexString('#F0F4EF'),
-      horizontalAlign: HorizontalAlign.Left,
+      backgroundColorHex: ExcelColor.fromHexString('#D9D9D9'),
+      horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
     );
 
     // Row 0: Title Header
@@ -708,54 +744,183 @@ class MilitaryRosterExporter {
       i += mergeCount + 1;
     }
 
-    // Summary Section
+    final printAreaEndRow = currentRow;
+
+    // Summary section is intentionally outside the worksheet print area.
     currentRow += 1;
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
-      ..value = TextCellValue('GÖREV VE MEVCUT ÖZETİ')
-      ..cellStyle = summaryHdrStyle;
-    sheet.merge(
-      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
-      CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
+    _writeThreeBoxSummary(
+      sheet: sheet,
+      startRow: currentRow,
+      rows: rows,
+      headerStyle: summaryHeaderStyle,
+      contentStyle: cellLeftStyle,
     );
-    currentRow++;
-
-    final ranks = rows.map((r) => r.rutbe).toList();
-    final counts = RankSummaryCounts.calculate(ranks);
-
-    final summaryItems = [
-      specialDutyRankSummary('Hazır Kıta', 'HAZIR_KITA', rows),
-      specialDutyRankSummary('Gülüşkür', 'GULUSKUR', rows),
-      if (counts.subayCount > 0) 'Subay: ${counts.subayCount}',
-      if (counts.astsubayCount > 0) 'Astsubay: ${counts.astsubayCount}',
-      if (counts.uzmanJandarmaCount > 0)
-        'Uzman Jandarma: ${counts.uzmanJandarmaCount}',
-      if (counts.uzmanErbasCount > 0) 'Uzman Erbaş: ${counts.uzmanErbasCount}',
-      if (counts.erCount > 0) 'Er / Erbaş: ${counts.erCount}',
-      'TOPLAM MEVCUT: ${counts.totalCount}',
-    ];
-
-    for (final item in summaryItems) {
-      sheet.cell(
-        CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
-      )
-        ..value = TextCellValue(item)
-        ..cellStyle = cellLeftStyle;
-      sheet.merge(
-        CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
-        CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
-      );
-      currentRow++;
-    }
 
     sheet
       ..setColumnWidth(0, 10)
       ..setColumnWidth(1, 22)
       ..setColumnWidth(2, 18)
       ..setColumnWidth(3, 30)
-      ..setColumnWidth(4, 25);
+      ..setColumnWidth(4, 25)
+      ..setColumnWidth(5, 7);
 
     final encoded = excel.encode();
-    return encoded ?? <int>[];
+    if (encoded == null) return <int>[];
+    return _setPrintArea(
+      encoded,
+      sheetName: sheetName,
+      endRow: printAreaEndRow,
+    );
+  }
+
+  static void _writeThreeBoxSummary({
+    required Sheet sheet,
+    required int startRow,
+    required List<MilitaryRosterRow> rows,
+    required CellStyle headerStyle,
+    required CellStyle contentStyle,
+  }) {
+    final summaries = _summaryGroups.map((group) {
+      final groupRows = group.$2 == 'DIGER_TUM_PERSONEL'
+          ? rows
+              .where(
+                (row) =>
+                    row.groupCode != 'HAZIR_KITA' &&
+                    row.groupCode != 'GULUSKUR',
+              )
+              .toList()
+          : rows.where((row) => row.groupCode == group.$2).toList();
+      return (
+        group.$1,
+        RankSummaryCounts.calculate(
+          groupRows.map((row) => row.rutbe).toList(),
+        )
+      );
+    }).toList();
+
+    const columnPairs = [(0, 1), (2, 3), (4, 5)];
+    for (var index = 0; index < summaries.length; index++) {
+      final pair = columnPairs[index];
+      _writeMergedSummaryCell(
+        sheet,
+        row: startRow,
+        startColumn: pair.$1,
+        endColumn: pair.$2,
+        value: summaries[index].$1,
+        style: headerStyle,
+      );
+    }
+
+    final detailRows =
+        summaries.map((summary) => _rankSummaryLines(summary.$2)).toList();
+    final maxRankLines = detailRows
+        .map((lines) => lines.length)
+        .fold<int>(0, (maximum, length) => length > maximum ? length : maximum);
+
+    for (var index = 0; index < summaries.length; index++) {
+      final pair = columnPairs[index];
+      final lines = detailRows[index];
+      for (var offset = 0; offset < maxRankLines; offset++) {
+        _writeMergedSummaryCell(
+          sheet,
+          row: startRow + 1 + offset,
+          startColumn: pair.$1,
+          endColumn: pair.$2,
+          value: offset < lines.length ? lines[offset] : '',
+          style: contentStyle,
+        );
+      }
+      _writeMergedSummaryCell(
+        sheet,
+        row: startRow + maxRankLines + 1,
+        startColumn: pair.$1,
+        endColumn: pair.$2,
+        value: 'Toplam ${summaries[index].$2.totalCount}',
+        style: contentStyle,
+      );
+    }
+  }
+
+  static List<String> _rankSummaryLines(RankSummaryCounts counts) => [
+        if (counts.subayCount > 0) 'SB. ${counts.subayCount}',
+        if (counts.astsubayCount > 0) 'ASB. ${counts.astsubayCount}',
+        if (counts.uzmanJandarmaCount > 0)
+          'UZM.J. ${counts.uzmanJandarmaCount}',
+        if (counts.uzmanErbasCount > 0) 'J.UZM.ÇVŞ. ${counts.uzmanErbasCount}',
+        if (counts.erCount > 0) 'ER/SÖZ.ER ${counts.erCount}',
+      ];
+
+  static void _writeMergedSummaryCell(
+    Sheet sheet, {
+    required int row,
+    required int startColumn,
+    required int endColumn,
+    required String value,
+    required CellStyle style,
+  }) {
+    for (var column = startColumn; column <= endColumn; column++) {
+      sheet
+          .cell(
+            CellIndex.indexByColumnRow(columnIndex: column, rowIndex: row),
+          )
+          .cellStyle = style;
+    }
+    sheet
+        .cell(
+          CellIndex.indexByColumnRow(columnIndex: startColumn, rowIndex: row),
+        )
+        .value = TextCellValue(value);
+    sheet.merge(
+      CellIndex.indexByColumnRow(columnIndex: startColumn, rowIndex: row),
+      CellIndex.indexByColumnRow(columnIndex: endColumn, rowIndex: row),
+    );
+  }
+
+  static List<int> _setPrintArea(
+    List<int> bytes, {
+    required String sheetName,
+    required int endRow,
+  }) {
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final workbookFile = archive.findFile('xl/workbook.xml');
+    if (workbookFile == null) return bytes;
+
+    var workbookXml = utf8.decode(workbookFile.content as List<int>);
+    workbookXml = workbookXml.replaceAll(
+      RegExp(
+        r'<definedName\b[^>]*\bname="_xlnm\.Print_Area"[^>]*>.*?</definedName>',
+        dotAll: true,
+      ),
+      '',
+    );
+    final escapedSheetName = sheetName.replaceAll("'", "''");
+    final printArea = '<definedName name="_xlnm.Print_Area" localSheetId="0">'
+        "'$escapedSheetName'!\$A\$1:\$E\$$endRow"
+        '</definedName>';
+    if (workbookXml.contains('</definedNames>')) {
+      workbookXml = workbookXml.replaceFirst(
+        '</definedNames>',
+        '$printArea</definedNames>',
+      );
+    } else {
+      final definedNames = '<definedNames>$printArea</definedNames>';
+      workbookXml = workbookXml.contains('<calcPr')
+          ? workbookXml.replaceFirst('<calcPr', '$definedNames<calcPr')
+          : workbookXml.replaceFirst(
+              '</workbook>',
+              '$definedNames</workbook>',
+            );
+    }
+
+    final workbookBytes = utf8.encode(workbookXml);
+    archive.addFile(
+      ArchiveFile(
+        'xl/workbook.xml',
+        workbookBytes.length,
+        workbookBytes,
+      ),
+    );
+    return ZipEncoder().encode(archive) ?? bytes;
   }
 
   /// Generates native binary .xlsx spreadsheet for all daily activities combined
@@ -770,6 +935,10 @@ class MilitaryRosterExporter {
     if (excel.tables.containsKey('Sheet1')) {
       excel.delete('Sheet1');
     }
+    final tableBorder = Border(
+      borderStyle: BorderStyle.Thin,
+      borderColorHex: ExcelColor.fromHexString('#000000'),
+    );
 
     final titleStyle = CellStyle(
       bold: true,
@@ -779,6 +948,10 @@ class MilitaryRosterExporter {
       backgroundColorHex: ExcelColor.fromHexString('#E8EEF5'),
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
     );
 
     final sectionHeaderStyle = CellStyle(
@@ -789,6 +962,10 @@ class MilitaryRosterExporter {
       backgroundColorHex: ExcelColor.fromHexString('#E2EFCB'),
       horizontalAlign: HorizontalAlign.Left,
       verticalAlign: VerticalAlign.Center,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
     );
 
     final headerStyle = CellStyle(
@@ -798,6 +975,10 @@ class MilitaryRosterExporter {
       backgroundColorHex: ExcelColor.fromHexString('#D9D9D9'),
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
     );
 
     final cellCenterStyle = CellStyle(
@@ -805,6 +986,10 @@ class MilitaryRosterExporter {
       fontSize: 11,
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
     );
 
     final cellLeftStyle = CellStyle(
@@ -812,6 +997,10 @@ class MilitaryRosterExporter {
       fontSize: 11,
       horizontalAlign: HorizontalAlign.Left,
       verticalAlign: VerticalAlign.Center,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
     );
 
     var currentRow = 0;

@@ -54,7 +54,13 @@ void main() {
     ),
   ];
 
-  Widget buildSubject({int? selectedSquadId}) {
+  Widget buildSubject({
+    int? selectedSquadId,
+    Future<void> Function(List<FaaliyetPersonelAtamaTableData>)?
+        onExportSelected,
+    Future<void> Function(List<FaaliyetPersonelAtamaTableData>)?
+        onDeleteSelected,
+  }) {
     return MaterialApp(
       home: Scaffold(
         body: ActivityAssignmentGroups(
@@ -62,6 +68,8 @@ void main() {
           personnelById: personnel,
           squadNames: const {1: 'K.H', 2: '7-B Timi'},
           selectedSquadId: selectedSquadId,
+          onExportSelected: onExportSelected,
+          onDeleteSelected: onDeleteSelected,
           assignmentBuilder: (assignment) => Text(
             personnel[assignment.personelId]!.adSoyad,
             key: Key('assignment-${assignment.id}'),
@@ -103,5 +111,38 @@ void main() {
 
     expect(find.byKey(const Key('assignment-3')), findsOneWidget);
     expect(find.byKey(const Key('assignment-1')), findsNothing);
+  });
+
+  testWidgets('exports and deletes all assignments from selected teams',
+      (tester) async {
+    List<int>? exportedIds;
+    List<int>? deletedIds;
+    await tester.pumpWidget(
+      buildSubject(
+        onExportSelected: (selected) async {
+          exportedIds = selected.map((assignment) => assignment.id).toList()
+            ..sort();
+        },
+        onDeleteSelected: (selected) async {
+          deletedIds = selected.map((assignment) => assignment.id).toList()
+            ..sort();
+        },
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('activity-team-select-1')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('activity-team-select-2')));
+    await tester.pump();
+
+    expect(find.text('2 tim seçildi'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('export-selected-teams')));
+    await tester.pump();
+    expect(exportedIds, [1, 2, 3]);
+
+    await tester.tap(find.byKey(const Key('delete-selected-teams')));
+    await tester.pump();
+    expect(deletedIds, [1, 2, 3]);
+    expect(find.text('2 tim seçildi'), findsNothing);
   });
 }

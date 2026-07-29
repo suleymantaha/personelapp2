@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:archive/archive.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
@@ -229,8 +232,44 @@ void main() {
     );
   });
 
-  test('special duty summary shows officer NCO specialist and other counts',
-      () {
+  test('Excel table cells have printable borders', () {
+    final rows = _specialRows('HAZIR_KITA', 'HAZIR KITA');
+
+    final singleExcel = Excel.decodeBytes(
+      MilitaryRosterExporter.generateMilitaryExcelBytes(
+        faaliyetAdi: 'Faaliyet',
+        tarih: '29.07.2026',
+        rows: rows,
+      ),
+    );
+    final masterExcel = Excel.decodeBytes(
+      MilitaryRosterExporter.generateMasterDailyExcelBytes(
+        title: 'Faaliyetler',
+        activities: [
+          MasterActivityData(
+            faaliyetAdi: 'Görev',
+            tarih: '29.07.2026',
+            olusturanKullanici: 'Test',
+            rows: rows,
+          ),
+        ],
+      ),
+    );
+
+    for (final cell in [
+      singleExcel['İsim Listesi'].cell(CellIndex.indexByString('A3')),
+      singleExcel['İsim Listesi'].cell(CellIndex.indexByString('A4')),
+      masterExcel['Tüm Faaliyetler'].cell(CellIndex.indexByString('A4')),
+      masterExcel['Tüm Faaliyetler'].cell(CellIndex.indexByString('A5')),
+    ]) {
+      expect(cell.cellStyle?.leftBorder.borderStyle, BorderStyle.Thin);
+      expect(cell.cellStyle?.rightBorder.borderStyle, BorderStyle.Thin);
+      expect(cell.cellStyle?.topBorder.borderStyle, BorderStyle.Thin);
+      expect(cell.cellStyle?.bottomBorder.borderStyle, BorderStyle.Thin);
+    }
+  });
+
+  test('Excel renders three aligned rank summary boxes', () {
     final rows = [
       _summaryRow(1, 'HAZIR_KITA', 'J.Yzb.'),
       _summaryRow(2, 'HAZIR_KITA', 'J.Asb.Çvş.'),
@@ -238,57 +277,91 @@ void main() {
       _summaryRow(4, 'HAZIR_KITA', 'J.Uzm.Çvş.'),
       _summaryRow(5, 'HAZIR_KITA', 'J.Söz.Er'),
       _summaryRow(6, 'GULUSKUR', 'J.Er'),
+      _summaryRow(7, 'NOBET_HEYETI', 'J.Yzb.'),
+      _summaryRow(8, 'DIGER', 'J.Uzm.Çvş.'),
     ];
 
-    expect(
-      MilitaryRosterExporter.specialDutyRankSummary(
-        'Hazır Kıta',
-        'HAZIR_KITA',
-        rows,
-      ),
-      'Hazır Kıta: 5 Personel '
-      '(Subay: 1 • Astsubay: 1 • Uzman Jandarma: 1 • '
-      'Uzman Erbaş: 1 • Diğer: 1)',
+    final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
+      faaliyetAdi: 'Faaliyet',
+      tarih: '29.07.2026',
+      rows: rows,
     );
-    expect(
-      MilitaryRosterExporter.specialDutyRankSummary(
-        'Gülüşkür',
-        'GULUSKUR',
-        rows,
-      ),
-      'Gülüşkür: 1 Personel '
-      '(Subay: 0 • Astsubay: 0 • Uzman Jandarma: 0 • '
-      'Uzman Erbaş: 0 • Diğer: 1)',
-    );
-
-    final excel = Excel.decodeBytes(
-      MilitaryRosterExporter.generateMilitaryExcelBytes(
-        faaliyetAdi: 'Faaliyet',
-        tarih: '29.07.2026',
-        rows: rows,
-      ),
-    );
-    final cellTexts = excel['İsim Listesi']
-        .rows
+    final excel = Excel.decodeBytes(bytes);
+    final sheet = excel['İsim Listesi'];
+    final cellTexts = sheet.rows
         .expand((row) => row)
         .map((cell) => cell?.value?.toString())
         .whereType<String>()
         .toList();
 
     expect(
-      cellTexts,
-      contains(
-        'Hazır Kıta: 5 Personel '
-        '(Subay: 1 • Astsubay: 1 • Uzman Jandarma: 1 • '
-        'Uzman Erbaş: 1 • Diğer: 1)',
-      ),
+      excel.getMergedCells('İsim Listesi'),
+      containsAll(['A13:B13', 'C13:D13', 'E13:F13']),
     );
+    expect(sheet.cell(CellIndex.indexByString('A13')).value?.toString(),
+        'Hazır Kıta');
+    expect(sheet.cell(CellIndex.indexByString('C13')).value?.toString(),
+        'Gülüşkür');
+    expect(sheet.cell(CellIndex.indexByString('E13')).value?.toString(),
+        'Diğer Tüm Personel');
     expect(
-      cellTexts,
+        cellTexts,
+        containsAll([
+          'SB. 1',
+          'ASB. 1',
+          'UZM.J. 1',
+          'J.UZM.ÇVŞ. 1',
+          'ER/SÖZ.ER 1',
+          'Toplam 5',
+          'Toplam 1',
+          'Toplam 2',
+        ]));
+    expect(cellTexts, isNot(contains('GÖREV VE MEVCUT ÖZETİ')));
+    expect(
+      cellTexts.where((text) => text.startsWith('ER/SÖZ.ER')),
+      hasLength(2),
+    );
+  });
+
+  test('Excel hides zero rank lines but keeps zero totals', () {
+    final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
+      faaliyetAdi: 'Boş Faaliyet',
+      tarih: '29.07.2026',
+      rows: const [],
+    );
+    final excel = Excel.decodeBytes(bytes);
+    final texts = excel['İsim Listesi']
+        .rows
+        .expand((row) => row)
+        .map((cell) => cell?.value?.toString())
+        .whereType<String>()
+        .toList();
+
+    expect(texts.where((text) => text == 'Toplam 0'), hasLength(3));
+    expect(texts, isNot(contains('SB. 0')));
+    expect(texts, isNot(contains('ASB. 0')));
+    expect(texts, isNot(contains('UZM.J. 0')));
+    expect(texts, isNot(contains('J.UZM.ÇVŞ. 0')));
+    expect(texts, isNot(contains('ER/SÖZ.ER 0')));
+  });
+
+  test('Excel print area ends at the last personnel row before summary', () {
+    final rows = _specialRows('HAZIR_KITA', 'HAZIR KITA');
+    final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
+      faaliyetAdi: 'Faaliyet',
+      tarih: '29.07.2026',
+      rows: rows,
+    );
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final workbook = archive.findFile('xl/workbook.xml');
+    final workbookXml = utf8.decode(workbook!.content as List<int>);
+
+    expect(
+      workbookXml,
       contains(
-        'Gülüşkür: 1 Personel '
-        '(Subay: 0 • Astsubay: 0 • Uzman Jandarma: 0 • '
-        'Uzman Erbaş: 0 • Diğer: 1)',
+        '<definedName name="_xlnm.Print_Area" localSheetId="0">'
+        "'İsim Listesi'!\$A\$1:\$E\$5"
+        '</definedName>',
       ),
     );
   });

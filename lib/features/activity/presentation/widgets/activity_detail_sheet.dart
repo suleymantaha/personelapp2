@@ -58,49 +58,47 @@ class ActivityAssignmentDetails extends ConsumerWidget {
     final squadsList = allSquadsAsync.value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
 
-    final operationalAssignments = orderAssignmentsForExport(
-      filteredAssignments.where(
-        (atama) => DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin),
-      ),
-      pMap,
-      squadMap,
-    );
-
-    final rosterRows = <MilitaryRosterRow>[];
-    for (var i = 0; i < operationalAssignments.length; i++) {
-      final atama = operationalAssignments[i];
-      final p = pMap[atama.personelId];
-      final rutbe = p?.rutbe ?? '';
-      final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
-      final timName = (p?.timId != null && squadMap.containsKey(p!.timId))
-          ? squadMap[p.timId]!
-          : '';
-      final officialBirlik = MilitaryStructureHelper.getRosterBirlikName(
-        timName: timName,
-        birlik: p?.birlik ?? '',
-        duty: atama.gorevVeyaIzin,
-      );
-
-      final groupCode = MilitaryStructureHelper.getRosterGroupCode(
-        atama.gorevVeyaIzin,
-      );
-
-      final digerText = MilitaryStructureHelper.getDigerCellText(
-        atama.gorevVeyaIzin,
-        aciklama: atama.aciklama,
-      );
-
-      rosterRows.add(
-        MilitaryRosterRow(
-          sNu: i + 1,
-          birligi: officialBirlik,
-          rutbe: rutbe,
-          adSoyad: adSoyad,
-          diger: digerText,
-          groupCode: groupCode,
+    List<MilitaryRosterRow> buildRosterRows(
+      Iterable<FaaliyetPersonelAtamaTableData> source,
+    ) {
+      final operationalAssignments = orderAssignmentsForExport(
+        source.where(
+          (atama) => DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin),
         ),
+        pMap,
+        squadMap,
       );
+
+      return [
+        for (var i = 0; i < operationalAssignments.length; i++)
+          () {
+            final atama = operationalAssignments[i];
+            final p = pMap[atama.personelId];
+            final timName = (p?.timId != null && squadMap.containsKey(p!.timId))
+                ? squadMap[p.timId]!
+                : '';
+            return MilitaryRosterRow(
+              sNu: i + 1,
+              birligi: MilitaryStructureHelper.getRosterBirlikName(
+                timName: timName,
+                birlik: p?.birlik ?? '',
+                duty: atama.gorevVeyaIzin,
+              ),
+              rutbe: p?.rutbe ?? '',
+              adSoyad: p?.adSoyad ?? 'Personel #${atama.personelId}',
+              diger: MilitaryStructureHelper.getDigerCellText(
+                atama.gorevVeyaIzin,
+                aciklama: atama.aciklama,
+              ),
+              groupCode: MilitaryStructureHelper.getRosterGroupCode(
+                atama.gorevVeyaIzin,
+              ),
+            );
+          }(),
+      ];
     }
+
+    final rosterRows = buildRosterRows(filteredAssignments);
 
     return Container(
       color: context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
@@ -245,6 +243,81 @@ class ActivityAssignmentDetails extends ConsumerWidget {
               personnelById: pMap,
               squadNames: squadMap,
               selectedSquadId: selectedSquadId,
+              onExportSelected: (selectedAssignments) async {
+                final selectedRows = buildRosterRows(selectedAssignments);
+                if (selectedRows.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Seçilen timlerde yazdırılabilir personel bulunamadı.',
+                      ),
+                    ),
+                  );
+                  return;
+                }
+                await PdfRosterExporter.showStylePickerAndSharePdf(
+                  context,
+                  faaliyetAdi: activity.faaliyetAdi,
+                  tarih: activity.tarih,
+                  rows: selectedRows,
+                );
+              },
+              onDeleteSelected: !isAdmin
+                  ? null
+                  : (selectedAssignments) async {
+                      final selectedTeamIds = selectedAssignments
+                          .map((a) => pMap[a.personelId]?.timId)
+                          .toSet();
+                      final teamNames = selectedTeamIds
+                          .map(
+                            (id) => id == null
+                                ? 'Tim Dışı'
+                                : squadMap[id] ?? 'Bilinmeyen Tim',
+                          )
+                          .join(', ');
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (dialogContext) => AlertDialog(
+                          title: const Text('Timleri Faaliyetten Sil'),
+                          content: Text(
+                            '$teamNames timlerindeki '
+                            '${selectedAssignments.length} personel bu '
+                            'faaliyetten çıkarılacaktır. Emin misiniz?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () =>
+                                  Navigator.pop(dialogContext, false),
+                              child: const Text('İPTAL'),
+                            ),
+                            FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: context.rejectedColor,
+                              ),
+                              onPressed: () =>
+                                  Navigator.pop(dialogContext, true),
+                              child: const Text('TİMLERİ SİL'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true || !context.mounted) return;
+                      final deleted = await ref
+                          .read(activityRepositoryProvider)
+                          .deleteAssignments(
+                            selectedAssignments.map((a) => a.id),
+                            actor: session!,
+                          );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '$deleted personel faaliyetten çıkarıldı.',
+                            ),
+                          ),
+                        );
+                      }
+                    },
               assignmentBuilder: (atama) {
                 final p = pMap[atama.personelId];
                 final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
