@@ -1,5 +1,6 @@
 import 'package:fuzzy/fuzzy.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
 class PersonnelFuzzyMatcher {
@@ -11,6 +12,7 @@ class PersonnelFuzzyMatcher {
   ) async {
     final allPersonnel = await database.select(database.personelTable).get();
     final allTeams = await database.select(database.timTable).get();
+    final aliases = await BulkImportLearningService(database).loadAliases();
     final teamNames = {for (final team in allTeams) team.id: team.timAdi};
 
     final matchedBlocks = <ParsedActivityBlock>[];
@@ -24,6 +26,7 @@ class PersonnelFuzzyMatcher {
           allPersonnel,
           parsedTeamName: block.parsedTimName,
           teamNames: teamNames,
+          aliases: aliases,
         );
         matchedPersonnelList.add(matchedItem);
       }
@@ -39,10 +42,26 @@ class PersonnelFuzzyMatcher {
     List<PersonelTableData> dbList, {
     required String parsedTeamName,
     required Map<int, String> teamNames,
+    required Map<String, int> aliases,
   }) {
     if (dbList.isEmpty) return item;
 
     final rawNameClean = _sanitizeString(item.rawName);
+    final aliasPersonnelId = aliases[rawNameClean];
+    if (aliasPersonnelId != null) {
+      final aliasMatch = dbList
+          .where((personnel) => personnel.id == aliasPersonnelId)
+          .firstOrNull;
+      if (aliasMatch != null) {
+        return _withMatch(
+          item,
+          aliasMatch,
+          1,
+          parsedTeamName,
+          teamNames,
+        );
+      }
+    }
 
     // 1. Exact Name Match
     for (final p in dbList) {
@@ -346,19 +365,7 @@ class PersonnelFuzzyMatcher {
   }
 
   static String _sanitizeString(String input) {
-    return input
-        .toLowerCase()
-        .replaceAll('ı', 'i')
-        .replaceAll('ğ', 'g')
-        .replaceAll('ü', 'u')
-        .replaceAll('ş', 's')
-        .replaceAll('ö', 'o')
-        .replaceAll('ç', 'c')
-        // Remove punctuation but keep spaces and letters/numbers
-        .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
-        // Normalize multiple spaces
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
+    return BulkImportLearningService.normalizeName(input);
   }
 
   /// Public static method for external search/filter usage

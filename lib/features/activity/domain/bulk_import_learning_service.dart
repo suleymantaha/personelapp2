@@ -1,0 +1,113 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+import 'package:drift/drift.dart';
+import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
+
+class BulkImportLearningService {
+  BulkImportLearningService(this.database);
+
+  final AppDatabase database;
+
+  static String normalizeName(String input) => input
+      .toLowerCase()
+      .replaceAll('ı', 'i')
+      .replaceAll('ğ', 'g')
+      .replaceAll('ü', 'u')
+      .replaceAll('ş', 's')
+      .replaceAll('ö', 'o')
+      .replaceAll('ç', 'c')
+      .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+
+  Future<Map<String, int>> loadAliases() async {
+    final rows = await database.select(database.personelIsimTakmaAdTable).get();
+    return {
+      for (final row in rows) row.normalizeTakmaAd: row.personelId,
+    };
+  }
+
+  Future<void> rememberAlias({
+    required String rawName,
+    required int personnelId,
+  }) async {
+    final normalized = normalizeName(rawName);
+    if (normalized.isEmpty) return;
+    final existing = await (database.select(
+      database.personelIsimTakmaAdTable,
+    )..where((table) => table.normalizeTakmaAd.equals(normalized)))
+        .getSingleOrNull();
+    if (existing == null) {
+      await database.into(database.personelIsimTakmaAdTable).insert(
+            PersonelIsimTakmaAdTableCompanion.insert(
+              normalizeTakmaAd: normalized,
+              gorunenTakmaAd: rawName.trim(),
+              personelId: personnelId,
+              kayitTarihi: DateTime.now().toIso8601String(),
+            ),
+          );
+      return;
+    }
+    await (database.update(database.personelIsimTakmaAdTable)
+          ..where((table) => table.id.equals(existing.id)))
+        .write(
+      PersonelIsimTakmaAdTableCompanion(
+        gorunenTakmaAd: Value(rawName.trim()),
+        personelId: Value(personnelId),
+        kayitTarihi: Value(DateTime.now().toIso8601String()),
+      ),
+    );
+  }
+
+  static String fingerprint(Iterable<ParsedActivityBlock> blocks) {
+    final assignments = <String>{};
+    for (final block in blocks) {
+      for (final person in block.personnelList) {
+        final personnelId = person.matchedPersonnelId;
+        if (personnelId == null) continue;
+        assignments.add(
+          '${block.parsedDate}|'
+          '${block.parsedActivityType.trim().toUpperCase()}|$personnelId',
+        );
+      }
+    }
+    final canonical = assignments.toList()..sort();
+    return sha256.convert(utf8.encode(canonical.join('\n'))).toString();
+  }
+
+  Future<TopluAktarimGecmisiTableData?> findImport(String fingerprint) =>
+      (database.select(database.topluAktarimGecmisiTable)
+            ..where((table) => table.parmakIzi.equals(fingerprint)))
+          .getSingleOrNull();
+
+  Future<void> recordImport({
+    required String fingerprint,
+    required Iterable<ParsedActivityBlock> blocks,
+    required String actor,
+    String? rawText,
+  }) async {
+    final dates = blocks.map((block) => block.parsedDate).toSet().toList()
+      ..sort();
+    final personnel = <int>{};
+    for (final block in blocks) {
+      personnel.addAll(
+        block.personnelList
+            .map((person) => person.matchedPersonnelId)
+            .whereType<int>(),
+      );
+    }
+    await database.into(database.topluAktarimGecmisiTable).insert(
+          TopluAktarimGecmisiTableCompanion.insert(
+            parmakIzi: fingerprint,
+            tarihler: dates.join(', '),
+            blokSayisi: blocks.length,
+            personelSayisi: personnel.length,
+            aktaranKullanici: actor,
+            kayitTarihi: DateTime.now().toIso8601String(),
+            hamMetin: Value(rawText),
+          ),
+        );
+  }
+}

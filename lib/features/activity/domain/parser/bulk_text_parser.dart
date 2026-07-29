@@ -33,13 +33,31 @@ class BulkParseResult {
     required this.blocks,
     required this.issues,
     this.ignoredLineCount = 0,
+    this.declaredTotals = const [],
   });
 
   final List<ParsedActivityBlock> blocks;
   final List<BulkParseIssue> issues;
   final int ignoredLineCount;
+  final List<BulkDeclaredTotal> declaredTotals;
 
   bool get hasBlockingIssues => issues.any((issue) => issue.isBlocking);
+}
+
+class BulkDeclaredTotal {
+  const BulkDeclaredTotal({
+    required this.lineNumber,
+    required this.expectedCount,
+    required this.date,
+    required this.teamName,
+    required this.activityType,
+  });
+
+  final int lineNumber;
+  final int expectedCount;
+  final String date;
+  final String teamName;
+  final String activityType;
 }
 
 class BulkTextParser {
@@ -137,6 +155,7 @@ class BulkTextParser {
     final issues = <BulkParseIssue>[];
     final blocks = <ParsedActivityBlock>[];
     final personnel = <ParsedPersonnelItem>[];
+    final declaredTotals = <BulkDeclaredTotal>[];
     var ignoredLineCount = 0;
 
     if (rawText.trim().isEmpty) {
@@ -296,6 +315,22 @@ class BulkTextParser {
 
       if (_summaryPattern.hasMatch(line)) {
         ignoredLineCount++;
+        final expected =
+            int.tryParse(RegExp(r'\d+').firstMatch(line)?.group(0) ?? '');
+        if (expected != null &&
+            currentDate != null &&
+            currentTeam != null &&
+            currentActivity != null) {
+          declaredTotals.add(
+            BulkDeclaredTotal(
+              lineNumber: lineNumber,
+              expectedCount: expected,
+              date: currentDate,
+              teamName: currentTeam,
+              activityType: currentActivity,
+            ),
+          );
+        }
         continue;
       }
 
@@ -309,6 +344,7 @@ class BulkTextParser {
         final parsed = _parsePersonnelLine(
           content,
           personnelCandidate.index ?? nextIndex,
+          lineNumber,
         );
         if (parsed == null) {
           addIssue(
@@ -360,6 +396,7 @@ class BulkTextParser {
       blocks: List<ParsedActivityBlock>.unmodifiable(blocks),
       issues: List<BulkParseIssue>.unmodifiable(issues),
       ignoredLineCount: ignoredLineCount,
+      declaredTotals: List<BulkDeclaredTotal>.unmodifiable(declaredTotals),
     );
   }
 
@@ -473,6 +510,7 @@ class BulkTextParser {
   static ({ParsedPersonnelItem item, bool rankKnown})? _parsePersonnelLine(
     String content,
     int index,
+    int lineNumber,
   ) {
     final rankMatch = _rankPattern.firstMatch(content);
     final rankKnown = rankMatch != null;
@@ -487,6 +525,7 @@ class BulkTextParser {
         rawIndex: index,
         rawRank: rank,
         rawName: name,
+        sourceLineNumber: lineNumber,
       ),
       rankKnown: rankKnown,
     );

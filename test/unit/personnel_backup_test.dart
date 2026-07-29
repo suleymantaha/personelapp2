@@ -17,7 +17,9 @@ void main() {
     await db.close();
   });
 
-  test('PersonnelBackupService should export and restore personnel and squads correctly', () async {
+  test(
+      'PersonnelBackupService should export and restore personnel and squads correctly',
+      () async {
     // 1. Insert test squad and personnel
     final squadId = await db.into(db.timTable).insert(
           TimTableCompanion.insert(
@@ -26,7 +28,7 @@ void main() {
           ),
         );
 
-    await db.into(db.personelTable).insert(
+    final personnelId = await db.into(db.personelTable).insert(
           PersonelTableCompanion.insert(
             adSoyad: 'Ahmet KAYA',
             rutbe: 'J.Uzm.Çvş.',
@@ -35,11 +37,20 @@ void main() {
             kayitTarihi: '2026-07-26',
           ),
         );
+    await db.into(db.personelIsimTakmaAdTable).insert(
+          PersonelIsimTakmaAdTableCompanion.insert(
+            normalizeTakmaAd: 'ahmet kaya hatali',
+            gorunenTakmaAd: 'Ahmet KAYA HATALI',
+            personelId: personnelId,
+            kayitTarihi: '2026-07-29',
+          ),
+        );
 
     // 2. Export backup JSON
     final jsonStr = await service.exportBackupJson();
     expect(jsonStr, contains('Ahmet KAYA'));
     expect(jsonStr, contains('1/B Timi'));
+    expect(jsonStr, contains('Ahmet KAYA HATALI'));
 
     // 3. Clear database
     await db.delete(db.personelTable).go();
@@ -59,6 +70,10 @@ void main() {
     final restoredSquads = await db.select(db.timTable).get();
     expect(restoredSquads.length, equals(1));
     expect(restoredSquads.first.timAdi, equals('1/B Timi'));
+    final restoredAliases = await db.select(db.personelIsimTakmaAdTable).get();
+    expect(restoredAliases, hasLength(1));
+    expect(restoredAliases.single.gorunenTakmaAd, 'Ahmet KAYA HATALI');
+    expect(restoredAliases.single.personelId, restoredPersonnel.single.id);
   });
 
   test('unsupported backup version is rejected without writes', () async {

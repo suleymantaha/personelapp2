@@ -6,6 +6,7 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/bulk_activity_import_preparer.dart';
+import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
@@ -38,6 +39,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
   bool _isSaving = false;
   int _ignoredLineCount = 0;
   int _deduplicatedPersonnelCount = 0;
+  List<BulkDeclaredTotal> _declaredTotals = [];
+  bool _keepAuditText = false;
   bool _parseIssuesExpanded = false;
   _BulkPreviewFilter _previewFilter = _BulkPreviewFilter.all;
   final ScrollController _previewScrollController = ScrollController();
@@ -107,6 +110,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
         _parseIssues = parseResult.issues;
         _ignoredLineCount = parseResult.ignoredLineCount;
         _deduplicatedPersonnelCount = deduplicated.removedCount;
+        _declaredTotals = parseResult.declaredTotals;
         _previewFilter = _BulkPreviewFilter.all;
         _parseIssuesExpanded = _parseIssues.any((issue) => issue.isBlocking);
         if (_parsedBlocks.isNotEmpty || _parseIssues.isNotEmpty) {
@@ -148,10 +152,40 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
       if (actor == null) {
         throw StateError('Oturum doğrulanamadı.');
       }
+      final learningService = BulkImportLearningService(widget.database);
+      final fingerprint = BulkImportLearningService.fingerprint(_parsedBlocks);
+      final existingImport = await learningService.findImport(fingerprint);
+      if (existingImport != null) {
+        if (!mounted) return;
+        await showDialog<void>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Bu Liste Daha Önce Aktarıldı'),
+            content: Text(
+              '${existingImport.tarihler} tarihli bu içerik '
+              '${existingImport.kayitTarihi} tarihinde '
+              '${existingImport.aktaranKullanici} tarafından kaydedilmiş.',
+            ),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('TAMAM'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
       final result =
           await widget.activityRepository.createActivitiesWithAssignments(
         preparation.requests,
         actor: actor,
+      );
+      await learningService.recordImport(
+        fingerprint: fingerprint,
+        blocks: _parsedBlocks,
+        actor: actor.username,
+        rawText: _keepAuditText ? _textController.text : null,
       );
 
       if (mounted) {
@@ -164,6 +198,25 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
           );
           if (!mounted) return;
         }
+        await showDialog<void>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Aktarım Tamamlandı'),
+            content: Text(
+              '${preparation.requests.length} günlük faaliyet oluşturuldu.\n'
+              '${result.addedAssignmentCount} personel eklendi.\n'
+              '$_deduplicatedPersonnelCount tekrar tekilleştirildi.\n'
+              '${result.skippedAssignmentCount} çakışan kayıt atlandı.',
+            ),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('TAMAM'),
+              ),
+            ],
+          ),
+        );
+        if (!mounted) return;
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -385,6 +438,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
         _parseIssuesExpanded = false;
         _ignoredLineCount = 0;
         _deduplicatedPersonnelCount = 0;
+        _declaredTotals = [];
       });
     }
   }
@@ -704,6 +758,31 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
             ),
           ],
           SizedBox(height: isKeyboardVisible ? 8 : 10),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Ham metni yerel denetim kaydında sakla',
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                    const Text(
+                      'Varsayılan kapalıdır; veri yalnızca bu cihazda tutulur.',
+                      style: TextStyle(fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: _keepAuditText,
+                onChanged: (value) => setState(() => _keepAuditText = value),
+              ),
+            ],
+          ),
+          SizedBox(height: isKeyboardVisible ? 4 : 6),
           Expanded(
             child: TextField(
               controller: _textController,
@@ -800,6 +879,21 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
         _unresolvedPersonnelCount +
         _parsedBlocks.where((block) => block.personnelList.isEmpty).length +
         _parseIssues.where((issue) => issue.isBlocking).length;
+    final totalMismatchCount = _declaredTotals.where((declared) {
+      final ids = <int>{};
+      for (final block in _parsedBlocks) {
+        if (block.parsedDate == declared.date &&
+            block.parsedTimName == declared.teamName &&
+            block.parsedActivityType == declared.activityType) {
+          ids.addAll(
+            block.personnelList
+                .map((person) => person.matchedPersonnelId)
+                .whereType<int>(),
+          );
+        }
+      }
+      return ids.length != declared.expectedCount;
+    }).length;
     return Padding(
       padding: EdgeInsets.all(isMobile ? 16 : 0),
       child: Column(
@@ -851,6 +945,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
               problemCount: problemCount,
               ignoredLineCount: _ignoredLineCount,
               deduplicatedCount: _deduplicatedPersonnelCount,
+              declaredTotalCount: _declaredTotals.length,
+              totalMismatchCount: totalMismatchCount,
               selectedFilter: _previewFilter,
               onShowAll: () => _setPreviewFilter(_BulkPreviewFilter.all),
               onShowProblems: problemCount == 0
@@ -1321,6 +1417,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
         _parsedBlocks[blockIndex] =
             currentBlock.copyWith(personnelList: updatedList);
       });
+      await BulkImportLearningService(widget.database).rememberAlias(
+        rawName: item.rawName,
+        personnelId: person.id,
+      );
     }
   }
 }
@@ -1394,6 +1494,8 @@ class _ImportSummary extends StatelessWidget {
     required this.problemCount,
     required this.ignoredLineCount,
     required this.deduplicatedCount,
+    required this.declaredTotalCount,
+    required this.totalMismatchCount,
     required this.selectedFilter,
     required this.onShowAll,
     required this.onShowProblems,
@@ -1406,6 +1508,8 @@ class _ImportSummary extends StatelessWidget {
   final int problemCount;
   final int ignoredLineCount;
   final int deduplicatedCount;
+  final int declaredTotalCount;
+  final int totalMismatchCount;
   final _BulkPreviewFilter selectedFilter;
   final VoidCallback onShowAll;
   final VoidCallback? onShowProblems;
@@ -1442,6 +1546,19 @@ class _ImportSummary extends StatelessWidget {
             icon: Icons.do_not_disturb_alt_outlined,
             label: '$ignoredLineCount satır/not yok sayıldı',
             color: Colors.blueGrey.shade700,
+          ),
+        if (declaredTotalCount > 0)
+          _SummaryChip(
+            key: const Key('bulk-declared-total-status'),
+            icon: totalMismatchCount == 0
+                ? Icons.rule_rounded
+                : Icons.warning_amber_rounded,
+            label: totalMismatchCount == 0
+                ? '$declaredTotalCount toplam doğrulandı'
+                : '$totalMismatchCount toplam uyuşmuyor',
+            color: totalMismatchCount == 0
+                ? context.approvedColor
+                : Colors.orange.shade800,
           ),
         if (warningCount > 0)
           _SummaryChip(
@@ -1608,9 +1725,22 @@ class _PersonnelMatchCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: _LabeledValue(
-                    label: 'METİNDEKİ KAYIT',
-                    value: '${item.rawRank} ${item.rawName}',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _LabeledValue(
+                        label: 'METİNDEKİ KAYIT',
+                        value: '${item.rawRank} ${item.rawName}',
+                      ),
+                      if (item.sourceLineNumber != null)
+                        Text(
+                          'Kaynak satır ${item.sourceLineNumber}',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 10,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 IconButton(

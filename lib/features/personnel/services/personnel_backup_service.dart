@@ -16,6 +16,7 @@ class PersonnelBackupService {
   Future<String> exportBackupJson() async {
     final personnelList = await db.select(db.personelTable).get();
     final timList = await db.select(db.timTable).get();
+    final aliases = await db.select(db.personelIsimTakmaAdTable).get();
 
     final data = {
       'version': backupVersion,
@@ -38,6 +39,16 @@ class PersonnelBackupService {
               'birlik': p.birlik,
               'timId': p.timId,
               'kayitTarihi': p.kayitTarihi,
+            },
+          )
+          .toList(),
+      'aliases': aliases
+          .map(
+            (alias) => {
+              'normalizeTakmaAd': alias.normalizeTakmaAd,
+              'gorunenTakmaAd': alias.gorunenTakmaAd,
+              'personelId': alias.personelId,
+              'kayitTarihi': alias.kayitTarihi,
             },
           )
           .toList(),
@@ -66,8 +77,12 @@ class PersonnelBackupService {
       decoded['personnel'],
       fieldName: 'personnel',
     );
+    final aliases = decoded['aliases'] == null
+        ? const <Map<String, Object?>>[]
+        : _readObjectList(decoded['aliases'], fieldName: 'aliases');
     if (squads.length > maxSquadCount ||
-        personnel.length > maxPersonnelCount) {
+        personnel.length > maxPersonnelCount ||
+        aliases.length > maxPersonnelCount * 5) {
       throw const FormatException('Yedek çok fazla kayıt içeriyor.');
     }
 
@@ -86,9 +101,7 @@ class PersonnelBackupService {
           continue;
         }
 
-        final newSquadId = await db
-            .into(db.timTable)
-            .insert(
+        final newSquadId = await db.into(db.timTable).insert(
               TimTableCompanion.insert(
                 timAdi: timAdi,
                 olusturmaTarihi: _readString(
@@ -103,9 +116,9 @@ class PersonnelBackupService {
 
       // 2. Restore Personnel
       final existingPersonnel = await db.select(db.personelTable).get();
-      final personnelSet = {
+      final personnelByKey = {
         for (final p in existingPersonnel)
-          '${p.rutbe}_${p.adSoyad}'.toLowerCase(),
+          '${p.rutbe}_${p.adSoyad}'.toLowerCase(): p.id,
       };
 
       for (final p in personnel) {
@@ -114,7 +127,7 @@ class PersonnelBackupService {
         final birlik = _readString(p, 'birlik', fallback: '1.J.KÖK.Tug.K.lığı');
         final key = '${rutbe}_$adSoyad'.toLowerCase();
 
-        if (adSoyad.isNotEmpty && !personnelSet.contains(key)) {
+        if (adSoyad.isNotEmpty && !personnelByKey.containsKey(key)) {
           int? timId;
           final timIdVal = _readNullableInt(p, 'timId');
           if (timIdVal != null) {
@@ -126,9 +139,7 @@ class PersonnelBackupService {
             }
           }
 
-          await db
-              .into(db.personelTable)
-              .insert(
+          final newPersonnelId = await db.into(db.personelTable).insert(
                 PersonelTableCompanion.insert(
                   adSoyad: adSoyad,
                   rutbe: rutbe,
@@ -141,9 +152,44 @@ class PersonnelBackupService {
                   ),
                 ),
               );
-          personnelSet.add(key);
+          personnelByKey[key] = newPersonnelId;
           importedCount++;
         }
+      }
+
+      for (final alias in aliases) {
+        final sourcePersonnelId = _readNullableInt(alias, 'personelId');
+        if (sourcePersonnelId == null) continue;
+        final sourcePersonnel = personnel
+            .where(
+              (item) => _readNullableInt(item, 'id') == sourcePersonnelId,
+            )
+            .firstOrNull;
+        if (sourcePersonnel == null) continue;
+        final key = '${_readString(sourcePersonnel, 'rutbe')}_'
+                '${_readString(sourcePersonnel, 'adSoyad')}'
+            .toLowerCase();
+        final targetPersonnelId = personnelByKey[key];
+        final normalized = _readString(alias, 'normalizeTakmaAd');
+        final display = _readString(alias, 'gorunenTakmaAd');
+        if (targetPersonnelId == null ||
+            normalized.isEmpty ||
+            display.isEmpty) {
+          continue;
+        }
+        await db.into(db.personelIsimTakmaAdTable).insert(
+              PersonelIsimTakmaAdTableCompanion.insert(
+                normalizeTakmaAd: normalized,
+                gorunenTakmaAd: display,
+                personelId: targetPersonnelId,
+                kayitTarihi: _readString(
+                  alias,
+                  'kayitTarihi',
+                  fallback: DateTime.now().toIso8601String(),
+                ),
+              ),
+              mode: InsertMode.insertOrReplace,
+            );
       }
     });
 

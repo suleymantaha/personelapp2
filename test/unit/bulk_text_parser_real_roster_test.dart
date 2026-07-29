@@ -61,6 +61,10 @@ TOLAM 3 KİŞİ 2 KİŞİ 24 SAAT KALACAK
     );
     expect(result.blocks.last.personnelList.first.rawRank, 'J.Ütğm.');
     expect(result.blocks.last.personnelList.first.rawName, 'Okan TOPUZ');
+    expect(result.blocks.last.personnelList.first.sourceLineNumber, 27);
     expect(result.ignoredLineCount, 5);
+    expect(result.declaredTotals, hasLength(1));
+    expect(result.declaredTotals.single.expectedCount, 3);
+    expect(result.declaredTotals.single.teamName, '9/B');
   });
 }

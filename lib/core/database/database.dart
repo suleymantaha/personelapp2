@@ -17,13 +17,15 @@ part 'database.g.dart';
     FaaliyetPersonelAtamaTable,
     RaporKayitTable,
     TimUyelikGecmisiTable,
+    PersonelIsimTakmaAdTable,
+    TopluAktarimGecmisiTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -38,6 +40,10 @@ class AppDatabase extends _$AppDatabase {
         if (from < 2) {
           await m.createTable(timUyelikGecmisiTable);
           await _validateMembershipHistoryMigration();
+        }
+        if (from < 3) {
+          await m.createTable(personelIsimTakmaAdTable);
+          await m.createTable(topluAktarimGecmisiTable);
         }
       },
     );
@@ -59,7 +65,8 @@ class AppDatabase extends _$AppDatabase {
   Future<void> ensureSeeded() async {
     final adminUser = await (select(
       kullaniciTable,
-    )..where((tbl) => tbl.kullaniciAdi.equals('admin'))).getSingleOrNull();
+    )..where((tbl) => tbl.kullaniciAdi.equals('admin')))
+        .getSingleOrNull();
     if (adminUser == null) {
       await into(kullaniciTable).insert(
         KullaniciTableCompanion.insert(

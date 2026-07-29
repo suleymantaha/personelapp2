@@ -12,6 +12,7 @@ class ParsedPersonnelItem {
     this.matchConfidence = 0.0,
     this.teamMismatch = false,
     this.reviewConfirmed = false,
+    this.sourceLineNumber,
   });
   final int rawIndex;
   final String rawRank;
@@ -23,6 +24,7 @@ class ParsedPersonnelItem {
   final double matchConfidence;
   final bool teamMismatch;
   final bool reviewConfirmed;
+  final int? sourceLineNumber;
 
   bool get isMatched => matchedPersonnelId != null;
   bool get needsReview =>
@@ -40,6 +42,7 @@ class ParsedPersonnelItem {
     double? matchConfidence,
     bool? teamMismatch,
     bool? reviewConfirmed,
+    int? sourceLineNumber,
   }) {
     return ParsedPersonnelItem(
       rawIndex: rawIndex ?? this.rawIndex,
@@ -52,6 +55,7 @@ class ParsedPersonnelItem {
       matchConfidence: matchConfidence ?? this.matchConfidence,
       teamMismatch: teamMismatch ?? this.teamMismatch,
       reviewConfirmed: reviewConfirmed ?? this.reviewConfirmed,
+      sourceLineNumber: sourceLineNumber ?? this.sourceLineNumber,
     );
   }
 }
