@@ -3,7 +3,6 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
 class PersonnelFuzzyMatcher {
-
   PersonnelFuzzyMatcher(this.database);
   final AppDatabase database;
 
@@ -54,10 +53,8 @@ class PersonnelFuzzyMatcher {
     }
 
     // 2. Token Set Match (all tokens match regardless of order)
-    final rawTokens = rawNameClean
-        .split(' ')
-        .where((e) => e.isNotEmpty)
-        .toSet();
+    final rawTokens =
+        rawNameClean.split(' ').where((e) => e.isNotEmpty).toSet();
 
     for (final p in dbList) {
       final dbTokens = _sanitizeString(p.adSoyad)
@@ -72,7 +69,8 @@ class PersonnelFuzzyMatcher {
     }
 
     // 3. First Letter + Surname Match (e.g., "S. Taha BİRİNCİ" matches "TAHA BİRİNCİ")
-    final firstLetterMatch = _tryFirstLetterSurnameMatch(rawNameClean, rawTokens, dbList);
+    final firstLetterMatch =
+        _tryFirstLetterSurnameMatch(rawNameClean, rawTokens, dbList);
     if (firstLetterMatch != null) {
       return _withMatch(
         item,
@@ -236,31 +234,32 @@ class PersonnelFuzzyMatcher {
   ) {
     // Build list of sanitized names for fuzzy search
     final nameList = dbList.map((p) => _sanitizeString(p.adSoyad)).toList();
-    
+
     // Use fuzzy package for Levenshtein-based matching
-    final fuzzy = Fuzzy<String>(nameList, options: FuzzyOptions<String>(
-      shouldSort: true,
-      threshold: 0.6,
-      tokenize: false,
-    ));
+    final fuzzy = Fuzzy<String>(nameList,
+        options: FuzzyOptions<String>(
+          shouldSort: true,
+          threshold: 0.6,
+          tokenize: false,
+        ));
 
     final results = fuzzy.search(rawNameClean);
-    
-        if (results.isNotEmpty) {
-          final bestMatch = results.first;
-          if (bestMatch.score >= 0.6) {
-            // Find the personnel with this sanitized name
-            try {
-              return dbList.firstWhere(
-                (p) => _sanitizeString(p.adSoyad) == bestMatch.item,
-              );
-            } catch (_) {
-              return null;
-            }
-          }
-        }
 
-          // Fallback: Jaro-Winkler for short names (better for initials)
+    if (results.isNotEmpty) {
+      final bestMatch = results.first;
+      if (bestMatch.score >= 0.6) {
+        // Find the personnel with this sanitized name
+        try {
+          return dbList.firstWhere(
+            (p) => _sanitizeString(p.adSoyad) == bestMatch.item,
+          );
+        } catch (_) {
+          return null;
+        }
+      }
+    }
+
+    // Fallback: Jaro-Winkler for short names (better for initials)
     if (rawNameClean.length <= 20) {
       return _tryJaroWinklerMatch(rawNameClean, dbList);
     }
@@ -278,7 +277,8 @@ class PersonnelFuzzyMatcher {
     for (final p in dbList) {
       final dbNameClean = _sanitizeString(p.adSoyad);
       final score = _jaroWinklerDistance(rawNameClean, dbNameClean);
-      if (score > bestScore && score >= 0.75) { // Higher threshold for Jaro-Winkler
+      if (score > bestScore && score >= 0.75) {
+        // Higher threshold for Jaro-Winkler
         bestScore = score;
         bestMatch = p;
       }
@@ -293,7 +293,8 @@ class PersonnelFuzzyMatcher {
     if (s1.isEmpty || s2.isEmpty) return 0.0;
 
     // Jaro distance
-    final matchDistance = (s1.length > s2.length ? s1.length : s2.length) ~/ 2 - 1;
+    final matchDistance =
+        (s1.length > s2.length ? s1.length : s2.length) ~/ 2 - 1;
     if (matchDistance < 0) return 0.0;
 
     final s1Matches = List<bool>.filled(s1.length, false);
@@ -373,13 +374,15 @@ class PersonnelFuzzyMatcher {
     }
 
     final cleanQuery = _sanitizeString(query);
-    final queryTokens = cleanQuery.split(' ').where((e) => e.isNotEmpty).toSet();
+    final queryTokens =
+        cleanQuery.split(' ').where((e) => e.isNotEmpty).toSet();
 
     final scoredResults = <_ScoredPersonnel>[];
 
     for (final p in personnelList) {
       final cleanName = _sanitizeString(p.adSoyad);
-      final nameTokens = cleanName.split(' ').where((e) => e.isNotEmpty).toSet();
+      final nameTokens =
+          cleanName.split(' ').where((e) => e.isNotEmpty).toSet();
 
       double score = 0.0;
 
@@ -399,8 +402,10 @@ class PersonnelFuzzyMatcher {
       else if (queryTokens.length >= 2) {
         final firstToken = queryTokens.first;
         if (firstToken.length == 1) {
-          final remainingTokens = queryTokens.where((t) => t != firstToken).toSet();
-          if (remainingTokens.isNotEmpty && nameTokens.containsAll(remainingTokens)) {
+          final remainingTokens =
+              queryTokens.where((t) => t != firstToken).toSet();
+          if (remainingTokens.isNotEmpty &&
+              nameTokens.containsAll(remainingTokens)) {
             final nameFirstToken = nameTokens.first;
             if (nameFirstToken.startsWith(firstToken)) {
               score = 0.85;
@@ -410,11 +415,12 @@ class PersonnelFuzzyMatcher {
       }
       // 5. Fuzzy match (Levenshtein via fuzzy package)
       else {
-        final fuzzy = Fuzzy<String>([cleanName], options: FuzzyOptions<String>(
-          shouldSort: true,
-          threshold: 0.5,
-          tokenize: false,
-        ));
+        final fuzzy = Fuzzy<String>([cleanName],
+            options: FuzzyOptions<String>(
+              shouldSort: true,
+              threshold: 0.5,
+              tokenize: false,
+            ));
         final results = fuzzy.search(cleanQuery);
         if (results.isNotEmpty) {
           score = results.first.score * 0.8; // Weight fuzzy match lower
@@ -425,7 +431,9 @@ class PersonnelFuzzyMatcher {
         final intersection = queryTokens.intersection(nameTokens);
         if (intersection.isNotEmpty) {
           final overlapScore = intersection.length /
-              (queryTokens.length > nameTokens.length ? queryTokens.length : nameTokens.length);
+              (queryTokens.length > nameTokens.length
+                  ? queryTokens.length
+                  : nameTokens.length);
           if (overlapScore > score) {
             score = overlapScore * 0.6;
           }
@@ -454,7 +462,8 @@ class PersonnelFuzzyMatcher {
     if (s1 == s2) return 1.0;
     if (s1.isEmpty || s2.isEmpty) return 0.0;
 
-    final matchDistance = (s1.length > s2.length ? s1.length : s2.length) ~/ 2 - 1;
+    final matchDistance =
+        (s1.length > s2.length ? s1.length : s2.length) ~/ 2 - 1;
     if (matchDistance < 0) return 0.0;
 
     final s1Matches = List<bool>.filled(s1.length, false);

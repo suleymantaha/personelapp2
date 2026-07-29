@@ -1,4 +1,5 @@
-class ParsedPersonnelItem { // 1.0: exact, 0.7-0.9: fuzzy, 0.0: none
+class ParsedPersonnelItem {
+  // 1.0: exact, 0.7-0.9: fuzzy, 0.0: none
 
   ParsedPersonnelItem({
     required this.rawIndex,
@@ -56,17 +57,18 @@ class ParsedPersonnelItem { // 1.0: exact, 0.7-0.9: fuzzy, 0.0: none
 }
 
 class ParsedActivityBlock {
-
   ParsedActivityBlock({
     required this.rawTitle,
     required this.parsedTimName,
     required this.parsedActivityType,
     required this.parsedDate,
-    required this.personnelList, this.parsedTimeRange,
+    required this.personnelList,
+    this.parsedTimeRange,
   });
   final String rawTitle;
   final String parsedTimName; // e.g. "6/B"
-  final String parsedActivityType; // e.g. "Gülüşkür", "Hazır Kıta", "Heybet", "İhtiyat"
+  final String
+      parsedActivityType; // e.g. "Gülüşkür", "Hazır Kıta", "Heybet", "İhtiyat"
   final String parsedDate; // YYYY-AA-DD
   final String? parsedTimeRange; // e.g. "08:00 - 19:30"
   final List<ParsedPersonnelItem> personnelList;

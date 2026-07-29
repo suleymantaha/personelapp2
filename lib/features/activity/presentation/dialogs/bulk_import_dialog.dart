@@ -36,6 +36,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
   List<TimTableData> _allSquads = [];
   bool _isParsing = false;
   bool _isSaving = false;
+  int _ignoredLineCount = 0;
+  int _deduplicatedPersonnelCount = 0;
   bool _parseIssuesExpanded = false;
   _BulkPreviewFilter _previewFilter = _BulkPreviewFilter.all;
   final ScrollController _previewScrollController = ScrollController();
@@ -97,11 +99,14 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
       final parseResult = BulkTextParser.parse(rawText);
       final fuzzyMatcher = PersonnelFuzzyMatcher(widget.database);
       final matchedBlocks = await fuzzyMatcher.matchBlocks(parseResult.blocks);
+      final deduplicated = _deduplicateSameDuty(matchedBlocks);
       if (!mounted) return;
 
       setState(() {
-        _parsedBlocks = matchedBlocks;
+        _parsedBlocks = deduplicated.blocks;
         _parseIssues = parseResult.issues;
+        _ignoredLineCount = parseResult.ignoredLineCount;
+        _deduplicatedPersonnelCount = deduplicated.removedCount;
         _previewFilter = _BulkPreviewFilter.all;
         _parseIssuesExpanded = _parseIssues.any((issue) => issue.isBlocking);
         if (_parsedBlocks.isNotEmpty || _parseIssues.isNotEmpty) {
@@ -122,7 +127,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
   Future<void> _saveAllToFaaliyet() async {
     if (_parsedBlocks.isEmpty ||
         _parseIssues.any((issue) => issue.isBlocking) ||
-        _unmatchedCount > 0 ||
+        _unresolvedPersonnelCount > 0 ||
         _parsedBlocks.any((block) => block.personnelList.isEmpty)) {
       return;
     }
@@ -266,9 +271,37 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
     return result;
   }
 
-  int get _unmatchedCount => _parsedBlocks
+  ({
+    List<ParsedActivityBlock> blocks,
+    int removedCount,
+  }) _deduplicateSameDuty(List<ParsedActivityBlock> blocks) {
+    final seen = <String>{};
+    var removedCount = 0;
+    final result = <ParsedActivityBlock>[];
+    for (final block in blocks) {
+      final personnel = <ParsedPersonnelItem>[];
+      for (final person in block.personnelList) {
+        final id = person.matchedPersonnelId;
+        if (id == null) {
+          personnel.add(person);
+          continue;
+        }
+        final key = '${block.parsedDate}:'
+            '${block.parsedActivityType.trim().toUpperCase()}:$id';
+        if (seen.add(key)) {
+          personnel.add(person);
+        } else {
+          removedCount++;
+        }
+      }
+      result.add(block.copyWith(personnelList: personnel));
+    }
+    return (blocks: result, removedCount: removedCount);
+  }
+
+  int get _unresolvedPersonnelCount => _parsedBlocks
       .expand((block) => block.personnelList)
-      .where((person) => !person.isMatched)
+      .where((person) => person.needsReview)
       .length;
 
   Future<void> _removePerson(int blockIndex, int personIndex) async {
@@ -350,6 +383,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
         _parseIssues.clear();
         _previewFilter = _BulkPreviewFilter.all;
         _parseIssuesExpanded = false;
+        _ignoredLineCount = 0;
+        _deduplicatedPersonnelCount = 0;
       });
     }
   }
@@ -744,7 +779,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
       final problemIndexes = <int>[];
       for (final personEntry
           in blockEntry.value.personnelList.asMap().entries) {
-        if (!personEntry.value.isMatched ||
+        if (personEntry.value.needsReview ||
             duplicates.containsKey('${blockEntry.key}:${personEntry.key}')) {
           problemIndexes.add(personEntry.key);
         }
@@ -762,7 +797,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
       (count, block) => count + block.personnelList.length,
     );
     final problemCount = duplicates.length +
-        _unmatchedCount +
+        _unresolvedPersonnelCount +
         _parsedBlocks.where((block) => block.personnelList.isEmpty).length +
         _parseIssues.where((issue) => issue.isBlocking).length;
     return Padding(
@@ -814,6 +849,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
               personnelCount: personnelCount,
               warningCount: _parseIssues.length,
               problemCount: problemCount,
+              ignoredLineCount: _ignoredLineCount,
+              deduplicatedCount: _deduplicatedPersonnelCount,
               selectedFilter: _previewFilter,
               onShowAll: () => _setPreviewFilter(_BulkPreviewFilter.all),
               onShowProblems: problemCount == 0
@@ -947,7 +984,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
                       blocks: _parsedBlocks,
                       issues: _parseIssues,
                       hasUnresolvedProblems: duplicates.isNotEmpty ||
-                          _unmatchedCount > 0 ||
+                          _unresolvedPersonnelCount > 0 ||
                           _parsedBlocks
                               .any((block) => block.personnelList.isEmpty),
                       isSaving: _isSaving,
@@ -1278,6 +1315,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
           matchedRutbe: person.rutbe,
           matchedTimId: person.timId,
           matchConfidence: 1,
+          teamMismatch: false,
+          reviewConfirmed: true,
         );
         _parsedBlocks[blockIndex] =
             currentBlock.copyWith(personnelList: updatedList);
@@ -1353,6 +1392,8 @@ class _ImportSummary extends StatelessWidget {
     required this.personnelCount,
     required this.warningCount,
     required this.problemCount,
+    required this.ignoredLineCount,
+    required this.deduplicatedCount,
     required this.selectedFilter,
     required this.onShowAll,
     required this.onShowProblems,
@@ -1363,6 +1404,8 @@ class _ImportSummary extends StatelessWidget {
   final int personnelCount;
   final int warningCount;
   final int problemCount;
+  final int ignoredLineCount;
+  final int deduplicatedCount;
   final _BulkPreviewFilter selectedFilter;
   final VoidCallback onShowAll;
   final VoidCallback? onShowProblems;
@@ -1388,6 +1431,18 @@ class _ImportSummary extends StatelessWidget {
           label: '$personnelCount personel',
           color: Colors.blue.shade700,
         ),
+        if (deduplicatedCount > 0)
+          _SummaryChip(
+            icon: Icons.content_copy_outlined,
+            label: '$deduplicatedCount tekrar birleştirildi',
+            color: Colors.teal.shade700,
+          ),
+        if (ignoredLineCount > 0)
+          _SummaryChip(
+            icon: Icons.do_not_disturb_alt_outlined,
+            label: '$ignoredLineCount satır/not yok sayıldı',
+            color: Colors.blueGrey.shade700,
+          ),
         if (warningCount > 0)
           _SummaryChip(
             key: const Key('bulk-toggle-warnings'),
@@ -1520,7 +1575,7 @@ class _PersonnelMatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final duplicate = duplicateAssignments?.isNotEmpty == true;
-    final problem = duplicate || !item.isMatched;
+    final problem = duplicate || item.needsReview;
     final borderColor = problem ? Colors.red.shade300 : context.cardBorderColor;
     return Container(
       decoration: BoxDecoration(
@@ -1604,6 +1659,17 @@ class _PersonnelMatchCard extends StatelessWidget {
                               fontSize: 11,
                             ),
                           ),
+                          if (item.teamMismatch && !item.reviewConfirmed)
+                            Text(
+                              'Metindeki tim ile kayıtlı tim uyuşmuyor; '
+                              'personeli seçerek onaylayın.',
+                              key: const Key('bulk-team-mismatch-warning'),
+                              style: TextStyle(
+                                color: Colors.orange.shade800,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                         ],
                         const SizedBox(height: 6),
                         if (duplicate)
@@ -1682,16 +1748,26 @@ class _MatchStatusIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (label, color, icon) = switch (item.matchConfidence) {
-      >= 0.9 when item.isMatched => (
+    final (label, color, icon) = switch (item) {
+      ParsedPersonnelItem(reviewConfirmed: true, isMatched: true) => (
+          'Kullanıcı onayladı',
+          context.approvedColor,
+          Icons.verified_rounded,
+        ),
+      ParsedPersonnelItem(teamMismatch: true) => (
+          'Tim onayı gerekli',
+          Colors.orange.shade800,
+          Icons.account_tree_outlined,
+        ),
+      ParsedPersonnelItem(matchConfidence: < 0.9, isMatched: true) => (
+          'Eşleşmeyi kontrol edin',
+          Colors.orange.shade800,
+          Icons.help_rounded,
+        ),
+      ParsedPersonnelItem(matchConfidence: >= 0.9, isMatched: true) => (
           'Eşleşti',
           context.approvedColor,
           Icons.check_circle_rounded,
-        ),
-      > 0 when item.isMatched => (
-          'Kontrol edin',
-          Colors.orange.shade800,
-          Icons.help_rounded,
         ),
       _ => (
           'Eşleşmedi',

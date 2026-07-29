@@ -42,28 +42,25 @@ void main() {
       final blocks = result.blocks;
 
       expect(result.hasBlockingIssues, isFalse);
-      expect(blocks, hasLength(4));
+      expect(blocks, hasLength(3));
       expect(blocks[0].parsedTimName, '6/B');
       expect(blocks[0].parsedActivityType, DutyOrLeaveType.guluskur);
       expect(blocks[0].parsedDate, '2026-07-25');
-      expect(blocks[0].parsedTimeRange, '08:00 - 19:30');
-      expect(blocks[0].personnelList, hasLength(4));
+      expect(blocks[0].parsedTimeRange, isNull);
+      expect(blocks[0].personnelList, hasLength(8));
       expect(blocks[0].personnelList.first.rawName, 'Erdem BUYAR');
       expect(blocks[0].personnelList.first.rawRank, 'J.Asb.Üçvş.');
 
-      expect(blocks[1].parsedTimName, '6/B');
-      expect(blocks[1].parsedTimeRange, '19:30 - 09:00');
-      expect(blocks[1].personnelList, hasLength(4));
+      expect(blocks[1].parsedTimName, '7/B');
+      expect(blocks[1].parsedActivityType, DutyOrLeaveType.hazirKita);
+      expect(blocks[1].personnelList, hasLength(9));
 
-      expect(blocks[2].parsedTimName, '7/B');
-      expect(blocks[2].parsedActivityType, DutyOrLeaveType.hazirKita);
-      expect(blocks[2].personnelList, hasLength(9));
-
-      expect(blocks[3].parsedTimName, '3B');
-      expect(blocks[3].parsedActivityType, DutyOrLeaveType.guluskur);
-      expect(blocks[3].parsedDate, '2026-07-26');
-      expect(blocks[3].parsedTimeRange, '08:00 - 20:00');
-      expect(blocks[3].personnelList, hasLength(5));
+      expect(blocks[2].parsedTimName, '3B');
+      expect(blocks[2].parsedActivityType, DutyOrLeaveType.guluskur);
+      expect(blocks[2].parsedDate, '2026-07-26');
+      expect(blocks[2].parsedTimeRange, isNull);
+      expect(blocks[2].personnelList, hasLength(5));
+      expect(result.ignoredLineCount, 3);
     });
 
     test('normalizes common message, team, time and list variants', () {
@@ -82,7 +79,7 @@ void main() {
       expect(result.blocks, hasLength(1));
       expect(result.blocks.single.parsedTimName, '6/B');
       expect(result.blocks.single.parsedDate, '2026-07-25');
-      expect(result.blocks.single.parsedTimeRange, '08:00 - 19:30');
+      expect(result.blocks.single.parsedTimeRange, isNull);
       expect(result.blocks.single.personnelList, hasLength(2));
       expect(
         result.blocks.single.personnelList.first.rawRank,

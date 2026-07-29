@@ -69,9 +69,9 @@ class BulkActivityImportPreparer {
       for (final occurrence in occurrences.entries) {
         final byDuty = <String,
             ({
-              ParsedActivityBlock block,
-              ParsedPersonnelItem person,
-            })>{};
+          ParsedActivityBlock block,
+          ParsedPersonnelItem person,
+        })>{};
         for (final item in occurrence.value) {
           byDuty.putIfAbsent(
             item.block.parsedActivityType.trim().toUpperCase(),

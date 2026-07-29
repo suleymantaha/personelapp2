@@ -30,7 +30,7 @@ void main() {
     );
   }
 
-  test('creates one daily activity while preserving duty and shift notes', () {
+  test('creates one daily activity while preserving duties without shifts', () {
     final result = BulkActivityImportPreparer.prepare([
       block(
         date: '2026-07-28',
@@ -55,7 +55,7 @@ void main() {
     expect(request.personnelAssignments.first.duty, 'HAZIR KITA');
     expect(
       request.personnelAssignments.first.note,
-      contains('08:00 - 19:30'),
+      'Görev Türü: HAZIR KITA',
     );
   });
 
@@ -102,5 +102,31 @@ void main() {
       'HAZIR KITA (08:00 - 19:30)',
       'GÜLÜŞKÜR (19:30 - 09:00)',
     ]);
+  });
+
+  test('collapses repeated personnel in the same duty and discards shifts', () {
+    final repeated = person(1, 'Ahmet TINAS', teamId: 9);
+    final result = BulkActivityImportPreparer.prepare([
+      block(
+        date: '2026-07-30',
+        duty: 'GÜLÜŞKÜR',
+        time: '08:00 - 19:30',
+        person: repeated,
+      ),
+      block(
+        date: '2026-07-30',
+        duty: 'GÜLÜŞKÜR',
+        time: '19:30 - 06:30',
+        person: repeated,
+      ),
+    ]);
+
+    expect(result.duplicates, isEmpty);
+    expect(result.requests, hasLength(1));
+    expect(result.requests.single.personnelAssignments, hasLength(1));
+    expect(
+      result.requests.single.personnelAssignments.single.note,
+      'Görev Türü: GÜLÜŞKÜR',
+    );
   });
 }
