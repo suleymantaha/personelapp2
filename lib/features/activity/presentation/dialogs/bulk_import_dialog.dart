@@ -320,7 +320,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
           in blockEntry.value.personnelList.asMap().entries) {
         final id = personEntry.value.matchedPersonnelId;
         if (id == null) continue;
-        final key = '${blockEntry.value.parsedDate}:$id';
+        final key = '${blockEntry.value.parsedDate}:${blockEntry.value.parsedActivityType.trim().toUpperCase()}:$id';
         occurrences.putIfAbsent(key, () => []).add(
           (blockIndex: blockEntry.key, personIndex: personEntry.key),
         );

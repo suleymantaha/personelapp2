@@ -42,7 +42,7 @@ void main() {
 
   testWidgets('problem chip filters cards and personnel using original indexes',
       (tester) async {
-    tester.view.physicalSize = const Size(430, 932);
+    tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -68,27 +68,27 @@ void main() {
 25.07.2026
 1- J.Uzm.Çvş. Ali DENEME
 2- J.Uzm.Çvş. Veli SAĞLAM
-6/B Hazır Kıta Listesi
+6/B Devriye Listesi
 25.07.2026
-1- J.Uzm.Çvş. Ali DENEME
+1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
 ''',
     );
     await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Veli SAĞLAM'), findsWidgets);
-    expect(find.byKey(const Key('bulk-duplicate-warning')), findsWidgets);
+    expect(find.byKey(const Key('bulk-person-0-1')), findsOneWidget);
+    expect(find.byKey(const Key('bulk-person-1-0')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('bulk-filter-problems')));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Veli SAĞLAM'), findsNothing);
-    expect(find.byKey(const Key('bulk-duplicate-warning')), findsWidgets);
+    expect(find.byKey(const Key('bulk-person-0-1')), findsNothing);
+    expect(find.byKey(const Key('bulk-person-1-0')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('bulk-filter-all')));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Veli SAĞLAM'), findsWidgets);
+    expect(find.byKey(const Key('bulk-person-0-1')), findsOneWidget);
   });
 
   testWidgets(
