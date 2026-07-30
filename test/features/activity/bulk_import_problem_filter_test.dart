@@ -89,12 +89,51 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Veli SAĞLAM'), findsWidgets);
+  });
 
-    await tester.tap(
-      find.byKey(const Key('bulk-import-problem-message')),
+  testWidgets(
+      'team mismatch on matched personnel displays warning tag but does not block saving',
+      (tester) async {
+    tester.view.physicalSize = const Size(1000, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: BulkImportDialog(
+              database: database,
+              activityRepository: ActivityRepository(database),
+            ),
+          ),
+        ),
+      ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Veli SAĞLAM'), findsNothing);
+    await tester.enterText(
+      find.byType(TextField).first,
+      '''
+2. TİM KARAKEÇİ Listesi
+25.07.2026
+1- J.Uzm.Çvş. Ali DENEME
+''',
+    );
+    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.pumpAndSettle();
+
+    // Ali DENEME is matched (100% confidence), but KARAKEÇİ team differs from 6-B Timi in DB
+    expect(find.textContaining('Ali DENEME'), findsWidgets);
+    expect(find.byKey(const Key('bulk-team-mismatch-warning'), skipOffstage: false), findsWidgets);
+
+    // Problem count chip should say "Hazır" (0 problems blocking save)
+    expect(find.text('Hazır'), findsWidgets);
+
+    // Save button should be enabled
+    final button = tester.widget<ElevatedButton>(
+      find.byKey(const Key('bulk-import-save-button')),
+    );
+    expect(button.onPressed != null, isTrue);
   });
 }

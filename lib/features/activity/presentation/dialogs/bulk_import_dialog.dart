@@ -659,31 +659,65 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
 
                       // TabBar for Mobile or Split Layout for Desktop/Tablet
                       if (isMobile)
-                        TabBar(
-                          controller: _tabController,
-                          labelColor: context.accentOrOlive,
-                          unselectedLabelColor: Colors.grey,
-                          indicatorColor: context.accentOrOlive,
-                          indicatorWeight: 3,
-                          tabs: [
-                            Tab(
-                              icon: isKeyboardVisible
-                                  ? null
-                                  : const Icon(Icons.text_fields),
-                              text: '1. Metin Yapıştır',
+                        Container(
+                          margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: context.cardBorderColor),
+                          ),
+                          child: TabBar(
+                            controller: _tabController,
+                            labelColor: Colors.white,
+                            unselectedLabelColor: Colors.grey.shade700,
+                            indicatorSize: TabBarIndicatorSize.tab,
+                            indicator: BoxDecoration(
+                              color: context.accentOrOlive,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: context.accentOrOlive.withValues(alpha: 0.3),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
-                            Tab(
-                              icon: isKeyboardVisible
-                                  ? null
-                                  : Badge(
-                                      isLabelVisible: _parsedBlocks.isNotEmpty,
-                                      label:
-                                          Text(_parsedBlocks.length.toString()),
-                                      child: const Icon(Icons.preview_rounded),
-                                    ),
-                              text: '2. Kart Önizleme',
+                            dividerColor: Colors.transparent,
+                            labelStyle: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
                             ),
-                          ],
+                            unselectedLabelStyle: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                            tabs: [
+                              Tab(
+                                icon: isKeyboardVisible
+                                    ? null
+                                    : const Icon(Icons.edit_note_rounded, size: 18),
+                                text: '1. Metin Yapıştır',
+                              ),
+                              Tab(
+                                icon: isKeyboardVisible
+                                    ? null
+                                    : Badge(
+                                        isLabelVisible: _parsedBlocks.isNotEmpty,
+                                        label: Text(
+                                          _parsedBlocks.length.toString(),
+                                          style: const TextStyle(fontSize: 10),
+                                        ),
+                                        backgroundColor: Colors.amber.shade800,
+                                        child: const Icon(
+                                          Icons.style_rounded,
+                                          size: 18,
+                                        ),
+                                      ),
+                                text: '2. Kart Önizleme',
+                              ),
+                            ],
+                          ),
                         ),
 
                       // Main Body Content
@@ -751,9 +785,12 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
                 size: 20,
               ),
               const SizedBox(width: 8),
-              const Text(
-                'Ham Metni Yapıştırın:',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              const Flexible(
+                child: Text(
+                  'Ham Metni Yapıştırın:',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
               ),
             ],
           ),
@@ -1810,14 +1847,41 @@ class _PersonnelMatchCard extends StatelessWidget {
                             ),
                           ),
                           if (item.teamMismatch && !item.reviewConfirmed)
-                            Text(
-                              'Metindeki tim ile kayıtlı tim uyuşmuyor; '
-                              'personeli seçerek onaylayın.',
-                              key: const Key('bulk-team-mismatch-warning'),
-                              style: TextStyle(
-                                color: Colors.orange.shade800,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
+                            Container(
+                              margin: const EdgeInsets.only(top: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: Colors.orange.shade300,
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.info_outline_rounded,
+                                    size: 13,
+                                    color: Colors.orange.shade800,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      'Metindeki tim ile kayıtlı tim uyuşmuyor; personeli seçerek onaylayabilirsiniz.',
+                                      key: const Key('bulk-team-mismatch-warning'),
+                                      style: TextStyle(
+                                        color: Colors.orange.shade900,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                         ],

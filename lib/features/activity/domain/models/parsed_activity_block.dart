@@ -28,8 +28,7 @@ class ParsedPersonnelItem {
 
   bool get isMatched => matchedPersonnelId != null;
   bool get needsReview =>
-      !isMatched ||
-      ((matchConfidence < 0.9 || teamMismatch) && !reviewConfirmed);
+      !isMatched || (matchConfidence < 0.7 && !reviewConfirmed);
 
   ParsedPersonnelItem copyWith({
     int? rawIndex,

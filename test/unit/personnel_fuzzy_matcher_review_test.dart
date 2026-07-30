@@ -54,7 +54,7 @@ void main() {
     expect(person.needsReview, isFalse);
   });
 
-  test('team mismatch requires explicit review even for an exact name',
+  test('team mismatch keeps match intact with teamMismatch flag but allows auto save',
       () async {
     final result = await PersonnelFuzzyMatcher(database)
         .matchBlocks([block('9/B', 'Ahmet TINAS')]);
@@ -62,7 +62,7 @@ void main() {
 
     expect(person.isMatched, isTrue);
     expect(person.teamMismatch, isTrue);
-    expect(person.needsReview, isTrue);
+    expect(person.needsReview, isFalse);
     expect(person.copyWith(reviewConfirmed: true).needsReview, isFalse);
   });
 }

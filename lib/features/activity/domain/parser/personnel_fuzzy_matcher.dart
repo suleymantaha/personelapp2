@@ -179,10 +179,8 @@ class PersonnelFuzzyMatcher {
   }
 
   static int? _teamNumber(String value) {
-    final match = RegExp(
-      r'(?<!\d)(\d{1,2})\s*(?:[/\-]|[.]?\s*tim)',
-      caseSensitive: false,
-    ).firstMatch(value);
+    final trimmed = value.trim();
+    final match = RegExp(r'(\d{1,2})').firstMatch(trimmed);
     return match == null ? null : int.tryParse(match.group(1)!);
   }
 
