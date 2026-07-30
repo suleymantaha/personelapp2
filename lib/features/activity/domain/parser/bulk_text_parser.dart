@@ -61,10 +61,48 @@ class BulkDeclaredTotal {
 }
 
 class BulkTextParser {
+  static const Map<String, int> _turkishMonths = {
+    'ocak': 1,
+    'şubat': 2,
+    'subat': 2,
+    'mart': 3,
+    'nisan': 4,
+    'mayıs': 5,
+    'mayis': 5,
+    'haziran': 6,
+    'temmuz': 7,
+    'ağustos': 8,
+    'agustos': 8,
+    'eylül': 9,
+    'eylul': 9,
+    'ekim': 10,
+    'kasım': 11,
+    'kasim': 11,
+    'aralık': 12,
+    'aralik': 12,
+  };
+
+  static const Set<String> _dayNames = {
+    'pazartesi',
+    'sali',
+    'salı',
+    'carsamba',
+    'çarşamba',
+    'persembe',
+    'perşembe',
+    'cuma',
+    'cumartesi',
+    'pazar',
+  };
+
   static final RegExp _datePattern =
-      RegExp(r'(?<!\d)(\d{1,2})[./](\d{1,2})[./](\d{4})(?!\d)');
+      RegExp(r'(?<!\d)(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?!\d)');
+  static final RegExp _textMonthDatePattern = RegExp(
+    r'(?<!\d)(\d{1,2})\s+([A-Za-zÇĞİÖŞÜçğıöşü]+)(?:\s+(\d{4}))?(?!\d)',
+    caseSensitive: false,
+  );
   static final RegExp _dateOnlyPattern = RegExp(
-    r'^\s*\d{1,2}[./]\d{1,2}[./]\d{4}(?:\s+[A-Za-zÇĞİÖŞÜçğıöşü]+)?\s*$',
+    r'^\s*(?:\d{1,2}[./-]\d{1,2}[./-]\d{4}|\d{1,2}\s+[A-Za-zÇĞİÖŞÜçğıöşü]+(?:\s+\d{4})?)(?:\s+[A-Za-zÇĞİÖŞÜçğıöşü]+)?\s*$',
     caseSensitive: false,
   );
   static final RegExp _teamPattern = RegExp(
@@ -126,6 +164,57 @@ class BulkTextParser {
     'nobetci': 'Nöbetçi',
   };
 
+  static String? _extractDateFromLine(String line, [String? defaultDate]) {
+    final numMatch = _datePattern.firstMatch(line);
+    if (numMatch != null) {
+      final parsed = _parseDateMatch(numMatch);
+      if (parsed != null) return parsed;
+    }
+
+    final textMatch = _textMonthDatePattern.firstMatch(line);
+    if (textMatch != null) {
+      final day = int.parse(textMatch.group(1)!);
+      final monthName = _fold(textMatch.group(2)!);
+      if (_turkishMonths.containsKey(monthName)) {
+        final month = _turkishMonths[monthName]!;
+        int year;
+        if (textMatch.group(3) != null) {
+          year = int.parse(textMatch.group(3)!);
+        } else if (defaultDate != null) {
+          final yearPart = defaultDate.split('-').first;
+          year = int.tryParse(yearPart) ?? DateTime.now().year;
+        } else {
+          year = DateTime.now().year;
+        }
+
+        try {
+          final date = DateTime(year, month, day);
+          if (date.year == year && date.month == month && date.day == day) {
+            return '${year.toString().padLeft(4, '0')}-'
+                '${month.toString().padLeft(2, '0')}-'
+                '${day.toString().padLeft(2, '0')}';
+          }
+        } catch (_) {
+          return null;
+        }
+      }
+    }
+    return null;
+  }
+
+  static bool _isDateOnlyLine(String line, String? defaultDate) {
+    if (_dateOnlyPattern.hasMatch(line)) return true;
+    final date = _extractDateFromLine(line, defaultDate);
+    if (date == null) return false;
+
+    var clean = line.replaceAll(_datePattern, '');
+    clean = clean.replaceAll(_textMonthDatePattern, '');
+    for (final day in _dayNames) {
+      clean = clean.replaceAll(RegExp('\\b$day\\b', caseSensitive: false), '');
+    }
+    return clean.trim().isEmpty;
+  }
+
   static ParsedActivityTitle parseTitle(
     String titleLine, [
     String? defaultDate,
@@ -133,7 +222,7 @@ class BulkTextParser {
     final normalized = _normalizeLine(titleLine);
     final teamName = _extractTeam(normalized);
     final activity = _extractActivity(normalized);
-    final parsedDate = _parseDateMatch(_datePattern.firstMatch(normalized));
+    final parsedDate = _extractDateFromLine(normalized, defaultDate);
     return (
       timName: teamName,
       activityType: activity.$1,
@@ -246,45 +335,43 @@ class BulkTextParser {
       final line = _normalizeLine(rawLine);
       if (line.isEmpty || _messageMetadataPattern.hasMatch(line)) continue;
 
-      final dateMatch = _datePattern.firstMatch(line);
+      final dateMatch = _extractDateFromLine(line, currentDate);
       final looksLikeHeader = _isHeader(line);
 
       if (looksLikeHeader) {
-        flushBlock();
-        currentTitle = line;
-        currentHeaderLine = lineNumber;
-        currentHeaderRawLine = rawLine;
-        currentTimeRange = null;
-
         final title = parseTitle(line, currentDate);
-        currentTeam = title.timName;
-        currentActivityKnown = title.activityTypeKnown;
-        currentActivity = title.activityTypeKnown
+        final newDate = dateMatch ?? currentDate;
+        final newTeam = title.timName ?? currentTeam;
+        final newActivity = title.activityTypeKnown
             ? mapActivityTypeToDutyOrLeave(title.activityType)
-            : title.activityType;
-        if (dateMatch != null) {
-          final parsedDate = _parseDateMatch(dateMatch);
-          if (parsedDate == null) {
-            currentDate = null;
-            addIssue(
-              line: lineNumber,
-              raw: rawLine,
-              code: 'invalid_date',
-              message: 'Başlıktaki tarih geçerli değil.',
-              severity: BulkParseIssueSeverity.error,
-            );
-          } else {
-            currentDate = parsedDate;
-          }
+            : (title.activityType.isNotEmpty
+                ? title.activityType
+                : currentActivity);
+
+        final isSameBlock = currentDate == newDate &&
+            currentTeam == newTeam &&
+            (currentActivity == newActivity || !currentActivityKnown);
+
+        if (!isSameBlock) {
+          flushBlock();
+          currentTitle = line;
+          currentHeaderLine = lineNumber;
+          currentHeaderRawLine = rawLine;
+          currentTimeRange = null;
+        } else {
+          if (currentTitle.isEmpty) currentTitle = line;
         }
+
+        currentTeam = newTeam;
+        currentActivityKnown = title.activityTypeKnown || currentActivityKnown;
+        currentActivity = newActivity;
+        currentDate = newDate;
         continue;
       }
 
-      if (_dateOnlyPattern.hasMatch(line)) {
-        flushBlock();
-        final parsedDate = _parseDateMatch(dateMatch);
+      if (_isDateOnlyLine(line, currentDate)) {
+        final parsedDate = _extractDateFromLine(line, currentDate);
         if (parsedDate == null) {
-          currentDate = null;
           addIssue(
             line: lineNumber,
             raw: rawLine,
@@ -293,7 +380,10 @@ class BulkTextParser {
             severity: BulkParseIssueSeverity.error,
           );
         } else {
-          currentDate = parsedDate;
+          if (currentDate != parsedDate) {
+            flushBlock();
+            currentDate = parsedDate;
+          }
         }
         continue;
       }
@@ -418,8 +508,37 @@ class BulkTextParser {
         folded.contains('timi') ||
         folded.contains(' tim ');
     final hasActivity = _activityTypes.keys.any((key) => folded.contains(key));
-    return hasHeaderWord || (hasActivity && _extractTeam(line) != null);
+    final hasDate = _extractDateFromLine(line) != null;
+    return hasHeaderWord ||
+        (hasActivity && (_extractTeam(line) != null || hasDate));
   }
+
+  static const Set<String> _conversationalWords = {
+    'merhaba',
+    'selam',
+    'günaydın',
+    'gunaydin',
+    'iyigünler',
+    'iyigunler',
+    'toplantı',
+    'toplanti',
+    'yarın',
+    'yarin',
+    'kolay',
+    'gelsin',
+    'teşekkürler',
+    'tesekkurler',
+    'tamam',
+    'evet',
+    'hayır',
+    'hayir',
+    'sağol',
+    'sagol',
+    'bilgi',
+    'not',
+    'açıklama',
+    'aciklama',
+  };
 
   static String? _extractTeam(String line) {
     final match = _teamPattern.firstMatch(line);
@@ -427,10 +546,20 @@ class BulkTextParser {
       final timMatch =
           RegExp(r'(?<!\d)(\d{1,2})\s*[.]?\s*tim(?:i)?\b', caseSensitive: false)
               .firstMatch(_fold(line));
-      return timMatch?.group(1);
+      return timMatch != null ? '${timMatch.group(1)}' : null;
     }
     final number = match.group(1)!;
-    final suffix = (match.group(2) ?? match.group(3))!.toUpperCase();
+    final rawSuffix = (match.group(2) ?? match.group(3))!;
+    final foldedSuffix = _fold(rawSuffix);
+
+    if (_turkishMonths.containsKey(foldedSuffix)) {
+      return null;
+    }
+
+    final suffix = rawSuffix.toUpperCase();
+    if (suffix == 'TIM' || suffix == 'TIMI') {
+      return number;
+    }
     return match.group(2) != null ? '$number/$suffix' : '$number$suffix';
   }
 
@@ -444,6 +573,7 @@ class BulkTextParser {
 
   static String _extractUnknownActivity(String line) => line
       .replaceAll(_datePattern, '')
+      .replaceAll(_textMonthDatePattern, '')
       .replaceAll(_teamPattern, '')
       .replaceAll(
         RegExp(r'\b(?:isim\s+)?(?:liste|listesi)\b', caseSensitive: false),
@@ -499,6 +629,27 @@ class BulkTextParser {
       );
     }
     if (_rankPattern.hasMatch(line)) return (content: line, index: null);
+
+    if (RegExp(r'[,.!?:]').hasMatch(line)) return null;
+
+    final folded = _fold(line);
+    if (_dayNames.contains(folded) ||
+        folded == 'listesi' ||
+        folded == 'liste' ||
+        folded.contains('isim list') ||
+        _activityTypes.containsKey(folded) ||
+        _turkishMonths.containsKey(folded)) {
+      return null;
+    }
+
+    final words = folded.split(RegExp(r'\s+'));
+    if (words.any((w) => _conversationalWords.contains(w))) return null;
+
+    final hasLetters = RegExp(r'[A-Za-zÇĞİÖŞÜçğıöşü]').hasMatch(line);
+    if (hasLetters && line.trim().length >= 3 && !_isHeader(line)) {
+      return (content: line, index: null);
+    }
+
     return null;
   }
 
