@@ -813,16 +813,18 @@ class MilitaryRosterExporter {
     Border? outerBorder,
   }) {
     final border = outerBorder ?? _tableBorder;
+    final isNone = outerBorder == _noneBorder;
+
     for (var r = startRow; r <= endRow; r++) {
       for (var c = startCol; c <= endCol; c++) {
         final cell = sheet.cell(
           CellIndex.indexByColumnRow(columnIndex: c, rowIndex: r),
         );
 
-        final left = (c == startCol) ? border : _noneBorder;
-        final right = (c == endCol) ? border : _noneBorder;
-        final top = (r == startRow) ? border : _noneBorder;
-        final bottom = (r == endRow) ? border : _noneBorder;
+        final left = isNone ? _noneBorder : border;
+        final right = isNone ? _noneBorder : border;
+        final top = isNone ? _noneBorder : border;
+        final bottom = isNone ? _noneBorder : border;
 
         cell.cellStyle = CellStyle(
           bold: baseStyle.isBold,

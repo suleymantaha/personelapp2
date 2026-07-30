@@ -286,6 +286,15 @@ void main() {
     expect(masterSectionHeader.cellStyle?.leftBorder.borderStyle, BorderStyle.Thin);
     expect(masterSectionHeader.cellStyle?.topBorder.borderStyle, BorderStyle.Thin);
     expect(masterSectionHeader.cellStyle?.bottomBorder.borderStyle, BorderStyle.Thin);
+
+    // Hazır Kıta merged cells (top-left cells B3 and E3) have thin borders on all sides for complete framing
+    for (final cellRef in ['B3', 'E3']) {
+      final cell = singleExcel['İsim Listesi'].cell(CellIndex.indexByString(cellRef));
+      expect(cell.cellStyle?.leftBorder.borderStyle, BorderStyle.Thin);
+      expect(cell.cellStyle?.rightBorder.borderStyle, BorderStyle.Thin);
+      expect(cell.cellStyle?.topBorder.borderStyle, BorderStyle.Thin);
+      expect(cell.cellStyle?.bottomBorder.borderStyle, BorderStyle.Thin);
+    }
   });
 
   test('Excel renders three aligned rank summary boxes', () {
