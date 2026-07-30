@@ -1574,67 +1574,96 @@ class _ImportSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
+    return Column(
       key: const Key('bulk-import-summary'),
-      spacing: 6,
-      runSpacing: 6,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _SummaryChip(
-          key: const Key('bulk-filter-all'),
-          icon: Icons.style_outlined,
-          label: '$cardCount kart',
-          color: context.accentOrOlive,
-          selected: selectedFilter == _BulkPreviewFilter.all,
-          onTap: onShowAll,
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _SummaryChip(
+                icon: Icons.style_outlined,
+                label: '$cardCount kart',
+                color: context.accentOrOlive,
+              ),
+              const SizedBox(width: 6),
+              _SummaryChip(
+                icon: Icons.people_outline,
+                label: '$personnelCount personel',
+                color: Colors.blue.shade700,
+              ),
+              if (deduplicatedCount > 0) ...[
+                const SizedBox(width: 6),
+                _SummaryChip(
+                  icon: Icons.content_copy_outlined,
+                  label: '$deduplicatedCount birleştirildi',
+                  color: Colors.teal.shade700,
+                ),
+              ],
+              if (ignoredLineCount > 0) ...[
+                const SizedBox(width: 6),
+                _SummaryChip(
+                  icon: Icons.do_not_disturb_alt_outlined,
+                  label: '$ignoredLineCount satır/not yok sayıldı',
+                  color: Colors.blueGrey.shade700,
+                ),
+              ],
+              if (declaredTotalCount > 0) ...[
+                const SizedBox(width: 6),
+                _SummaryChip(
+                  key: const Key('bulk-declared-total-status'),
+                  icon: totalMismatchCount == 0
+                      ? Icons.rule_rounded
+                      : Icons.warning_amber_rounded,
+                  label: totalMismatchCount == 0
+                      ? '$declaredTotalCount toplam doğrulandı'
+                      : '$totalMismatchCount toplam uyuşmuyor',
+                  color: totalMismatchCount == 0
+                      ? context.approvedColor
+                      : Colors.orange.shade800,
+                ),
+              ],
+            ],
+          ),
         ),
-        _SummaryChip(
-          icon: Icons.people_outline,
-          label: '$personnelCount personel',
-          color: Colors.blue.shade700,
-        ),
-        if (deduplicatedCount > 0)
-          _SummaryChip(
-            icon: Icons.content_copy_outlined,
-            label: '$deduplicatedCount tekrar birleştirildi',
-            color: Colors.teal.shade700,
+        const SizedBox(height: 6),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _SummaryChip(
+                key: const Key('bulk-filter-all'),
+                icon: Icons.view_agenda_outlined,
+                label: 'Tüm Kartlar ($cardCount)',
+                color: context.accentOrOlive,
+                selected: selectedFilter == _BulkPreviewFilter.all,
+                onTap: onShowAll,
+              ),
+              const SizedBox(width: 6),
+              _SummaryChip(
+                key: const Key('bulk-filter-problems'),
+                icon: problemCount == 0
+                    ? Icons.check_circle_outline
+                    : Icons.error_outline,
+                label: problemCount == 0 ? 'Hazır' : '$problemCount sorun',
+                color: problemCount == 0 ? context.approvedColor : Colors.red.shade700,
+                selected: selectedFilter == _BulkPreviewFilter.problems,
+                onTap: onShowProblems,
+              ),
+              if (warningCount > 0) ...[
+                const SizedBox(width: 6),
+                _SummaryChip(
+                  key: const Key('bulk-toggle-warnings'),
+                  icon: Icons.warning_amber_rounded,
+                  label: '$warningCount uyarı',
+                  color: Colors.orange.shade800,
+                  onTap: onToggleWarnings,
+                ),
+              ],
+            ],
           ),
-        if (ignoredLineCount > 0)
-          _SummaryChip(
-            icon: Icons.do_not_disturb_alt_outlined,
-            label: '$ignoredLineCount satır/not yok sayıldı',
-            color: Colors.blueGrey.shade700,
-          ),
-        if (declaredTotalCount > 0)
-          _SummaryChip(
-            key: const Key('bulk-declared-total-status'),
-            icon: totalMismatchCount == 0
-                ? Icons.rule_rounded
-                : Icons.warning_amber_rounded,
-            label: totalMismatchCount == 0
-                ? '$declaredTotalCount toplam doğrulandı'
-                : '$totalMismatchCount toplam uyuşmuyor',
-            color: totalMismatchCount == 0
-                ? context.approvedColor
-                : Colors.orange.shade800,
-          ),
-        if (warningCount > 0)
-          _SummaryChip(
-            key: const Key('bulk-toggle-warnings'),
-            icon: Icons.warning_amber_rounded,
-            label: '$warningCount uyarı',
-            color: Colors.orange.shade800,
-            onTap: onToggleWarnings,
-          ),
-        _SummaryChip(
-          key: const Key('bulk-filter-problems'),
-          icon: problemCount == 0
-              ? Icons.check_circle_outline
-              : Icons.error_outline,
-          label: problemCount == 0 ? 'Hazır' : '$problemCount sorun',
-          color:
-              problemCount == 0 ? context.approvedColor : Colors.red.shade700,
-          selected: selectedFilter == _BulkPreviewFilter.problems,
-          onTap: onShowProblems,
         ),
       ],
     );

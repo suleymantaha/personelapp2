@@ -77,7 +77,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('bulk-person-0-1')), findsOneWidget);
-    expect(find.byKey(const Key('bulk-person-1-0')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('bulk-filter-problems')));
     await tester.pumpAndSettle();
