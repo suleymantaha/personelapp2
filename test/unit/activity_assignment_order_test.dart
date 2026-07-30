@@ -74,6 +74,23 @@ void main() {
     expect(ordered.map((item) => item.personelId), [3, 2, 1]);
   });
 
+  test('orders Nöbet Heyeti by official duty order before rank and name', () {
+    final ordered = orderAssignmentsForExport(
+      [
+        assignment(6, 3, 'KULE NÖB.'),
+        assignment(5, 3, 'TTZA NÖB.'),
+        assignment(4, 3, 'GARAJ NÖB.'),
+        assignment(3, 3, 'MEBS NÖB.'),
+        assignment(2, 2, 'NÖB.SB.'),
+        assignment(1, 1, 'HEYBET KOMUTANI'),
+      ],
+      personnel,
+      squads,
+    );
+
+    expect(ordered.map((item) => item.id), [1, 2, 3, 4, 5, 6]);
+  });
+
   test('does not mutate the source assignment list', () {
     final first = assignment(2, 2, 'GÜLÜŞKÜR');
     final second = assignment(1, 1, 'NÖBETÇİ HEYETİ');

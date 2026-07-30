@@ -25,9 +25,16 @@ List<FaaliyetPersonelAtamaTableData> orderAssignmentsForExport(
       final personA = personnelById[a.personelId];
       final personB = personnelById[b.personelId];
 
-      // Nöbet heyeti is a single official unit, so its internal order starts
-      // directly with rank rather than the personnel's normal team.
-      if (categoryA != 10) {
+      // Nöbet Heyeti is a single official unit. Its rows follow the official
+      // duty order before rank and name; other categories follow unit order.
+      if (categoryA == 10) {
+        final dutyComparison = MilitaryStructureHelper.getNobetHeyetiDutyOrder(
+          a.gorevVeyaIzin,
+        ).compareTo(
+          MilitaryStructureHelper.getNobetHeyetiDutyOrder(b.gorevVeyaIzin),
+        );
+        if (dutyComparison != 0) return dutyComparison;
+      } else {
         final unitA = _rosterUnit(a, personA, squadNames);
         final unitB = _rosterUnit(b, personB, squadNames);
         final unitComparison = MilitaryStructureHelper.getSquadOrderWeight(

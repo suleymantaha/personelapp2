@@ -28,6 +28,181 @@ class ActivityCard extends ConsumerWidget {
   final VoidCallback? onLongPress;
   final VoidCallback? onSelectionToggle;
 
+  Future<void> _approveAll(BuildContext context, WidgetRef ref) async {
+    final session = ref.read(userSessionProvider);
+    if (session == null) return;
+
+    final repo = ref.read(activityRepositoryProvider);
+    final result = await repo.approveAllAssignmentsForActivity(
+      activity.id,
+      actor: session,
+    );
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result.blockedCount == 0
+              ? '${result.approvedCount} atama onaylandı.'
+              : '${result.approvedCount} onaylandı, '
+                  '${result.blockedCount} çakışma nedeniyle beklemede kaldı: '
+                  '${result.conflictDescriptions.join(', ')}',
+        ),
+        backgroundColor: result.blockedCount == 0
+            ? context.approvedColor
+            : context.pendingColor,
+      ),
+    );
+  }
+
+  Future<void> _deleteActivity(
+    BuildContext context,
+    AppDatabase db,
+  ) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Faaliyeti Sil'),
+        content: Text(
+          '${activity.faaliyetAdi} (${activity.tarih}) faaliyet kaydı '
+          'silinecektir. Emin misiniz?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('İPTAL'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.rejectedColor,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('SİL'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await (db.delete(
+        db.gunlukFaaliyetTable,
+      )..where((tbl) => tbl.id.equals(activity.id)))
+          .go();
+    }
+  }
+
+  Widget _buildStatusBadge({
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.38)),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdminActions(
+    BuildContext context,
+    WidgetRef ref,
+    AppDatabase db,
+    List<FaaliyetPersonelAtamaTableData> assignments, {
+    required bool hasPending,
+    required bool compact,
+  }) {
+    if (compact) {
+      return PopupMenuButton<_ActivityAdminAction>(
+        key: Key('activity-actions-${activity.id}'),
+        tooltip: 'Faaliyet işlemleri',
+        icon: const Icon(Icons.more_vert_rounded),
+        onSelected: (action) async {
+          switch (action) {
+            case _ActivityAdminAction.approveAll:
+              await _approveAll(context, ref);
+              return;
+            case _ActivityAdminAction.changeDate:
+              await _changeDate(context, ref, assignments.length);
+              return;
+            case _ActivityAdminAction.delete:
+              await _deleteActivity(context, db);
+              return;
+          }
+        },
+        itemBuilder: (context) => [
+          if (hasPending)
+            const PopupMenuItem(
+              value: _ActivityAdminAction.approveAll,
+              child: ListTile(
+                leading: Icon(Icons.done_all),
+                title: Text('Tümünü onayla'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          const PopupMenuItem(
+            value: _ActivityAdminAction.changeDate,
+            child: ListTile(
+              leading: Icon(Icons.edit_calendar_outlined),
+              title: Text('Tarihi değiştir'),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          PopupMenuItem(
+            value: _ActivityAdminAction.delete,
+            child: ListTile(
+              leading: Icon(
+                Icons.delete_outline,
+                color: context.rejectedColor,
+              ),
+              title: Text(
+                'Faaliyeti sil',
+                style: TextStyle(color: context.rejectedColor),
+              ),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (hasPending)
+          IconButton(
+            icon: Icon(Icons.done_all, color: context.approvedColor),
+            tooltip: 'Tümünü Onayla',
+            onPressed: () => _approveAll(context, ref),
+          ),
+        IconButton(
+          icon: Icon(
+            Icons.edit_calendar_outlined,
+            color: context.accentOrOlive,
+          ),
+          tooltip: 'Faaliyet Tarihini Değiştir',
+          onPressed: () => _changeDate(context, ref, assignments.length),
+        ),
+        IconButton(
+          icon: Icon(Icons.delete_outline, color: context.rejectedColor),
+          tooltip: 'Faaliyeti Sil',
+          onPressed: () => _deleteActivity(context, db),
+        ),
+      ],
+    );
+  }
+
   Future<void> _changeDate(
     BuildContext context,
     WidgetRef ref,
@@ -194,189 +369,107 @@ class ActivityCard extends ConsumerWidget {
           statusIcon = Icons.cancel_outlined;
         }
 
-        return GestureDetector(
-          key: Key('activity-card-${activity.id}'),
-          behavior: HitTestBehavior.opaque,
-          onLongPress: onLongPress,
-          onTap: selectionMode ? onSelectionToggle : null,
-          child: Card(
-            elevation: isSelected ? 5 : 2,
-            color: isSelected
-                ? context.accentOrOlive.withValues(alpha: 0.12)
-                : null,
-            margin: const EdgeInsets.only(bottom: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-              side: BorderSide(
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 520;
+            return GestureDetector(
+              key: Key('activity-card-${activity.id}'),
+              behavior: HitTestBehavior.opaque,
+              onLongPress: onLongPress,
+              onTap: selectionMode ? onSelectionToggle : null,
+              child: Card(
+                elevation: isSelected ? 5 : 1,
                 color: isSelected
-                    ? context.accentOrOlive
-                    : statusColor.withValues(alpha: 0.5),
-                width: isSelected ? 2.5 : 1.5,
-              ),
-            ),
-            child: IgnorePointer(
-              ignoring: selectionMode,
-              child: ExpansionTile(
-                leading: CircleAvatar(
-                  backgroundColor: statusColor,
-                  child: Icon(statusIcon, color: Colors.white, size: 20),
+                    ? context.accentOrOlive.withValues(alpha: 0.12)
+                    : context.colorScheme.surface,
+                margin: const EdgeInsets.only(bottom: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(
+                    color: isSelected
+                        ? context.accentOrOlive
+                        : statusColor.withValues(alpha: 0.5),
+                    width: isSelected ? 2.5 : 1.25,
+                  ),
                 ),
-                title: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        activity.faaliyetAdi,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
+                child: IgnorePointer(
+                  ignoring: selectionMode,
+                  child: ExpansionTile(
+                    tilePadding: const EdgeInsets.fromLTRB(14, 6, 10, 6),
+                    childrenPadding: const EdgeInsets.only(bottom: 6),
+                    leading: CircleAvatar(
+                      backgroundColor: statusColor,
+                      child: Icon(statusIcon, color: Colors.white, size: 20),
+                    ),
+                    title: Text(
+                      activity.faaliyetAdi,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: statusColor.withValues(alpha: 0.4),
-                        ),
-                      ),
-                      child: Text(
-                        statusLabel,
-                        style: TextStyle(
-                          color: statusColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: _buildStatusBadge(
+                              label: statusLabel,
+                              color: statusColor,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Yazan: ${activity.olusturanKullanici}',
+                              maxLines: compact ? 2 : 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: context.textSecondary,
+                              ),
+                            ),
+                          ),
+                          if (isAdmin)
+                            _buildAdminActions(
+                              context,
+                              ref,
+                              db,
+                              assignments,
+                              hasPending: hasPending,
+                              compact: compact,
+                            ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-                subtitle: Text(
-                  '${activity.tarih} • Yazan: ${activity.olusturanKullanici}',
-                  style: TextStyle(fontSize: 12, color: context.textSecondary),
-                ),
-                trailing: selectionMode
-                    ? Icon(
-                        isSelected
-                            ? Icons.check_circle
-                            : Icons.radio_button_unchecked,
-                        color: isSelected
-                            ? context.accentOrOlive
-                            : context.textSecondary,
-                      )
-                    : isAdmin
-                        ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (hasPending)
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.done_all,
-                                    color: context.approvedColor,
-                                  ),
-                                  tooltip: 'Tümünü Onayla',
-                                  onPressed: () async {
-                                    final repo =
-                                        ref.read(activityRepositoryProvider);
-                                    final result = await repo
-                                        .approveAllAssignmentsForActivity(
-                                      activity.id,
-                                      actor: session!,
-                                    );
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            result.blockedCount == 0
-                                                ? '${result.approvedCount} atama onaylandı.'
-                                                : '${result.approvedCount} onaylandı, '
-                                                    '${result.blockedCount} çakışma '
-                                                    'nedeniyle beklemede kaldı: '
-                                                    '${result.conflictDescriptions.join(', ')}',
-                                          ),
-                                          backgroundColor:
-                                              result.blockedCount == 0
-                                                  ? context.approvedColor
-                                                  : context.pendingColor,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.edit_calendar_outlined,
-                                  color: context.accentOrOlive,
-                                ),
-                                tooltip: 'Faaliyet Tarihini Değiştir',
-                                onPressed: () => _changeDate(
-                                  context,
-                                  ref,
-                                  assignments.length,
-                                ),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.delete_outline,
-                                  color: context.rejectedColor,
-                                ),
-                                tooltip: 'Faaliyeti Sil',
-                                onPressed: () async {
-                                  final confirm = await showDialog<bool>(
-                                    context: context,
-                                    builder: (ctx) => AlertDialog(
-                                      title: const Text('Faaliyeti Sil'),
-                                      content: Text(
-                                        '${activity.faaliyetAdi} (${activity.tarih}) faaliyet kaydı silinecektir. Emin misiniz?',
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.of(ctx).pop(false),
-                                          child: const Text('İPTAL'),
-                                        ),
-                                        ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                context.rejectedColor,
-                                          ),
-                                          onPressed: () =>
-                                              Navigator.of(ctx).pop(true),
-                                          child: const Text('SİL'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-
-                                  if (confirm == true) {
-                                    await (db.delete(
-                                      db.gunlukFaaliyetTable,
-                                    )..where((tbl) =>
-                                            tbl.id.equals(activity.id)))
-                                        .go();
-                                  }
-                                },
-                              ),
-                            ],
+                    trailing: selectionMode
+                        ? Icon(
+                            isSelected
+                                ? Icons.check_circle
+                                : Icons.radio_button_unchecked,
+                            color: isSelected
+                                ? context.accentOrOlive
+                                : context.textSecondary,
                           )
                         : null,
-                children: [
-                  ActivityAssignmentDetails(
-                    activity: activity,
-                    assignments: assignments,
-                    selectedSquadId: selectedSquadId,
+                    children: [
+                      ActivityAssignmentDetails(
+                        activity: activity,
+                        assignments: assignments,
+                        selectedSquadId: selectedSquadId,
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
   }
 }
+
+enum _ActivityAdminAction { approveAll, changeDate, delete }

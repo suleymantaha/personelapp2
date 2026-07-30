@@ -533,41 +533,53 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                     grouped.putIfAbsent(activity.tarih, () => []).add(activity);
                   }
 
-                  return ListView(
+                  final rows = <Object>[];
+                  for (final day in grouped.entries) {
+                    rows
+                      ..add(day)
+                      ..addAll(day.value);
+                  }
+
+                  return ListView.builder(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 4,
                     ),
-                    children: [
-                      for (final day in grouped.entries) ...[
-                        Padding(
+                    itemCount: rows.length,
+                    itemBuilder: (context, index) {
+                      final row = rows[index];
+                      if (row
+                          case MapEntry<String, List<GunlukFaaliyetTableData>>
+                              day) {
+                        return Padding(
                           padding: const EdgeInsets.fromLTRB(4, 14, 4, 8),
                           child: Text(
-                            '${DateFormat('dd MMMM').format(DateTime.parse(day.key))}'
+                            '${_formatTurkishDay(day.key)}'
                             ' • ${day.value.length} faaliyet',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                        for (final act in day.value)
-                          ActivityCard(
-                            activity: act,
-                            selectedSquadId: _selectedSquadFilter,
-                            selectionMode: _selectionMode,
-                            isSelected: _selectedActivityIds.contains(act.id),
-                            onLongPress: () => _startSelection(act.id),
-                            onSelectionToggle: () => _toggleSelection(act.id),
-                            onDateChanged: (newDate) {
-                              final parsed = DateTime.tryParse(newDate);
-                              if (parsed != null) {
-                                setState(() => _selectedDateFilter = parsed);
-                              }
-                            },
-                          ),
-                      ],
-                    ],
+                        );
+                      }
+
+                      final act = row as GunlukFaaliyetTableData;
+                      return ActivityCard(
+                        activity: act,
+                        selectedSquadId: _selectedSquadFilter,
+                        selectionMode: _selectionMode,
+                        isSelected: _selectedActivityIds.contains(act.id),
+                        onLongPress: () => _startSelection(act.id),
+                        onSelectionToggle: () => _toggleSelection(act.id),
+                        onDateChanged: (newDate) {
+                          final parsed = DateTime.tryParse(newDate);
+                          if (parsed != null) {
+                            setState(() => _selectedDateFilter = parsed);
+                          }
+                        },
+                      );
+                    },
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
@@ -579,4 +591,23 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       ),
     );
   }
+}
+
+String _formatTurkishDay(String isoDate) {
+  const months = <String>[
+    'Ocak',
+    'Şubat',
+    'Mart',
+    'Nisan',
+    'Mayıs',
+    'Haziran',
+    'Temmuz',
+    'Ağustos',
+    'Eylül',
+    'Ekim',
+    'Kasım',
+    'Aralık',
+  ];
+  final date = DateTime.parse(isoDate);
+  return '${date.day} ${months[date.month - 1]}';
 }

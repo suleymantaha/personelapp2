@@ -36,7 +36,7 @@ class ArchiveFilterBar extends StatelessWidget {
               Expanded(
                 child: TextField(
                   decoration: InputDecoration(
-                    hintText: 'Faaliyet veya Tarih Ara...',
+                    hintText: 'Faaliyet veya tarih ara…',
                     prefixIcon: const Icon(Icons.search, size: 20),
                     contentPadding: const EdgeInsets.symmetric(
                       vertical: 12,

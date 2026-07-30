@@ -52,6 +52,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(find.text('28 Temmuz • 2 faaliyet'), findsOneWidget);
+    expect(find.text('Dışa aktar'), findsOneWidget);
+
     await tester.longPress(find.byKey(const Key('activity-card-1')));
     await tester.pump();
     expect(find.text('1 faaliyet seçildi'), findsOneWidget);

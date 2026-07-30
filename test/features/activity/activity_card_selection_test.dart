@@ -43,7 +43,8 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
     final card = find.byKey(const Key('activity-card-42'));
     expect(card, findsOneWidget);
@@ -61,4 +62,91 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 1));
   });
+
+  for (final width in [320.0, 360.0, 520.0, 800.0]) {
+    testWidgets('long activity title stays readable at ${width.toInt()} px', (
+      tester,
+    ) async {
+      tester.view
+        ..physicalSize = Size(width, 800)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final database = AppDatabase(NativeDatabase.memory());
+      addTearDown(database.close);
+      const activity = GunlukFaaliyetTableData(
+        id: 81,
+        faaliyetAdi:
+            'Günlük Tüm Faaliyetler ve Uzun Süreli Koordinasyon Toplantısı',
+        tarih: '2026-07-31',
+        olusturanKullanici: 'Admin (Toplu Aktarım ve Arşiv Kullanıcısı)',
+        olusturmaTarihi: '',
+      );
+      await database.into(database.gunlukFaaliyetTable).insert(activity);
+      final personId = await database.into(database.personelTable).insert(
+            PersonelTableCompanion.insert(
+              adSoyad: 'Uzun İsimli Test Personeli',
+              rutbe: 'Astsubay',
+              birlik: 'Merkez',
+              kayitTarihi: '2026-07-31',
+            ),
+          );
+      await database.into(database.faaliyetPersonelAtamaTable).insert(
+            FaaliyetPersonelAtamaTableCompanion.insert(
+              faaliyetId: activity.id,
+              personelId: personId,
+              gorevVeyaIzin: 'GÖREVLİ',
+              durum: 'beklemede',
+            ),
+          );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(database),
+            userSessionProvider.overrideWith(
+              (ref) => const UserSessionState(
+                username: 'admin',
+                role: UserRole.admin,
+              ),
+            ),
+            allPersonnelProvider.overrideWith((ref) => Stream.value(const [])),
+            allSquadsProvider.overrideWith((ref) => Stream.value(const [])),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: ActivityCard(
+                activity: activity,
+                onDateChanged: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(tester.takeException(), isNull);
+      final title = tester.widget<Text>(
+        find.text(activity.faaliyetAdi),
+      );
+      expect(title.maxLines, 2);
+      expect(title.overflow, TextOverflow.ellipsis);
+      expect(find.text('ADMIN ONAYI BEKLİYOR'), findsOneWidget);
+      expect(find.byIcon(Icons.expand_more), findsOneWidget);
+
+      if (width < 520) {
+        expect(find.byKey(const Key('activity-actions-81')), findsOneWidget);
+        expect(find.byIcon(Icons.edit_calendar_outlined), findsNothing);
+      } else {
+        expect(find.byKey(const Key('activity-actions-81')), findsNothing);
+        expect(find.byIcon(Icons.edit_calendar_outlined), findsOneWidget);
+      }
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1));
+    });
+  }
 }

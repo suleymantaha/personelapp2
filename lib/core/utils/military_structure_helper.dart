@@ -77,6 +77,28 @@ class MilitaryStructureHelper {
     return 20; // Operasyonel görevler (HEYBET, Devriye, Pusu vb.)
   }
 
+  /// Returns the official internal order of duties in the Nöbet Heyeti group.
+  ///
+  /// Unknown or legacy guard-duty labels are kept after the known duties while
+  /// the export sorter applies rank, name and assignment id as stable
+  /// tie-breakers.
+  static int getNobetHeyetiDutyOrder(String duty) {
+    final normalized =
+        duty.toUpperCase().replaceAll(RegExp(r'[^A-ZÇĞİÖŞÜ0-9]+'), ' ').trim();
+    if (normalized.contains('HEYBET KOMUTANI')) return 10;
+    if (normalized.contains('NÖB SB') ||
+        normalized.contains('NOB SB') ||
+        normalized.contains('NÖBET SUBAY') ||
+        normalized.contains('NOBET SUBAY')) {
+      return 20;
+    }
+    if (normalized.contains('MEBS')) return 30;
+    if (normalized.contains('GARAJ')) return 40;
+    if (normalized.contains('TTZA')) return 50;
+    if (normalized.contains('KULE')) return 60;
+    return 999;
+  }
+
   /// Returns text for the DİĞER (Görev/Açıklama) column based on duty category
   static String getDigerCellText(String duty, {String? aciklama}) {
     final upper = duty.toUpperCase().trim();

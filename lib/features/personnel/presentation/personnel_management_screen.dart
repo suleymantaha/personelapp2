@@ -498,9 +498,9 @@ class _PersonnelManagementScreenState
               tooltip: 'Yedekle ve geri yükle',
               onPressed: () async {
                 final db = ref.read(databaseProvider);
-                final res = await showDialog<bool>(
+                final res = await showBackupRestoreSurface(
                   context: context,
-                  builder: (ctx) => BackupRestoreDialog(database: db),
+                  database: db,
                 );
                 if (res == true) {
                   ref
@@ -532,9 +532,9 @@ class _PersonnelManagementScreenState
                   await _showCommanderDelegationDialog();
                 } else if (action == 'backup') {
                   final db = ref.read(databaseProvider);
-                  final res = await showDialog<bool>(
+                  final res = await showBackupRestoreSurface(
                     context: context,
-                    builder: (ctx) => BackupRestoreDialog(database: db),
+                    database: db,
                   );
                   if (res == true) {
                     ref
