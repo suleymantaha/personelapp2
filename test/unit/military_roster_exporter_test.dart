@@ -38,7 +38,7 @@ void main() {
     );
     final excel = Excel.decodeBytes(bytes);
 
-    expect(excel.getMergedCells('İsim Listesi'), contains('B4:B6'));
+    expect(excel.getMergedCells('İsim Listesi'), contains('B3:B5'));
   });
 
   test('master Excel merges consecutive BİRLİĞİ cells per activity', () {
@@ -55,7 +55,7 @@ void main() {
     );
     final excel = Excel.decodeBytes(bytes);
 
-    expect(excel.getMergedCells('Tüm Faaliyetler'), contains('B5:B7'));
+    expect(excel.getMergedCells('Tüm Faaliyetler'), contains('B4:B6'));
   });
 
   test('Hazır Kıta merges both BİRLİĞİ and DİĞER cells', () {
@@ -67,7 +67,7 @@ void main() {
     final excel = Excel.decodeBytes(bytes);
     final merges = excel.getMergedCells('İsim Listesi');
 
-    expect(merges, containsAll(['B4:B5', 'E4:E5']));
+    expect(merges, containsAll(['B3:B4', 'E3:E4']));
   });
 
   test('Gülüşkür merges both BİRLİĞİ and DİĞER cells in master Excel', () {
@@ -86,7 +86,7 @@ void main() {
     final excel = Excel.decodeBytes(bytes);
     final merges = excel.getMergedCells('Tüm Faaliyetler');
 
-    expect(merges, containsAll(['B5:B6', 'E5:E6']));
+    expect(merges, containsAll(['B4:B5', 'E4:E5']));
   });
 
   test('Nöbet Heyeti merges BİRLİĞİ but preserves individual DİĞER cells', () {
@@ -117,11 +117,11 @@ void main() {
     final sheet = excel['İsim Listesi'];
     final merges = excel.getMergedCells('İsim Listesi');
 
-    expect(merges, contains('B4:B5'));
-    expect(merges, isNot(contains('E4:E5')));
-    expect(sheet.cell(CellIndex.indexByString('E4')).value?.toString(),
+    expect(merges, contains('B3:B4'));
+    expect(merges, isNot(contains('E3:E4')));
+    expect(sheet.cell(CellIndex.indexByString('E3')).value?.toString(),
         'Ana Nizamiye');
-    expect(sheet.cell(CellIndex.indexByString('E5')).value?.toString(),
+    expect(sheet.cell(CellIndex.indexByString('E4')).value?.toString(),
         'Kule Nöbeti');
   });
 
@@ -154,12 +154,12 @@ void main() {
       'GÖREV (28.07.2026 - 08:15 - Ali)',
     );
     expect(
-      sheet.cell(CellIndex.indexByString('A8')).value?.toString(),
+      sheet.cell(CellIndex.indexByString('A6')).value?.toString(),
       'GÖREV (28.07.2026 - 10:45 - Veli)',
     );
     expect(
       excel.getMergedCells('Tüm Faaliyetler'),
-      containsAll(['E5:E6', 'E10:E11']),
+      containsAll(['E4:E5', 'E7:E8']),
     );
   });
 
@@ -188,9 +188,9 @@ void main() {
 
     expect(
       merges,
-      containsAll(['B4:B5', 'E4:E5', 'B6:B7', 'E6:E7']),
+      containsAll(['B3:B4', 'E3:E4', 'B5:B6', 'E5:E6']),
     );
-    expect(merges, isNot(contains('B4:B7')));
+    expect(merges, isNot(contains('B3:B6')));
   });
 
   test('combined archive Excel renders one continuous table like PDF', () {
@@ -221,18 +221,18 @@ void main() {
       contains('29.07.2026'),
     );
     expect(
-      sheet.cell(CellIndex.indexByString('A3')).value?.toString(),
+      sheet.cell(CellIndex.indexByString('A2')).value?.toString(),
       'S. NU',
     );
-    expect(sheet.cell(CellIndex.indexByString('A4')).value?.toString(), '1');
-    expect(sheet.cell(CellIndex.indexByString('A7')).value?.toString(), '4');
+    expect(sheet.cell(CellIndex.indexByString('A3')).value?.toString(), '1');
+    expect(sheet.cell(CellIndex.indexByString('A6')).value?.toString(), '4');
     expect(
       excel.getMergedCells('İsim Listesi'),
-      containsAll(['B4:B5', 'E4:E5', 'B6:B7', 'E6:E7']),
+      containsAll(['B3:B4', 'E3:E4', 'B5:B6', 'E5:E6']),
     );
   });
 
-  test('Excel table cells have printable borders', () {
+  test('Title header is borderless while table cells have printable borders', () {
     final rows = _specialRows('HAZIR_KITA', 'HAZIR KITA');
 
     final singleExcel = Excel.decodeBytes(
@@ -256,17 +256,36 @@ void main() {
       ),
     );
 
+    // Title header cell (A1) must be borderless
+    for (final titleCell in [
+      singleExcel['İsim Listesi'].cell(CellIndex.indexByString('A1')),
+      masterExcel['Tüm Faaliyetler'].cell(CellIndex.indexByString('A1')),
+    ]) {
+      final borderStyle = titleCell.cellStyle?.leftBorder.borderStyle;
+      expect(
+        borderStyle == null || borderStyle == BorderStyle.None,
+        isTrue,
+      );
+    }
+
+    // Table header and data cells must have thin borders
     for (final cell in [
+      singleExcel['İsim Listesi'].cell(CellIndex.indexByString('A2')),
       singleExcel['İsim Listesi'].cell(CellIndex.indexByString('A3')),
-      singleExcel['İsim Listesi'].cell(CellIndex.indexByString('A4')),
+      masterExcel['Tüm Faaliyetler'].cell(CellIndex.indexByString('A2')),
       masterExcel['Tüm Faaliyetler'].cell(CellIndex.indexByString('A4')),
-      masterExcel['Tüm Faaliyetler'].cell(CellIndex.indexByString('A5')),
     ]) {
       expect(cell.cellStyle?.leftBorder.borderStyle, BorderStyle.Thin);
       expect(cell.cellStyle?.rightBorder.borderStyle, BorderStyle.Thin);
       expect(cell.cellStyle?.topBorder.borderStyle, BorderStyle.Thin);
       expect(cell.cellStyle?.bottomBorder.borderStyle, BorderStyle.Thin);
     }
+
+    // Merged section header in master Excel (A3:E3) has outer borders set on top-left cell A3
+    final masterSectionHeader = masterExcel['Tüm Faaliyetler'].cell(CellIndex.indexByString('A3'));
+    expect(masterSectionHeader.cellStyle?.leftBorder.borderStyle, BorderStyle.Thin);
+    expect(masterSectionHeader.cellStyle?.topBorder.borderStyle, BorderStyle.Thin);
+    expect(masterSectionHeader.cellStyle?.bottomBorder.borderStyle, BorderStyle.Thin);
   });
 
   test('Excel renders three aligned rank summary boxes', () {
@@ -296,13 +315,13 @@ void main() {
 
     expect(
       excel.getMergedCells('İsim Listesi'),
-      containsAll(['A13:B13', 'C13:D13', 'E13:F13']),
+      containsAll(['A12:B12', 'C12:D12', 'E12:F12']),
     );
-    expect(sheet.cell(CellIndex.indexByString('A13')).value?.toString(),
+    expect(sheet.cell(CellIndex.indexByString('A12')).value?.toString(),
         'Hazır Kıta');
-    expect(sheet.cell(CellIndex.indexByString('C13')).value?.toString(),
+    expect(sheet.cell(CellIndex.indexByString('C12')).value?.toString(),
         'Gülüşkür');
-    expect(sheet.cell(CellIndex.indexByString('E13')).value?.toString(),
+    expect(sheet.cell(CellIndex.indexByString('E12')).value?.toString(),
         'Diğer Tüm Personel');
     expect(
         cellTexts,
@@ -345,7 +364,7 @@ void main() {
     expect(texts, isNot(contains('ER/SÖZ.ER 0')));
   });
 
-  test('Excel print settings include summary and repeat table headers', () {
+  test('Excel print settings exclude summary from Print Area and set Print Titles to \$1:\$2', () {
     final rows = _specialRows('HAZIR_KITA', 'HAZIR KITA');
     final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
       faaliyetAdi: 'Faaliyet',
@@ -360,7 +379,7 @@ void main() {
       workbookXml,
       contains(
         '<definedName name="_xlnm.Print_Area" localSheetId="0">'
-        "'İsim Listesi'!\$A\$1:\$F\$9"
+        "'İsim Listesi'!\$A\$1:\$E\$4"
         '</definedName>',
       ),
     );
@@ -368,7 +387,7 @@ void main() {
       workbookXml,
       contains(
         '<definedName name="_xlnm.Print_Titles" localSheetId="0">'
-        "'İsim Listesi'!\$3:\$3"
+        "'İsim Listesi'!\$1:\$2"
         '</definedName>',
       ),
     );
@@ -386,6 +405,47 @@ void main() {
       contains(
         '<pageSetup paperSize="9" orientation="landscape" '
         'fitToWidth="1" fitToHeight="0"/>',
+      ),
+    );
+  });
+
+  test('50+ personnel roster sets Print Area to personnel table end and Print Titles to \$1:\$2', () {
+    final rows = List.generate(
+      55,
+      (index) => MilitaryRosterRow(
+        sNu: index + 1,
+        birligi: "1'inci Tim",
+        rutbe: 'UZM.J.ÇVŞ.',
+        adSoyad: 'Personel ${index + 1}',
+        diger: 'Devriye',
+      ),
+    );
+    final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
+      faaliyetAdi: 'Büyük Faaliyet',
+      tarih: '29.07.2026',
+      rows: rows,
+    );
+
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final workbookXml = utf8.decode(
+      archive.findFile('xl/workbook.xml')!.content as List<int>,
+    );
+
+    // Row 1 Title, Row 2 Headers, Rows 3..57 Personnel (55 rows)
+    expect(
+      workbookXml,
+      contains(
+        '<definedName name="_xlnm.Print_Area" localSheetId="0">'
+        "'İsim Listesi'!\$A\$1:\$E\$57"
+        '</definedName>',
+      ),
+    );
+    expect(
+      workbookXml,
+      contains(
+        '<definedName name="_xlnm.Print_Titles" localSheetId="0">'
+        "'İsim Listesi'!\$1:\$2"
+        '</definedName>',
       ),
     );
   });
@@ -408,10 +468,10 @@ void main() {
     final sheet = excel['İsim Listesi'];
 
     expect(
-      sheet.cell(CellIndex.indexByString('D4')).cellStyle?.wrap,
+      sheet.cell(CellIndex.indexByString('D3')).cellStyle?.wrap,
       TextWrapping.WrapText,
     );
-    expect(sheet.getRowHeight(3), greaterThan(20));
+    expect(sheet.getRowHeight(2), greaterThan(20));
   });
 
   test('master Excel includes a global summary and print configuration', () {
@@ -446,8 +506,8 @@ void main() {
     final workbookXml = utf8.decode(
       archive.findFile('xl/workbook.xml')!.content as List<int>,
     );
-    expect(workbookXml, contains("'Tüm Faaliyetler'!\$4:\$4"));
-    expect(workbookXml, contains("'Tüm Faaliyetler'!\$A\$1:\$F\$"));
+    expect(workbookXml, contains("'Tüm Faaliyetler'!\$1:\$2"));
+    expect(workbookXml, contains("'Tüm Faaliyetler'!\$A\$1:\$E\$6"));
   });
 }
 

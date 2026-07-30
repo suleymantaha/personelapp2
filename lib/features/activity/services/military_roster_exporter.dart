@@ -584,10 +584,6 @@ class MilitaryRosterExporter {
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
       textWrapping: TextWrapping.WrapText,
-      leftBorder: tableBorder,
-      rightBorder: tableBorder,
-      topBorder: tableBorder,
-      bottomBorder: tableBorder,
     );
 
     final headerStyle = CellStyle(
@@ -657,25 +653,29 @@ class MilitaryRosterExporter {
 
     // Row 0: Title Header
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0))
-      ..value = TextCellValue(titleHeader)
-      ..cellStyle = titleStyle;
+      .value = TextCellValue(titleHeader);
 
-    sheet.merge(
-      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0),
-      CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0),
+    _mergeAndSetOuterBorders(
+      sheet,
+      startCol: 0,
+      startRow: 0,
+      endCol: 4,
+      endRow: 0,
+      baseStyle: titleStyle,
+      outerBorder: _noneBorder,
     );
     sheet.setRowHeight(0, 30);
 
-    // Row 2: Table Headers
+    // Row 1: Table Headers
     final headers = ['S. NU', 'BİRLİĞİ', 'RÜTBE', 'ADI SOYADI', 'DİĞER'];
     for (var c = 0; c < headers.length; c++) {
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: c, rowIndex: 2))
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: c, rowIndex: 1))
         ..value = TextCellValue(headers[c])
         ..cellStyle = headerStyle;
     }
-    sheet.setRowHeight(2, 24);
+    sheet.setRowHeight(1, 24);
 
-    var currentRow = 3;
+    var currentRow = 2;
     var i = 0;
     final n = rows.length;
 
@@ -733,21 +733,23 @@ class MilitaryRosterExporter {
       }
 
       if (mergeCount > 0) {
-        sheet.merge(
-          CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: startRowIndex),
-          CellIndex.indexByColumnRow(
-            columnIndex: 1,
-            rowIndex: startRowIndex + mergeCount,
-          ),
+        _mergeAndSetOuterBorders(
+          sheet,
+          startCol: 1,
+          startRow: startRowIndex,
+          endCol: 1,
+          endRow: startRowIndex + mergeCount,
+          baseStyle: cellCenterBoldStyle,
         );
 
         if (isSpecialGroup) {
-          sheet.merge(
-            CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: startRowIndex),
-            CellIndex.indexByColumnRow(
-              columnIndex: 4,
-              rowIndex: startRowIndex + mergeCount,
-            ),
+          _mergeAndSetOuterBorders(
+            sheet,
+            startCol: 4,
+            startRow: startRowIndex,
+            endCol: 4,
+            endRow: startRowIndex + mergeCount,
+            baseStyle: cellCenterBoldStyle,
           );
         }
       }
@@ -756,8 +758,10 @@ class MilitaryRosterExporter {
       i += mergeCount + 1;
     }
 
+    final lastPersonnelRowNumber = currentRow;
+
     currentRow += 1;
-    final summaryEndRow = _writeThreeBoxSummary(
+    _writeThreeBoxSummary(
       sheet: sheet,
       startRow: currentRow,
       rows: rows,
@@ -778,9 +782,9 @@ class MilitaryRosterExporter {
     return _applyPrintSettings(
       encoded,
       sheetName: sheetName,
-      endRow: summaryEndRow + 1,
-      endColumn: 'F',
-      repeatHeaderRow: 3,
+      endRow: lastPersonnelRowNumber,
+      endColumn: 'E',
+      repeatHeaderRange: r'$1:$2',
     );
   }
 
@@ -788,6 +792,63 @@ class MilitaryRosterExporter {
     final longest = [name.length, detail.length, rank.length]
         .fold<int>(0, (max, length) => length > max ? length : max);
     return longest > 32 ? 32 : 20;
+  }
+
+  static final _tableBorder = Border(
+    borderStyle: BorderStyle.Thin,
+    borderColorHex: ExcelColor.fromHexString('#000000'),
+  );
+
+  static final _noneBorder = Border(
+    borderStyle: BorderStyle.None,
+  );
+
+  static void _mergeAndSetOuterBorders(
+    Sheet sheet, {
+    required int startCol,
+    required int startRow,
+    required int endCol,
+    required int endRow,
+    required CellStyle baseStyle,
+    Border? outerBorder,
+  }) {
+    final border = outerBorder ?? _tableBorder;
+    for (var r = startRow; r <= endRow; r++) {
+      for (var c = startCol; c <= endCol; c++) {
+        final cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: c, rowIndex: r),
+        );
+
+        final left = (c == startCol) ? border : _noneBorder;
+        final right = (c == endCol) ? border : _noneBorder;
+        final top = (r == startRow) ? border : _noneBorder;
+        final bottom = (r == endRow) ? border : _noneBorder;
+
+        cell.cellStyle = CellStyle(
+          bold: baseStyle.isBold,
+          italic: baseStyle.isItalic,
+          underline: baseStyle.underline,
+          fontSize: baseStyle.fontSize,
+          fontFamily: baseStyle.fontFamily,
+          fontColorHex: baseStyle.fontColor,
+          backgroundColorHex: baseStyle.backgroundColor,
+          horizontalAlign: baseStyle.horizontalAlignment,
+          verticalAlign: baseStyle.verticalAlignment,
+          textWrapping: baseStyle.wrap,
+          leftBorder: left,
+          rightBorder: right,
+          topBorder: top,
+          bottomBorder: bottom,
+        );
+      }
+    }
+
+    if (startCol != endCol || startRow != endRow) {
+      sheet.merge(
+        CellIndex.indexByColumnRow(columnIndex: startCol, rowIndex: startRow),
+        CellIndex.indexByColumnRow(columnIndex: endCol, rowIndex: endRow),
+      );
+    }
   }
 
   static int _writeThreeBoxSummary({
@@ -876,21 +937,19 @@ class MilitaryRosterExporter {
     required String value,
     required CellStyle style,
   }) {
-    for (var column = startColumn; column <= endColumn; column++) {
-      sheet
-          .cell(
-            CellIndex.indexByColumnRow(columnIndex: column, rowIndex: row),
-          )
-          .cellStyle = style;
-    }
     sheet
         .cell(
           CellIndex.indexByColumnRow(columnIndex: startColumn, rowIndex: row),
         )
         .value = TextCellValue(value);
-    sheet.merge(
-      CellIndex.indexByColumnRow(columnIndex: startColumn, rowIndex: row),
-      CellIndex.indexByColumnRow(columnIndex: endColumn, rowIndex: row),
+
+    _mergeAndSetOuterBorders(
+      sheet,
+      startCol: startColumn,
+      startRow: row,
+      endCol: endColumn,
+      endRow: row,
+      baseStyle: style,
     );
   }
 
@@ -899,7 +958,7 @@ class MilitaryRosterExporter {
     required String sheetName,
     required int endRow,
     required String endColumn,
-    required int repeatHeaderRow,
+    required String repeatHeaderRange,
   }) {
     final archive = ZipDecoder().decodeBytes(bytes);
     final workbookFile = archive.findFile('xl/workbook.xml');
@@ -926,7 +985,7 @@ class MilitaryRosterExporter {
         '</definedName>';
     final printTitles =
         '<definedName name="_xlnm.Print_Titles" localSheetId="0">'
-        "'$escapedSheetName'!\$$repeatHeaderRow:\$$repeatHeaderRow"
+        "'$escapedSheetName'!$repeatHeaderRange"
         '</definedName>';
     if (workbookXml.contains('<definedNames/>')) {
       workbookXml = workbookXml.replaceFirst(
@@ -1039,10 +1098,6 @@ class MilitaryRosterExporter {
       horizontalAlign: HorizontalAlign.Center,
       verticalAlign: VerticalAlign.Center,
       textWrapping: TextWrapping.WrapText,
-      leftBorder: tableBorder,
-      rightBorder: tableBorder,
-      topBorder: tableBorder,
-      bottomBorder: tableBorder,
     );
 
     final sectionHeaderStyle = CellStyle(
@@ -1086,6 +1141,19 @@ class MilitaryRosterExporter {
       bottomBorder: tableBorder,
     );
 
+    final cellCenterBoldStyle = CellStyle(
+      bold: true,
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontSize: 11,
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
+      leftBorder: tableBorder,
+      rightBorder: tableBorder,
+      topBorder: tableBorder,
+      bottomBorder: tableBorder,
+    );
+
     final cellLeftStyle = CellStyle(
       fontFamily: getFontFamily(FontFamily.Calibri),
       fontSize: 11,
@@ -1112,45 +1180,46 @@ class MilitaryRosterExporter {
       bottomBorder: tableBorder,
     );
 
-    var currentRow = 0;
-
-    // Main Title
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
-      ..value = TextCellValue(title)
-      ..cellStyle = titleStyle;
-    sheet.merge(
-      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
-      CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
+    // Row 0: Main Title
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0))
+      .value = TextCellValue(title);
+    _mergeAndSetOuterBorders(
+      sheet,
+      startCol: 0,
+      startRow: 0,
+      endCol: 4,
+      endRow: 0,
+      baseStyle: titleStyle,
+      outerBorder: _noneBorder,
     );
-    sheet.setRowHeight(currentRow, 30);
-    currentRow++;
+    sheet.setRowHeight(0, 30);
 
+    // Row 1: Common Column Headers
     final headers = ['S. NU', 'BİRLİĞİ', 'RÜTBE', 'ADI SOYADI', 'DİĞER'];
+    for (var c = 0; c < headers.length; c++) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: c, rowIndex: 1))
+        ..value = TextCellValue(headers[c])
+        ..cellStyle = headerStyle;
+    }
+    sheet.setRowHeight(1, 24);
+
+    var currentRow = 2;
 
     for (final act in activities) {
-      currentRow++; // Spacing
+      // Activity Section Header
       sheet.cell(
         CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
-      )
-        ..value = TextCellValue(
-          act.sectionHeader,
-        )
-        ..cellStyle = sectionHeaderStyle;
-      sheet.merge(
-        CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow),
-        CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
+      ).value = TextCellValue(act.sectionHeader);
+
+      _mergeAndSetOuterBorders(
+        sheet,
+        startCol: 0,
+        startRow: currentRow,
+        endCol: 4,
+        endRow: currentRow,
+        baseStyle: sectionHeaderStyle,
       );
       sheet.setRowHeight(currentRow, 28);
-      currentRow++;
-
-      for (var c = 0; c < headers.length; c++) {
-        sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: c, rowIndex: currentRow),
-        )
-          ..value = TextCellValue(headers[c])
-          ..cellStyle = headerStyle;
-      }
-      sheet.setRowHeight(currentRow, 24);
       currentRow++;
 
       var rowIndex = 0;
@@ -1185,7 +1254,7 @@ class MilitaryRosterExporter {
             CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow),
           )
             ..value = offset == 0 ? TextCellValue(r.birligi) : null
-            ..cellStyle = cellCenterStyle;
+            ..cellStyle = cellCenterBoldStyle;
           sheet.cell(
             CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow),
           )
@@ -1201,7 +1270,7 @@ class MilitaryRosterExporter {
           )
             ..value =
                 !isSpecialGroup || offset == 0 ? TextCellValue(r.diger) : null
-            ..cellStyle = isSpecialGroup ? cellCenterStyle : cellLeftStyle;
+            ..cellStyle = isSpecialGroup ? cellCenterBoldStyle : cellLeftStyle;
           sheet.setRowHeight(
             currentRow,
             _excelRowHeightFor(r.adSoyad, r.diger, r.rutbe),
@@ -1210,23 +1279,22 @@ class MilitaryRosterExporter {
         }
 
         if (groupLength > 1) {
-          sheet.merge(
-            CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: startRowIndex),
-            CellIndex.indexByColumnRow(
-              columnIndex: 1,
-              rowIndex: startRowIndex + groupLength - 1,
-            ),
+          _mergeAndSetOuterBorders(
+            sheet,
+            startCol: 1,
+            startRow: startRowIndex,
+            endCol: 1,
+            endRow: startRowIndex + groupLength - 1,
+            baseStyle: cellCenterBoldStyle,
           );
           if (isSpecialGroup) {
-            sheet.merge(
-              CellIndex.indexByColumnRow(
-                columnIndex: 4,
-                rowIndex: startRowIndex,
-              ),
-              CellIndex.indexByColumnRow(
-                columnIndex: 4,
-                rowIndex: startRowIndex + groupLength - 1,
-              ),
+            _mergeAndSetOuterBorders(
+              sheet,
+              startCol: 4,
+              startRow: startRowIndex,
+              endCol: 4,
+              endRow: startRowIndex + groupLength - 1,
+              baseStyle: cellCenterBoldStyle,
             );
           }
         }
@@ -1234,9 +1302,11 @@ class MilitaryRosterExporter {
       }
     }
 
+    final lastDataRowNumber = currentRow;
+
     currentRow++;
     final allRows = activities.expand((activity) => activity.rows).toList();
-    final summaryEndRow = _writeThreeBoxSummary(
+    _writeThreeBoxSummary(
       sheet: sheet,
       startRow: currentRow,
       rows: allRows,
@@ -1257,9 +1327,9 @@ class MilitaryRosterExporter {
     return _applyPrintSettings(
       encoded,
       sheetName: sheetName,
-      endRow: summaryEndRow + 1,
-      endColumn: 'F',
-      repeatHeaderRow: 4,
+      endRow: lastDataRowNumber,
+      endColumn: 'E',
+      repeatHeaderRange: r'$1:$2',
     );
   }
 
