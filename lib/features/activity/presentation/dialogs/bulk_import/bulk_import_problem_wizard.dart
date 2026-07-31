@@ -1,7 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
-typedef ProblemLocation = ({int blockIndex, int? personIndex});
+class ProblemLocation {
+  const ProblemLocation({
+    required this.blockIndex,
+    required this.description,
+    this.personIndex,
+    this.sourceLineNumber,
+  });
+
+  final int blockIndex;
+  final int? personIndex;
+  final int? sourceLineNumber;
+  final String description;
+}
 
 class BulkImportProblemWizard {
   static List<ProblemLocation> getProblemLocations({
@@ -14,7 +26,14 @@ class BulkImportProblemWizard {
     // Priority 1: Critical empty blocks (0 personnel)
     for (final blockEntry in blocks.asMap().entries) {
       if (blockEntry.value.personnelList.isEmpty) {
-        locs.add((blockIndex: blockEntry.key, personIndex: null));
+        locs.add(
+          ProblemLocation(
+            blockIndex: blockEntry.key,
+            personIndex: null,
+            sourceLineNumber: null,
+            description: '${blockEntry.value.parsedActivityType} kartında personel bulunamadı.',
+          ),
+        );
         addedKeys.add('${blockEntry.key}:null');
       }
     }
@@ -24,8 +43,19 @@ class BulkImportProblemWizard {
       for (final personEntry
           in blockEntry.value.personnelList.asMap().entries) {
         final key = '${blockEntry.key}:${personEntry.key}';
-        if (personEntry.value.needsReview && !addedKeys.contains(key)) {
-          locs.add((blockIndex: blockEntry.key, personIndex: personEntry.key));
+        final person = personEntry.value;
+        if (person.needsReview && !addedKeys.contains(key)) {
+          final linePrefix = person.sourceLineNumber != null
+              ? 'Satır ${person.sourceLineNumber}: '
+              : '';
+          locs.add(
+            ProblemLocation(
+              blockIndex: blockEntry.key,
+              personIndex: personEntry.key,
+              sourceLineNumber: person.sourceLineNumber,
+              description: '$linePrefix${person.rawRank} ${person.rawName} - Eşleşme kontrolü gerektiriyor.',
+            ),
+          );
           addedKeys.add(key);
         }
       }
@@ -36,8 +66,19 @@ class BulkImportProblemWizard {
       for (final personEntry
           in blockEntry.value.personnelList.asMap().entries) {
         final key = '${blockEntry.key}:${personEntry.key}';
+        final person = personEntry.value;
         if (duplicates.containsKey(key) && !addedKeys.contains(key)) {
-          locs.add((blockIndex: blockEntry.key, personIndex: personEntry.key));
+          final linePrefix = person.sourceLineNumber != null
+              ? 'Satır ${person.sourceLineNumber}: '
+              : '';
+          locs.add(
+            ProblemLocation(
+              blockIndex: blockEntry.key,
+              personIndex: personEntry.key,
+              sourceLineNumber: person.sourceLineNumber,
+              description: '$linePrefix${person.rawRank} ${person.rawName} - Çakışan görev ekli.',
+            ),
+          );
           addedKeys.add(key);
         }
       }
@@ -82,24 +123,34 @@ class BulkImportProblemWizard {
           visibleBlockEntries.indexWhere((e) => e.key == blockIndex);
       final targetIndex = visibleIndex >= 0 ? visibleIndex : blockIndex;
 
-      final maxExtent = scrollController.position.maxScrollExtent;
+      // Dynamic offset estimation summing actual heights of prior blocks
       const headerOffset = 180.0;
-      final estimatedOffset =
-          (headerOffset + targetIndex * 220.0).clamp(0.0, maxExtent);
+      var accumulatedOffset = headerOffset;
+      for (var i = 0; i < targetIndex && i < visibleBlockEntries.length; i++) {
+        final blk = visibleBlockEntries[i].value;
+        final pCount = blk.personnelList.length;
+        final estimatedCardHeight = 110.0 + (pCount * 135.0) + 18.0;
+        accumulatedOffset += estimatedCardHeight;
+      }
+
+      final maxExtent = scrollController.position.maxScrollExtent;
+      final targetOffset = accumulatedOffset.clamp(0.0, maxExtent);
 
       scrollController
           .animateTo(
-        estimatedOffset,
-        duration: const Duration(milliseconds: 250),
+        targetOffset,
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       )
           .then((_) {
+        // Second pass: now that target block has scrolled into viewport,
+        // SliverList has mounted it. Execute ensureVisible on target key.
         WidgetsBinding.instance.addPostFrameCallback((_) {
           final targetKey = cardKeys[blockIndex];
           if (targetKey?.currentContext != null) {
             Scrollable.ensureVisible(
               targetKey!.currentContext!,
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
               alignment: 0.15,
             );

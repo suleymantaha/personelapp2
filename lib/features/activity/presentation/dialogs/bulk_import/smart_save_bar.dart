@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_problem_wizard.dart';
 
 class BulkImportSaveButton extends StatelessWidget {
   const BulkImportSaveButton({
@@ -79,7 +80,7 @@ class SmartSaveBar extends StatelessWidget {
   });
 
   final int problemCount;
-  final List<({int blockIndex, int? personIndex})> problemLocs;
+  final List<ProblemLocation> problemLocs;
   final int activeIssueFocusIndex;
   final VoidCallback onGotoProblem;
   final VoidCallback onSave;

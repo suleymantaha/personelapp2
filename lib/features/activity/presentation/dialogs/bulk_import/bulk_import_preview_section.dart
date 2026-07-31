@@ -4,6 +4,7 @@ import 'package:personelapp2/features/activity/domain/models/parsed_activity_blo
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/activity_block_card.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_empty_state.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_problem_wizard.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_stat_cards.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/compact_error_summary.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/smart_save_bar.dart';
@@ -51,7 +52,7 @@ class BulkImportPreviewSection extends StatelessWidget {
   final String? focusedPersonKey;
   final int unresolvedPersonnelCount;
   final bool isSaving;
-  final List<({int blockIndex, int? personIndex})> problemLocations;
+  final List<ProblemLocation> problemLocations;
   final VoidCallback onClearAll;
   final VoidCallback onToggleParseIssues;
   final VoidCallback? onStartWizard;
@@ -156,6 +157,7 @@ class BulkImportPreviewSection extends StatelessWidget {
                           problemCount: problemCount,
                           warningCount: issues.length,
                           parseIssues: issues,
+                          problemLocations: problemLocations,
                           isExpanded: parseIssuesExpanded,
                           onToggle: onToggleParseIssues,
                           onStartWizard: onStartWizard,

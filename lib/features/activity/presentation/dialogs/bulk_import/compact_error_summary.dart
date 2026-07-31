@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_problem_wizard.dart';
 
 class CompactErrorSummary extends StatelessWidget {
   const CompactErrorSummary({
@@ -13,12 +14,14 @@ class CompactErrorSummary extends StatelessWidget {
     required this.currentIndex,
     required this.onPrevious,
     required this.onNext,
+    this.problemLocations = const [],
     super.key,
   });
 
   final int problemCount;
   final int warningCount;
   final List<BulkParseIssue> parseIssues;
+  final List<ProblemLocation> problemLocations;
   final bool isExpanded;
   final VoidCallback onToggle;
   final VoidCallback? onStartWizard;
@@ -67,6 +70,15 @@ class CompactErrorSummary extends StatelessWidget {
     final displayIndex = currentIndex < 0
         ? 1
         : (displayTotal > 0 ? (currentIndex % displayTotal) + 1 : 1);
+
+    final allDisplayItems = <String>[];
+    for (final issue in parseIssues) {
+      final lineText = issue.lineNumber > 0 ? 'Satır ${issue.lineNumber}: ' : '';
+      allDisplayItems.add('$lineText${issue.message}');
+    }
+    for (final loc in problemLocations) {
+      allDisplayItems.add(loc.description);
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -140,20 +152,50 @@ class CompactErrorSummary extends StatelessWidget {
           ),
           if (isExpanded)
             Container(
-              constraints: const BoxConstraints(maxHeight: 180),
+              constraints: const BoxConstraints(maxHeight: 200),
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: parseIssues.isNotEmpty
+              child: allDisplayItems.isNotEmpty
                   ? ListView.separated(
                       shrinkWrap: true,
-                      itemCount: parseIssues.length,
-                      separatorBuilder: (_, __) => const Divider(height: 12),
+                      itemCount: allDisplayItems.length,
+                      separatorBuilder: (_, __) => const Divider(height: 10),
                       itemBuilder: (context, index) {
-                        final issue = parseIssues[index];
-                        return Text(
-                          '${issue.lineNumber > 0 ? 'Satır ${issue.lineNumber}: ' : ''}'
-                          '${issue.message}'
-                          '${issue.rawLine.trim().isEmpty ? '' : '\n${issue.rawLine.trim()}'}',
-                          style: TextStyle(color: textColor, fontSize: 12),
+                        final text = allDisplayItems[index];
+                        final isCurrentlyFocused = currentIndex >= 0 &&
+                            index == (currentIndex % allDisplayItems.length);
+                        return InkWell(
+                          onTap: onStartWizard,
+                          borderRadius: BorderRadius.circular(6),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 4,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  isCurrentlyFocused
+                                      ? Icons.arrow_right_rounded
+                                      : Icons.circle,
+                                  size: isCurrentlyFocused ? 18 : 6,
+                                  color: textColor,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    text,
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 12,
+                                      fontWeight: isCurrentlyFocused
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         );
                       },
                     )
