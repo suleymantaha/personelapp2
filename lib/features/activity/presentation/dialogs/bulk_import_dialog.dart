@@ -116,15 +116,43 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
 
   void _scrollToProblemLocation(int blockIndex) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!mounted || !_previewScrollController.hasClients) return;
+
       final cardKey = _cardKeys[blockIndex];
-      if (cardKey?.currentContext == null) return;
-      Scrollable.ensureVisible(
-        cardKey!.currentContext!,
-        duration: const Duration(milliseconds: 350),
+      if (cardKey?.currentContext != null) {
+        Scrollable.ensureVisible(
+          cardKey!.currentContext!,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOut,
+          alignment: 0.15,
+        );
+        return;
+      }
+
+      // If item is off-screen and unmounted in ListView.builder, scroll near its estimated position first
+      final maxExtent = _previewScrollController.position.maxScrollExtent;
+      final estimatedOffset = (blockIndex * 180.0).clamp(0.0, maxExtent);
+
+      _previewScrollController
+          .animateTo(
+        estimatedOffset,
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOut,
-        alignment: 0.15,
-      );
+      )
+          .then((_) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          final targetKey = _cardKeys[blockIndex];
+          if (targetKey?.currentContext != null) {
+            Scrollable.ensureVisible(
+              targetKey!.currentContext!,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: 0.15,
+            );
+          }
+        });
+      });
     });
   }
 
