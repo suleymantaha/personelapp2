@@ -109,6 +109,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       return;
     }
     setState(() {
+      _parseIssuesExpanded = true;
       if (_activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length) {
         _activeIssueFocusIndex = 0;
       } else {
@@ -287,6 +288,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
         _parseIssuesExpanded = _parseIssues.any((issue) => issue.isBlocking);
         if (_parsedBlocks.isNotEmpty || _parseIssues.isNotEmpty) {
           _currentStep = 1; // Auto switch to Preview step
+          _activeIssueFocusIndex = -1;
         }
       });
     } finally {
@@ -921,7 +923,13 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
           else
             OutlinedButton.icon(
               key: const Key('bulk-goto-problem'),
-              onPressed: () => setState(() => _currentStep = 1),
+              onPressed: () {
+                setState(() => _currentStep = 1);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  _focusNextProblem();
+                });
+              },
               icon: const Icon(Icons.arrow_back_rounded),
               label: const Text('Önizlemeye Dön'),
             ),
