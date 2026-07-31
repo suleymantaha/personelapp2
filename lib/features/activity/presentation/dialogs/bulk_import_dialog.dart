@@ -75,6 +75,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       return;
     }
     setState(() {
+      _previewFilter = _BulkPreviewFilter.problems;
       _parseIssuesExpanded = true;
       if (_activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length) {
         _activeIssueFocusIndex = 0;
@@ -100,6 +101,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       return;
     }
     setState(() {
+      _previewFilter = _BulkPreviewFilter.problems;
+      _parseIssuesExpanded = true;
       if (_activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length) {
         _activeIssueFocusIndex = locs.length - 1;
       } else {
