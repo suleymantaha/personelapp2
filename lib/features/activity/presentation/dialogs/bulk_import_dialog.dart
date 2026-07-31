@@ -155,7 +155,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       final targetIndex = visibleIndex >= 0 ? visibleIndex : blockIndex;
 
       final maxExtent = _previewScrollController.position.maxScrollExtent;
-      final estimatedOffset = (targetIndex * 180.0).clamp(0.0, maxExtent);
+      // Header area in SliverToBoxAdapter takes ~180px before SliverList starts
+      const headerOffset = 180.0;
+      final estimatedOffset = (headerOffset + targetIndex * 220.0).clamp(0.0, maxExtent);
 
       _previewScrollController
           .animateTo(
@@ -196,6 +198,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
 
   void _setPreviewFilter(_BulkPreviewFilter filter) {
     setState(() {
+      _cardKeys.clear();
       _previewFilter = filter;
       if (filter == _BulkPreviewFilter.problems &&
           _parseIssues.any((issue) => issue.isBlocking)) {
@@ -255,6 +258,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       if (!mounted) return;
 
       setState(() {
+        _cardKeys.clear();
         _parsedBlocks = deduplicated.blocks;
         _parseIssues = parseResult.issues;
         _deduplicatedPersonnelCount = deduplicated.removedCount;
