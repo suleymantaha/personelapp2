@@ -1057,149 +1057,152 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.assignment_rounded,
-                      color: const Color(0xFF556B3F),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        'Faaliyet Kartları (${_parsedBlocks.length})',
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+          Expanded(
+            child: CustomScrollView(
+              controller: _previewScrollController,
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.assignment_rounded,
+                                  color: const Color(0xFF556B3F),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    'Faaliyet Kartları (${_parsedBlocks.length})',
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (_parsedBlocks.isNotEmpty || _parseIssues.isNotEmpty)
+                            IconButton(
+                              onPressed: _confirmClearAll,
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.redAccent,
+                                size: 20,
+                              ),
+                              tooltip: 'Tümünü Temizle',
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      if (_parsedBlocks.isNotEmpty) ...[
+                        // Faz 2: Kompakt Stat Bar
+                        BulkImportCompactStatBar(
+                          cardCount: _parsedBlocks.length,
+                          personnelCount: personnelCount,
+                          dayCount: totalDays,
+                        ),
+                        const SizedBox(height: 10),
+                        // Faz 3: Kompakt Hata Özeti
+                        CompactErrorSummary(
+                          problemCount: problemCount,
+                          warningCount: _parseIssues.length,
+                          parseIssues: _parseIssues,
+                          isExpanded: _parseIssuesExpanded,
+                          onToggle: () => setState(
+                            () => _parseIssuesExpanded = !_parseIssuesExpanded,
+                          ),
+                          onStartWizard: problemCount == 0 ? null : _focusNextProblem,
+                          totalIssues: problemLocs.length,
+                          currentIndex: _activeIssueFocusIndex,
+                          onPrevious: _focusPreviousProblem,
+                          onNext: _focusNextProblem,
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ],
+                  ),
+                ),
+                if (_parsedBlocks.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF556B3F)
+                                    .withValues(alpha: 0.08),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.fact_check_outlined,
+                                size: 48,
+                                color: Color(0xFF556B3F),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Henüz Kart Oluşturulmadı',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Yapıştır adımına dönüp mesajı yapıştırın.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              if (_parsedBlocks.isNotEmpty || _parseIssues.isNotEmpty)
-                IconButton(
-                  onPressed: _confirmClearAll,
-                  icon: const Icon(
-                    Icons.delete_outline,
-                    color: Colors.redAccent,
-                    size: 20,
+                  )
+                else if (visibleBlocks.isEmpty)
+                  SliverToBoxAdapter(
+                    child: _buildFilteredEmptyState(),
+                  )
+                else
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, blockIdx) {
+                        final entry = visibleBlocks[blockIdx];
+                        final originalBlockIndex = entry.key;
+                        final block = entry.value;
+                        return _buildPreviewCard(
+                          block,
+                          originalBlockIndex,
+                          duplicates,
+                          visiblePersonnelIndexes: _previewFilter ==
+                                  _BulkPreviewFilter.problems
+                              ? problemPersonnelByBlock[originalBlockIndex]
+                              : null,
+                        );
+                      },
+                      childCount: visibleBlocks.length,
+                    ),
                   ),
-                  tooltip: 'Tümünü Temizle',
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (_parsedBlocks.isNotEmpty) ...[
-            // Faz 2: Stat Kartları
-            Row(
-              children: [
-                BulkImportStatCard(
-                  number: _parsedBlocks.length,
-                  label: 'Kart',
-                  icon: Icons.assignment_rounded,
-                ),
-                const SizedBox(width: 8),
-                BulkImportStatCard(
-                  number: personnelCount,
-                  label: 'Personel',
-                  icon: Icons.groups_rounded,
-                ),
-                const SizedBox(width: 8),
-                BulkImportStatCard(
-                  number: totalDays,
-                  label: 'Gün',
-                  icon: Icons.calendar_month_rounded,
-                ),
               ],
             ),
-            const SizedBox(height: 12),
-            // Faz 3: Kompakt Hata Özeti
-            CompactErrorSummary(
-              problemCount: problemCount,
-              warningCount: _parseIssues.length,
-              parseIssues: _parseIssues,
-              isExpanded: _parseIssuesExpanded,
-              onToggle: () => setState(
-                () => _parseIssuesExpanded = !_parseIssuesExpanded,
-              ),
-              onStartWizard: problemCount == 0 ? null : _focusNextProblem,
-              totalIssues: problemLocs.length,
-              currentIndex: _activeIssueFocusIndex,
-              onPrevious: _focusPreviousProblem,
-              onNext: _focusNextProblem,
-            ),
-            const SizedBox(height: 12),
-          ],
-          Expanded(
-            child: _parsedBlocks.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF556B3F)
-                                  .withValues(alpha: 0.08),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.fact_check_outlined,
-                              size: 48,
-                              color: Color(0xFF556B3F),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Henüz Kart Oluşturulmadı',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Yapıştır adımına dönüp mesajı yapıştırın.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : visibleBlocks.isEmpty
-                    ? _buildFilteredEmptyState()
-                    : ListView.builder(
-                        controller: _previewScrollController,
-                        itemCount: visibleBlocks.length,
-                        itemBuilder: (context, blockIdx) {
-                          final entry = visibleBlocks[blockIdx];
-                          final originalBlockIndex = entry.key;
-                          final block = entry.value;
-                          return _buildPreviewCard(
-                            block,
-                            originalBlockIndex,
-                            duplicates,
-                            visiblePersonnelIndexes: _previewFilter ==
-                                    _BulkPreviewFilter.problems
-                                ? problemPersonnelByBlock[originalBlockIndex]
-                                : null,
-                          );
-                        },
-                      ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           // Faz 5: Akıllı Alt Buton
           SmartSaveBar(
             problemCount: problemCount,
