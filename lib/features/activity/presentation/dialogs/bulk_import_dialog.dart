@@ -1,27 +1,21 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:personelapp2/core/database/database.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
-import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
-import 'package:personelapp2/features/activity/domain/bulk_activity_import_preparer.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
-import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/activity_block_card.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_confirm_section.dart';
-import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_empty_state.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_header_banner.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_input_section.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_preview_section.dart';
-import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_stat_cards.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_problem_wizard.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_save_handler.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_stepper.dart';
-import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/compact_error_summary.dart';
-import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/duplicate_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/edit_activity_block_dialog.dart';
-import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/smart_save_bar.dart';
-import 'package:personelapp2/features/activity/presentation/dialogs/conflict_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
 import 'package:personelapp2/features/activity/services/bulk_import_preferences.dart';
 
@@ -58,49 +52,16 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   bool _parseIssuesExpanded = false;
   _BulkPreviewFilter _previewFilter = _BulkPreviewFilter.all;
   final ScrollController _previewScrollController = ScrollController();
-  int _currentStep = 0; // 0: paste, 1: preview, 2: confirm (Faz 1)
+  int _currentStep = 0; // 0: paste, 1: preview, 2: confirm
   int _activeIssueFocusIndex = -1;
   String? _focusedPersonKey;
   final _cardKeys = <int, GlobalKey>{};
 
-  List<({int blockIndex, int? personIndex})> _getProblemLocations() {
-    final duplicates = _duplicateAssignments();
-    final locs = <({int blockIndex, int? personIndex})>[];
-    final addedKeys = <String>{};
-
-    // Priority 1: Critical empty blocks (0 personnel)
-    for (final blockEntry in _parsedBlocks.asMap().entries) {
-      if (blockEntry.value.personnelList.isEmpty) {
-        locs.add((blockIndex: blockEntry.key, personIndex: null));
-        addedKeys.add('${blockEntry.key}:null');
-      }
-    }
-
-    // Priority 2: Personnel needing match review
-    for (final blockEntry in _parsedBlocks.asMap().entries) {
-      for (final personEntry
-          in blockEntry.value.personnelList.asMap().entries) {
-        final key = '${blockEntry.key}:${personEntry.key}';
-        if (personEntry.value.needsReview && !addedKeys.contains(key)) {
-          locs.add((blockIndex: blockEntry.key, personIndex: personEntry.key));
-          addedKeys.add(key);
-        }
-      }
-    }
-
-    // Priority 3: Secondary duplicate assignments
-    for (final blockEntry in _parsedBlocks.asMap().entries) {
-      for (final personEntry
-          in blockEntry.value.personnelList.asMap().entries) {
-        final key = '${blockEntry.key}:${personEntry.key}';
-        if (duplicates.containsKey(key) && !addedKeys.contains(key)) {
-          locs.add((blockIndex: blockEntry.key, personIndex: personEntry.key));
-          addedKeys.add(key);
-        }
-      }
-    }
-
-    return locs;
+  List<ProblemLocation> _getProblemLocations() {
+    return BulkImportProblemWizard.getProblemLocations(
+      blocks: _parsedBlocks,
+      duplicates: _duplicateAssignments(),
+    );
   }
 
   void _focusNextProblem() {
@@ -154,63 +115,14 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }
 
   void _scrollToProblemLocation(int blockIndex) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_previewScrollController.hasClients) return;
-
-      final cardKey = _cardKeys[blockIndex];
-      if (cardKey?.currentContext != null) {
-        Scrollable.ensureVisible(
-          cardKey!.currentContext!,
-          duration: const Duration(milliseconds: 350),
-          curve: Curves.easeInOut,
-          alignment: 0.15,
-        );
-        return;
-      }
-
-      // Compute position based on currently visible blocks filter
-      final duplicates = _duplicateAssignments();
-      final visibleBlockEntries = _parsedBlocks.asMap().entries.where((entry) {
-        if (_previewFilter == _BulkPreviewFilter.all) return true;
-        final hasReview = entry.value.personnelList.any((p) => p.needsReview);
-        final hasDup = entry.value.personnelList
-            .asMap()
-            .keys
-            .any((pIdx) => duplicates.containsKey('${entry.key}:$pIdx'));
-        return entry.value.personnelList.isEmpty || hasReview || hasDup;
-      }).toList();
-
-      final visibleIndex =
-          visibleBlockEntries.indexWhere((e) => e.key == blockIndex);
-      final targetIndex = visibleIndex >= 0 ? visibleIndex : blockIndex;
-
-      final maxExtent = _previewScrollController.position.maxScrollExtent;
-      // Header area in SliverToBoxAdapter takes ~180px before SliverList starts
-      const headerOffset = 180.0;
-      final estimatedOffset =
-          (headerOffset + targetIndex * 220.0).clamp(0.0, maxExtent);
-
-      _previewScrollController
-          .animateTo(
-        estimatedOffset,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeInOut,
-      )
-          .then((_) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          final targetKey = _cardKeys[blockIndex];
-          if (targetKey?.currentContext != null) {
-            Scrollable.ensureVisible(
-              targetKey!.currentContext!,
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              alignment: 0.15,
-            );
-          }
-        });
-      });
-    });
+    BulkImportProblemWizard.scrollToProblemLocation(
+      blockIndex: blockIndex,
+      scrollController: _previewScrollController,
+      cardKeys: _cardKeys,
+      blocks: _parsedBlocks,
+      duplicates: _duplicateAssignments(),
+      filterIsProblems: _previewFilter == _BulkPreviewFilter.problems,
+    );
   }
 
   @override
@@ -285,7 +197,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       final parseResult = BulkTextParser.parse(rawText);
       final fuzzyMatcher = PersonnelFuzzyMatcher(widget.database);
       final matchedBlocks = await fuzzyMatcher.matchBlocks(parseResult.blocks);
-      final deduplicated = _deduplicateSameDuty(matchedBlocks);
+      final deduplicated = BulkImportSaveHandler.deduplicateSameDuty(matchedBlocks);
       if (!mounted) return;
 
       setState(() {
@@ -296,7 +208,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
         _previewFilter = _BulkPreviewFilter.all;
         _parseIssuesExpanded = _parseIssues.any((issue) => issue.isBlocking);
         if (_parsedBlocks.isNotEmpty || _parseIssues.isNotEmpty) {
-          _currentStep = 1; // Auto switch to Preview step
+          _currentStep = 1;
           _activeIssueFocusIndex = -1;
         }
       });
@@ -317,124 +229,23 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       return;
     }
 
-    final preparation = BulkActivityImportPreparer.prepare(_parsedBlocks);
-    if (preparation.duplicates.isNotEmpty) {
-      await showDuplicatePersonnelDialog(
-        context: context,
-        duplicates: preparation.duplicates,
-        squads: _allSquads,
-      );
-      if (!mounted) return;
-      return;
-    }
-
     setState(() {
       _isSaving = true;
     });
 
     try {
       final actor = ref.read(userSessionProvider);
-      if (actor == null) {
-        throw StateError('Oturum doğrulanamadı.');
-      }
-      final learningService = BulkImportLearningService(widget.database);
-      final fingerprint = BulkImportLearningService.fingerprint(_parsedBlocks);
-      final existingImport = await learningService.findImport(fingerprint);
-      if (existingImport != null) {
-        final activeCount =
-            await learningService.countActiveAssignments(_parsedBlocks);
-        if (activeCount == 0) {
-          // Stale import record because activities were deleted, clean up stale record
-          await learningService.deleteImportRecord(fingerprint);
-        } else {
-          if (!mounted) return;
-          final userChoice = await showDialog<bool>(
-            context: context,
-            builder: (dialogContext) => AlertDialog(
-              title: const Text('Bu Liste Daha Önce Aktarıldı'),
-              content: Text(
-                '${existingImport.tarihler} tarihli bu içerik '
-                '${existingImport.kayitTarihi} tarihinde '
-                '${existingImport.aktaranKullanici} tarafından kaydedilmiş.\n\n'
-                'Veritabanında bu listeye ait $activeCount personel kaydı aktif duruyor. '
-                'Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext, false),
-                  child: const Text('İPTAL'),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.pop(dialogContext, true),
-                  child: const Text('EKSİKLERİ TAMAMLA / YENİDEN AKTAR'),
-                ),
-              ],
-            ),
-          );
-          if (userChoice != true) return;
-        }
-      }
-      final result =
-          await widget.activityRepository.createActivitiesWithAssignments(
-        preparation.requests,
+      await BulkImportSaveHandler.saveAllToFaaliyet(
+        context: context,
+        database: widget.database,
+        activityRepository: widget.activityRepository,
         actor: actor,
-      );
-      await learningService.recordImport(
-        fingerprint: fingerprint,
         blocks: _parsedBlocks,
-        actor: actor.username,
-        rawText: _keepAuditText ? _textController.text : null,
+        squads: _allSquads,
+        keepAuditText: _keepAuditText,
+        rawText: _textController.text,
+        deduplicatedPersonnelCount: _deduplicatedPersonnelCount,
       );
-
-      if (mounted) {
-        if (result.skippedAssignmentCount > 0) {
-          await showDialog<void>(
-            context: context,
-            builder: (_) => ConflictPersonnelDialog(
-              descriptions: result.conflictDescriptions,
-            ),
-          );
-          if (!mounted) return;
-        }
-
-        final summaryLines = <String>[
-          '${preparation.requests.length} günlük faaliyet işlendi.',
-          '${result.addedAssignmentCount} yeni personel eklendi.',
-          if (result.alreadyAssignedCount > 0)
-            '${result.alreadyAssignedCount} personel zaten o görevde ekliydi.',
-          if (_deduplicatedPersonnelCount > 0)
-            '$_deduplicatedPersonnelCount tekrar tekilleştirildi.',
-          if (result.skippedAssignmentCount > 0)
-            '${result.skippedAssignmentCount} çakışan kayıt atlandı.',
-        ];
-
-        await showDialog<void>(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('Aktarım Tamamlandı'),
-            content: Text(summaryLines.join('\n')),
-            actions: [
-              FilledButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('TAMAM'),
-              ),
-            ],
-          ),
-        );
-        if (!mounted) return;
-        Navigator.pop(context, true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${_parsedBlocks.length} blok → ${preparation.requests.length} '
-              'günlük faaliyet, ${result.addedAssignmentCount} personel '
-              'başarıyla eklendi.',
-            ),
-            backgroundColor: Colors.green.shade700,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
     } on Object catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -454,63 +265,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }
 
   Map<String, List<String>> _duplicateAssignments() {
-    final occurrences = <String, List<({int blockIndex, int personIndex})>>{};
-    for (final blockEntry in _parsedBlocks.asMap().entries) {
-      for (final personEntry
-          in blockEntry.value.personnelList.asMap().entries) {
-        final id = personEntry.value.matchedPersonnelId;
-        if (id == null) continue;
-        final key =
-            '${blockEntry.value.parsedDate}:${blockEntry.value.parsedActivityType.trim().toUpperCase()}:$id';
-        occurrences.putIfAbsent(key, () => []).add(
-          (blockIndex: blockEntry.key, personIndex: personEntry.key),
-        );
-      }
-    }
-
-    final result = <String, List<String>>{};
-    for (final entries
-        in occurrences.values.where((items) => items.length > 1)) {
-      for (final entry in entries) {
-        result['${entry.blockIndex}:${entry.personIndex}'] =
-            entries.where((other) => other != entry).map((other) {
-          final block = _parsedBlocks[other.blockIndex];
-          final time = block.parsedTimeRange?.trim();
-          return time == null || time.isEmpty
-              ? block.parsedActivityType
-              : '${block.parsedActivityType} ($time)';
-        }).toList(growable: false);
-      }
-    }
-    return result;
-  }
-
-  ({
-    List<ParsedActivityBlock> blocks,
-    int removedCount,
-  }) _deduplicateSameDuty(List<ParsedActivityBlock> blocks) {
-    final seen = <String>{};
-    var removedCount = 0;
-    final result = <ParsedActivityBlock>[];
-    for (final block in blocks) {
-      final personnel = <ParsedPersonnelItem>[];
-      for (final person in block.personnelList) {
-        final id = person.matchedPersonnelId;
-        if (id == null) {
-          personnel.add(person);
-          continue;
-        }
-        final key = '${block.parsedDate}:'
-            '${block.parsedActivityType.trim().toUpperCase()}:$id';
-        if (seen.add(key)) {
-          personnel.add(person);
-        } else {
-          removedCount++;
-        }
-      }
-      result.add(block.copyWith(personnelList: personnel));
-    }
-    return (blocks: result, removedCount: removedCount);
+    return BulkImportSaveHandler.findDuplicateAssignments(_parsedBlocks);
   }
 
   int get _unresolvedPersonnelCount => _parsedBlocks
@@ -643,71 +398,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
                   color: Theme.of(context).scaffoldBackgroundColor,
                   child: Column(
                     children: [
-                      // Dialog Header Banner
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: isKeyboardVisible ? 10 : 16,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              context.accentOrOlive,
-                              context.accentOrOlive.withValues(alpha: 0.85),
-                            ],
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.paste_rounded,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Metinden Toplu Aktarım',
-                                    style: TextStyle(
-                                      fontSize: isKeyboardVisible ? 16 : 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  if (!isKeyboardVisible) ...[
-                                    const SizedBox(height: 2),
-                                    const Text(
-                                      'WhatsApp / Telegram nöbet listelerini yapıştırıp akıllı ayrıştırın',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.white70,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              icon:
-                                  const Icon(Icons.close, color: Colors.white),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                          ],
-                        ),
+                      BulkImportHeaderBanner(
+                        isKeyboardVisible: isKeyboardVisible,
+                        onClose: () => Navigator.pop(context),
                       ),
-
-                      // Stepper (Faz 1)
                       BulkImportStepper(
                         currentStep: _currentStep,
                         hasBlocks: _parsedBlocks.isNotEmpty,
@@ -718,8 +412,6 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
                           }
                         },
                       ),
-
-                      // Main Body Content
                       Expanded(
                         child: isMobile
                             ? _buildMobileBody(isKeyboardVisible)
@@ -839,34 +531,6 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       isKeyboardVisible: isKeyboardVisible,
       isParsing: _isParsing,
       onProcessText: _processText,
-    );
-  }
-
-  Widget _buildFilteredEmptyState() {
-    return BulkImportEmptyState(
-      issues: _parseIssues,
-      onShowAll: () => _setPreviewFilter(_BulkPreviewFilter.all),
-    );
-  }
-
-  Widget _buildPreviewCard(
-    ParsedActivityBlock block,
-    int blockIdx,
-    Map<String, List<String>> duplicates, {
-    List<int>? visiblePersonnelIndexes,
-  }) {
-    return ActivityBlockCard(
-      cardKey: _cardKeys.putIfAbsent(blockIdx, () => GlobalKey()),
-      block: block,
-      blockIdx: blockIdx,
-      duplicates: duplicates,
-      allSquads: _allSquads,
-      focusedPersonKey: _focusedPersonKey,
-      visiblePersonnelIndexes: visiblePersonnelIndexes,
-      onEditBlock: _editBlock,
-      onRemoveBlock: _removeBlock,
-      onSelectPersonnel: _selectPersonnel,
-      onRemovePerson: _removePerson,
     );
   }
 
