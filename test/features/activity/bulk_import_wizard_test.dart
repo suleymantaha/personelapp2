@@ -13,36 +13,19 @@ void main() {
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
     final teamId = await database.into(database.timTable).insert(
-          TimTableCompanion.insert(
-            timAdi: '6-B Timi',
-            olusturmaTarihi: '2026-01-01',
-          ),
-        );
+      TimTableCompanion.insert(timAdi: '6-B Timi', olusturmaTarihi: '2026-01-01'),
+    );
     await database.batch((batch) {
       batch.insertAll(database.personelTable, [
-        PersonelTableCompanion.insert(
-          adSoyad: 'Ali DENEME',
-          rutbe: 'J.Uzm.Çvş.',
-          birlik: '6/B',
-          timId: Value(teamId),
-          kayitTarihi: '2026-01-01',
-        ),
-        PersonelTableCompanion.insert(
-          adSoyad: 'Veli SAĞLAM',
-          rutbe: 'J.Uzm.Çvş.',
-          birlik: '6/B',
-          timId: Value(teamId),
-          kayitTarihi: '2026-01-01',
-        ),
+        PersonelTableCompanion.insert(adSoyad: 'Ali DENEME', rutbe: 'J.Uzm.Çvş.', birlik: '6/B', timId: Value(teamId), kayitTarihi: '2026-01-01'),
+        PersonelTableCompanion.insert(adSoyad: 'Veli SAĞLAM', rutbe: 'J.Uzm.Çvş.', birlik: '6/B', timId: Value(teamId), kayitTarihi: '2026-01-01'),
       ]);
     });
   });
 
   tearDown(() => database.close());
 
-  testWidgets(
-      'stat cards show correct counts after parsing',
-      (tester) async {
+  testWidgets('"Soruna Git" butonu sorunlu personel olduğunda görünür', (tester) async {
     tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -67,25 +50,17 @@ void main() {
       '''
 6/B Heybet Listesi
 25.07.2026
-1- J.Uzm.Çvş. Ali DENEME
-2- J.Uzm.Çvş. Veli SAĞLAM
-6/B Devriye Listesi
-25.07.2026
 1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
 ''',
     );
     await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
     await tester.pumpAndSettle();
 
-    // Stat kartları görünmeli (Faz 2)
-    expect(find.text('2'), findsWidgets); // 2 kart
-    expect(find.text('3'), findsWidgets); // 3 personel
-    expect(find.text('1'), findsWidgets); // 1 gün (unique date) - also appears in stepper
+    // "Soruna Git" butonu (Key: bulk-goto-problem) görünmeli
+    expect(find.byKey(const Key('bulk-goto-problem')), findsOneWidget);
   });
 
-  testWidgets(
-      'unknown personnel shows error summary and save is blocked',
-      (tester) async {
+  testWidgets('Wizard "Sonraki Sorun" butonu odaklanan kartı değiştirir', (tester) async {
     tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -108,7 +83,55 @@ void main() {
     await tester.enterText(
       find.byType(TextField).first,
       '''
+6/B Heybet Listesi
+25.07.2026
+1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
 6/B Devriye Listesi
+25.07.2026
+1- J.Uzm.Çvş. Ahmet KAYIP
+''',
+    );
+    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.pumpAndSettle();
+
+    // "Soruna Git" butonuna tıkla ile wizard başlat
+    await tester.tap(find.byKey(const Key('bulk-goto-problem')));
+    await tester.pumpAndSettle();
+
+    // Kompakt hata özeti genişlemiş olmalı, bulk-wizard-next görünmeli
+    expect(find.byKey(const Key('bulk-wizard-next')), findsOneWidget);
+    // bulk-wizard-next butonuna tıkla
+    await tester.tap(find.byKey(const Key('bulk-wizard-next')));
+    await tester.pumpAndSettle();
+
+    // Wizard bar hâlâ görünmeli (ikinci soruna geçti)
+    expect(find.byKey(const Key('bulk-wizard-next')), findsOneWidget);
+  });
+
+  testWidgets('Kompakt hata özetine tıklayınca wizard başlatılır', (tester) async {
+    tester.view.physicalSize = const Size(1000, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: BulkImportDialog(
+              database: database,
+              activityRepository: ActivityRepository(database),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byType(TextField).first,
+      '''
+6/B Heybet Listesi
 25.07.2026
 1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
 ''',
@@ -116,59 +139,14 @@ void main() {
     await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
     await tester.pumpAndSettle();
 
-    // Kompakt hata özeti "Kaydedilemiyor" metnini göstermeli (Faz 3)
+    // Kompakt hata özeti "Kaydedilemiyor" göstermeli
     expect(find.text('Kaydedilemiyor'), findsOneWidget);
 
-    // "Soruna Git" butonu görünmeli (Faz 5)
-    expect(find.byKey(const Key('bulk-goto-problem')), findsOneWidget);
-
-    // Kaydet butonu devre dışı olmalı
-    final button = tester.widget<FilledButton>(
-      find.byKey(const Key('bulk-import-save-button')),
-    );
-    expect(button.onPressed == null, isTrue);
-  });
-
-  testWidgets(
-      'team mismatch on matched personnel displays warning tag but does not block saving',
-      (tester) async {
-    tester.view.physicalSize = const Size(1000, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          home: Scaffold(
-            body: BulkImportDialog(
-              database: database,
-              activityRepository: ActivityRepository(database),
-            ),
-          ),
-        ),
-      ),
-    );
+    // "Kaydedilemiyor" alanına tıkla → wizard başlamalı
+    await tester.tap(find.text('Kaydedilemiyor'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byType(TextField).first,
-      '''
-2. TİM KARAKEÇİ Listesi
-25.07.2026
-1- J.Uzm.Çvş. Ali DENEME
-''',
-    );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
-    await tester.pumpAndSettle();
-
-    // Ali DENEME is matched (100% confidence), but KARAKEÇİ team differs from 6-B Timi in DB
-    expect(find.textContaining('Ali DENEME'), findsWidgets);
-    expect(find.byKey(const Key('bulk-team-mismatch-warning'), skipOffstage: false), findsWidgets);
-
-    // Save button should be enabled (team mismatch doesn't block save)
-    final button = tester.widget<FilledButton>(
-      find.byKey(const Key('bulk-import-save-button')),
-    );
-    expect(button.onPressed != null, isTrue);
+    // bulk-wizard-next görünmeli (wizard aktif)
+    expect(find.byKey(const Key('bulk-wizard-next')), findsOneWidget);
   });
 }

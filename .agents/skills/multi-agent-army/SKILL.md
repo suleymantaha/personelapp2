@@ -1,15 +1,35 @@
 ---
 name: multi-agent-army
-description: "Create and orchestrate a hierarchical multi-agent army with task delegation, work isolation, quality gates, and kanban tracking. Optimized for Flutter/Dart projects. Agents at different hierarchy levels (orchestrator → team leads → workers) pass tasks down without sharing code directly."
+description: >-
+  Create and orchestrate a hierarchical multi-agent army with task delegation,
+  work isolation, quality gates, and kanban tracking. Optimized for Flutter/Dart
+  projects. Agents at different hierarchy levels (orchestrator → team leads →
+  workers) pass tasks down without sharing code directly.
 version: 2.0.0
 author: Hermes Agent
 license: MIT
-platforms: [linux, macos, windows]
+platforms:
+  - linux
+  - macos
+  - windows
 metadata:
   hermes:
-    tags: [multi-agent, orchestration, delegation, hierarchical, work-isolation, kanban, quality-gates, flutter, dart]
+    tags:
+      - multi-agent
+      - orchestration
+      - delegation
+      - hierarchical
+      - work-isolation
+      - kanban
+      - quality-gates
+      - flutter
+      - dart
     category: autonomous-ai-agents
-    related_skills: [flutter-apply-architecture-best-practices, dart-add-unit-test, flutter-add-widget-test, dart-fix-runtime-errors]
+    related_skills:
+      - flutter-apply-architecture-best-practices
+      - dart-add-unit-test
+      - flutter-add-widget-test
+      - dart-fix-runtime-errors
 ---
 
 # Multi-Agent Army — Flutter/Dart Hierarchical Agent Orchestration
