@@ -9,12 +9,11 @@ class CompactErrorSummary extends StatelessWidget {
     required this.parseIssues,
     required this.isExpanded,
     required this.onToggle,
-    required this.onStartWizard,
     required this.totalIssues,
     required this.currentIndex,
-    required this.onPrevious,
-    required this.onNext,
     this.problemLocations = const [],
+    this.onStartWizard,
+    this.onSelectIssue,
     super.key,
   });
 
@@ -24,11 +23,10 @@ class CompactErrorSummary extends StatelessWidget {
   final List<ProblemLocation> problemLocations;
   final bool isExpanded;
   final VoidCallback onToggle;
-  final VoidCallback? onStartWizard;
   final int totalIssues;
   final int currentIndex;
-  final VoidCallback onPrevious;
-  final VoidCallback onNext;
+  final VoidCallback? onStartWizard;
+  final void Function(int index)? onSelectIssue;
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +88,12 @@ class CompactErrorSummary extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           InkWell(
-            onTap: onToggle,
+            onTap: () {
+              onToggle();
+              if (onStartWizard != null) {
+                onStartWizard!();
+              }
+            },
             borderRadius: BorderRadius.circular(12),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -164,7 +167,9 @@ class CompactErrorSummary extends StatelessWidget {
                         final isCurrentlyFocused = currentIndex >= 0 &&
                             index == (currentIndex % allDisplayItems.length);
                         return InkWell(
-                          onTap: onStartWizard,
+                          onTap: onSelectIssue != null
+                              ? () => onSelectIssue!(index)
+                              : null,
                           borderRadius: BorderRadius.circular(6),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
@@ -203,44 +208,6 @@ class CompactErrorSummary extends StatelessWidget {
                       'Lütfen aşağıda vurgulanan kartlardaki eksik personelleri eşleştirin, tekrarları düzeltin veya boş kartları silin.',
                       style: TextStyle(color: textColor, fontSize: 12),
                     ),
-            ),
-          if (hasProblems && onStartWizard != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const Key('bulk-wizard-prev'),
-                      onPressed: onPrevious,
-                      icon: const Icon(Icons.arrow_back_ios_rounded, size: 14),
-                      label: const Text('Önceki'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: textColor,
-                        side: BorderSide(color: borderColor),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: FilledButton.icon(
-                      key: const Key('bulk-wizard-next'),
-                      onPressed: onNext,
-                      icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                      label: Text(
-                        currentIndex < 0 ? 'Başlat' : 'Sonraki Sorun',
-                      ),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: textColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
         ],
       ),

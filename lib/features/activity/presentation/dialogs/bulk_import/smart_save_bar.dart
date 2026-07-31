@@ -60,6 +60,7 @@ class BulkImportSaveButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       ),
     );
   }
@@ -71,6 +72,7 @@ class SmartSaveBar extends StatelessWidget {
     required this.problemLocs,
     required this.activeIssueFocusIndex,
     required this.onGotoProblem,
+    required this.onGotoPrevious,
     required this.onSave,
     required this.isSaving,
     required this.blocks,
@@ -83,6 +85,7 @@ class SmartSaveBar extends StatelessWidget {
   final List<ProblemLocation> problemLocs;
   final int activeIssueFocusIndex;
   final VoidCallback onGotoProblem;
+  final VoidCallback onGotoPrevious;
   final VoidCallback onSave;
   final bool isSaving;
   final List<ParsedActivityBlock> blocks;
@@ -98,7 +101,16 @@ class SmartSaveBar extends StatelessWidget {
         !hasUnresolvedProblems;
 
     final displayTotal = problemLocs.isNotEmpty ? problemLocs.length : problemCount;
-    final displayIndex = activeIssueFocusIndex < 0 ? 1 : activeIssueFocusIndex + 1;
+    final displayIndex = activeIssueFocusIndex < 0
+        ? 1
+        : (displayTotal > 0 ? (activeIssueFocusIndex % displayTotal) + 1 : 1);
+
+    Color buttonColor;
+    if (isBlocked || problemCount > 0) {
+      buttonColor = const Color(0xFFD32F2F);
+    } else {
+      buttonColor = Colors.orange.shade800;
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -111,65 +123,114 @@ class SmartSaveBar extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Single Clean Primary Button on UI
-          AnimatedScale(
-            scale: isSaving ? 0.96 : 1.0,
-            duration: const Duration(milliseconds: 200),
-            child: FilledButton.icon(
-              key: canSave
-                  ? const Key('bulk-import-save-button')
-                  : const Key('bulk-goto-problem'),
-              onPressed: isSaving
-                  ? null
-                  : (canSave ? onSave : onGotoProblem),
-              icon: isSaving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Icon(
-                      canSave
-                          ? Icons.check_circle_rounded
-                          : Icons.auto_fix_high_rounded,
-                      size: 20,
+          if (canSave)
+            AnimatedScale(
+              scale: isSaving ? 0.96 : 1.0,
+              duration: const Duration(milliseconds: 200),
+              child: FilledButton.icon(
+                key: const Key('bulk-import-save-button'),
+                onPressed: isSaving ? null : onSave,
+                icon: isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.check_circle_rounded, size: 20),
+                label: Text(
+                  isSaving
+                      ? 'Kaydediliyor...'
+                      : 'Faaliyetleri Kaydet (${blocks.length} Kart)',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: context.approvedColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            )
+          else ...[
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: OutlinedButton.icon(
+                    key: const Key('bulk-wizard-prev'),
+                    onPressed: onGotoPrevious,
+                    icon: const Icon(Icons.arrow_back_ios_rounded, size: 14),
+                    label: const Text(
+                      'Önceki',
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-              label: Text(
-                canSave
-                    ? 'Faaliyetleri Kaydet (${blocks.length} Blok)'
-                    : 'Soruna Git ($displayIndex/$displayTotal)',
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: buttonColor,
+                      side: BorderSide(color: buttonColor.withValues(alpha: 0.4)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 3,
+                  child: FilledButton.icon(
+                    key: activeIssueFocusIndex < 0
+                        ? const Key('bulk-goto-problem')
+                        : const Key('bulk-wizard-next'),
+                    onPressed: onGotoProblem,
+                    icon: const Icon(Icons.build_circle_outlined, size: 18),
+                    label: Text(
+                      activeIssueFocusIndex < 0
+                          ? 'Soruna Git ($displayIndex/$displayTotal)'
+                          : 'Sonraki Sorun ($displayIndex/$displayTotal)',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: buttonColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            FilledButton(
+              key: const Key('bulk-import-save-button'),
+              onPressed: null,
               style: FilledButton.styleFrom(
-                backgroundColor: canSave
-                    ? const Color(0xFF16A34A)
-                    : const Color(0xFFF59E0B),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                backgroundColor: Colors.grey.shade300,
+                foregroundColor: Colors.grey.shade600,
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
-            ),
-          ),
-          if (!canSave)
-            const Opacity(
-              opacity: 0.0,
-              child: SizedBox(
-                height: 0,
-                child: FilledButton(
-                  key: Key('bulk-import-save-button'),
-                  onPressed: null,
-                  child: Text(''),
-                ),
+              child: Text(
+                'Kaydedilemiyor ($displayTotal Hata / Çakışma)',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ),
+          ],
         ],
       ),
     );

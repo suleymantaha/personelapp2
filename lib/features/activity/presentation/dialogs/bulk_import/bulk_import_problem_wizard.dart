@@ -98,10 +98,10 @@ class BulkImportProblemWizard {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!scrollController.hasClients) return;
 
-      final cardKey = cardKeys[blockIndex];
-      if (cardKey?.currentContext != null) {
+      final directKey = cardKeys[blockIndex];
+      if (directKey?.currentContext != null) {
         Scrollable.ensureVisible(
-          cardKey!.currentContext!,
+          directKey!.currentContext!,
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeInOut,
           alignment: 0.15,
@@ -129,33 +129,49 @@ class BulkImportProblemWizard {
       for (var i = 0; i < targetIndex && i < visibleBlockEntries.length; i++) {
         final blk = visibleBlockEntries[i].value;
         final pCount = blk.personnelList.length;
-        final estimatedCardHeight = 110.0 + (pCount * 135.0) + 18.0;
+        final estimatedCardHeight = 110.0 + (pCount * 140.0) + 18.0;
         accumulatedOffset += estimatedCardHeight;
       }
 
-      final maxExtent = scrollController.position.maxScrollExtent;
-      final targetOffset = accumulatedOffset.clamp(0.0, maxExtent);
+      // Jump to estimated offset to force layout of unbuilt slivers up to targetIndex
+      final initialMax = scrollController.position.maxScrollExtent;
+      final jumpOffset = accumulatedOffset.clamp(0.0, initialMax + 5000.0);
+      scrollController.jumpTo(jumpOffset);
 
-      scrollController
-          .animateTo(
-        targetOffset,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      )
-          .then((_) {
-        // Second pass: now that target block has scrolled into viewport,
-        // SliverList has mounted it. Execute ensureVisible on target key.
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          final targetKey = cardKeys[blockIndex];
-          if (targetKey?.currentContext != null) {
-            Scrollable.ensureVisible(
-              targetKey!.currentContext!,
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeInOut,
-              alignment: 0.15,
-            );
-          }
-        });
+      // Now that slivers up to targetIndex have been built, execute ensureVisible
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!scrollController.hasClients) return;
+        final targetKey = cardKeys[blockIndex];
+        if (targetKey?.currentContext != null) {
+          Scrollable.ensureVisible(
+            targetKey!.currentContext!,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            alignment: 0.15,
+          );
+        } else {
+          final maxExtent = scrollController.position.maxScrollExtent;
+          final finalOffset = accumulatedOffset.clamp(0.0, maxExtent);
+          scrollController
+              .animateTo(
+            finalOffset,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+          )
+              .then((_) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final fallbackKey = cardKeys[blockIndex];
+              if (fallbackKey?.currentContext != null) {
+                Scrollable.ensureVisible(
+                  fallbackKey!.currentContext!,
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  alignment: 0.15,
+                );
+              }
+            });
+          });
+        }
       });
     });
   }
