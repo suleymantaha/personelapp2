@@ -29,8 +29,7 @@ class BulkImportDialog extends ConsumerStatefulWidget {
   ConsumerState<BulkImportDialog> createState() => _BulkImportDialogState();
 }
 
-class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
-    with SingleTickerProviderStateMixin {
+class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   static const _preferences = BulkImportPreferences();
   final TextEditingController _textController = TextEditingController();
   List<ParsedActivityBlock> _parsedBlocks = [];
@@ -39,27 +38,78 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
   List<TimTableData> _allSquads = [];
   bool _isParsing = false;
   bool _isSaving = false;
-  int _ignoredLineCount = 0;
   int _deduplicatedPersonnelCount = 0;
-  List<BulkDeclaredTotal> _declaredTotals = [];
   bool _keepAuditText = false;
   bool _keepAuditTextChanged = false;
   bool _parseIssuesExpanded = false;
   _BulkPreviewFilter _previewFilter = _BulkPreviewFilter.all;
   final ScrollController _previewScrollController = ScrollController();
-  late TabController _tabController;
+  int _currentStep = 0; // 0: paste, 1: preview, 2: confirm (Faz 1)
+  int _activeIssueFocusIndex = -1;
+  String? _focusedPersonKey;
+  final _cardKeys = <int, GlobalKey>{};
+
+  List<({int blockIndex, int personIndex})> _getProblemLocations() {
+    final duplicates = _duplicateAssignments();
+    final locs = <({int blockIndex, int personIndex})>[];
+    for (final blockEntry in _parsedBlocks.asMap().entries) {
+      for (final personEntry
+          in blockEntry.value.personnelList.asMap().entries) {
+        if (personEntry.value.needsReview ||
+            duplicates.containsKey('${blockEntry.key}:${personEntry.key}')) {
+          locs.add((blockIndex: blockEntry.key, personIndex: personEntry.key));
+        }
+      }
+    }
+    return locs;
+  }
+
+  void _focusNextProblem() {
+    final locs = _getProblemLocations();
+    if (locs.isEmpty) return;
+    setState(() {
+      _activeIssueFocusIndex = (_activeIssueFocusIndex + 1) % locs.length;
+      final target = locs[_activeIssueFocusIndex];
+      _focusedPersonKey = '${target.blockIndex}:${target.personIndex}';
+    });
+    _scrollToProblemLocation(locs[_activeIssueFocusIndex].blockIndex);
+  }
+
+  void _focusPreviousProblem() {
+    final locs = _getProblemLocations();
+    if (locs.isEmpty) return;
+    setState(() {
+      _activeIssueFocusIndex =
+          (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
+      final target = locs[_activeIssueFocusIndex];
+      _focusedPersonKey = '${target.blockIndex}:${target.personIndex}';
+    });
+    _scrollToProblemLocation(locs[_activeIssueFocusIndex].blockIndex);
+  }
+
+  void _scrollToProblemLocation(int blockIndex) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final cardKey = _cardKeys[blockIndex];
+      if (cardKey?.currentContext == null) return;
+      Scrollable.ensureVisible(
+        cardKey!.currentContext!,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+        alignment: 0.15,
+      );
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     unawaited(_loadPersonnel());
     unawaited(_loadPreferences());
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     _textController.dispose();
     _previewScrollController.dispose();
     super.dispose();
@@ -128,15 +178,11 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
       setState(() {
         _parsedBlocks = deduplicated.blocks;
         _parseIssues = parseResult.issues;
-        _ignoredLineCount = parseResult.ignoredLineCount;
         _deduplicatedPersonnelCount = deduplicated.removedCount;
-        _declaredTotals = parseResult.declaredTotals;
         _previewFilter = _BulkPreviewFilter.all;
         _parseIssuesExpanded = _parseIssues.any((issue) => issue.isBlocking);
         if (_parsedBlocks.isNotEmpty || _parseIssues.isNotEmpty) {
-          _tabController.animateTo(
-            1,
-          ); // Auto switch to Preview tab on mobile/desktop
+          _currentStep = 1; // Auto switch to Preview step
         }
       });
     } finally {
@@ -176,25 +222,38 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
       final fingerprint = BulkImportLearningService.fingerprint(_parsedBlocks);
       final existingImport = await learningService.findImport(fingerprint);
       if (existingImport != null) {
-        if (!mounted) return;
-        await showDialog<void>(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('Bu Liste Daha Önce Aktarıldı'),
-            content: Text(
-              '${existingImport.tarihler} tarihli bu içerik '
-              '${existingImport.kayitTarihi} tarihinde '
-              '${existingImport.aktaranKullanici} tarafından kaydedilmiş.',
-            ),
-            actions: [
-              FilledButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('TAMAM'),
+        final activeCount =
+            await learningService.countActiveAssignments(_parsedBlocks);
+        if (activeCount == 0) {
+          // Stale import record because activities were deleted, clean up stale record
+          await learningService.deleteImportRecord(fingerprint);
+        } else {
+          if (!mounted) return;
+          final userChoice = await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+              title: const Text('Bu Liste Daha Önce Aktarıldı'),
+              content: Text(
+                '${existingImport.tarihler} tarihli bu içerik '
+                '${existingImport.kayitTarihi} tarihinde '
+                '${existingImport.aktaranKullanici} tarafından kaydedilmiş.\n\n'
+                'Veritabanında bu listeye ait $activeCount personel kaydı aktif duruyor. '
+                'Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?',
               ),
-            ],
-          ),
-        );
-        return;
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: const Text('İPTAL'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: const Text('EKSİKLERİ TAMAMLA / YENİDEN AKTAR'),
+                ),
+              ],
+            ),
+          );
+          if (userChoice != true) return;
+        }
       }
       final result =
           await widget.activityRepository.createActivitiesWithAssignments(
@@ -218,16 +277,23 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
           );
           if (!mounted) return;
         }
+
+        final summaryLines = <String>[
+          '${preparation.requests.length} günlük faaliyet işlendi.',
+          '${result.addedAssignmentCount} yeni personel eklendi.',
+          if (result.alreadyAssignedCount > 0)
+            '${result.alreadyAssignedCount} personel zaten o görevde ekliydi.',
+          if (_deduplicatedPersonnelCount > 0)
+            '$_deduplicatedPersonnelCount tekrar tekilleştirildi.',
+          if (result.skippedAssignmentCount > 0)
+            '${result.skippedAssignmentCount} çakışan kayıt atlandı.',
+        ];
+
         await showDialog<void>(
           context: context,
           builder: (dialogContext) => AlertDialog(
             title: const Text('Aktarım Tamamlandı'),
-            content: Text(
-              '${preparation.requests.length} günlük faaliyet oluşturuldu.\n'
-              '${result.addedAssignmentCount} personel eklendi.\n'
-              '$_deduplicatedPersonnelCount tekrar tekilleştirildi.\n'
-              '${result.skippedAssignmentCount} çakışan kayıt atlandı.',
-            ),
+            content: Text(summaryLines.join('\n')),
             actions: [
               FilledButton(
                 onPressed: () => Navigator.pop(dialogContext),
@@ -320,7 +386,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
           in blockEntry.value.personnelList.asMap().entries) {
         final id = personEntry.value.matchedPersonnelId;
         if (id == null) continue;
-        final key = '${blockEntry.value.parsedDate}:${blockEntry.value.parsedActivityType.trim().toUpperCase()}:$id';
+        final key =
+            '${blockEntry.value.parsedDate}:${blockEntry.value.parsedActivityType.trim().toUpperCase()}:$id';
         occurrences.putIfAbsent(key, () => []).add(
           (blockIndex: blockEntry.key, personIndex: personEntry.key),
         );
@@ -456,9 +523,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
         _parseIssues.clear();
         _previewFilter = _BulkPreviewFilter.all;
         _parseIssuesExpanded = false;
-        _ignoredLineCount = 0;
         _deduplicatedPersonnelCount = 0;
-        _declaredTotals = [];
+        _cardKeys.clear();
+        _currentStep = 0;
       });
     }
   }
@@ -657,105 +724,23 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
                         ),
                       ),
 
-                      // TabBar for Mobile or Split Layout for Desktop/Tablet
-                      if (isMobile)
-                        Container(
-                          margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: context.cardBorderColor),
-                          ),
-                          child: TabBar(
-                            controller: _tabController,
-                            labelColor: Colors.white,
-                            unselectedLabelColor: Colors.grey.shade700,
-                            indicatorSize: TabBarIndicatorSize.tab,
-                            indicator: BoxDecoration(
-                              color: context.accentOrOlive,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: context.accentOrOlive.withValues(alpha: 0.3),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            dividerColor: Colors.transparent,
-                            labelStyle: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                            unselectedLabelStyle: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                            tabs: [
-                              Tab(
-                                icon: isKeyboardVisible
-                                    ? null
-                                    : const Icon(Icons.edit_note_rounded, size: 18),
-                                text: '1. Metin Yapıştır',
-                              ),
-                              Tab(
-                                icon: isKeyboardVisible
-                                    ? null
-                                    : Badge(
-                                        isLabelVisible: _parsedBlocks.isNotEmpty,
-                                        label: Text(
-                                          _parsedBlocks.length.toString(),
-                                          style: const TextStyle(fontSize: 10),
-                                        ),
-                                        backgroundColor: Colors.amber.shade800,
-                                        child: const Icon(
-                                          Icons.style_rounded,
-                                          size: 18,
-                                        ),
-                                      ),
-                                text: '2. Kart Önizleme',
-                              ),
-                            ],
-                          ),
-                        ),
+                      // Stepper (Faz 1)
+                      _BulkImportStepper(
+                        currentStep: _currentStep,
+                        hasBlocks: _parsedBlocks.isNotEmpty,
+                        onStepTapped: (int step) {
+                          if (step <= _currentStep ||
+                              (step == 1 && _parsedBlocks.isNotEmpty)) {
+                            setState(() => _currentStep = step);
+                          }
+                        },
+                      ),
 
                       // Main Body Content
                       Expanded(
                         child: isMobile
-                            ? TabBarView(
-                                controller: _tabController,
-                                children: [
-                                  _buildInputSection(
-                                    isMobile: true,
-                                    isKeyboardVisible: isKeyboardVisible,
-                                  ),
-                                  _buildPreviewSection(isMobile: true),
-                                ],
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      flex: 4,
-                                      child: _buildInputSection(
-                                        isMobile: false,
-                                        isKeyboardVisible: isKeyboardVisible,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 20),
-                                    const VerticalDivider(width: 1),
-                                    const SizedBox(width: 20),
-                                    Expanded(
-                                      flex: 6,
-                                      child:
-                                          _buildPreviewSection(isMobile: false),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            ? _buildMobileBody(isKeyboardVisible)
+                            : _buildDesktopBody(isKeyboardVisible),
                       ),
                     ],
                   ),
@@ -765,6 +750,120 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildMobileBody(bool isKeyboardVisible) {
+    return switch (_currentStep) {
+      0 => _buildInputSection(isMobile: true, isKeyboardVisible: isKeyboardVisible),
+      1 => _buildPreviewSection(isMobile: true),
+      _ => _buildConfirmStep(isMobile: true),
+    };
+  }
+
+  Widget _buildDesktopBody(bool isKeyboardVisible) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_currentStep == 0)
+            Expanded(
+              flex: 4,
+              child: _buildInputSection(
+                isMobile: false,
+                isKeyboardVisible: isKeyboardVisible,
+              ),
+            ),
+          if (_currentStep == 0) ...[
+            const SizedBox(width: 20),
+            const VerticalDivider(width: 1),
+            const SizedBox(width: 20),
+          ],
+          Expanded(
+            flex: _currentStep == 0 ? 6 : 10,
+            child: _currentStep == 2
+                ? _buildConfirmStep(isMobile: false)
+                : _buildPreviewSection(isMobile: false),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConfirmStep({required bool isMobile}) {
+    final hasBlocking =
+        _parseIssues.any((issue) => issue.isBlocking) || _unresolvedPersonnelCount > 0;
+    final totalDays = _parsedBlocks.map((b) => b.parsedDate).toSet().length;
+    final totalPersonnel = _parsedBlocks.fold<int>(0, (c, b) => c + b.personnelList.length);
+
+    return Padding(
+      padding: EdgeInsets.all(isMobile ? 24 : 0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            hasBlocking ? Icons.error_rounded : Icons.task_alt_rounded,
+            size: 64,
+            color: hasBlocking ? const Color(0xFFD32F2F) : const Color(0xFF16A34A),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            hasBlocking ? 'Kaydedilemiyor' : 'Kayda Hazır',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: hasBlocking ? const Color(0xFFD32F2F) : const Color(0xFF16A34A),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            hasBlocking
+                ? 'Lütfen önizleme adımına dönüp sorunları çözün.'
+                : '${_parsedBlocks.length} kart, $totalPersonnel personel, $totalDays gün',
+            style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+          ),
+          const SizedBox(height: 24),
+          if (!hasBlocking)
+            AnimatedScale(
+              scale: _isSaving ? 0.95 : 1.0,
+              duration: const Duration(milliseconds: 200),
+              child: FilledButton.icon(
+                key: const Key('bulk-import-save-button'),
+                onPressed: _isSaving ? null : _saveAllToFaaliyet,
+                icon: _isSaving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.check_circle_rounded),
+                label: const Text(
+                  'Faaliyetleri Kaydet',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF16A34A),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            )
+          else
+            OutlinedButton.icon(
+              key: const Key('bulk-goto-problem'),
+              onPressed: () => setState(() => _currentStep = 1),
+              icon: const Icon(Icons.arrow_back_rounded),
+              label: const Text('Önizlemeye Dön'),
+            ),
+        ],
+      ),
     );
   }
 
@@ -936,21 +1035,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
         _unresolvedPersonnelCount +
         _parsedBlocks.where((block) => block.personnelList.isEmpty).length +
         _parseIssues.where((issue) => issue.isBlocking).length;
-    final totalMismatchCount = _declaredTotals.where((declared) {
-      final ids = <int>{};
-      for (final block in _parsedBlocks) {
-        if (block.parsedDate == declared.date &&
-            block.parsedTimName == declared.teamName &&
-            block.parsedActivityType == declared.activityType) {
-          ids.addAll(
-            block.personnelList
-                .map((person) => person.matchedPersonnelId)
-                .whereType<int>(),
-          );
-        }
-      }
-      return ids.length != declared.expectedCount;
-    }).length;
+    final problemLocs = _getProblemLocations();
+    final totalDays = _parsedBlocks.map((b) => b.parsedDate).toSet().length;
+
     return Padding(
       padding: EdgeInsets.all(isMobile ? 16 : 0),
       child: Column(
@@ -963,8 +1050,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
                 child: Row(
                   children: [
                     Icon(
-                      Icons.style_rounded,
-                      color: context.accentOrOlive,
+                      Icons.assignment_rounded,
+                      color: const Color(0xFF556B3F),
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -993,33 +1080,47 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
                 ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           if (_parsedBlocks.isNotEmpty) ...[
-            _ImportSummary(
-              cardCount: _parsedBlocks.length,
-              personnelCount: personnelCount,
-              warningCount: _parseIssues.length,
-              problemCount: problemCount,
-              ignoredLineCount: _ignoredLineCount,
-              deduplicatedCount: _deduplicatedPersonnelCount,
-              declaredTotalCount: _declaredTotals.length,
-              totalMismatchCount: totalMismatchCount,
-              selectedFilter: _previewFilter,
-              onShowAll: () => _setPreviewFilter(_BulkPreviewFilter.all),
-              onShowProblems: problemCount == 0
-                  ? null
-                  : () => _setPreviewFilter(_BulkPreviewFilter.problems),
-              onToggleWarnings: _parseIssues.isEmpty
-                  ? null
-                  : () => setState(
-                        () => _parseIssuesExpanded = !_parseIssuesExpanded,
-                      ),
+            // Faz 2: Stat Kartları
+            Row(
+              children: [
+                _StatCard(
+                  number: _parsedBlocks.length,
+                  label: 'Kart',
+                  icon: Icons.assignment_rounded,
+                ),
+                const SizedBox(width: 8),
+                _StatCard(
+                  number: personnelCount,
+                  label: 'Personel',
+                  icon: Icons.groups_rounded,
+                ),
+                const SizedBox(width: 8),
+                _StatCard(
+                  number: totalDays,
+                  label: 'Gün',
+                  icon: Icons.calendar_month_rounded,
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-          ],
-          if (_parseIssues.isNotEmpty) ...[
-            _buildParseIssues(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
+            // Faz 3: Kompakt Hata Özeti
+            _CompactErrorSummary(
+              problemCount: problemCount,
+              warningCount: _parseIssues.length,
+              parseIssues: _parseIssues,
+              isExpanded: _parseIssuesExpanded,
+              onToggle: () => setState(
+                () => _parseIssuesExpanded = !_parseIssuesExpanded,
+              ),
+              onStartWizard: problemCount == 0 ? null : _focusNextProblem,
+              totalIssues: problemLocs.length,
+              currentIndex: _activeIssueFocusIndex,
+              onPrevious: _focusPreviousProblem,
+              onNext: _focusNextProblem,
+            ),
+            const SizedBox(height: 12),
           ],
           Expanded(
             child: _parsedBlocks.isEmpty
@@ -1032,14 +1133,14 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color:
-                                  context.accentOrOlive.withValues(alpha: 0.08),
+                              color: const Color(0xFF556B3F)
+                                  .withValues(alpha: 0.08),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.fact_check_outlined,
                               size: 48,
-                              color: context.accentOrOlive,
+                              color: Color(0xFF556B3F),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -1052,7 +1153,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Soldaki kutuya mesajı yapıştırıp "Metni Ayrıştır" butonuna basın.',
+                            'Yapıştır adımına dönüp mesajı yapıştırın.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.grey.shade600,
@@ -1085,68 +1186,19 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
                       ),
           ),
           const SizedBox(height: 12),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: context.cardBorderColor),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (problemCount > 0) ...[
-                    Semantics(
-                      button: true,
-                      label: '$problemCount sorunu göster',
-                      child: InkWell(
-                        key: const Key('bulk-import-problem-message'),
-                        borderRadius: BorderRadius.circular(8),
-                        onTap: () =>
-                            _setPreviewFilter(_BulkPreviewFilter.problems),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  '$problemCount sorun çözülmeden kayıt yapılamaz.',
-                                  style: TextStyle(
-                                    color: Colors.red.shade700,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Icon(
-                                Icons.filter_alt_outlined,
-                                size: 18,
-                                color: Colors.red.shade700,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                  SizedBox(
-                    height: 56,
-                    child: BulkImportSaveButton(
-                      blocks: _parsedBlocks,
-                      issues: _parseIssues,
-                      hasUnresolvedProblems: duplicates.isNotEmpty ||
-                          _unresolvedPersonnelCount > 0 ||
-                          _parsedBlocks
-                              .any((block) => block.personnelList.isEmpty),
-                      isSaving: _isSaving,
-                      onPressed: _saveAllToFaaliyet,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          // Faz 5: Akıllı Alt Buton
+          _SmartSaveBar(
+            problemCount: problemCount,
+            problemLocs: problemLocs,
+            activeIssueFocusIndex: _activeIssueFocusIndex,
+            onGotoProblem: _focusNextProblem,
+            onSave: _saveAllToFaaliyet,
+            isSaving: _isSaving,
+            blocks: _parsedBlocks,
+            issues: _parseIssues,
+            hasUnresolvedProblems: duplicates.isNotEmpty ||
+                _unresolvedPersonnelCount > 0 ||
+                _parsedBlocks.any((block) => block.personnelList.isEmpty),
           ),
         ],
       ),
@@ -1202,69 +1254,6 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
     );
   }
 
-  Widget _buildParseIssues() {
-    final blockingCount =
-        _parseIssues.where((issue) => issue.isBlocking).length;
-    final color =
-        blockingCount > 0 ? Colors.red.shade700 : Colors.orange.shade800;
-    return Card(
-      key: const Key('bulk-parse-issues'),
-      margin: EdgeInsets.zero,
-      color: color.withValues(alpha: 0.08),
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: color.withValues(alpha: 0.35)),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: ExpansionTile(
-        key: ValueKey('bulk-parse-expanded-$_parseIssuesExpanded'),
-        initiallyExpanded: _parseIssuesExpanded,
-        onExpansionChanged: (expanded) {
-          if (_parseIssuesExpanded != expanded) {
-            setState(() => _parseIssuesExpanded = expanded);
-          }
-        },
-        leading: Icon(
-          blockingCount > 0
-              ? Icons.error_outline_rounded
-              : Icons.warning_amber_rounded,
-          color: color,
-        ),
-        title: Text(
-          blockingCount > 0
-              ? '$blockingCount kritik sorun'
-              : '${_parseIssues.length} ayrıştırma uyarısı',
-          style: TextStyle(color: color, fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          blockingCount > 0
-              ? 'Kayıt engellendi; ayrıntıları inceleyin.'
-              : 'Kayıt yapılabilir; ayrıntıları kontrol edin.',
-          style: TextStyle(color: color, fontSize: 12),
-        ),
-        children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 180),
-            child: ListView.separated(
-              shrinkWrap: true,
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              itemCount: _parseIssues.length,
-              separatorBuilder: (_, __) => const Divider(height: 12),
-              itemBuilder: (context, index) {
-                final issue = _parseIssues[index];
-                return Text(
-                  '${issue.lineNumber > 0 ? 'Satır ${issue.lineNumber}: ' : ''}'
-                  '${issue.message}'
-                  '${issue.rawLine.trim().isEmpty ? '' : '\n${issue.rawLine.trim()}'}',
-                  style: TextStyle(color: color, fontSize: 12),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPreviewCard(
     ParsedActivityBlock block,
     int blockIdx,
@@ -1276,15 +1265,15 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
     final problemCount =
         block.personnelList.isEmpty ? 1 : visiblePersonnelIndexes?.length ?? 0;
     return Card(
-      key: Key('bulk-preview-card-$blockIdx'),
-      margin: const EdgeInsets.only(bottom: 14),
+      key: _cardKeys.putIfAbsent(blockIdx, () => GlobalKey()),
+      margin: const EdgeInsets.only(bottom: 18),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: context.cardBorderColor),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1395,11 +1384,13 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: personnelIndexes.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, visibleIndex) {
                   final pIdx = personnelIndexes[visibleIndex];
                   final item = block.personnelList[pIdx];
                   final duplicateWith = duplicates['$blockIdx:$pIdx'];
+                  final personKey = '$blockIdx:$pIdx';
+                  final isFocused = _focusedPersonKey == personKey;
                   return _PersonnelMatchCard(
                     key: Key('bulk-person-$blockIdx-$pIdx'),
                     item: item,
@@ -1409,6 +1400,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog>
                             .firstOrNull ??
                         'Tim bilgisi yok',
                     duplicateAssignments: duplicateWith,
+                    isFocused: isFocused,
                     onSelect: () => _selectPersonnel(blockIdx, pIdx),
                     onDelete: () => _removePerson(blockIdx, pIdx),
                   );
@@ -1543,191 +1535,373 @@ class BulkImportSaveButton extends StatelessWidget {
   }
 }
 
-class _ImportSummary extends StatelessWidget {
-  const _ImportSummary({
-    required this.cardCount,
-    required this.personnelCount,
-    required this.warningCount,
-    required this.problemCount,
-    required this.ignoredLineCount,
-    required this.deduplicatedCount,
-    required this.declaredTotalCount,
-    required this.totalMismatchCount,
-    required this.selectedFilter,
-    required this.onShowAll,
-    required this.onShowProblems,
-    required this.onToggleWarnings,
+class _StatCard extends StatelessWidget {
+  const _StatCard({
+    required this.number,
+    required this.label,
+    required this.icon,
   });
 
-  final int cardCount;
-  final int personnelCount;
-  final int warningCount;
-  final int problemCount;
-  final int ignoredLineCount;
-  final int deduplicatedCount;
-  final int declaredTotalCount;
-  final int totalMismatchCount;
-  final _BulkPreviewFilter selectedFilter;
-  final VoidCallback onShowAll;
-  final VoidCallback? onShowProblems;
-  final VoidCallback? onToggleWarnings;
+  final int number;
+  final String label;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      key: const Key('bulk-import-summary'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _SummaryChip(
-                icon: Icons.style_outlined,
-                label: '$cardCount kart',
-                color: context.accentOrOlive,
-              ),
-              const SizedBox(width: 6),
-              _SummaryChip(
-                icon: Icons.people_outline,
-                label: '$personnelCount personel',
-                color: Colors.blue.shade700,
-              ),
-              if (deduplicatedCount > 0) ...[
-                const SizedBox(width: 6),
-                _SummaryChip(
-                  icon: Icons.content_copy_outlined,
-                  label: '$deduplicatedCount birleştirildi',
-                  color: Colors.teal.shade700,
-                ),
-              ],
-              if (ignoredLineCount > 0) ...[
-                const SizedBox(width: 6),
-                _SummaryChip(
-                  icon: Icons.do_not_disturb_alt_outlined,
-                  label: '$ignoredLineCount satır/not yok sayıldı',
-                  color: Colors.blueGrey.shade700,
-                ),
-              ],
-              if (declaredTotalCount > 0) ...[
-                const SizedBox(width: 6),
-                _SummaryChip(
-                  key: const Key('bulk-declared-total-status'),
-                  icon: totalMismatchCount == 0
-                      ? Icons.rule_rounded
-                      : Icons.warning_amber_rounded,
-                  label: totalMismatchCount == 0
-                      ? '$declaredTotalCount toplam doğrulandı'
-                      : '$totalMismatchCount toplam uyuşmuyor',
-                  color: totalMismatchCount == 0
-                      ? context.approvedColor
-                      : Colors.orange.shade800,
-                ),
-              ],
-            ],
-          ),
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: context.cardBorderColor),
         ),
-        const SizedBox(height: 6),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _SummaryChip(
-                key: const Key('bulk-filter-all'),
-                icon: Icons.view_agenda_outlined,
-                label: 'Tüm Kartlar ($cardCount)',
-                color: context.accentOrOlive,
-                selected: selectedFilter == _BulkPreviewFilter.all,
-                onTap: onShowAll,
+        child: Column(
+          children: [
+            Text(
+              '$number',
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF556B3F),
               ),
-              const SizedBox(width: 6),
-              _SummaryChip(
-                key: const Key('bulk-filter-problems'),
-                icon: problemCount == 0
-                    ? Icons.check_circle_outline
-                    : Icons.error_outline,
-                label: problemCount == 0 ? 'Hazır' : '$problemCount sorun',
-                color: problemCount == 0 ? context.approvedColor : Colors.red.shade700,
-                selected: selectedFilter == _BulkPreviewFilter.problems,
-                onTap: onShowProblems,
-              ),
-              if (warningCount > 0) ...[
-                const SizedBox(width: 6),
-                _SummaryChip(
-                  key: const Key('bulk-toggle-warnings'),
-                  icon: Icons.warning_amber_rounded,
-                  label: '$warningCount uyarı',
-                  color: Colors.orange.shade800,
-                  onTap: onToggleWarnings,
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 14, color: Colors.grey.shade600),
+                const SizedBox(width: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
 
-class _SummaryChip extends StatelessWidget {
-  const _SummaryChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-    this.selected = false,
-    this.onTap,
-    super.key,
+class _CompactErrorSummary extends StatelessWidget {
+  const _CompactErrorSummary({
+    required this.problemCount,
+    required this.warningCount,
+    required this.parseIssues,
+    required this.isExpanded,
+    required this.onToggle,
+    required this.onStartWizard,
+    required this.totalIssues,
+    required this.currentIndex,
+    required this.onPrevious,
+    required this.onNext,
   });
 
-  final IconData icon;
-  final String label;
-  final Color color;
-  final bool selected;
-  final VoidCallback? onTap;
+  final int problemCount;
+  final int warningCount;
+  final List<BulkParseIssue> parseIssues;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+  final VoidCallback? onStartWizard;
+  final int totalIssues;
+  final int currentIndex;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
 
   @override
   Widget build(BuildContext context) {
-    final chip = AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+    final hasBlocking = parseIssues.any((issue) => issue.isBlocking);
+    final hasProblems = problemCount > 0;
+    final hasWarnings = warningCount > 0;
+
+    Color bgColor;
+    Color borderColor;
+    Color textColor;
+    IconData icon;
+    String title;
+    String subtitle;
+
+    if (hasBlocking || hasProblems) {
+      bgColor = const Color(0xFFD32F2F).withValues(alpha: 0.08);
+      borderColor = const Color(0xFFD32F2F).withValues(alpha: 0.3);
+      textColor = const Color(0xFFD32F2F);
+      icon = Icons.error_rounded;
+      title = 'Kaydedilemiyor';
+      subtitle = '$problemCount kritik hata';
+    } else if (hasWarnings) {
+      bgColor = const Color(0xFFF59E0B).withValues(alpha: 0.08);
+      borderColor = const Color(0xFFF59E0B).withValues(alpha: 0.3);
+      textColor = const Color(0xFFF59E0B);
+      icon = Icons.warning_amber_rounded;
+      title = '$warningCount uyarı';
+      subtitle = 'Kayıt yapılabilir';
+    } else {
+      bgColor = const Color(0xFF16A34A).withValues(alpha: 0.08);
+      borderColor = const Color(0xFF16A34A).withValues(alpha: 0.3);
+      textColor = const Color(0xFF16A34A);
+      icon = Icons.task_alt_rounded;
+      title = 'Tüm kontroller tamam';
+      subtitle = 'Kayda hazır';
+    }
+
+    return Container(
       decoration: BoxDecoration(
-        color: color.withValues(alpha: selected ? 0.18 : 0.09),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: selected ? color : Colors.transparent,
-          width: 1.5,
-        ),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor),
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            selected ? Icons.check_circle_rounded : icon,
-            size: 15,
-            color: color,
-          ),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
+          InkWell(
+            onTap: onStartWizard ?? onToggle,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(icon, color: textColor, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            color: textColor.withValues(alpha: 0.8),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (hasProblems && onStartWizard != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: textColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${currentIndex < 0 ? 1 : currentIndex + 1}/$totalIssues',
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    isExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: textColor,
+                  ),
+                ],
+              ),
             ),
           ),
+          if (isExpanded && parseIssues.isNotEmpty)
+            Container(
+              constraints: const BoxConstraints(maxHeight: 180),
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                itemCount: parseIssues.length,
+                separatorBuilder: (_, __) => const Divider(height: 12),
+                itemBuilder: (context, index) {
+                  final issue = parseIssues[index];
+                  return Text(
+                    '${issue.lineNumber > 0 ? 'Satır ${issue.lineNumber}: ' : ''}'
+                    '${issue.message}'
+                    '${issue.rawLine.trim().isEmpty ? '' : '\n${issue.rawLine.trim()}'}',
+                    style: TextStyle(color: textColor, fontSize: 12),
+                  );
+                },
+              ),
+            ),
+          if (hasProblems && onStartWizard != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: const Key('bulk-wizard-prev'),
+                      onPressed: onPrevious,
+                      icon: const Icon(Icons.arrow_back_ios_rounded, size: 14),
+                      label: const Text('Önceki'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: textColor,
+                        side: BorderSide(color: borderColor),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    flex: 2,
+                    child: FilledButton.icon(
+                      key: const Key('bulk-wizard-next'),
+                      onPressed: onNext,
+                      icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                      label: Text(
+                        currentIndex < 0 ? 'Başlat' : 'Sonraki Sorun',
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: textColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
-    if (onTap == null) return chip;
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: chip,
+  }
+}
+
+class _SmartSaveBar extends StatelessWidget {
+  const _SmartSaveBar({
+    required this.problemCount,
+    required this.problemLocs,
+    required this.activeIssueFocusIndex,
+    required this.onGotoProblem,
+    required this.onSave,
+    required this.isSaving,
+    required this.blocks,
+    required this.issues,
+    required this.hasUnresolvedProblems,
+  });
+
+  final int problemCount;
+  final List<({int blockIndex, int personIndex})> problemLocs;
+  final int activeIssueFocusIndex;
+  final VoidCallback onGotoProblem;
+  final VoidCallback onSave;
+  final bool isSaving;
+  final List<ParsedActivityBlock> blocks;
+  final List<BulkParseIssue> issues;
+  final bool hasUnresolvedProblems;
+
+  @override
+  Widget build(BuildContext context) {
+    final isBlocked = issues.any((issue) => issue.isBlocking);
+    final canSave = blocks.isNotEmpty &&
+        !isSaving &&
+        !isBlocked &&
+        !hasUnresolvedProblems;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: context.cardBorderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (problemCount > 0) ...[
+            Row(
+              children: [
+                Icon(
+                  Icons.error_rounded,
+                  color: const Color(0xFFD32F2F),
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '$problemCount sorun çözülmeden kayıt yapılamaz.',
+                    style: const TextStyle(
+                      color: Color(0xFFD32F2F),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            if (problemLocs.isNotEmpty)
+              OutlinedButton.icon(
+                key: const Key('bulk-goto-problem'),
+                onPressed: onGotoProblem,
+                icon: const Icon(Icons.auto_fix_high_rounded, size: 18),
+                label: Text(
+                  'Soruna Git (${(activeIssueFocusIndex < 0 ? 1 : activeIssueFocusIndex + 1)}/${problemLocs.length})',
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFF59E0B),
+                  side: const BorderSide(color: Color(0xFFF59E0B)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            const SizedBox(height: 10),
+          ],
+          AnimatedScale(
+            scale: isSaving ? 0.95 : 1.0,
+            duration: const Duration(milliseconds: 200),
+            child: FilledButton.icon(
+              key: const Key('bulk-import-save-button'),
+              onPressed: canSave ? onSave : null,
+              icon: isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(
+                      canSave
+                          ? Icons.check_circle_rounded
+                          : Icons.error_rounded,
+                    ),
+              label: Text(
+                canSave ? 'Faaliyetleri Kaydet' : 'Önce Sorunları Çözün',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: canSave
+                    ? const Color(0xFF16A34A)
+                    : Colors.grey.shade400,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1751,7 +1925,7 @@ class _MetadataLabel extends StatelessWidget {
             text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
           ),
         ),
       ],
@@ -1766,12 +1940,14 @@ class _PersonnelMatchCard extends StatelessWidget {
     required this.onSelect,
     required this.onDelete,
     this.duplicateAssignments,
+    this.isFocused = false,
     super.key,
   });
 
   final ParsedPersonnelItem item;
   final String teamName;
   final List<String>? duplicateAssignments;
+  final bool isFocused;
   final VoidCallback onSelect;
   final VoidCallback onDelete;
 
@@ -1779,79 +1955,176 @@ class _PersonnelMatchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final duplicate = duplicateAssignments?.isNotEmpty == true;
     final problem = duplicate || item.needsReview;
-    final borderColor = problem ? Colors.red.shade300 : context.cardBorderColor;
-    return Container(
-      decoration: BoxDecoration(
-        color: problem
+    final borderColor = isFocused
+        ? Colors.amber.shade800
+        : (problem ? Colors.red.shade300 : context.cardBorderColor);
+    final bgColor = isFocused
+        ? Colors.amber.shade100
+        : (problem
             ? Colors.red.withValues(alpha: 0.045)
-            : Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
+            : Theme.of(context).cardColor);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: borderColor, width: isFocused ? 2.5 : 1.0),
+        boxShadow: isFocused
+            ? [
+                BoxShadow(
+                  color: Colors.amber.withValues(alpha: 0.25),
+                  blurRadius: 12,
+                  spreadRadius: 2,
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 6, 6),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          // Satır 1: Avatar + raw isim + sil butonu
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: context.accentOrOlive.withValues(alpha: 0.14),
+                child: Text(
+                  '${item.rawIndex}',
+                  style: TextStyle(
+                    color: context.accentOrOlive,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  '${item.rawRank} ${item.rawName}'.trim(),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              IconButton(
+                key: const Key('bulk-person-delete'),
+                tooltip: 'Personeli kaldır',
+                visualDensity: VisualDensity.compact,
+                onPressed: onDelete,
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Colors.redAccent,
+                  size: 22,
+                ),
+              ),
+            ],
+          ),
+          // Satır 2: kaynak satır bilgisi
+          if (item.sourceLineNumber != null) ...[
+            const SizedBox(height: 4),
+            Row(
               children: [
-                CircleAvatar(
-                  radius: 15,
-                  backgroundColor:
-                      context.accentOrOlive.withValues(alpha: 0.12),
-                  child: Text(
-                    '${item.rawIndex}',
-                    style: TextStyle(
-                      color: context.accentOrOlive,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                Icon(
+                  Icons.segment_rounded,
+                  size: 14,
+                  color: Colors.grey.shade600,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _LabeledValue(
-                        label: 'METİNDEKİ KAYIT',
-                        value: '${item.rawRank} ${item.rawName}',
-                      ),
-                      if (item.sourceLineNumber != null)
-                        Text(
-                          'Kaynak satır ${item.sourceLineNumber}',
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 10,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  key: const Key('bulk-person-delete'),
-                  tooltip: 'Personeli kaldır',
-                  visualDensity: VisualDensity.compact,
-                  onPressed: onDelete,
-                  icon: const Icon(
-                    Icons.delete_outline,
-                    color: Colors.redAccent,
-                    size: 21,
+                const SizedBox(width: 4),
+                Text(
+                  '📍 Satır ${item.sourceLineNumber}',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
+          ],
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Divider(height: 1),
           ),
+          // Rozet satırı: durum + tim uyuşmazlığı
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              _MatchStatusIndicator(item: item),
+              if (duplicate)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    'Aynı tarihte ayrıca: ${duplicateAssignments!.join(', ')}',
+                    key: const Key('bulk-duplicate-warning'),
+                    style: TextStyle(
+                      color: Colors.red.shade700,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              if (item.teamMismatch && !item.reviewConfirmed)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.orange.shade300,
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.info_outline_rounded,
+                        size: 14,
+                        color: Colors.orange.shade800,
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          'Tim uyuşmazlığı; onaylamak için dokunun',
+                          key: const Key('bulk-team-mismatch-warning'),
+                          style: TextStyle(
+                            color: Colors.orange.shade900,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Eşleşen personel + değiştir butonu
           InkWell(
             key: const Key('bulk-person-select'),
-            borderRadius:
-                const BorderRadius.vertical(bottom: Radius.circular(12)),
+            borderRadius: BorderRadius.circular(10),
             onTap: onSelect,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(52, 2, 12, 12),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: Column(
@@ -1867,73 +2140,58 @@ class _PersonnelMatchCard extends StatelessWidget {
                               item.isMatched ? null : Colors.red.shade700,
                         ),
                         if (item.isMatched) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            teamName,
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 11,
-                            ),
-                          ),
-                          if (item.teamMismatch && !item.reviewConfirmed)
-                            Container(
-                              margin: const EdgeInsets.only(top: 4),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                          const SizedBox(height: 3),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.groups_outlined,
+                                size: 14,
+                                color: Colors.grey.shade600,
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.orange.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: Colors.orange.shade300,
-                                  width: 0.8,
+                              const SizedBox(width: 4),
+                              Text(
+                                teamName,
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.info_outline_rounded,
-                                    size: 13,
-                                    color: Colors.orange.shade800,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Flexible(
-                                    child: Text(
-                                      'Metindeki tim ile kayıtlı tim uyuşmuyor; personeli seçerek onaylayabilirsiniz.',
-                                      key: const Key('bulk-team-mismatch-warning'),
-                                      style: TextStyle(
-                                        color: Colors.orange.shade900,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            ],
+                          ),
                         ],
-                        const SizedBox(height: 6),
-                        if (duplicate)
-                          Text(
-                            'Aynı tarihte ayrıca: '
-                            '${duplicateAssignments!.join(', ')}',
-                            key: const Key('bulk-duplicate-warning'),
-                            style: TextStyle(
-                              color: Colors.red.shade700,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          )
-                        else
-                          _MatchStatusIndicator(item: item),
                       ],
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8),
-                    child: Icon(Icons.chevron_right_rounded),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.accentOrOlive.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Değiştir',
+                          style: TextStyle(
+                            color: context.accentOrOlive,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: 16,
+                          color: context.accentOrOlive,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -1964,7 +2222,7 @@ class _LabeledValue extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 9,
+            fontSize: 12,
             letterSpacing: 0.5,
             color: Colors.grey.shade600,
             fontWeight: FontWeight.bold,
@@ -1975,8 +2233,8 @@ class _LabeledValue extends StatelessWidget {
           value,
           style: TextStyle(
             color: valueColor,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -2020,24 +2278,119 @@ class _MatchStatusIndicator extends StatelessWidget {
     };
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 12),
+          Icon(icon, color: color, size: 16),
           const SizedBox(width: 3),
           Text(
             label,
             style: TextStyle(
               color: color,
-              fontSize: 9,
+              fontSize: 13,
               fontWeight: FontWeight.bold,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BulkImportStepper extends StatelessWidget {
+  const _BulkImportStepper({
+    required this.currentStep,
+    required this.hasBlocks,
+    required this.onStepTapped,
+  });
+
+  final int currentStep;
+  final bool hasBlocks;
+  final ValueChanged<int> onStepTapped;
+
+  @override
+  Widget build(BuildContext context) {
+    final steps = ['Yapıştır', 'Önizleme', 'Kaydet'];
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        border: Border(
+          bottom: BorderSide(color: context.cardBorderColor),
+        ),
+      ),
+      child: Row(
+        children: [
+          for (var i = 0; i < steps.length; i++) ...[
+            if (i > 0) ...[
+              Expanded(
+                child: Container(
+                  height: 2,
+                  color: i <= currentStep
+                      ? const Color(0xFF556B3F)
+                      : Colors.grey.shade300,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            GestureDetector(
+              onTap: () {
+                if (i <= currentStep || (i == 1 && hasBlocks)) {
+                  onStepTapped(i);
+                }
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: i < currentStep
+                          ? const Color(0xFF556B3F)
+                          : i == currentStep
+                              ? const Color(0xFF556B3F)
+                              : Colors.grey.shade300,
+                    ),
+                    child: Center(
+                      child: i < currentStep
+                          ? const Icon(Icons.check, color: Colors.white, size: 16)
+                          : Text(
+                              '${i + 1}',
+                              style: TextStyle(
+                                color: i == currentStep
+                                    ? Colors.white
+                                    : Colors.grey.shade600,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    steps[i],
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: i == currentStep
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: i == currentStep
+                          ? const Color(0xFF556B3F)
+                          : Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (i < steps.length - 1) const SizedBox(width: 8),
+          ],
         ],
       ),
     );

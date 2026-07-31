@@ -77,6 +77,45 @@ class BulkImportLearningService {
     return sha256.convert(utf8.encode(canonical.join('\n'))).toString();
   }
 
+  Future<int> countActiveAssignments(
+    Iterable<ParsedActivityBlock> blocks,
+  ) async {
+    final query = database.select(database.faaliyetPersonelAtamaTable).join([
+      innerJoin(
+        database.gunlukFaaliyetTable,
+        database.gunlukFaaliyetTable.id.equalsExp(
+          database.faaliyetPersonelAtamaTable.faaliyetId,
+        ),
+      ),
+    ]);
+    final rows = await query.get();
+
+    var activeCount = 0;
+    for (final block in blocks) {
+      for (final person in block.personnelList) {
+        final pId = person.matchedPersonnelId;
+        if (pId == null) continue;
+        final match = rows.any((row) {
+          final activity = row.readTable(database.gunlukFaaliyetTable);
+          final assignment =
+              row.readTable(database.faaliyetPersonelAtamaTable);
+          return activity.tarih == block.parsedDate &&
+              assignment.personelId == pId &&
+              assignment.gorevVeyaIzin.trim().toUpperCase() ==
+                  block.parsedActivityType.trim().toUpperCase();
+        });
+        if (match) activeCount++;
+      }
+    }
+    return activeCount;
+  }
+
+  Future<void> deleteImportRecord(String fingerprint) async {
+    await (database.delete(database.topluAktarimGecmisiTable)
+          ..where((table) => table.parmakIzi.equals(fingerprint)))
+        .go();
+  }
+
   Future<TopluAktarimGecmisiTableData?> findImport(String fingerprint) =>
       (database.select(database.topluAktarimGecmisiTable)
             ..where((table) => table.parmakIzi.equals(fingerprint)))

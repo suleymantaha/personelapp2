@@ -92,12 +92,14 @@ class ActivityBatchCreateResult {
   const ActivityBatchCreateResult({
     required this.activityIds,
     required this.addedAssignmentCount,
+    required this.alreadyAssignedCount,
     required this.skippedAssignmentCount,
     this.conflictDescriptions = const [],
   });
 
   final List<int> activityIds;
   final int addedAssignmentCount;
+  final int alreadyAssignedCount;
   final int skippedAssignmentCount;
   final List<String> conflictDescriptions;
 }
@@ -613,28 +615,46 @@ class ActivityRepository {
       final ids = <int>[];
       final skipped = <({int personelId, String date, String activity})>[];
       var addedCount = 0;
+      var alreadyAssignedCount = 0;
+
       for (final request in requests) {
-        final activitySkipped = <int>[];
-        final id = await _createActivityWithinTransaction(
-          request,
-          requiresApproval: false,
-          skippedPersonnelIds: activitySkipped,
-        );
-        ids.add(id);
-        final inserted = await (db.select(
-          db.faaliyetPersonelAtamaTable,
-        )..where((table) => table.faaliyetId.equals(id)))
-            .get();
-        addedCount += inserted.length;
-        skipped.addAll(
-          activitySkipped.map(
-            (personelId) => (
-              personelId: personelId,
-              date: request.tarih,
-              activity: request.faaliyetAdi,
+        final existingActivity = await (db.select(db.gunlukFaaliyetTable)
+              ..where((tbl) => tbl.tarih.equals(request.tarih)))
+            .getSingleOrNull();
+
+        if (existingActivity != null) {
+          ids.add(existingActivity.id);
+          final mergeResult = await mergeAssignmentsIntoActivity(
+            activityId: existingActivity.id,
+            personnelAssignments: request.personnelAssignments,
+            updateDifferentAssignments: false,
+            actor: actor,
+          );
+          addedCount += mergeResult.addedCount;
+          alreadyAssignedCount += mergeResult.skippedCount;
+        } else {
+          final activitySkipped = <int>[];
+          final id = await _createActivityWithinTransaction(
+            request,
+            requiresApproval: false,
+            skippedPersonnelIds: activitySkipped,
+          );
+          ids.add(id);
+          final inserted = await (db.select(
+            db.faaliyetPersonelAtamaTable,
+          )..where((table) => table.faaliyetId.equals(id)))
+              .get();
+          addedCount += inserted.length;
+          skipped.addAll(
+            activitySkipped.map(
+              (personelId) => (
+                personelId: personelId,
+                date: request.tarih,
+                activity: request.faaliyetAdi,
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
       final personnelIds = skipped.map((item) => item.personelId).toSet();
       final personnel = personnelIds.isEmpty
@@ -647,6 +667,7 @@ class ActivityRepository {
       return ActivityBatchCreateResult(
         activityIds: ids,
         addedAssignmentCount: addedCount,
+        alreadyAssignedCount: alreadyAssignedCount,
         skippedAssignmentCount: skipped.length,
         conflictDescriptions: [
           for (final item in skipped)
