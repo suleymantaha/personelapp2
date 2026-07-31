@@ -1825,7 +1825,7 @@ class _SmartSaveBar extends StatelessWidget {
   });
 
   final int problemCount;
-  final List<({int blockIndex, int personIndex})> problemLocs;
+  final List<({int blockIndex, int? personIndex})> problemLocs;
   final int activeIssueFocusIndex;
   final VoidCallback onGotoProblem;
   final VoidCallback onSave;
