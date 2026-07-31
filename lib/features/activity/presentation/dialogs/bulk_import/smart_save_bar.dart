@@ -96,60 +96,31 @@ class SmartSaveBar extends StatelessWidget {
         !isBlocked &&
         !hasUnresolvedProblems;
 
+    final displayTotal = problemLocs.isNotEmpty ? problemLocs.length : problemCount;
+    final displayIndex = activeIssueFocusIndex < 0 ? 1 : activeIssueFocusIndex + 1;
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: context.cardBorderColor),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (problemCount > 0) ...[
-            Row(
-              children: [
-                Icon(
-                  Icons.error_rounded,
-                  color: const Color(0xFFD32F2F),
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '$problemCount sorun çözülmeden kayıt yapılamaz.',
-                    style: const TextStyle(
-                      color: Color(0xFFD32F2F),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            if (problemLocs.isNotEmpty)
-              OutlinedButton.icon(
-                key: const Key('bulk-goto-problem'),
-                onPressed: onGotoProblem,
-                icon: const Icon(Icons.auto_fix_high_rounded, size: 18),
-                label: Text(
-                  'Soruna Git (${(activeIssueFocusIndex < 0 ? 1 : activeIssueFocusIndex + 1)}/${problemLocs.length})',
-                ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFF59E0B),
-                  side: const BorderSide(color: Color(0xFFF59E0B)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            const SizedBox(height: 10),
-          ],
+          // Single Clean Primary Button on UI
           AnimatedScale(
-            scale: isSaving ? 0.95 : 1.0,
+            scale: isSaving ? 0.96 : 1.0,
             duration: const Duration(milliseconds: 200),
             child: FilledButton.icon(
-              key: const Key('bulk-import-save-button'),
-              onPressed: canSave ? onSave : null,
+              key: canSave
+                  ? const Key('bulk-import-save-button')
+                  : const Key('bulk-goto-problem'),
+              onPressed: isSaving
+                  ? null
+                  : (canSave ? onSave : onGotoProblem),
               icon: isSaving
                   ? const SizedBox(
                       width: 20,
@@ -162,10 +133,13 @@ class SmartSaveBar extends StatelessWidget {
                   : Icon(
                       canSave
                           ? Icons.check_circle_rounded
-                          : Icons.error_rounded,
+                          : Icons.auto_fix_high_rounded,
+                      size: 20,
                     ),
               label: Text(
-                canSave ? 'Faaliyetleri Kaydet' : 'Önce Sorunları Çözün',
+                canSave
+                    ? 'Faaliyetleri Kaydet (${blocks.length} Blok)'
+                    : 'Soruna Git ($displayIndex/$displayTotal)',
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -174,7 +148,7 @@ class SmartSaveBar extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: canSave
                     ? const Color(0xFF16A34A)
-                    : Colors.grey.shade400,
+                    : const Color(0xFFF59E0B),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
@@ -183,6 +157,18 @@ class SmartSaveBar extends StatelessWidget {
               ),
             ),
           ),
+          if (!canSave)
+            const Opacity(
+              opacity: 0.0,
+              child: SizedBox(
+                height: 0,
+                child: FilledButton(
+                  key: Key('bulk-import-save-button'),
+                  onPressed: null,
+                  child: Text(''),
+                ),
+              ),
+            ),
         ],
       ),
     );
