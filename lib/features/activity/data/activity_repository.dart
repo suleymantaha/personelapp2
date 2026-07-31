@@ -80,12 +80,18 @@ class ActivityMergeResult {
     required this.addedCount,
     required this.updatedCount,
     required this.skippedCount,
+    this.unchangedCount = 0,
+    this.conflictSkippedCount = 0,
+    this.skippedPersonnelIds = const [],
   });
 
   final int activityId;
   final int addedCount;
   final int updatedCount;
   final int skippedCount;
+  final int unchangedCount;
+  final int conflictSkippedCount;
+  final List<int> skippedPersonnelIds;
 }
 
 class ActivityBatchCreateResult {
@@ -516,7 +522,9 @@ class ActivityRepository {
       final allAssignments = await _loadExistingAssignments();
       var addedCount = 0;
       var updatedCount = 0;
-      var skippedCount = 0;
+      var unchangedCount = 0;
+      var conflictSkippedCount = 0;
+      final skippedPersonnelIds = <int>[];
       final seen = <int>{};
 
       for (final item in personnelAssignments) {
@@ -528,8 +536,13 @@ class ActivityRepository {
         if (current != null) {
           final isSame = current.gorevVeyaIzin.trim() == duty &&
               _normalizeNote(current.aciklama) == note;
-          if (isSame || !updateDifferentAssignments) {
-            skippedCount++;
+          if (isSame) {
+            unchangedCount++;
+            continue;
+          }
+          if (!updateDifferentAssignments) {
+            conflictSkippedCount++;
+            skippedPersonnelIds.add(personId);
             continue;
           }
           var status = ConflictChecker.evaluateAssignmentStatus(
@@ -541,7 +554,8 @@ class ActivityRepository {
             excludeAssignmentId: current.id,
           );
           if (status == AssignmentStatus.beklemede) {
-            skippedCount++;
+            conflictSkippedCount++;
+            skippedPersonnelIds.add(personId);
             continue;
           }
           if (!actor.isAdmin) status = AssignmentStatus.beklemede;
@@ -567,7 +581,8 @@ class ActivityRepository {
           existingAssignments: allAssignments,
         );
         if (status == AssignmentStatus.beklemede) {
-          skippedCount++;
+          conflictSkippedCount++;
+          skippedPersonnelIds.add(personId);
           continue;
         }
         if (!actor.isAdmin) status = AssignmentStatus.beklemede;
@@ -597,7 +612,10 @@ class ActivityRepository {
         activityId: activityId,
         addedCount: addedCount,
         updatedCount: updatedCount,
-        skippedCount: skippedCount,
+        skippedCount: unchangedCount + conflictSkippedCount,
+        unchangedCount: unchangedCount,
+        conflictSkippedCount: conflictSkippedCount,
+        skippedPersonnelIds: skippedPersonnelIds,
       );
     });
   }
@@ -631,7 +649,16 @@ class ActivityRepository {
             actor: actor,
           );
           addedCount += mergeResult.addedCount;
-          alreadyAssignedCount += mergeResult.skippedCount;
+          alreadyAssignedCount += mergeResult.unchangedCount;
+          skipped.addAll(
+            mergeResult.skippedPersonnelIds.map(
+              (personelId) => (
+                personelId: personelId,
+                date: request.tarih,
+                activity: request.faaliyetAdi,
+              ),
+            ),
+          );
         } else {
           final activitySkipped = <int>[];
           final id = await _createActivityWithinTransaction(
