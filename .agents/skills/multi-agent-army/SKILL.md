@@ -48,24 +48,32 @@ Build a **multi-level agent army** where:
 ```
 personelapp2/                      ← Flutter project root
 ├── lib/
-│   ├── main.dart
+│   ├── main.dart                  ← App entry point, ProviderScope, MaterialApp.router
 │   ├── core/
-│   │   ├── database/              ← Drift DB (AppDatabase) & schema
+│   │   ├── auth/domain/           ← UserSession, AuthorizationException
+│   │   ├── database/              ← Drift DB (tables.dart, database.dart, database.g.dart)
 │   │   ├── navigation/            ← go_router (app_router.dart)
-│   │   ├── providers/             ← Riverpod providers
-│   │   ├── services/              ← SessionStorage, etc.
-│   │   ├── theme/                 ← AppTheme, responsive_layout.dart
-│   │   └── utils/
+│   │   ├── providers/             ← Riverpod providers (providers.dart)
+│   │   ├── services/              ← SessionStorage (session_storage.dart)
+│   │   ├── theme/                 ← AppTheme, AppColors, responsive_layout.dart
+│   │   └── utils/                 ← rank_helper, military_structure_helper, official_roster_title, password_hasher
 │   └── features/
-│       ├── auth/                  ← Login screen
-│       ├── dashboard/             ← Main dashboard
-│       ├── personnel/             ← Personel & Tim yönetimi
-│       ├── activity/              ← Faaliyet çizelgesi & Toplu Aktarım (bulk_import/)
+│       ├── auth/presentation/     ← login_screen.dart
+│       ├── dashboard/presentation/← dashboard_screen.dart
+│       ├── personnel/             ← Personel & Tim yönetimi (data, presentation, services/personnel_backup_service)
+│       ├── activity/              ← Faaliyet çizelgesi & Toplu Aktarım
 │       │   ├── data/              ← ActivityRepository & MultiActivityRepository
-│       │   ├── domain/            ← ConflictChecker, RankHelper, TextParser
-│       │   │   └── services/      ← MilitaryRosterExporter & PdfRosterExporter
-│       │   └── presentation/      ← Screens, dialogs/bulk_import/ & widgets/activity_form/
+│       │   ├── domain/            ← ConflictChecker, DutyCoverage, TextParser, LearningService
+│       │   ├── services/          ← MilitaryRosterExporter (Excel) & PdfRosterExporter (PDF)
+│       │   └── presentation/
+│       │       ├── screens/       ← activity_form_screen, activity_archive_screen, pending_approvals_screen
+│       │       ├── dialogs/       ← bulk_import_dialog.dart & bulk_import/ (15 modüler sub-widget)
+│       │       └── widgets/       ← activity_form/ (5 modüler sub-widget), activity_detail_sheet, vb.
 │       └── matrix/                ← Aylık matris
+│           ├── data/              ← MatrixRepository
+│           ├── domain/            ← MatrixDayCell, MatrixPersonnelOrder
+│           ├── services/          ← ExcelXmlGenerator
+│           └── presentation/      ← monthly_matrix_screen.dart
 ├── test/
 │   └── unit/                      ← 150+ Unit & Widget tests (flutter test)
 ├── .agents/

@@ -39,20 +39,28 @@
 lib/
 ├── main.dart                              ← App entry point, ProviderScope, MaterialApp.router
 ├── core/
+│   ├── auth/
+│   │   └── domain/
+│   │       ├── user_session.dart          ← UserSession & UserSessionState
+│   │       └── authorization_exception.dart
 │   ├── database/
 │   │   ├── tables.dart                    ← Drift table definitions (7 tablo)
-│   │   ├── database.dart                  ← AppDatabase, schemaVersion=2, ensureSeeded()
-│   │   └── database.g.dart                ← Generated (dart run build_runner build)
+│   │   ├── database.dart                  ← AppDatabase, schemaVersion=2
+│   │   └── database.g.dart                ← Generated code (build_runner)
 │   ├── navigation/
-│   │   └── app_router.dart               ← go_router routes
+│   │   └── app_router.dart               ← go_router routes & navigation guards
 │   ├── providers/
 │   │   └── providers.dart                ← All Riverpod providers
 │   ├── services/
 │   │   └── session_storage.dart          ← SharedPreferences session persistence
 │   ├── theme/
-│   │   ├── app_theme.dart                ← AppColors, AppTheme, ThemeContext extension
+│   │   ├── app_theme.dart                ← AppColors, AppTheme, ThemeContext extensions
 │   │   └── responsive_layout.dart        ← ResponsiveCenter, context extensions
-│   └── utils/                            ← Utility functions
+│   └── utils/
+│       ├── military_structure_helper.dart ← Military squad & hierarchy ordering
+│       ├── official_roster_title.dart    ← Official roster title formatter
+│       ├── rank_helper.dart              ← Military rank weight & seniority sorter
+│       └── password_hasher.dart          ← Password hashing utility
 └── features/
     ├── auth/
     │   └── presentation/
@@ -63,40 +71,53 @@ lib/
     ├── personnel/
     │   ├── data/
     │   │   └── personnel_repository.dart  ← PersonnelRepository (Drift DAO)
-    │   └── presentation/
-    │       └── personnel_management_screen.dart
+    │   ├── presentation/
+    │   │   └── personnel_management_screen.dart
+    │   └── services/
+    │       └── personnel_backup_service.dart ← Personel yedekleme/içe aktarma
     ├── activity/
     │   ├── data/
-    │   │   ├── activity_repository.dart       ← ActivityRepository (Drift DAO)
-    │   │   └── multi_activity_repository.dart ← Multi-activity batch import repository
+    │   │   ├── activity_repository.dart           ← ActivityRepository (Drift DAO)
+    │   │   └── multi_activity_repository.dart     ← Toplu faaliyet oluşturma deposu
     │   ├── domain/
-    │   │   ├── conflict_checker.dart          ← Duty conflict & leave reservation checker
-    │   │   ├── rank_helper.dart              ← Military rank weight & seniority sorter
-    │   │   ├── official_roster_title.dart    ← Roster header title generator
-    │   │   ├── parser/
-    │   │   │   └── bulk_text_parser.dart      ← Smart WhatsApp/Text roster parser
-    │   │   └── services/
-    │   │       ├── military_roster_exporter.dart ← Official Excel roster exporter
-    │   │       └── pdf_roster_exporter.dart      ← Official PDF roster exporter
+    │   │   ├── activity_assignment_order.dart     ← Görev sıra mantığı
+    │   │   ├── bulk_activity_import_preparer.dart ← Toplu içe aktarım hazırlayıcı
+    │   │   ├── bulk_import_learning_service.dart  ← Eşleşme öğrenme servisi
+    │   │   ├── conflict_checker.dart              ← Çakışma & İzin rezervasyon kontrolü
+    │   │   ├── duty_coverage.dart                 ← Görev süre ve gece aşım hesabı
+    │   │   ├── models/                            ← Parsed block & request modelleri
+    │   │   └── parser/
+    │   │       └── bulk_text_parser.dart          ← Akıllı WhatsApp/Metin faaliyet ayrıştırıcısı
+    │   ├── services/
+    │   │   ├── bulk_import_preferences.dart      ← Ayrıştırma tercihleri
+    │   │   ├── military_roster_exporter.dart      ← Resmi Excel çizelge aktarıcısı
+    │   │   └── pdf_roster_exporter.dart           ← Resmi PDF çizelge aktarıcısı
     │   └── presentation/
     │       ├── activity_form_screen.dart
     │       ├── activity_archive_screen.dart
     │       ├── pending_approvals_screen.dart
     │       ├── dialogs/
     │       │   ├── bulk_import_dialog.dart
-    │       │   └── bulk_import/              ← Modularized bulk import (15 sub-widgets)
-    │       │       ├── bulk_import_problem_wizard.dart ← Soruna Git Navigation Wizard
-    │       │       ├── bulk_import_save_handler.dart    ← Async save pipeline
-    │       │       ├── smart_save_bar.dart              ← Smart primary action bar
-    │       │       ├── bulk_import_preview_section.dart
+    │       │   └── bulk_import/                  ← Modüler toplu aktarım (15 sub-widget)
+    │       │       ├── bulk_import_problem_wizard.dart  ← Soruna Git Sorun Sihirbazı
+    │       │       ├── bulk_import_save_handler.dart     ← Asenkron kaydetme boru hattı
+    │       │       ├── smart_save_bar.dart               ← Akıllı işlem çubuğu
+    │       │       ├── bulk_import_preview_section.dart  ← Önizleme bölümü
+    │       │       ├── compact_error_summary.dart        ← Satır numaralı hata özeti
     │       │       └── ...
     │       └── widgets/
-    │           └── activity_form/            ← Modularized activity form widgets (5 sub-widgets)
+    │           └── activity_form/                ← Modüler faaliyet formu (5 sub-widget)
     │               ├── activity_form_header.dart
+    │               ├── activity_squad_expansion_tile.dart
     │               └── ...
     └── matrix/
         ├── data/
         │   └── matrix_repository.dart     ← MatrixRepository (Drift DAO)
+        ├── domain/
+        │   ├── matrix_day_cell.dart       ← Matris hücre modelleri
+        │   └── matrix_personnel_order.dart← Matris personel sıralaması
+        ├── services/
+        │   └── excel_xml_generator.dart   ← Matris Excel XML üreticisi
         └── presentation/
             └── monthly_matrix_screen.dart
 
