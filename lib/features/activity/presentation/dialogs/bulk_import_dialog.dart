@@ -49,10 +49,14 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   String? _focusedPersonKey;
   final _cardKeys = <int, GlobalKey>{};
 
-  List<({int blockIndex, int personIndex})> _getProblemLocations() {
+  List<({int blockIndex, int? personIndex})> _getProblemLocations() {
     final duplicates = _duplicateAssignments();
-    final locs = <({int blockIndex, int personIndex})>[];
+    final locs = <({int blockIndex, int? personIndex})>[];
     for (final blockEntry in _parsedBlocks.asMap().entries) {
+      if (blockEntry.value.personnelList.isEmpty) {
+        locs.add((blockIndex: blockEntry.key, personIndex: null));
+        continue;
+      }
       for (final personEntry
           in blockEntry.value.personnelList.asMap().entries) {
         if (personEntry.value.needsReview ||
@@ -66,23 +70,37 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
 
   void _focusNextProblem() {
     final locs = _getProblemLocations();
-    if (locs.isEmpty) return;
+    if (locs.isEmpty) {
+      setState(() {
+        _parseIssuesExpanded = true;
+      });
+      return;
+    }
     setState(() {
       _activeIssueFocusIndex = (_activeIssueFocusIndex + 1) % locs.length;
       final target = locs[_activeIssueFocusIndex];
-      _focusedPersonKey = '${target.blockIndex}:${target.personIndex}';
+      _focusedPersonKey = target.personIndex != null
+          ? '${target.blockIndex}:${target.personIndex}'
+          : null;
     });
     _scrollToProblemLocation(locs[_activeIssueFocusIndex].blockIndex);
   }
 
   void _focusPreviousProblem() {
     final locs = _getProblemLocations();
-    if (locs.isEmpty) return;
+    if (locs.isEmpty) {
+      setState(() {
+        _parseIssuesExpanded = true;
+      });
+      return;
+    }
     setState(() {
       _activeIssueFocusIndex =
           (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
       final target = locs[_activeIssueFocusIndex];
-      _focusedPersonKey = '${target.blockIndex}:${target.personIndex}';
+      _focusedPersonKey = target.personIndex != null
+          ? '${target.blockIndex}:${target.personIndex}'
+          : null;
     });
     _scrollToProblemLocation(locs[_activeIssueFocusIndex].blockIndex);
   }
@@ -1650,6 +1668,11 @@ class _CompactErrorSummary extends StatelessWidget {
       subtitle = 'Kayda hazır';
     }
 
+    final displayTotal = totalIssues > 0 ? totalIssues : problemCount;
+    final displayIndex = currentIndex < 0
+        ? 1
+        : (displayTotal > 0 ? (currentIndex % displayTotal) + 1 : 1);
+
     return Container(
       decoration: BoxDecoration(
         color: bgColor,
@@ -1660,7 +1683,7 @@ class _CompactErrorSummary extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           InkWell(
-            onTap: onStartWizard ?? onToggle,
+            onTap: onToggle,
             borderRadius: BorderRadius.circular(12),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -1690,7 +1713,7 @@ class _CompactErrorSummary extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (hasProblems && onStartWizard != null)
+                  if (hasProblems)
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -1701,7 +1724,7 @@ class _CompactErrorSummary extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        '${currentIndex < 0 ? 1 : currentIndex + 1}/$totalIssues',
+                        '$displayIndex/$displayTotal',
                         style: TextStyle(
                           color: textColor,
                           fontSize: 12,
@@ -1720,24 +1743,29 @@ class _CompactErrorSummary extends StatelessWidget {
               ),
             ),
           ),
-          if (isExpanded && parseIssues.isNotEmpty)
+          if (isExpanded)
             Container(
               constraints: const BoxConstraints(maxHeight: 180),
-              child: ListView.separated(
-                shrinkWrap: true,
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                itemCount: parseIssues.length,
-                separatorBuilder: (_, __) => const Divider(height: 12),
-                itemBuilder: (context, index) {
-                  final issue = parseIssues[index];
-                  return Text(
-                    '${issue.lineNumber > 0 ? 'Satır ${issue.lineNumber}: ' : ''}'
-                    '${issue.message}'
-                    '${issue.rawLine.trim().isEmpty ? '' : '\n${issue.rawLine.trim()}'}',
-                    style: TextStyle(color: textColor, fontSize: 12),
-                  );
-                },
-              ),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: parseIssues.isNotEmpty
+                  ? ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: parseIssues.length,
+                      separatorBuilder: (_, __) => const Divider(height: 12),
+                      itemBuilder: (context, index) {
+                        final issue = parseIssues[index];
+                        return Text(
+                          '${issue.lineNumber > 0 ? 'Satır ${issue.lineNumber}: ' : ''}'
+                          '${issue.message}'
+                          '${issue.rawLine.trim().isEmpty ? '' : '\n${issue.rawLine.trim()}'}',
+                          style: TextStyle(color: textColor, fontSize: 12),
+                        );
+                      },
+                    )
+                  : Text(
+                      'Lütfen aşağıda vurgulanan kartlardaki eksik personelleri eşleştirin, tekrarları düzeltin veya boş kartları silin.',
+                      style: TextStyle(color: textColor, fontSize: 12),
+                    ),
             ),
           if (hasProblems && onStartWizard != null)
             Padding(
