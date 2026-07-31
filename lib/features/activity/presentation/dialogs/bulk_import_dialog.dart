@@ -14,10 +14,12 @@ import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_confirm_section.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_empty_state.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_input_section.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_preview_section.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_stat_cards.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_stepper.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/compact_error_summary.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/duplicate_personnel_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/edit_activity_block_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/smart_save_bar.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/conflict_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
@@ -604,98 +606,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
 
   Future<void> _editBlock(int blockIndex) async {
     final block = _parsedBlocks[blockIndex];
-    final activityController =
-        TextEditingController(text: block.parsedActivityType);
-    final timeController = TextEditingController(text: block.parsedTimeRange);
-    var selectedDate = DateTime.tryParse(block.parsedDate) ?? DateTime.now();
-    final updated = await showModalBottomSheet<ParsedActivityBlock>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (context, setSheetState) => Padding(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            20,
-            20,
-            MediaQuery.viewInsetsOf(context).bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Faaliyet kartını düzenle',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 18),
-              TextField(
-                key: const Key('bulk-edit-activity'),
-                controller: activityController,
-                decoration: const InputDecoration(
-                  labelText: 'Görev / faaliyet adı',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                key: const Key('bulk-edit-time'),
-                controller: timeController,
-                decoration: const InputDecoration(
-                  labelText: 'Saat aralığı (isteğe bağlı)',
-                  hintText: '08:00 - 19:30',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: selectedDate,
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2035),
-                  );
-                  if (picked != null) {
-                    setSheetState(() => selectedDate = picked);
-                  }
-                },
-                icon: const Icon(Icons.calendar_today_rounded),
-                label: Text(
-                  '${selectedDate.day.toString().padLeft(2, '0')}.'
-                  '${selectedDate.month.toString().padLeft(2, '0')}.'
-                  '${selectedDate.year}',
-                ),
-              ),
-              const SizedBox(height: 16),
-              FilledButton(
-                key: const Key('bulk-edit-save'),
-                onPressed: () {
-                  final activity = activityController.text.trim();
-                  if (activity.isEmpty) return;
-                  final time = timeController.text.trim();
-                  Navigator.pop(
-                    sheetContext,
-                    ParsedActivityBlock(
-                      rawTitle: block.rawTitle,
-                      parsedTimName: block.parsedTimName,
-                      parsedActivityType: activity,
-                      parsedDate:
-                          '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}',
-                      parsedTimeRange: time.isEmpty ? null : time,
-                      personnelList: block.personnelList,
-                    ),
-                  );
-                },
-                child: const Text('DEĞİŞİKLİKLERİ UYGULA'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    activityController.dispose();
-    timeController.dispose();
+    final updated = await EditActivityBlockDialog.show(context, block);
     if (updated != null && mounted && blockIndex < _parsedBlocks.length) {
       setState(() => _parsedBlocks[blockIndex] = updated);
     }
@@ -866,204 +777,35 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
 
   Widget _buildPreviewSection({required bool isMobile}) {
     final duplicates = _duplicateAssignments();
-    final problemPersonnelByBlock = <int, List<int>>{};
-    for (final blockEntry in _parsedBlocks.asMap().entries) {
-      final problemIndexes = <int>[];
-      for (final personEntry
-          in blockEntry.value.personnelList.asMap().entries) {
-        if (personEntry.value.needsReview ||
-            duplicates.containsKey('${blockEntry.key}:${personEntry.key}')) {
-          problemIndexes.add(personEntry.key);
-        }
-      }
-      if (problemIndexes.isNotEmpty || blockEntry.value.personnelList.isEmpty) {
-        problemPersonnelByBlock[blockEntry.key] = problemIndexes;
-      }
-    }
-    final visibleBlocks = _parsedBlocks.asMap().entries.where((entry) {
-      return _previewFilter == _BulkPreviewFilter.all ||
-          problemPersonnelByBlock.containsKey(entry.key);
-    }).toList(growable: false);
-    final personnelCount = _parsedBlocks.fold<int>(
-      0,
-      (count, block) => count + block.personnelList.length,
-    );
-    final problemCount = duplicates.length +
-        _unresolvedPersonnelCount +
-        _parsedBlocks.where((block) => block.personnelList.isEmpty).length +
-        _parseIssues.where((issue) => issue.isBlocking).length;
     final problemLocs = _getProblemLocations();
-    final totalDays = _parsedBlocks.map((b) => b.parsedDate).toSet().length;
-
-    return Padding(
-      padding: EdgeInsets.all(isMobile ? 16 : 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: CustomScrollView(
-              controller: _previewScrollController,
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.assignment_rounded,
-                                  color: const Color(0xFF556B3F),
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(
-                                    'Faaliyet Kartları (${_parsedBlocks.length})',
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (_parsedBlocks.isNotEmpty ||
-                              _parseIssues.isNotEmpty)
-                            IconButton(
-                              onPressed: _confirmClearAll,
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.redAccent,
-                                size: 20,
-                              ),
-                              tooltip: 'Tümünü Temizle',
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      if (_parsedBlocks.isNotEmpty) ...[
-                        // Faz 2: Kompakt Stat Bar
-                        BulkImportCompactStatBar(
-                          cardCount: _parsedBlocks.length,
-                          personnelCount: personnelCount,
-                          dayCount: totalDays,
-                        ),
-                        const SizedBox(height: 10),
-                        // Faz 3: Kompakt Hata Özeti
-                        CompactErrorSummary(
-                          problemCount: problemCount,
-                          warningCount: _parseIssues.length,
-                          parseIssues: _parseIssues,
-                          isExpanded: _parseIssuesExpanded,
-                          onToggle: () => setState(
-                            () => _parseIssuesExpanded = !_parseIssuesExpanded,
-                          ),
-                          onStartWizard:
-                              problemCount == 0 ? null : _focusNextProblem,
-                          totalIssues: problemLocs.length,
-                          currentIndex: _activeIssueFocusIndex,
-                          onPrevious: _focusPreviousProblem,
-                          onNext: _focusNextProblem,
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                    ],
-                  ),
-                ),
-                if (_parsedBlocks.isEmpty)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF556B3F)
-                                    .withValues(alpha: 0.08),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.fact_check_outlined,
-                                size: 48,
-                                color: Color(0xFF556B3F),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Henüz Kart Oluşturulmadı',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Yapıştır adımına dönüp mesajı yapıştırın.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                else if (visibleBlocks.isEmpty)
-                  SliverToBoxAdapter(
-                    child: _buildFilteredEmptyState(),
-                  )
-                else
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, blockIdx) {
-                        final entry = visibleBlocks[blockIdx];
-                        final originalBlockIndex = entry.key;
-                        final block = entry.value;
-                        return _buildPreviewCard(
-                          block,
-                          originalBlockIndex,
-                          duplicates,
-                          visiblePersonnelIndexes:
-                              _previewFilter == _BulkPreviewFilter.problems
-                                  ? problemPersonnelByBlock[originalBlockIndex]
-                                  : null,
-                        );
-                      },
-                      childCount: visibleBlocks.length,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          // Faz 5: Akıllı Alt Buton
-          SmartSaveBar(
-            problemCount: problemCount,
-            problemLocs: problemLocs,
-            activeIssueFocusIndex: _activeIssueFocusIndex,
-            onGotoProblem: _focusNextProblem,
-            onSave: _saveAllToFaaliyet,
-            isSaving: _isSaving,
-            blocks: _parsedBlocks,
-            issues: _parseIssues,
-            hasUnresolvedProblems: duplicates.isNotEmpty ||
-                _unresolvedPersonnelCount > 0 ||
-                _parsedBlocks.any((block) => block.personnelList.isEmpty),
-          ),
-        ],
+    return BulkImportPreviewSection(
+      blocks: _parsedBlocks,
+      issues: _parseIssues,
+      duplicates: duplicates,
+      allSquads: _allSquads,
+      cardKeys: _cardKeys,
+      scrollController: _previewScrollController,
+      isMobile: isMobile,
+      previewFilterIsProblems: _previewFilter == _BulkPreviewFilter.problems,
+      parseIssuesExpanded: _parseIssuesExpanded,
+      activeIssueFocusIndex: _activeIssueFocusIndex,
+      focusedPersonKey: _focusedPersonKey,
+      unresolvedPersonnelCount: _unresolvedPersonnelCount,
+      isSaving: _isSaving,
+      problemLocations: problemLocs,
+      onClearAll: _confirmClearAll,
+      onToggleParseIssues: () => setState(
+        () => _parseIssuesExpanded = !_parseIssuesExpanded,
       ),
+      onStartWizard: problemLocs.isEmpty ? null : _focusNextProblem,
+      onFocusPrevious: _focusPreviousProblem,
+      onFocusNext: _focusNextProblem,
+      onShowAll: () => _setPreviewFilter(_BulkPreviewFilter.all),
+      onEditBlock: _editBlock,
+      onRemoveBlock: _removeBlock,
+      onSelectPersonnel: _selectPersonnel,
+      onRemovePerson: _removePerson,
+      onSave: _saveAllToFaaliyet,
     );
   }
 
