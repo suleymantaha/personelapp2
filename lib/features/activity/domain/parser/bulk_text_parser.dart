@@ -440,11 +440,11 @@ class BulkTextParser {
               severity: BulkParseIssueSeverity.error,
             );
           } else {
-            // If personnel already exist under a different shift time range, flush them into a block first
-            if (personnel.isNotEmpty && currentTimeRange != null && currentTimeRange != parsedTime) {
-              flushBlock();
+            if (currentTimeRange == null) {
+              currentTimeRange = parsedTime;
+            } else if (currentTimeRange != parsedTime) {
+              currentTimeRange = null;
             }
-            currentTimeRange = parsedTime;
           }
           continue;
         }
@@ -616,7 +616,7 @@ class BulkTextParser {
       return number;
     }
     final cleanSuffix = suffix.replaceAll(RegExp(r'[^A-ZÇĞİÖŞÜ]'), '');
-    return '$number/$cleanSuffix';
+    return match.group(2) != null ? '$number/$cleanSuffix' : '$number$cleanSuffix';
   }
 
   static (String, bool) _extractActivity(String line) {

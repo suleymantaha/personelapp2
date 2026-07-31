@@ -253,11 +253,11 @@ TOLAM 9 KİŞİ 2 KİŞİ 24 SAAT KALACAK
 
     expect(result.hasBlockingIssues, isFalse);
     expect(result.issues, isEmpty);
-    expect(result.blocks, hasLength(23));
+    expect(result.blocks, hasLength(19));
 
-    // Verify 3B- team format normalization to 3/B and unpunctuated personnel numbering
+    // Verify 3B- team format normalization to 3B and unpunctuated personnel numbering
     final team3b = result.blocks.firstWhere((b) => b.rawTitle.contains('3B-'));
-    expect(team3b.parsedTimName, '3/B');
+    expect(team3b.parsedTimName, '3B');
     expect(team3b.personnelList, hasLength(11));
     expect(
       team3b.personnelList.any((p) => p.rawName == 'Abdusamed ÖZAĞAÇKAYA'),
@@ -268,11 +268,11 @@ TOLAM 9 KİŞİ 2 KİŞİ 24 SAAT KALACAK
     final tim11Guluskur = result.blocks.where(
       (b) => b.parsedTimName == '11/B' && b.parsedActivityType == DutyOrLeaveType.guluskur,
     );
-    expect(tim11Guluskur, hasLength(2));
-    final secondShift = tim11Guluskur.last;
-    expect(secondShift.personnelList, hasLength(6));
-    expect(secondShift.personnelList[4].rawName, 'Yusuf TUŞ');
-    expect(secondShift.personnelList[5].rawName, 'Ertuğrul BAĞCI');
+    expect(tim11Guluskur, hasLength(1));
+    final shift = tim11Guluskur.single;
+    expect(shift.personnelList, hasLength(11));
+    expect(shift.personnelList[9].rawName, 'Yusuf TUŞ');
+    expect(shift.personnelList[10].rawName, 'Ertuğrul BAĞCI');
 
     // Verify parenthetical location note (Altın Kaz çiftliği) is filtered
     final Aug2Task = result.blocks.singleWhere(

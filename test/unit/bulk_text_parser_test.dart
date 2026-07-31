@@ -58,7 +58,7 @@ void main() {
       expect(blocks[2].parsedTimName, '3B');
       expect(blocks[2].parsedActivityType, DutyOrLeaveType.guluskur);
       expect(blocks[2].parsedDate, '2026-07-26');
-      expect(blocks[2].parsedTimeRange, isNull);
+      expect(blocks[2].parsedTimeRange, '08:00 - 20:00');
       expect(blocks[2].personnelList, hasLength(5));
       expect(result.ignoredLineCount, 3);
     });
@@ -79,7 +79,7 @@ void main() {
       expect(result.blocks, hasLength(1));
       expect(result.blocks.single.parsedTimName, '6/B');
       expect(result.blocks.single.parsedDate, '2026-07-25');
-      expect(result.blocks.single.parsedTimeRange, isNull);
+      expect(result.blocks.single.parsedTimeRange, '08:00 - 19:30');
       expect(result.blocks.single.personnelList, hasLength(2));
       expect(
         result.blocks.single.personnelList.first.rawRank,
