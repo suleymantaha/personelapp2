@@ -61,19 +61,40 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   List<({int blockIndex, int? personIndex})> _getProblemLocations() {
     final duplicates = _duplicateAssignments();
     final locs = <({int blockIndex, int? personIndex})>[];
+    final addedKeys = <String>{};
+
+    // Priority 1: Critical empty blocks (0 personnel)
     for (final blockEntry in _parsedBlocks.asMap().entries) {
       if (blockEntry.value.personnelList.isEmpty) {
         locs.add((blockIndex: blockEntry.key, personIndex: null));
-        continue;
+        addedKeys.add('${blockEntry.key}:null');
       }
+    }
+
+    // Priority 2: Personnel needing match review
+    for (final blockEntry in _parsedBlocks.asMap().entries) {
       for (final personEntry
           in blockEntry.value.personnelList.asMap().entries) {
-        if (personEntry.value.needsReview ||
-            duplicates.containsKey('${blockEntry.key}:${personEntry.key}')) {
+        final key = '${blockEntry.key}:${personEntry.key}';
+        if (personEntry.value.needsReview && !addedKeys.contains(key)) {
           locs.add((blockIndex: blockEntry.key, personIndex: personEntry.key));
+          addedKeys.add(key);
         }
       }
     }
+
+    // Priority 3: Secondary duplicate assignments
+    for (final blockEntry in _parsedBlocks.asMap().entries) {
+      for (final personEntry
+          in blockEntry.value.personnelList.asMap().entries) {
+        final key = '${blockEntry.key}:${personEntry.key}';
+        if (duplicates.containsKey(key) && !addedKeys.contains(key)) {
+          locs.add((blockIndex: blockEntry.key, personIndex: personEntry.key));
+          addedKeys.add(key);
+        }
+      }
+    }
+
     return locs;
   }
 
