@@ -98,6 +98,7 @@ class BulkImportProblemWizard {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!scrollController.hasClients) return;
 
+      // 1. Direct Context Check: If already mounted in viewport, scroll directly!
       final directKey = cardKeys[blockIndex];
       if (directKey?.currentContext != null) {
         Scrollable.ensureVisible(
@@ -109,6 +110,7 @@ class BulkImportProblemWizard {
         return;
       }
 
+      // 2. Filter visible blocks
       final visibleBlockEntries = blocks.asMap().entries.where((entry) {
         if (!filterIsProblems) return true;
         final hasReview = entry.value.personnelList.any((p) => p.needsReview);
@@ -123,23 +125,28 @@ class BulkImportProblemWizard {
           visibleBlockEntries.indexWhere((e) => e.key == blockIndex);
       final targetIndex = visibleIndex >= 0 ? visibleIndex : blockIndex;
 
-      // Dynamic offset estimation summing actual heights of prior blocks
+      // 3. Accurate height estimation
+      // Header & top stat cards: ~180px
+      // Empty card: ~144px
+      // Card with N personnel: ~88px + N * 90px
       const headerOffset = 180.0;
       var accumulatedOffset = headerOffset;
       for (var i = 0; i < targetIndex && i < visibleBlockEntries.length; i++) {
         final blk = visibleBlockEntries[i].value;
-        final pCount = blk.personnelList.length;
-        final estimatedCardHeight = 110.0 + (pCount * 140.0) + 18.0;
-        accumulatedOffset += estimatedCardHeight;
+        if (blk.personnelList.isEmpty) {
+          accumulatedOffset += 144.0;
+        } else {
+          accumulatedOffset += 88.0 + (blk.personnelList.length * 90.0);
+        }
       }
 
-      // Jump to estimated offset to force layout of unbuilt slivers up to targetIndex
+      // 4. Jump to target offset to force layout of target sliver
       final initialMax = scrollController.position.maxScrollExtent;
-      final jumpOffset = accumulatedOffset.clamp(0.0, initialMax + 5000.0);
-      scrollController.jumpTo(jumpOffset);
+      final targetOffset = accumulatedOffset.clamp(0.0, initialMax + 5000.0);
+      scrollController.jumpTo(targetOffset);
 
-      // Now that slivers up to targetIndex have been built, execute ensureVisible
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 5. Retry loop to execute ensureVisible once mounted
+      void tryEnsureVisible(int retriesLeft) {
         if (!scrollController.hasClients) return;
         final targetKey = cardKeys[blockIndex];
         if (targetKey?.currentContext != null) {
@@ -149,30 +156,19 @@ class BulkImportProblemWizard {
             curve: Curves.easeInOut,
             alignment: 0.15,
           );
-        } else {
-          final maxExtent = scrollController.position.maxScrollExtent;
-          final finalOffset = accumulatedOffset.clamp(0.0, maxExtent);
-          scrollController
-              .animateTo(
-            finalOffset,
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOut,
-          )
-              .then((_) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              final fallbackKey = cardKeys[blockIndex];
-              if (fallbackKey?.currentContext != null) {
-                Scrollable.ensureVisible(
-                  fallbackKey!.currentContext!,
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInOut,
-                  alignment: 0.15,
-                );
-              }
-            });
-          });
+          return;
         }
-      });
+
+        if (retriesLeft > 0) {
+          final current = scrollController.offset;
+          final maxExtent = scrollController.position.maxScrollExtent;
+          // Step scroll if slightly misaligned
+          scrollController.jumpTo((current + 100.0).clamp(0.0, maxExtent));
+          WidgetsBinding.instance.addPostFrameCallback((_) => tryEnsureVisible(retriesLeft - 1));
+        }
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) => tryEnsureVisible(3));
     });
   }
 }
