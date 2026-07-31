@@ -365,51 +365,6 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     }
   }
 
-  Future<void> _showDuplicatePersonnelDialog(
-    List<BulkImportDuplicate> duplicates,
-  ) {
-    final squadNames = {for (final squad in _allSquads) squad.id: squad.timAdi};
-    return showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Tekrarlanan Personel Var'),
-        content: SizedBox(
-          width: 520,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Aynı personel aynı tarihte birden fazla görevde bulunuyor. '
-                  'Aktarmadan önce önizlemedeki tekrarları düzeltin.',
-                ),
-                const SizedBox(height: 12),
-                for (final duplicate in duplicates)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.warning_amber_rounded),
-                    title: Text(duplicate.personnelName),
-                    subtitle: Text(
-                      '${duplicate.date} • '
-                      '${squadNames[duplicate.teamId] ?? 'Timsiz'}\n'
-                      '${duplicate.assignments.join(' / ')}',
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('ÖNİZLEMEYE DÖN'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Map<String, List<String>> _duplicateAssignments() {
     final occurrences = <String, List<({int blockIndex, int personIndex})>>{};
     for (final blockEntry in _parsedBlocks.asMap().entries) {
