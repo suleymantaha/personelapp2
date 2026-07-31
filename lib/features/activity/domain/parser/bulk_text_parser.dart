@@ -109,22 +109,27 @@ class BulkTextParser {
     r'(?<!\d)(\d{1,2})\s*(?:[/\-]\s*([A-Za-zÇĞİÖŞÜçğıöşü]+)|([A-Za-zÇĞİÖŞÜçğıöşü]+))',
     caseSensitive: false,
   );
-  static final RegExp _numberedPersonnelPattern =
-      RegExp(r'^\s*(\d+)\s*([.)\-:])\s*(.+)$');
+  static final RegExp _numberedPersonnelPattern = RegExp(
+    r'^\s*(\d+)\s*([.)\-:]|(?=J\s*[.]?\s*(?:Asb|Uzm|Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm|Yzb|Bçvş|Bcvs)))\s*(.+)$',
+    caseSensitive: false,
+  );
   static final RegExp _bulletPattern = RegExp(r'^\s*[•●▪◦]\s*');
   static final RegExp _timeRangePattern = RegExp(
-    r'(?<!\d)(\d{1,2})[.:](\d{2})\s*[-/]\s*(\d{1,2})[.:](\d{2})(?!\d)',
+    r'(?<!\d)(\d{1,2})[.:](\d{2})(?:\s*[-/]\s*|\s+to\s+|\s+)(\d{1,2})[.:](\d{2})(?!\d)',
+    caseSensitive: false,
   );
-  static final RegExp _timeLikePattern =
-      RegExp(r'\d{1,2}[.:]\d{1,2}\s*[-/]\s*\d{1,2}[.:]\d{1,2}');
+  static final RegExp _timeLikePattern = RegExp(
+    r'\d{1,2}[.:]\d{2}(?:\s*[-/]\s*|\s+to\s+|\s+)\d{1,2}[.:]\d{2}',
+    caseSensitive: false,
+  );
   static final RegExp _messageMetadataPattern = RegExp(
     r'^\s*(?:\[\d{1,2}[.:]\d{2}(?:,\s*\d{1,2}[./]\d{1,2}[./]\d{2,4})?\]|'
     r'\d{1,2}[.:]\d{2}\s*[-–—]\s*[A-Za-zÇĞİÖŞÜçğıöşü][^:]{0,59}:)',
   );
   static final RegExp _rankPattern = RegExp(
-    r'^(J\s*[.]?\s*(?:(?:Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm)|'
+    r'^(J\s*[.]?\s*(?:(?:Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm|Yzb|Bçvş|Bcvs)|'
     r'(?:(?:Asb|Uzm)\s*[.]?\s*(?:Kd\s*[.]?\s*)?'
-    r'(?:Üçvş|Ucv[sş]?|Çvş|Cv[sş]?)))\s*[.]?)\s*',
+    r'(?:Ü[.]?Çvş|U[.]?Cv[sş]|Üçvş|Ucv[sş]?|Çvş|Cv[sş]?)))\s*[.]?)\s*',
     caseSensitive: false,
   );
   static final RegExp _fullDayAnnotationPattern = RegExp(
@@ -237,6 +242,34 @@ class BulkTextParser {
   static String mapActivityTypeToDutyOrLeave(String activityType) =>
       _activityTypes[_fold(activityType).trim()] ?? activityType.trim();
 
+  static List<String> _splitLineIfMultiplePersonnel(String line) {
+    final splitPattern = RegExp(
+      r'(?<=\S)\s+(?=\d+\s*[.)\-:]?\s*J\s*[.]?\s*(?:Asb|Uzm|Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm|Yzb|Bçvş|Bcvs))',
+      caseSensitive: false,
+    );
+    final parts = line.split(splitPattern);
+    return parts.where((p) => p.trim().isNotEmpty).toList();
+  }
+
+  static bool _isCommentOrNoteLine(String line) {
+    final trimmed = line.trim();
+    if (trimmed.startsWith('(') && trimmed.endsWith(')') && !_rankPattern.hasMatch(trimmed)) {
+      return true;
+    }
+    final folded = _fold(trimmed);
+    if (folded.contains('sabit kalinacak') ||
+        folded.contains('kalinacaktir') ||
+        folded.contains('saat kalacak') ||
+        folded.contains('degisimli') ||
+        folded.contains('altin kaz') ||
+        folded.contains('ciftligi')) {
+      if (!_rankPattern.hasMatch(trimmed) && !_numberedPersonnelPattern.hasMatch(trimmed)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   static BulkParseResult parse(
     String rawText, {
     String? defaultDate,
@@ -329,145 +362,164 @@ class BulkTextParser {
 
     final rawLines =
         rawText.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
+
     for (var lineIndex = 0; lineIndex < rawLines.length; lineIndex++) {
       final rawLine = rawLines[lineIndex];
       final lineNumber = lineIndex + 1;
-      final line = _normalizeLine(rawLine);
-      if (line.isEmpty || _messageMetadataPattern.hasMatch(line)) continue;
+      final subLines = _splitLineIfMultiplePersonnel(rawLine);
 
-      final dateMatch = _extractDateFromLine(line, currentDate);
-      final looksLikeHeader = _isHeader(line);
+      for (final rawSubLine in subLines) {
+        final line = _normalizeLine(rawSubLine);
+        if (line.isEmpty || _messageMetadataPattern.hasMatch(line)) continue;
 
-      if (looksLikeHeader) {
-        final title = parseTitle(line, currentDate);
-        final newDate = dateMatch ?? currentDate;
-        final newTeam = title.timName ?? currentTeam;
-        final newActivity = title.activityTypeKnown
-            ? mapActivityTypeToDutyOrLeave(title.activityType)
-            : (title.activityType.isNotEmpty
-                ? title.activityType
-                : currentActivity);
+        final dateMatch = _extractDateFromLine(line, currentDate);
+        final looksLikeHeader = _isHeader(line);
 
-        final isSameBlock = currentDate == newDate &&
-            currentTeam == newTeam &&
-            (currentActivity == newActivity || !currentActivityKnown);
+        if (looksLikeHeader) {
+          final title = parseTitle(line, currentDate);
+          final newDate = dateMatch ?? currentDate;
+          final newTeam = title.timName ?? currentTeam;
+          final newActivity = title.activityTypeKnown
+              ? mapActivityTypeToDutyOrLeave(title.activityType)
+              : (title.activityType.isNotEmpty
+                  ? title.activityType
+                  : currentActivity);
 
-        if (!isSameBlock) {
-          flushBlock();
-          currentTitle = line;
-          currentHeaderLine = lineNumber;
-          currentHeaderRawLine = rawLine;
-          currentTimeRange = null;
-        } else {
-          if (currentTitle.isEmpty) currentTitle = line;
-        }
+          final isSameBlock = currentDate == newDate &&
+              currentTeam == newTeam &&
+              (currentActivity == newActivity || !currentActivityKnown);
 
-        currentTeam = newTeam;
-        currentActivityKnown = title.activityTypeKnown || currentActivityKnown;
-        currentActivity = newActivity;
-        currentDate = newDate;
-        continue;
-      }
-
-      if (_isDateOnlyLine(line, currentDate)) {
-        final parsedDate = _extractDateFromLine(line, currentDate);
-        if (parsedDate == null) {
-          addIssue(
-            line: lineNumber,
-            raw: rawLine,
-            code: 'invalid_date',
-            message: 'Tarih geçerli değil.',
-            severity: BulkParseIssueSeverity.error,
-          );
-        } else {
-          if (currentDate != parsedDate) {
+          if (!isSameBlock) {
             flushBlock();
-            currentDate = parsedDate;
+            currentTitle = line;
+            currentHeaderLine = lineNumber;
+            currentHeaderRawLine = rawSubLine;
+            currentTimeRange = null;
+          } else {
+            if (currentTitle.isEmpty) currentTitle = line;
           }
-        }
-        continue;
-      }
 
-      final timeMatch = _timeRangePattern.firstMatch(line);
-      if (timeMatch != null || _timeLikePattern.hasMatch(line)) {
-        ignoredLineCount++;
-        if (timeMatch == null || _parseTimeRange(timeMatch) == null) {
+          currentTeam = newTeam;
+          currentActivityKnown =
+              title.activityTypeKnown || currentActivityKnown;
+          currentActivity = newActivity;
+          currentDate = newDate;
+          continue;
+        }
+
+        if (_isDateOnlyLine(line, currentDate)) {
+          final parsedDate = _extractDateFromLine(line, currentDate);
+          if (parsedDate == null) {
+            addIssue(
+              line: lineNumber,
+              raw: rawSubLine,
+              code: 'invalid_date',
+              message: 'Tarih geçerli değil.',
+              severity: BulkParseIssueSeverity.error,
+            );
+          } else {
+            if (currentDate != parsedDate) {
+              flushBlock();
+              currentDate = parsedDate;
+            }
+          }
+          continue;
+        }
+
+        final timeMatch = _timeRangePattern.firstMatch(line);
+        if (timeMatch != null || _timeLikePattern.hasMatch(line)) {
+          ignoredLineCount++;
+          final parsedTime =
+              timeMatch != null ? _parseTimeRange(timeMatch) : null;
+          if (parsedTime == null) {
+            addIssue(
+              line: lineNumber,
+              raw: rawSubLine,
+              code: 'invalid_time',
+              message: 'Saat aralığı geçerli değil.',
+              severity: BulkParseIssueSeverity.error,
+            );
+          } else {
+            // If personnel already exist under a different shift time range, flush them into a block first
+            if (personnel.isNotEmpty && currentTimeRange != null && currentTimeRange != parsedTime) {
+              flushBlock();
+            }
+            currentTimeRange = parsedTime;
+          }
+          continue;
+        }
+
+        if (_summaryPattern.hasMatch(line)) {
+          ignoredLineCount++;
+          final expected =
+              int.tryParse(RegExp(r'\d+').firstMatch(line)?.group(0) ?? '');
+          if (expected != null &&
+              currentDate != null &&
+              currentTeam != null &&
+              currentActivity != null) {
+            declaredTotals.add(
+              BulkDeclaredTotal(
+                lineNumber: lineNumber,
+                expectedCount: expected,
+                date: currentDate,
+                teamName: currentTeam,
+                activityType: currentActivity,
+              ),
+            );
+          }
+          continue;
+        }
+
+        if (_isCommentOrNoteLine(line)) {
+          ignoredLineCount++;
+          continue;
+        }
+
+        final personnelCandidate = _personnelCandidate(line);
+        if (personnelCandidate != null) {
+          final content = personnelCandidate.content
+              .replaceAll(_fullDayAnnotationPattern, ' ')
+              .replaceAll(RegExp(r'\s+'), ' ')
+              .trim();
+          if (content != personnelCandidate.content) ignoredLineCount++;
+          final parsed = _parsePersonnelLine(
+            content,
+            personnelCandidate.index ?? nextIndex,
+            lineNumber,
+          );
+          if (parsed == null) {
+            addIssue(
+              line: lineNumber,
+              raw: rawSubLine,
+              code: 'invalid_personnel',
+              message: 'Personel satırı çözümlenemedi.',
+              severity: BulkParseIssueSeverity.error,
+            );
+          } else {
+            personnel.add(parsed.item);
+            nextIndex = parsed.item.rawIndex + 1;
+            if (!parsed.rankKnown) {
+              addIssue(
+                line: lineNumber,
+                raw: rawSubLine,
+                code: 'unknown_rank',
+                message: 'Rütbe tanınamadı; ham personel adı korundu.',
+                severity: BulkParseIssueSeverity.warning,
+              );
+            }
+          }
+          continue;
+        }
+
+        if (_looksLikeBrokenPersonnel(line)) {
           addIssue(
             line: lineNumber,
-            raw: rawLine,
-            code: 'invalid_time',
-            message: 'Saat aralığı geçerli değil.',
-            severity: BulkParseIssueSeverity.error,
-          );
-        }
-        continue;
-      }
-
-      if (_summaryPattern.hasMatch(line)) {
-        ignoredLineCount++;
-        final expected =
-            int.tryParse(RegExp(r'\d+').firstMatch(line)?.group(0) ?? '');
-        if (expected != null &&
-            currentDate != null &&
-            currentTeam != null &&
-            currentActivity != null) {
-          declaredTotals.add(
-            BulkDeclaredTotal(
-              lineNumber: lineNumber,
-              expectedCount: expected,
-              date: currentDate,
-              teamName: currentTeam,
-              activityType: currentActivity,
-            ),
-          );
-        }
-        continue;
-      }
-
-      final personnelCandidate = _personnelCandidate(line);
-      if (personnelCandidate != null) {
-        final content = personnelCandidate.content
-            .replaceAll(_fullDayAnnotationPattern, ' ')
-            .replaceAll(RegExp(r'\s+'), ' ')
-            .trim();
-        if (content != personnelCandidate.content) ignoredLineCount++;
-        final parsed = _parsePersonnelLine(
-          content,
-          personnelCandidate.index ?? nextIndex,
-          lineNumber,
-        );
-        if (parsed == null) {
-          addIssue(
-            line: lineNumber,
-            raw: rawLine,
+            raw: rawSubLine,
             code: 'invalid_personnel',
             message: 'Personel satırı çözümlenemedi.',
             severity: BulkParseIssueSeverity.error,
           );
-        } else {
-          personnel.add(parsed.item);
-          nextIndex = parsed.item.rawIndex + 1;
-          if (!parsed.rankKnown) {
-            addIssue(
-              line: lineNumber,
-              raw: rawLine,
-              code: 'unknown_rank',
-              message: 'Rütbe tanınamadı; ham personel adı korundu.',
-              severity: BulkParseIssueSeverity.warning,
-            );
-          }
         }
-        continue;
-      }
-
-      if (_looksLikeBrokenPersonnel(line)) {
-        addIssue(
-          line: lineNumber,
-          raw: rawLine,
-          code: 'invalid_personnel',
-          message: 'Personel satırı çözümlenemedi.',
-          severity: BulkParseIssueSeverity.error,
-        );
       }
     }
 
@@ -493,6 +545,8 @@ class BulkTextParser {
   static String _normalizeLine(String input) => input
       .replaceAll('\u00a0', ' ')
       .replaceAll('\t', ' ')
+      .replaceAll(
+          RegExp(r'[\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF]'), '')
       .replaceAll(RegExp('[–—−]'), '-')
       .replaceAll(RegExp(r'[*_`~]'), '')
       .replaceFirst(RegExp(r'^\s*>\s?'), '')
@@ -543,9 +597,10 @@ class BulkTextParser {
   static String? _extractTeam(String line) {
     final match = _teamPattern.firstMatch(line);
     if (match == null) {
-      final timMatch =
-          RegExp(r'(?<!\d)(\d{1,2})\s*[.]?\s*tim(?:i)?\b', caseSensitive: false)
-              .firstMatch(_fold(line));
+      final timMatch = RegExp(
+        r'(?<!\d)(\d{1,2})\s*[.]?\s*(?:tim(?:i)?|bölük|boluk|bl)\b',
+        caseSensitive: false,
+      ).firstMatch(_fold(line));
       return timMatch != null ? '${timMatch.group(1)}' : null;
     }
     final number = match.group(1)!;
@@ -557,10 +612,11 @@ class BulkTextParser {
     }
 
     final suffix = rawSuffix.toUpperCase();
-    if (suffix == 'TIM' || suffix == 'TIMI') {
+    if (suffix == 'TIM' || suffix == 'TIMI' || suffix == 'BÖLÜK' || suffix == 'BOLUK') {
       return number;
     }
-    return match.group(2) != null ? '$number/$suffix' : '$number$suffix';
+    final cleanSuffix = suffix.replaceAll(RegExp(r'[^A-ZÇĞİÖŞÜ]'), '');
+    return '$number/$cleanSuffix';
   }
 
   static (String, bool) _extractActivity(String line) {
@@ -693,16 +749,31 @@ class BulkTextParser {
     if (clean.contains('tğm') || clean.contains('tgm')) {
       return 'J.Tğm.';
     }
-    if (clean.contains('asbkdüçvş') || clean.contains('asbkducvs')) {
+    if (clean.contains('yzb')) {
+      return 'J.Yzb.';
+    }
+    if (clean.contains('bçvş') || clean.contains('bcvs')) {
+      return 'J.Bçvş.';
+    }
+    if (clean.contains('asbkdüçvş') ||
+        clean.contains('asbkducvs') ||
+        clean.contains('asbkdüçvs')) {
       return 'J.Asb.Kd.Üçvş.';
     }
-    if (clean.contains('asbkdçvş') || clean.contains('asbkdcvs')) {
+    if (clean.contains('asbkdçvş') ||
+        clean.contains('asbkdcvs') ||
+        clean.contains('asbkdçvs')) {
       return 'J.Asb.Kd.Çvş.';
     }
-    if (clean.contains('asbüçvş') || clean.contains('asbucvs')) {
+    if (clean.contains('asbüçvş') ||
+        clean.contains('asbucvs') ||
+        clean.contains('asbüçvs') ||
+        clean.contains('asbücvs')) {
       return 'J.Asb.Üçvş.';
     }
-    if (clean.contains('asbçvş') || clean.contains('asbcvs')) {
+    if (clean.contains('asbçvş') ||
+        clean.contains('asbcvs') ||
+        clean.contains('asbçvs')) {
       return 'J.Asb.Çvş.';
     }
     return 'J.Uzm.Çvş.';

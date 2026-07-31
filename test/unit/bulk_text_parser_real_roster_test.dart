@@ -178,4 +178,25 @@ Nuri demir
       containsAll(['Oğuzhan ayaz', 'Ferhat Ayyıldız', 'Nuri demir']),
     );
   });
+
+  test('ignores invisible unicode format chars around the first date line',
+      () {
+    // WhatsApp kopyalarında satır başına/sonuna yapışan görünmez karakterler:
+    // U+200E (LRM), U+200B (ZWSP), U+FEFF (BOM/ZWNBSP).
+    const input = '\u200E*30.07.2026*\u200B\n'
+        '*10/B Timi Heybet İsim Listesi*\n'
+        '1)J.Asb.Üçvş. Onur GÜNER\n'
+        '7-B Heybet Listesi\n'
+        '30.07.2026 Perşembe\n'
+        '1- J.Asb.Üçvş. Ferdi ERDOĞAN\n';
+
+    final result = BulkTextParser.parse(input);
+
+    expect(result.hasBlockingIssues, isFalse);
+    expect(result.blocks, hasLength(2));
+    expect(
+      result.blocks.map((block) => block.parsedDate),
+      everyElement('2026-07-30'),
+    );
+  });
 }
