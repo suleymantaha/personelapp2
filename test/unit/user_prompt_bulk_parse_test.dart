@@ -275,15 +275,15 @@ TOLAM 9 KİŞİ 2 KİŞİ 24 SAAT KALACAK
     expect(shift.personnelList[10].rawName, 'Ertuğrul BAĞCI');
 
     // Verify parenthetical location note (Altın Kaz çiftliği) is filtered
-    final Aug2Task = result.blocks.singleWhere(
+    final aug2Task = result.blocks.singleWhere(
       (b) => b.parsedDate == '2026-08-02' && b.parsedTimName == '9/B',
     );
-    expect(Aug2Task.personnelList, hasLength(8));
+    expect(aug2Task.personnelList, hasLength(8));
 
     // Verify footer note (*Sabit kalınacak*) is filtered
-    final Aug1Guluskur = result.blocks.singleWhere(
+    final aug1Guluskur = result.blocks.singleWhere(
       (b) => b.parsedDate == '2026-08-01' && b.parsedTimName == '2/B',
     );
-    expect(Aug1Guluskur.personnelList, hasLength(7));
+    expect(aug1Guluskur.personnelList, hasLength(7));
   });
 }

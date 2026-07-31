@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 
@@ -24,7 +25,7 @@ void main() {
 ''';
       final result = BulkTextParser.parse(input);
       for (final issue in result.issues) {
-        print(
+        debugPrint(
             'Issue: ${issue.code} - ${issue.message} - line: ${issue.rawLine}');
       }
       expect(result.issues.any((i) => i.code == 'invalid_personnel'), isFalse);

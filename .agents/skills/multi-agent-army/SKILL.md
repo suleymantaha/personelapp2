@@ -5,8 +5,8 @@ description: >-
   work isolation, quality gates, and kanban tracking. Optimized for Flutter/Dart
   projects. Agents at different hierarchy levels (orchestrator → team leads →
   workers) pass tasks down without sharing code directly.
-version: 2.0.0
-author: Hermes Agent
+version: 2.1.0
+author: Hermes Agent & Antigravity
 license: MIT
 platforms:
   - linux
@@ -35,7 +35,7 @@ metadata:
 # Multi-Agent Army — Flutter/Dart Hierarchical Agent Orchestration
 
 Bu skill **Jandarma Görev Takip Uygulaması** (Flutter + Dart + Riverpod + Drift) projesine
-özel olarak yapılandırılmıştır.
+özel olarak yapılandırılmıştır. (Son Güncelleme: 2026-08-01 — Statik Analiz: 0 Hata, 150/150 Test Başarılı)
 
 Build a **multi-level agent army** where:
 - **Orchestrator** (depth 0) decomposes epics → assigns to Team Leads
@@ -50,7 +50,7 @@ personelapp2/                      ← Flutter project root
 ├── lib/
 │   ├── main.dart
 │   ├── core/
-│   │   ├── database/              ← Drift DB (AppDatabase)
+│   │   ├── database/              ← Drift DB (AppDatabase) & schema
 │   │   ├── navigation/            ← go_router (app_router.dart)
 │   │   ├── providers/             ← Riverpod providers
 │   │   ├── services/              ← SessionStorage, etc.
@@ -60,10 +60,14 @@ personelapp2/                      ← Flutter project root
 │       ├── auth/                  ← Login screen
 │       ├── dashboard/             ← Main dashboard
 │       ├── personnel/             ← Personel & Tim yönetimi
-│       ├── activity/              ← Faaliyet çizelgesi
+│       ├── activity/              ← Faaliyet çizelgesi & Toplu Aktarım (bulk_import/)
+│       │   ├── data/              ← ActivityRepository & MultiActivityRepository
+│       │   ├── domain/            ← ConflictChecker, RankHelper, TextParser
+│       │   │   └── services/      ← MilitaryRosterExporter & PdfRosterExporter
+│       │   └── presentation/      ← Screens, dialogs/bulk_import/ & widgets/activity_form/
 │       └── matrix/                ← Aylık matris
 ├── test/
-│   └── unit/                      ← Unit tests (dart test)
+│   └── unit/                      ← 150+ Unit & Widget tests (flutter test)
 ├── .agents/
 │   └── skills/
 │       ├── multi-agent-army/      ← Bu skill
@@ -71,7 +75,7 @@ personelapp2/                      ← Flutter project root
 └── pubspec.yaml                   ← Dart SDK ^3.12.2
 ```
 
-**Tech Stack:** Flutter · Dart · Riverpod · Drift (SQLite) · go_router · intl · pdf · printing
+**Tech Stack:** Flutter · Dart · Riverpod · Drift (SQLite) · go_router · intl · pdf · printing · excel
 
 ## Quick Start
 

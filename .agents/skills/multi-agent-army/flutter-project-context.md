@@ -67,11 +67,33 @@ lib/
     │       └── personnel_management_screen.dart
     ├── activity/
     │   ├── data/
-    │   │   └── activity_repository.dart   ← ActivityRepository (Drift DAO)
+    │   │   ├── activity_repository.dart       ← ActivityRepository (Drift DAO)
+    │   │   └── multi_activity_repository.dart ← Multi-activity batch import repository
+    │   ├── domain/
+    │   │   ├── conflict_checker.dart          ← Duty conflict & leave reservation checker
+    │   │   ├── rank_helper.dart              ← Military rank weight & seniority sorter
+    │   │   ├── official_roster_title.dart    ← Roster header title generator
+    │   │   ├── parser/
+    │   │   │   └── bulk_text_parser.dart      ← Smart WhatsApp/Text roster parser
+    │   │   └── services/
+    │   │       ├── military_roster_exporter.dart ← Official Excel roster exporter
+    │   │       └── pdf_roster_exporter.dart      ← Official PDF roster exporter
     │   └── presentation/
     │       ├── activity_form_screen.dart
     │       ├── activity_archive_screen.dart
-    │       └── pending_approvals_screen.dart
+    │       ├── pending_approvals_screen.dart
+    │       ├── dialogs/
+    │       │   ├── bulk_import_dialog.dart
+    │       │   └── bulk_import/              ← Modularized bulk import (15 sub-widgets)
+    │       │       ├── bulk_import_problem_wizard.dart ← Soruna Git Navigation Wizard
+    │       │       ├── bulk_import_save_handler.dart    ← Async save pipeline
+    │       │       ├── smart_save_bar.dart              ← Smart primary action bar
+    │       │       ├── bulk_import_preview_section.dart
+    │       │       └── ...
+    │       └── widgets/
+    │           └── activity_form/            ← Modularized activity form widgets (5 sub-widgets)
+    │               ├── activity_form_header.dart
+    │               └── ...
     └── matrix/
         ├── data/
         │   └── matrix_repository.dart     ← MatrixRepository (Drift DAO)
@@ -79,8 +101,7 @@ lib/
             └── monthly_matrix_screen.dart
 
 test/
-└── unit/
-    └── matrix_repository_test.dart        ← Örnek unit test
+└── unit/                                  ← 150+ unit and widget tests (flutter test)
 ```
 
 ---
