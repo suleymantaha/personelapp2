@@ -81,12 +81,18 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     final locs = _getProblemLocations();
     if (locs.isEmpty) {
       setState(() {
+        _activeIssueFocusIndex = -1;
+        _focusedPersonKey = null;
         _parseIssuesExpanded = true;
       });
       return;
     }
     setState(() {
-      _activeIssueFocusIndex = (_activeIssueFocusIndex + 1) % locs.length;
+      if (_activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length) {
+        _activeIssueFocusIndex = 0;
+      } else {
+        _activeIssueFocusIndex = (_activeIssueFocusIndex + 1) % locs.length;
+      }
       final target = locs[_activeIssueFocusIndex];
       _focusedPersonKey = target.personIndex != null
           ? '${target.blockIndex}:${target.personIndex}'
@@ -99,13 +105,19 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     final locs = _getProblemLocations();
     if (locs.isEmpty) {
       setState(() {
+        _activeIssueFocusIndex = -1;
+        _focusedPersonKey = null;
         _parseIssuesExpanded = true;
       });
       return;
     }
     setState(() {
-      _activeIssueFocusIndex =
-          (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
+      if (_activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length) {
+        _activeIssueFocusIndex = locs.length - 1;
+      } else {
+        _activeIssueFocusIndex =
+            (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
+      }
       final target = locs[_activeIssueFocusIndex];
       _focusedPersonKey = target.personIndex != null
           ? '${target.blockIndex}:${target.personIndex}'
@@ -129,9 +141,21 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
         return;
       }
 
-      // If item is off-screen and unmounted in ListView.builder, scroll near its estimated position first
+      // Compute position based on currently visible blocks filter
+      final duplicates = _duplicateAssignments();
+      final visibleBlockEntries = _parsedBlocks.asMap().entries.where((entry) {
+        if (_previewFilter == _BulkPreviewFilter.all) return true;
+        final hasReview = entry.value.personnelList.any((p) => p.needsReview);
+        final hasDup = entry.value.personnelList.asMap().keys.any(
+            (pIdx) => duplicates.containsKey('${entry.key}:$pIdx'));
+        return entry.value.personnelList.isEmpty || hasReview || hasDup;
+      }).toList();
+
+      final visibleIndex = visibleBlockEntries.indexWhere((e) => e.key == blockIndex);
+      final targetIndex = visibleIndex >= 0 ? visibleIndex : blockIndex;
+
       final maxExtent = _previewScrollController.position.maxScrollExtent;
-      final estimatedOffset = (blockIndex * 180.0).clamp(0.0, maxExtent);
+      final estimatedOffset = (targetIndex * 180.0).clamp(0.0, maxExtent);
 
       _previewScrollController
           .animateTo(
