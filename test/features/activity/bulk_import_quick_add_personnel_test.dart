@@ -71,6 +71,6 @@ void main() {
 
     // Kart üzerinde eşleştiği görünmeli
     expect(find.byKey(const Key('bulk-person-add-new')), findsNothing);
-    expect(find.text('Hakan KAYA'), findsWidgets);
+    expect(find.textContaining('Hakan KAYA'), findsWidgets);
   });
 }

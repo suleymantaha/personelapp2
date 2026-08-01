@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
@@ -27,26 +28,37 @@ class PersonnelMatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final duplicate = duplicateAssignments?.isNotEmpty == true;
-    final problem = duplicate || item.needsReview;
+    final problem = duplicate || item.hasWarning || !item.isMatched;
+
+    final accentColor = !item.isMatched
+        ? Colors.red.shade600
+        : (item.hasWarning ? Colors.orange.shade800 : context.approvedColor);
+
     final borderColor = isFocused
         ? Colors.amber.shade800
-        : (problem ? Colors.red.shade300 : context.cardBorderColor);
+        : (problem ? accentColor.withValues(alpha: 0.4) : context.cardBorderColor);
+
     final bgColor = isFocused
-        ? Colors.amber.shade100
+        ? Colors.amber.shade50
         : (problem
-            ? Colors.red.withValues(alpha: 0.045)
+            ? accentColor.withValues(alpha: 0.035)
             : Theme.of(context).cardColor);
 
     final rawRankText = item.rawRank.trim();
     final rawNameText = item.rawName.trim();
-    final matchedText = item.isMatched
+    final matchedName = item.isMatched
         ? '${item.matchedRutbe ?? ''} ${item.matchedAdSoyad}'.trim()
         : 'Personel seçilmedi';
+
+    final hasNameDiff = item.isMatched &&
+        (rawNameText.toLowerCase() != (item.matchedAdSoyad ?? '').toLowerCase() ||
+            (rawRankText.isNotEmpty &&
+                item.matchedRutbe != null &&
+                rawRankText.toLowerCase() != item.matchedRutbe!.toLowerCase()));
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(14),
@@ -61,36 +73,30 @@ class PersonnelMatchCard extends StatelessWidget {
               ]
             : null,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Satır 1: Sıra No + Rütbe Rozeti + İsim (Belirgin 16px) + Sil Butonu
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: context.accentOrOlive.withValues(alpha: 0.14),
-                child: Text(
-                  '${item.rawIndex}',
-                  style: TextStyle(
-                    color: context.accentOrOlive,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              // Sol durum renk şeridi (Left Accent Indicator Bar)
+              Container(
+                width: 5,
+                color: accentColor,
               ),
-              const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        if (rawRankText.isNotEmpty) ...[
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Üst Satır: Sıra No + Rütbe + Ana Personel Başlığı + Sil Butonu
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
+                              horizontal: 6,
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
@@ -98,353 +104,288 @@ class PersonnelMatchCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              rawRankText,
+                              '${item.rawIndex}',
                               style: TextStyle(
                                 color: context.accentOrOlive,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                        ],
-                        Expanded(
-                          child: Text(
-                            rawNameText.isNotEmpty ? rawNameText : matchedText,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              letterSpacing: 0.2,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (item.sourceLineNumber != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        '📍 Satır ${item.sourceLineNumber}',
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              IconButton(
-                key: const Key('bulk-person-delete'),
-                tooltip: 'Personeli kaldır',
-                visualDensity: VisualDensity.compact,
-                onPressed: onDelete,
-                icon: const Icon(
-                  Icons.delete_outline_rounded,
-                  color: Colors.redAccent,
-                  size: 20,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 6),
-
-          // Rozet satırı: Eşleşme durumu + Mükerrer / Tim Uyuşmazlığı uyarıları
-          Wrap(
-            spacing: 6,
-            runSpacing: 4,
-            children: [
-              MatchStatusIndicator(item: item),
-              if (duplicate)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Text(
-                    'Aynı tarihte ayrıca: ${duplicateAssignments!.join(', ')}',
-                    key: const Key('bulk-duplicate-warning'),
-                    style: TextStyle(
-                      color: Colors.red.shade700,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              if (item.teamMismatch && !item.reviewConfirmed)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: Colors.orange.shade300,
-                      width: 0.8,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.info_outline_rounded,
-                        size: 13,
-                        color: Colors.orange.shade800,
-                      ),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          'Tim uyuşmazlığı; onaylamak için dokunun',
-                          key: const Key('bulk-team-mismatch-warning'),
-                          style: TextStyle(
-                            color: Colors.orange.shade900,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-
-          const SizedBox(height: 6),
-
-          // Eşleşen Personel & Değiştir Butonu Satırı
-          InkWell(
-            key: const Key('bulk-person-select'),
-            borderRadius: BorderRadius.circular(8),
-            onTap: onSelect,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'EŞLEŞEN PERSONEL',
-                          style: TextStyle(
-                            fontSize: 10,
-                            letterSpacing: 0.5,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          matchedText,
-                          style: TextStyle(
-                            color: item.isMatched ? null : Colors.red.shade700,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        if (item.isMatched) ...[
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.groups_outlined,
-                                size: 13,
-                                color: Colors.grey.shade600,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                teamName,
-                                style: TextStyle(
-                                  color: Colors.grey.shade700,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  if (item.isMatched)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.accentOrOlive.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Değiştir',
-                            style: TextStyle(
-                              color: context.accentOrOlive,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          Icon(
-                            Icons.chevron_right_rounded,
-                            size: 16,
-                            color: context.accentOrOlive,
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (item.hasWarning && item.isMatched && onConfirmSuggestion != null) ...[
-                    const SizedBox(width: 6),
-                    InkWell(
-                      key: const Key('bulk-person-confirm-suggestion'),
-                      onTap: onConfirmSuggestion,
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF16A34A),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.done_rounded,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              '✓ Onayla',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.isMatched ? matchedName : rawNameText,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: item.isMatched
+                                        ? null
+                                        : Colors.red.shade700,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (hasNameDiff || item.sourceLineNumber != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    [
+                                      if (hasNameDiff)
+                                        'Metinde: $rawRankText $rawNameText'.trim(),
+                                      if (item.sourceLineNumber != null)
+                                        '📍 Satır ${item.sourceLineNumber}',
+                                    ].join(' • '),
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            key: const Key('bulk-person-delete'),
+                            tooltip: 'Personeli kaldır',
+                            visualDensity: VisualDensity.compact,
+                            onPressed: onDelete,
+                            icon: Icon(
+                              Icons.delete_outline_rounded,
+                              color: Colors.redAccent.shade200,
+                              size: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      // Rozetler Satırı: Eşleşme durumu + Mükerrer / Tim Uyuşmazlığı
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          MatchStatusIndicator(item: item),
+                          if (duplicate)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                'Aynı tarihte ayrıca: ${duplicateAssignments!.join(', ')}',
+                                key: const Key('bulk-duplicate-warning'),
+                                style: TextStyle(
+                                  color: Colors.red.shade700,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          if (item.teamMismatch && !item.reviewConfirmed)
+                            InkWell(
+                              onTap: onConfirmSuggestion,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.orange.shade300,
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline_rounded,
+                                      size: 13,
+                                      color: Colors.orange.shade800,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Tim uyuşmazlığı (Onayla)',
+                                      key: const Key('bulk-team-mismatch-warning'),
+                                      style: TextStyle(
+                                        color: Colors.orange.shade900,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // Alt Aksiyon Satırı
+                      if (item.isMatched)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.groups_outlined,
+                              size: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              teamName,
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const Spacer(),
+                            if (item.hasWarning && onConfirmSuggestion != null) ...[
+                              FilledButton.icon(
+                                key: const Key('bulk-person-confirm-suggestion'),
+                                onPressed: onConfirmSuggestion,
+                                icon: const Icon(Icons.done_rounded, size: 14),
+                                label: const Text(
+                                  '✓ Onayla',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: const Color(0xFF16A34A),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  visualDensity: VisualDensity.compact,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            InkWell(
+                              key: const Key('bulk-person-select'),
+                              onTap: onSelect,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: context.accentOrOlive
+                                      .withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Değiştir',
+                                      style: TextStyle(
+                                        color: context.accentOrOlive,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    Icon(
+                                      Icons.chevron_right_rounded,
+                                      size: 16,
+                                      color: context.accentOrOlive,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                key: const Key('bulk-person-select-btn'),
+                                onPressed: onSelect,
+                                icon: const Icon(Icons.search, size: 14),
+                                label: const Text(
+                                  'Personel Seç',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 6,
+                                  ),
+                                  visualDensity: VisualDensity.compact,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            if (onAddNewPerson != null) ...[
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: FilledButton.icon(
+                                  key: const Key('bulk-person-add-new'),
+                                  onPressed: onAddNewPerson,
+                                  icon: const Icon(
+                                    Icons.person_add_alt_1_rounded,
+                                    size: 14,
+                                  ),
+                                  label: Text(
+                                    '+ ${teamName.toLowerCase().contains('tim') ? teamName : '$teamName Timine'} Ekle',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: const Color(0xFF0284C7),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 6,
+                                    ),
+                                    visualDensity: VisualDensity.compact,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-          if (!item.isMatched) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    key: const Key('bulk-person-select-btn'),
-                    onPressed: onSelect,
-                    icon: const Icon(Icons.search, size: 14),
-                    label: const Text(
-                      'Personel Seç',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      visualDensity: VisualDensity.compact,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
+                    ],
                   ),
                 ),
-                if (onAddNewPerson != null) ...[
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: FilledButton.icon(
-                      key: const Key('bulk-person-add-new'),
-                      onPressed: onAddNewPerson,
-                      icon: const Icon(Icons.person_add_alt_1_rounded, size: 14),
-                      label: Text(
-                        '+ ${teamName.toLowerCase().contains('tim') ? teamName : '$teamName Timine'} Ekle',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF0284C7),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        visualDensity: VisualDensity.compact,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ],
+              ),
+            ],
+          ),
+        ),
       ),
-    );
-  }
-}
-
-class LabeledValue extends StatelessWidget {
-  const LabeledValue({
-    required this.label,
-    required this.value,
-    this.valueColor,
-    super.key,
-  });
-
-  final String label;
-  final String value;
-  final Color? valueColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            letterSpacing: 0.5,
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(
-            color: valueColor,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
     );
   }
 }
@@ -501,7 +442,7 @@ class MatchStatusIndicator extends StatelessWidget {
             label,
             style: TextStyle(
               color: color,
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -510,3 +451,83 @@ class MatchStatusIndicator extends StatelessWidget {
     );
   }
 }
+
+// -----------------------------------------------------------------------------
+// Flutter Widget Previews (@Preview)
+// -----------------------------------------------------------------------------
+
+@Preview(name: 'Tam Eşleşmiş Personel Kartı', group: 'Bulk Import')
+Widget personnelMatchCardMatchedPreview() {
+  return MaterialApp(
+    home: Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: PersonnelMatchCard(
+          item: ParsedPersonnelItem(
+            rawIndex: 1,
+            rawRank: 'J.Asb.Çvş.',
+            rawName: 'Ahmet TINAS',
+            matchedPersonnelId: 1,
+            matchedAdSoyad: 'Ahmet TINAS',
+            matchedRutbe: 'J.Asb.Çvş.',
+            matchedTimId: 1,
+            matchConfidence: 1.0,
+          ),
+          teamName: '9-B Timi',
+          onSelect: () {},
+          onDelete: () {},
+        ),
+      ),
+    ),
+  );
+}
+
+@Preview(name: 'Kısmi Eşleşmiş Onay Bekleyen Personel Kartı', group: 'Bulk Import')
+Widget personnelMatchCardReviewPreview() {
+  return MaterialApp(
+    home: Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: PersonnelMatchCard(
+          item: ParsedPersonnelItem(
+            rawIndex: 2,
+            rawRank: 'J.Uzm.Çvş.',
+            rawName: 'Ramazan',
+            matchedPersonnelId: 2,
+            matchedAdSoyad: 'Ramazan BOSTAN',
+            matchedRutbe: 'J.Uzm.Çvş.',
+            matchedTimId: 2,
+            matchConfidence: 0.85,
+          ),
+          teamName: '9-B Timi',
+          onSelect: () {},
+          onDelete: () {},
+          onConfirmSuggestion: () {},
+        ),
+      ),
+    ),
+  );
+}
+
+@Preview(name: 'Eşleşmemiş Hızlı Ekle Butonlu Personel Kartı', group: 'Bulk Import')
+Widget personnelMatchCardUnmatchedPreview() {
+  return MaterialApp(
+    home: Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: PersonnelMatchCard(
+          item: ParsedPersonnelItem(
+            rawIndex: 3,
+            rawRank: 'J.Uzm.Çvş.',
+            rawName: 'Hakan KAYA',
+          ),
+          teamName: '6-B Timi',
+          onSelect: () {},
+          onDelete: () {},
+          onAddNewPerson: () {},
+        ),
+      ),
+    ),
+  );
+}
+
