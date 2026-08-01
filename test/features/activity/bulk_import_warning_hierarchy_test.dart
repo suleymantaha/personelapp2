@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/activity_block_card.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_problem_wizard.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/compact_error_summary.dart';
 
@@ -79,6 +80,52 @@ void main() {
       expect(find.text('İnceleme Bekleyen Ögeler Var'), findsOneWidget);
       expect(find.textContaining('Okan TOPUZ'), findsOneWidget);
       expect(find.text('Tüm kontroller tamam'), findsNothing);
+    });
+
+    testWidgets('ActivityBlockCard auto-expands and shows focus badge when focused', (tester) async {
+      final block = ParsedActivityBlock(
+        rawTitle: 'DEVRİYE',
+        parsedActivityType: 'DEVRİYE',
+        parsedDate: '2026-08-01',
+        parsedTimName: '3-A Timi',
+        personnelList: [
+          ParsedPersonnelItem(
+            rawIndex: 1,
+            rawRank: 'J.Astsb.Çvş.',
+            rawName: 'Ahmet YILMAZ',
+            matchedPersonnelId: 5,
+            matchedAdSoyad: 'Ahmet YILMAZ',
+            matchedRutbe: 'J.Astsb.Çvş.',
+            matchedTimId: 1,
+            teamMismatch: true,
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ActivityBlockCard(
+                block: block,
+                blockIdx: 0,
+                duplicates: const {},
+                allSquads: const [],
+                focusedPersonKey: '0:0',
+                isExpanded: false, // Explicitly passed false, should be overridden by focus
+                onEditBlock: (_) {},
+                onRemoveBlock: (_) {},
+                onSelectPersonnel: (_, __) {},
+                onRemovePerson: (_, __) {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('İNCELENEN KART'), findsOneWidget);
+      expect(find.text('İNCELENEN PERSONEL'), findsOneWidget);
+      expect(find.textContaining('Ahmet YILMAZ'), findsWidgets);
     });
   });
 }

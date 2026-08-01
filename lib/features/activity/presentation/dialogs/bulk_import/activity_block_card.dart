@@ -86,6 +86,10 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isBlockFocused = widget.focusedPersonKey != null &&
+        widget.focusedPersonKey!.startsWith('${widget.blockIdx}:');
+    final effectiveIsExpanded = isBlockFocused || _isExpanded;
+
     final personnelIndexes = widget.visiblePersonnelIndexes ??
         List<int>.generate(widget.block.personnelList.length, (index) => index);
     final problemCount =
@@ -104,30 +108,48 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
     }
 
     final hasProblems = unmatchedCount > 0 || warningCount > 0 || widget.block.personnelList.isEmpty;
-    final borderColor = hasProblems
-        ? (unmatchedCount > 0 ? Colors.red.shade300 : Colors.orange.shade300)
-        : context.cardBorderColor;
+    final borderColor = isBlockFocused
+        ? (unmatchedCount > 0 ? Colors.red.shade700 : Colors.amber.shade800)
+        : (hasProblems
+            ? (unmatchedCount > 0 ? Colors.red.shade300 : Colors.orange.shade300)
+            : context.cardBorderColor);
 
-    return Card(
-      key: widget.cardKey,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: borderColor, width: hasProblems ? 1.2 : 1.0),
+        border: Border.all(
+          color: borderColor,
+          width: isBlockFocused ? 2.5 : (hasProblems ? 1.2 : 1.0),
+        ),
+        boxShadow: isBlockFocused
+            ? [
+                BoxShadow(
+                  color: (unmatchedCount > 0 ? Colors.red : Colors.amber)
+                      .withValues(alpha: 0.25),
+                  blurRadius: 12,
+                  spreadRadius: 2,
+                ),
+              ]
+            : null,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Row (Clickable InkWell to Collapse/Expand)
-          InkWell(
-            key: Key('bulk-card-header-${widget.blockIdx}'),
-            onTap: _toggleExpand,
-            borderRadius: BorderRadius.vertical(
-              top: const Radius.circular(16),
-              bottom: Radius.circular(_isExpanded ? 0 : 16),
-            ),
-            child: Padding(
+      child: Material(
+        key: widget.cardKey,
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Row (Clickable InkWell to Collapse/Expand)
+            InkWell(
+              key: Key('bulk-card-header-${widget.blockIdx}'),
+              onTap: _toggleExpand,
+              borderRadius: BorderRadius.vertical(
+                top: const Radius.circular(16),
+                bottom: Radius.circular(effectiveIsExpanded ? 0 : 16),
+              ),
+              child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -182,6 +204,36 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                     ),
                   ),
                   const SizedBox(width: 6),
+
+                  if (isBlockFocused) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: unmatchedCount > 0 ? Colors.red.shade800 : Colors.amber.shade900,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            unmatchedCount > 0 ? Icons.push_pin_rounded : Icons.search_rounded,
+                            size: 11,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            unmatchedCount > 0 ? 'ODAKLANILAN HATA' : 'İNCELENEN KART',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
 
                   // Durum ve Uyarı Rozeti
                   if (unmatchedCount > 0)
@@ -251,7 +303,7 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
 
                   // Genişletme / Daraltma Oku (Expand Chevron)
                   Icon(
-                    _isExpanded
+                    effectiveIsExpanded
                         ? Icons.keyboard_arrow_up_rounded
                         : Icons.keyboard_arrow_down_rounded,
                     color: Colors.grey.shade600,
@@ -296,7 +348,7 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
           ),
 
           // Body (Only rendered if expanded)
-          if (_isExpanded) ...[
+          if (effectiveIsExpanded) ...[
             const Divider(height: 1),
             Padding(
               padding: const EdgeInsets.all(14),
@@ -349,8 +401,9 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
           ],
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _MetadataLabel extends StatelessWidget {
