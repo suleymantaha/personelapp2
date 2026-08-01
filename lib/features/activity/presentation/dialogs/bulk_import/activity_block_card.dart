@@ -4,7 +4,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/personnel_match_card.dart';
 
-class ActivityBlockCard extends StatelessWidget {
+class ActivityBlockCard extends StatefulWidget {
   const ActivityBlockCard({
     required this.block,
     required this.blockIdx,
@@ -19,6 +19,8 @@ class ActivityBlockCard extends StatelessWidget {
     this.onAddNewPersonnel,
     this.cardKey,
     this.visiblePersonnelIndexes,
+    this.isExpanded,
+    this.onToggleExpand,
     super.key,
   });
 
@@ -35,182 +37,317 @@ class ActivityBlockCard extends StatelessWidget {
   final void Function(int blockIdx, int personIdx)? onAddNewPersonnel;
   final Key? cardKey;
   final List<int>? visiblePersonnelIndexes;
+  final bool? isExpanded;
+  final VoidCallback? onToggleExpand;
+
+  @override
+  State<ActivityBlockCard> createState() => _ActivityBlockCardState();
+}
+
+class _ActivityBlockCardState extends State<ActivityBlockCard> {
+  late bool _isExpanded;
+
+  bool get _hasBlockProblems {
+    if (widget.block.personnelList.isEmpty) return true;
+    for (var i = 0; i < widget.block.personnelList.length; i++) {
+      final p = widget.block.personnelList[i];
+      final isDup = widget.duplicates.containsKey('${widget.blockIdx}:$i');
+      if (!p.isMatched || p.hasWarning || isDup) return true;
+    }
+    return false;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _isExpanded = widget.isExpanded ?? _hasBlockProblems;
+  }
+
+  @override
+  void didUpdateWidget(covariant ActivityBlockCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isExpanded != null) {
+      _isExpanded = widget.isExpanded!;
+    } else if (widget.focusedPersonKey != null &&
+        widget.focusedPersonKey!.startsWith('${widget.blockIdx}:')) {
+      _isExpanded = true;
+    }
+  }
+
+  void _toggleExpand() {
+    if (widget.onToggleExpand != null) {
+      widget.onToggleExpand!();
+    } else {
+      setState(() {
+        _isExpanded = !_isExpanded;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final personnelIndexes = visiblePersonnelIndexes ??
-        List<int>.generate(block.personnelList.length, (index) => index);
+    final personnelIndexes = widget.visiblePersonnelIndexes ??
+        List<int>.generate(widget.block.personnelList.length, (index) => index);
     final problemCount =
-        block.personnelList.isEmpty ? 1 : visiblePersonnelIndexes?.length ?? 0;
+        widget.block.personnelList.isEmpty ? 1 : widget.visiblePersonnelIndexes?.length ?? 0;
+
+    int unmatchedCount = 0;
+    int warningCount = 0;
+    for (var i = 0; i < widget.block.personnelList.length; i++) {
+      final p = widget.block.personnelList[i];
+      final isDup = widget.duplicates.containsKey('${widget.blockIdx}:$i');
+      if (!p.isMatched) {
+        unmatchedCount++;
+      } else if (p.hasWarning || isDup) {
+        warningCount++;
+      }
+    }
+
+    final hasProblems = unmatchedCount > 0 || warningCount > 0 || widget.block.personnelList.isEmpty;
+    final borderColor = hasProblems
+        ? (unmatchedCount > 0 ? Colors.red.shade300 : Colors.orange.shade300)
+        : context.cardBorderColor;
 
     return Card(
-      key: cardKey,
-      margin: const EdgeInsets.only(bottom: 18),
+      key: widget.cardKey,
+      margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: context.cardBorderColor),
+        side: BorderSide(color: borderColor, width: hasProblems ? 1.2 : 1.0),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                if (block.parsedTimName.isNotEmpty) ...[
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row (Clickable InkWell to Collapse/Expand)
+          InkWell(
+            key: Key('bulk-card-header-${widget.blockIdx}'),
+            onTap: _toggleExpand,
+            borderRadius: BorderRadius.vertical(
+              top: const Radius.circular(16),
+              bottom: Radius.circular(_isExpanded ? 0 : 16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (widget.block.parsedTimName.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: context.accentOrOlive.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        widget.block.parsedTimName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: context.accentOrOlive,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.block.parsedActivityType,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            letterSpacing: 0.1,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 2,
+                          children: [
+                            _MetadataLabel(
+                              icon: Icons.calendar_today_rounded,
+                              text: widget.block.parsedDate,
+                            ),
+                            if (widget.block.parsedTimeRange?.trim().isNotEmpty == true)
+                              _MetadataLabel(
+                                icon: Icons.schedule_rounded,
+                                text: widget.block.parsedTimeRange!,
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+
+                  // Durum ve Uyarı Rozeti
+                  if (unmatchedCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '$unmatchedCount Eşleşmedi',
+                        style: TextStyle(
+                          color: Colors.red.shade800,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    )
+                  else if (warningCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '$warningCount Uyarı',
+                        style: TextStyle(
+                          color: Colors.orange.shade900,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    )
+                  else
+                    Icon(
+                      Icons.check_circle_rounded,
+                      color: context.approvedColor,
+                      size: 18,
+                    ),
+
+                  const SizedBox(width: 6),
+
+                  // Ekran görüntünüzdeki koyu haki oval pill rozeti (Personel sayısı)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
-                      color: context.accentOrOlive.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+                      color: context.accentOrOlive,
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      block.parsedTimName,
-                      style: TextStyle(
+                      widget.visiblePersonnelIndexes == null
+                          ? '${widget.block.personnelList.length} personel'
+                          : '$problemCount sorun / ${widget.block.personnelList.length} p.',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        color: context.accentOrOlive,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        block.parsedActivityType,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          letterSpacing: 0.1,
+
+                  const SizedBox(width: 4),
+
+                  // Genişletme / Daraltma Oku (Expand Chevron)
+                  Icon(
+                    _isExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: Colors.grey.shade600,
+                    size: 22,
+                  ),
+
+                  PopupMenuButton<String>(
+                    key: Key('bulk-card-menu-${widget.blockIdx}'),
+                    tooltip: 'Kart işlemleri',
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        widget.onEditBlock(widget.blockIdx);
+                      } else if (value == 'delete') {
+                        widget.onRemoveBlock(widget.blockIdx);
+                      }
+                    },
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.edit_outlined),
+                          title: Text('Kartı düzenle'),
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 2,
-                        children: [
-                          _MetadataLabel(
-                            icon: Icons.calendar_today_rounded,
-                            text: block.parsedDate,
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(
+                            Icons.delete_outline,
+                            color: Colors.redAccent,
                           ),
-                          if (block.parsedTimeRange?.trim().isNotEmpty == true)
-                            _MetadataLabel(
-                              icon: Icons.schedule_rounded,
-                              text: block.parsedTimeRange!,
-                            ),
-                        ],
+                          title: Text('Kartı sil'),
+                        ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 6),
-                // Ekran görüntünüzdeki koyu haki oval pill rozeti
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: context.accentOrOlive,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    visiblePersonnelIndexes == null
-                        ? '${block.personnelList.length} personel'
-                        : '$problemCount sorun / ${block.personnelList.length} p.',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  key: Key('bulk-card-menu-$blockIdx'),
-                  tooltip: 'Kart işlemleri',
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      onEditBlock(blockIdx);
-                    } else if (value == 'delete') {
-                      onRemoveBlock(blockIdx);
-                    }
-                  },
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.edit_outlined),
-                        title: Text('Kartı düzenle'),
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading:
-                            Icon(Icons.delete_outline, color: Colors.redAccent),
-                        title: Text('Kartı sil'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const Divider(height: 24),
-            if (block.personnelList.isEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'Bu kartta personel kalmadı. Kartı silin veya metni yeniden ayrıştırın.',
-                  style: TextStyle(color: Colors.red),
-                ),
-              )
-            else
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: personnelIndexes.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, visibleIndex) {
-                  final pIdx = personnelIndexes[visibleIndex];
-                  final item = block.personnelList[pIdx];
-                  final duplicateWith = duplicates['$blockIdx:$pIdx'];
-                  final personKey = '$blockIdx:$pIdx';
-                  final isFocused = focusedPersonKey == personKey;
-                  return PersonnelMatchCard(
-                    key: Key('bulk-person-$blockIdx-$pIdx'),
-                    item: item,
-                    teamName: allSquads
-                            .where((team) => team.id == item.matchedTimId)
-                            .map((team) => team.timAdi)
-                            .firstOrNull ??
-                        block.parsedTimName,
-                    duplicateAssignments: duplicateWith,
-                    isFocused: isFocused,
-                    onSelect: () => onSelectPersonnel(blockIdx, pIdx),
-                    onDelete: () => onRemovePerson(blockIdx, pIdx),
-                    onConfirmSuggestion: onConfirmPersonnelSuggestion != null
-                        ? () => onConfirmPersonnelSuggestion!(blockIdx, pIdx)
-                        : null,
-                    onAddNewPerson: onAddNewPersonnel != null
-                        ? () => onAddNewPersonnel!(blockIdx, pIdx)
-                        : null,
-                  );
-                },
+                ],
               ),
+            ),
+          ),
+
+          // Body (Only rendered if expanded)
+          if (_isExpanded) ...[
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: widget.block.personnelList.isEmpty
+                  ? Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'Bu kartta personel kalmadı. Kartı silin veya metni yeniden ayrıştırın.',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    )
+                  : ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: personnelIndexes.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      itemBuilder: (context, visibleIndex) {
+                        final pIdx = personnelIndexes[visibleIndex];
+                        final item = widget.block.personnelList[pIdx];
+                        final duplicateWith = widget.duplicates['${widget.blockIdx}:$pIdx'];
+                        final personKey = '${widget.blockIdx}:$pIdx';
+                        final isFocused = widget.focusedPersonKey == personKey;
+                        return PersonnelMatchCard(
+                          key: Key('bulk-person-${widget.blockIdx}-$pIdx'),
+                          item: item,
+                          teamName: widget.allSquads
+                                  .where((team) => team.id == item.matchedTimId)
+                                  .map((team) => team.timAdi)
+                                  .firstOrNull ??
+                              widget.block.parsedTimName,
+                          duplicateAssignments: duplicateWith,
+                          isFocused: isFocused,
+                          onSelect: () => widget.onSelectPersonnel(widget.blockIdx, pIdx),
+                          onDelete: () => widget.onRemovePerson(widget.blockIdx, pIdx),
+                          onConfirmSuggestion: widget.onConfirmPersonnelSuggestion != null
+                              ? () => widget.onConfirmPersonnelSuggestion!(widget.blockIdx, pIdx)
+                              : null,
+                          onAddNewPerson: widget.onAddNewPersonnel != null
+                              ? () => widget.onAddNewPersonnel!(widget.blockIdx, pIdx)
+                              : null,
+                        );
+                      },
+                    ),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -241,3 +378,4 @@ class _MetadataLabel extends StatelessWidget {
     );
   }
 }
+
