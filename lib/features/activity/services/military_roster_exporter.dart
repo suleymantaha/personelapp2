@@ -815,13 +815,20 @@ class MilitaryRosterExporter {
     final border = outerBorder ?? _tableBorder;
     final isNone = outerBorder == _noneBorder;
 
+    if (startCol != endCol || startRow != endRow) {
+      sheet.merge(
+        CellIndex.indexByColumnRow(columnIndex: startCol, rowIndex: startRow),
+        CellIndex.indexByColumnRow(columnIndex: endCol, rowIndex: endRow),
+      );
+    }
+
+    final cellBorder = isNone ? _noneBorder : border;
+
     for (var r = startRow; r <= endRow; r++) {
       for (var c = startCol; c <= endCol; c++) {
         final cell = sheet.cell(
           CellIndex.indexByColumnRow(columnIndex: c, rowIndex: r),
         );
-
-        final cellBorder = isNone ? _noneBorder : border;
 
         cell.cellStyle = CellStyle(
           bold: baseStyle.isBold,
@@ -840,13 +847,6 @@ class MilitaryRosterExporter {
           bottomBorder: cellBorder,
         );
       }
-    }
-
-    if (startCol != endCol || startRow != endRow) {
-      sheet.merge(
-        CellIndex.indexByColumnRow(columnIndex: startCol, rowIndex: startRow),
-        CellIndex.indexByColumnRow(columnIndex: endCol, rowIndex: endRow),
-      );
     }
   }
 
