@@ -241,9 +241,17 @@ class PdfRosterExporter {
       // Birlik merge boundaries
       final bSt = birlikStart[i];
       final bEn = birlikEnd[i];
-      final isBLast = i == bEn;
+      final isBFirst = i == bSt;
+      final isBLast = i == bEn || i == n - 1;
 
-      final birlikBorder = isBLast ? cellBorder : const pw.Border();
+      final birlikBorder = pw.Border(
+        top: (isBFirst && i > 0)
+            ? const pw.BorderSide(width: 0.6, color: PdfColors.grey800)
+            : pw.BorderSide.none,
+        bottom: isBLast
+            ? const pw.BorderSide(width: 0.6, color: PdfColors.grey800)
+            : pw.BorderSide.none,
+      );
 
       // Each page is built from a bounded row chunk. Recreate the merged-cell
       // appearance inside that chunk so a group split across pages starts a
@@ -256,10 +264,19 @@ class PdfRosterExporter {
       final spSt = specialStart[i];
       final spEn = specialEnd[i];
       final isSpSpecialGroup = spSt != -1;
-      final isSpLast = isSpSpecialGroup && i == spEn;
+      final isSpFirst = isSpSpecialGroup && i == spSt;
+      final isSpLast = isSpSpecialGroup && (i == spEn || i == n - 1);
 
-      final specialBorder =
-          isSpSpecialGroup && !isSpLast ? const pw.Border() : cellBorder;
+      final specialBorder = isSpSpecialGroup
+          ? pw.Border(
+              top: (isSpFirst && i > 0)
+                  ? const pw.BorderSide(width: 0.6, color: PdfColors.grey800)
+                  : pw.BorderSide.none,
+              bottom: isSpLast
+                  ? const pw.BorderSide(width: 0.6, color: PdfColors.grey800)
+                  : pw.BorderSide.none,
+            )
+          : cellBorder;
 
       var specialCellText = r.diger.trim().isEmpty ? '-' : r.diger;
       var specialAlignment = pw.Alignment.center;
