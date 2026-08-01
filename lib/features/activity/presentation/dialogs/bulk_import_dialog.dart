@@ -18,6 +18,7 @@ import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_stepper.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/edit_activity_block_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/learned_aliases_dialog.dart';
 import 'package:personelapp2/features/activity/services/bulk_import_preferences.dart';
 
 export 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/smart_save_bar.dart'
@@ -404,6 +405,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
                     children: [
                       BulkImportHeaderBanner(
                         isKeyboardVisible: isKeyboardVisible,
+                        onOpenMemory: () => LearnedAliasesDialog.show(
+                          context,
+                          widget.database,
+                        ),
                         onClose: () => Navigator.pop(context),
                       ),
                       BulkImportStepper(

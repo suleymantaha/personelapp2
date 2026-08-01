@@ -76,8 +76,6 @@ class BulkImportLearningService {
         );
       }
     }
-    if (uniqueMap.isEmpty) return;
-
     for (final entry in uniqueMap.entries) {
       await rememberAlias(
         rawName: entry.value.rawName,
@@ -85,6 +83,38 @@ class BulkImportLearningService {
       );
     }
   }
+
+  Future<List<LearnedAliasItem>> getAliasList() async {
+    final query = database.select(database.personelIsimTakmaAdTable).join([
+      innerJoin(
+        database.personelTable,
+        database.personelTable.id.equalsExp(
+          database.personelIsimTakmaAdTable.personelId,
+        ),
+      ),
+    ]);
+    final rows = await query.get();
+    return rows.map((row) {
+      final alias = row.readTable(database.personelIsimTakmaAdTable);
+      final person = row.readTable(database.personelTable);
+      return LearnedAliasItem(
+        id: alias.id,
+        normalizeTakmaAd: alias.normalizeTakmaAd,
+        gorunenTakmaAd: alias.gorunenTakmaAd,
+        personnelId: alias.personelId,
+        personelAdSoyad: person.adSoyad,
+        personelRutbe: person.rutbe,
+        kayitTarihi: alias.kayitTarihi,
+      );
+    }).toList();
+  }
+
+  Future<void> deleteAlias(int aliasId) async {
+    await (database.delete(database.personelIsimTakmaAdTable)
+          ..where((table) => table.id.equals(aliasId)))
+        .go();
+  }
+
 
 
   static String fingerprint(Iterable<ParsedActivityBlock> blocks) {
@@ -176,3 +206,24 @@ class BulkImportLearningService {
         );
   }
 }
+
+class LearnedAliasItem {
+  final int id;
+  final String normalizeTakmaAd;
+  final String gorunenTakmaAd;
+  final int personnelId;
+  final String personelAdSoyad;
+  final String? personelRutbe;
+  final String kayitTarihi;
+
+  const LearnedAliasItem({
+    required this.id,
+    required this.normalizeTakmaAd,
+    required this.gorunenTakmaAd,
+    required this.personnelId,
+    required this.personelAdSoyad,
+    this.personelRutbe,
+    required this.kayitTarihi,
+  });
+}
+

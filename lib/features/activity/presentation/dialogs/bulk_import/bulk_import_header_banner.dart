@@ -5,11 +5,13 @@ class BulkImportHeaderBanner extends StatelessWidget {
   const BulkImportHeaderBanner({
     required this.isKeyboardVisible,
     required this.onClose,
+    this.onOpenMemory,
     super.key,
   });
 
   final bool isKeyboardVisible;
   final VoidCallback onClose;
+  final VoidCallback? onOpenMemory;
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +69,12 @@ class BulkImportHeaderBanner extends StatelessWidget {
               ],
             ),
           ),
+          if (onOpenMemory != null)
+            IconButton(
+              tooltip: 'Sistem Hafızasını (Takma Adları) Yönet',
+              icon: const Icon(Icons.psychology_rounded, color: Colors.white),
+              onPressed: onOpenMemory,
+            ),
           IconButton(
             icon: const Icon(Icons.close, color: Colors.white),
             onPressed: onClose,

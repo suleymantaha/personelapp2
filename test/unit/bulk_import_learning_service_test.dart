@@ -116,5 +116,19 @@ void main() {
     expect(item.matchConfidence, 1.0);
     expect(item.reviewConfirmed, isTrue);
   });
+
+  test('getAliasList returns joined personnel details and deleteAlias removes entry', () async {
+    final service = BulkImportLearningService(database);
+    await service.rememberAlias(rawName: 'Hüseyin ORUCTUTAN', personnelId: personnelId);
+
+    final list = await service.getAliasList();
+    expect(list.length, 1);
+    expect(list.first.gorunenTakmaAd, 'Hüseyin ORUCTUTAN');
+    expect(list.first.personelAdSoyad, 'Hüseyin ORUÇTUTAN');
+
+    await service.deleteAlias(list.first.id);
+    final updatedList = await service.getAliasList();
+    expect(updatedList.isEmpty, isTrue);
+  });
 }
 

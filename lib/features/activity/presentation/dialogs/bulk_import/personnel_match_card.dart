@@ -117,16 +117,64 @@ class PersonnelMatchCard extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  item.isMatched ? matchedName : rawNameText,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                    color: item.isMatched
-                                        ? null
-                                        : Colors.red.shade700,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        item.isMatched ? matchedName : rawNameText,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                          color: item.isMatched
+                                              ? null
+                                              : Colors.red.shade700,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (item.isMatched &&
+                                        item.reviewConfirmed &&
+                                        item.matchConfidence == 1.0 &&
+                                        hasNameDiff) ...[
+                                      const SizedBox(width: 6),
+                                      Tooltip(
+                                        message: 'Hafızadan Otomatik Eşleşti',
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.amber.shade50,
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(
+                                              color: Colors.amber.shade400,
+                                              width: 0.8,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.auto_awesome,
+                                                size: 11,
+                                                color: Colors.amber.shade900,
+                                              ),
+                                              const SizedBox(width: 3),
+                                              Text(
+                                                'Hafızadan',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.amber.shade900,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                                 if (hasNameDiff || item.sourceLineNumber != null) ...[
                                   const SizedBox(height: 2),
