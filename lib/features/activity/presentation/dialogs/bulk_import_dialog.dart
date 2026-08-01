@@ -86,7 +86,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       final target = locs[_activeIssueFocusIndex];
       _focusedPersonKey = target.personIndex != null
           ? '${target.blockIndex}:${target.personIndex}'
-          : null;
+          : '${target.blockIndex}:empty';
     });
     _scrollToProblemLocation(locs[_activeIssueFocusIndex].blockIndex);
   }
@@ -113,7 +113,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       final target = locs[_activeIssueFocusIndex];
       _focusedPersonKey = target.personIndex != null
           ? '${target.blockIndex}:${target.personIndex}'
-          : null;
+          : '${target.blockIndex}:empty';
     });
     _scrollToProblemLocation(locs[_activeIssueFocusIndex].blockIndex);
   }

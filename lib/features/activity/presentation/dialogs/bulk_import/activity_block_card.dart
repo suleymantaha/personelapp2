@@ -45,7 +45,7 @@ class ActivityBlockCard extends StatefulWidget {
 }
 
 class _ActivityBlockCardState extends State<ActivityBlockCard> {
-  late bool _isExpanded;
+  bool? _userManualExpanded;
 
   bool get _hasBlockProblems {
     if (widget.block.personnelList.isEmpty) return true;
@@ -58,19 +58,10 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _isExpanded = widget.isExpanded ?? _hasBlockProblems;
-  }
-
-  @override
   void didUpdateWidget(covariant ActivityBlockCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isExpanded != null) {
-      _isExpanded = widget.isExpanded!;
-    } else if (widget.focusedPersonKey != null &&
-        widget.focusedPersonKey!.startsWith('${widget.blockIdx}:')) {
-      _isExpanded = true;
+    if (widget.isExpanded != oldWidget.isExpanded && widget.isExpanded != null) {
+      _userManualExpanded = widget.isExpanded;
     }
   }
 
@@ -79,16 +70,29 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
       widget.onToggleExpand!();
     } else {
       setState(() {
-        _isExpanded = !_isExpanded;
+        _userManualExpanded = !_effectiveIsExpanded;
       });
     }
+  }
+
+  bool get _effectiveIsExpanded {
+    if (_userManualExpanded != null) {
+      return _userManualExpanded!;
+    }
+    if (widget.focusedPersonKey != null) {
+      return widget.focusedPersonKey!.startsWith('${widget.blockIdx}:');
+    }
+    if (widget.isExpanded != null) {
+      return widget.isExpanded!;
+    }
+    return _hasBlockProblems;
   }
 
   @override
   Widget build(BuildContext context) {
     final isBlockFocused = widget.focusedPersonKey != null &&
         widget.focusedPersonKey!.startsWith('${widget.blockIdx}:');
-    final effectiveIsExpanded = isBlockFocused || _isExpanded;
+    final effectiveIsExpanded = _effectiveIsExpanded;
 
     final personnelIndexes = widget.visiblePersonnelIndexes ??
         List<int>.generate(widget.block.personnelList.length, (index) => index);
