@@ -154,40 +154,53 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  if (widget.block.parsedTimName.isNotEmpty) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: context.accentOrOlive.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        widget.block.parsedTimName,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: context.accentOrOlive,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.block.parsedActivityType,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            letterSpacing: 0.1,
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            if (widget.block.parsedTimName.isNotEmpty) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: context.accentOrOlive.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  widget.block.parsedTimName,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                    color: context.accentOrOlive,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                            Expanded(
+                              child: Text(
+                                widget.block.parsedActivityType,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  letterSpacing: 0.1,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Wrap(
-                          spacing: 8,
-                          runSpacing: 2,
+                          spacing: 6,
+                          runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             _MetadataLabel(
                               icon: Icons.calendar_today_rounded,
@@ -198,84 +211,114 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                                 icon: Icons.schedule_rounded,
                                 text: widget.block.parsedTimeRange!,
                               ),
+                            if (isBlockFocused)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: (unmatchedCount > 0 ||
+                                          widget.block.personnelList.isEmpty)
+                                      ? Colors.red.shade800
+                                      : Colors.amber.shade900,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      (unmatchedCount > 0 ||
+                                              widget.block.personnelList.isEmpty)
+                                          ? Icons.push_pin_rounded
+                                          : Icons.search_rounded,
+                                      size: 11,
+                                      color: Colors.white,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      (unmatchedCount > 0 ||
+                                              widget.block.personnelList.isEmpty)
+                                          ? 'ODAKLANILAN HATA'
+                                          : 'İNCELENEN KART',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (widget.block.personnelList.isEmpty)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'Boş Kart',
+                                  style: TextStyle(
+                                    color: Colors.red.shade800,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              )
+                            else if (unmatchedCount > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '$unmatchedCount Eşleşmedi',
+                                  style: TextStyle(
+                                    color: Colors.red.shade800,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              )
+                            else if (warningCount > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '$warningCount Uyarı',
+                                  style: TextStyle(
+                                    color: Colors.orange.shade900,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              )
+                            else
+                              Icon(
+                                Icons.check_circle_rounded,
+                                color: context.approvedColor,
+                                size: 18,
+                              ),
                           ],
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 6),
-
-                  if (isBlockFocused) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: unmatchedCount > 0 ? Colors.red.shade800 : Colors.amber.shade900,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            unmatchedCount > 0 ? Icons.push_pin_rounded : Icons.search_rounded,
-                            size: 11,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            unmatchedCount > 0 ? 'ODAKLANILAN HATA' : 'İNCELENEN KART',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                  ],
-
-                  // Durum ve Uyarı Rozeti
-                  if (unmatchedCount > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '$unmatchedCount Eşleşmedi',
-                        style: TextStyle(
-                          color: Colors.red.shade800,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    )
-                  else if (warningCount > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '$warningCount Uyarı',
-                        style: TextStyle(
-                          color: Colors.orange.shade900,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    )
-                  else
-                    Icon(
-                      Icons.check_circle_rounded,
-                      color: context.approvedColor,
-                      size: 18,
-                    ),
-
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
 
                   // Ekran görüntünüzdeki koyu haki oval pill rozeti (Personel sayısı)
                   Container(
