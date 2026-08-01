@@ -412,7 +412,7 @@ void main() {
     expect(
       worksheetXml,
       contains(
-        '<pageSetup paperSize="9" orientation="landscape" '
+        '<pageSetup paperSize="9" orientation="portrait" '
         'fitToWidth="1" fitToHeight="0"/>',
       ),
     );
