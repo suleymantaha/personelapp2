@@ -15,6 +15,7 @@ class ActivityBlockCard extends StatelessWidget {
     required this.onRemoveBlock,
     required this.onSelectPersonnel,
     required this.onRemovePerson,
+    this.onConfirmPersonnelSuggestion,
     this.cardKey,
     this.visiblePersonnelIndexes,
     super.key,
@@ -29,6 +30,7 @@ class ActivityBlockCard extends StatelessWidget {
   final void Function(int blockIdx) onRemoveBlock;
   final void Function(int blockIdx, int personIdx) onSelectPersonnel;
   final void Function(int blockIdx, int personIdx) onRemovePerson;
+  final void Function(int blockIdx, int personIdx)? onConfirmPersonnelSuggestion;
   final Key? cardKey;
   final List<int>? visiblePersonnelIndexes;
 
@@ -178,6 +180,9 @@ class ActivityBlockCard extends StatelessWidget {
                     isFocused: isFocused,
                     onSelect: () => onSelectPersonnel(blockIdx, pIdx),
                     onDelete: () => onRemovePerson(blockIdx, pIdx),
+                    onConfirmSuggestion: onConfirmPersonnelSuggestion != null
+                        ? () => onConfirmPersonnelSuggestion!(blockIdx, pIdx)
+                        : null,
                   );
                 },
               ),

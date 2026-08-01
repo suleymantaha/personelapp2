@@ -470,6 +470,78 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     );
   }
 
+  bool get _hasReviewableSuggestions => _parsedBlocks
+      .expand((b) => b.personnelList)
+      .any((p) => p.needsReview && p.isMatched && p.matchedPersonnelId != null);
+
+  Future<void> _confirmPersonnelSuggestion(
+      int blockIndex, int personIndex) async {
+    final currentBlock = _parsedBlocks[blockIndex];
+    final item = currentBlock.personnelList[personIndex];
+    if (!item.isMatched || item.matchedPersonnelId == null) return;
+
+    setState(() {
+      final updatedList =
+          List<ParsedPersonnelItem>.from(currentBlock.personnelList);
+      updatedList[personIndex] = updatedList[personIndex].copyWith(
+        matchConfidence: 1.0,
+        teamMismatch: false,
+        reviewConfirmed: true,
+      );
+      _parsedBlocks[blockIndex] =
+          currentBlock.copyWith(personnelList: updatedList);
+    });
+
+    await BulkImportLearningService(widget.database).rememberAlias(
+      rawName: item.rawName,
+      personnelId: item.matchedPersonnelId!,
+    );
+  }
+
+  Future<void> _confirmAllSuggestions() async {
+    final learningService = BulkImportLearningService(widget.database);
+    setState(() {
+      for (var bIdx = 0; bIdx < _parsedBlocks.length; bIdx++) {
+        final block = _parsedBlocks[bIdx];
+        final updatedList = List<ParsedPersonnelItem>.from(block.personnelList);
+        var changed = false;
+
+        for (var pIdx = 0; pIdx < updatedList.length; pIdx++) {
+          final item = updatedList[pIdx];
+          if (item.needsReview &&
+              item.isMatched &&
+              item.matchedPersonnelId != null) {
+            updatedList[pIdx] = item.copyWith(
+              matchConfidence: 1.0,
+              teamMismatch: false,
+              reviewConfirmed: true,
+            );
+            changed = true;
+            unawaited(
+              learningService.rememberAlias(
+                rawName: item.rawName,
+                personnelId: item.matchedPersonnelId!,
+              ),
+            );
+          }
+        }
+
+        if (changed) {
+          _parsedBlocks[bIdx] = block.copyWith(personnelList: updatedList);
+        }
+      }
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tüm önerilen personel eşleşmeleri onaylandı.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   Widget _buildPreviewSection({required bool isMobile}) {
     final duplicates = _duplicateAssignments();
     final problemLocs = _getProblemLocations();
@@ -500,6 +572,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       onRemoveBlock: _removeBlock,
       onSelectPersonnel: _selectPersonnel,
       onRemovePerson: _removePerson,
+      onConfirmPersonnelSuggestion: _confirmPersonnelSuggestion,
+      onConfirmAllSuggestions:
+          _hasReviewableSuggestions ? _confirmAllSuggestions : null,
       onSave: _saveAllToFaaliyet,
     );
   }

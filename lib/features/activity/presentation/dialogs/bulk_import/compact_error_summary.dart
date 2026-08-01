@@ -13,6 +13,7 @@ class CompactErrorSummary extends StatelessWidget {
     required this.currentIndex,
     this.problemLocations = const [],
     this.onStartWizard,
+    this.onConfirmAllSuggestions,
     this.onSelectIssue,
     super.key,
   });
@@ -26,6 +27,7 @@ class CompactErrorSummary extends StatelessWidget {
   final int totalIssues;
   final int currentIndex;
   final VoidCallback? onStartWizard;
+  final VoidCallback? onConfirmAllSuggestions;
   final void Function(int index)? onSelectIssue;
 
   @override
@@ -142,6 +144,27 @@ class CompactErrorSummary extends StatelessWidget {
                         ),
                       ),
                     ),
+                  if (onConfirmAllSuggestions != null) ...[
+                    const SizedBox(width: 8),
+                    FilledButton.icon(
+                      key: const Key('bulk-confirm-all-suggestions'),
+                      onPressed: onConfirmAllSuggestions,
+                      icon: const Icon(Icons.done_all_rounded, size: 14),
+                      label: const Text(
+                        'Tümünü Onayla',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF16A34A),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        visualDensity: VisualDensity.compact,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(width: 8),
                   Icon(
                     isExpanded

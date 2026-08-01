@@ -35,6 +35,8 @@ class BulkImportPreviewSection extends StatelessWidget {
     required this.onRemoveBlock,
     required this.onSelectPersonnel,
     required this.onRemovePerson,
+    this.onConfirmPersonnelSuggestion,
+    this.onConfirmAllSuggestions,
     required this.onSave,
     super.key,
   });
@@ -63,6 +65,8 @@ class BulkImportPreviewSection extends StatelessWidget {
   final void Function(int blockIndex) onRemoveBlock;
   final void Function(int blockIndex, int personIndex) onSelectPersonnel;
   final void Function(int blockIndex, int personIndex) onRemovePerson;
+  final void Function(int blockIndex, int personIndex)? onConfirmPersonnelSuggestion;
+  final VoidCallback? onConfirmAllSuggestions;
   final VoidCallback onSave;
 
   @override
@@ -161,6 +165,7 @@ class BulkImportPreviewSection extends StatelessWidget {
                           isExpanded: parseIssuesExpanded,
                           onToggle: onToggleParseIssues,
                           onStartWizard: onStartWizard,
+                          onConfirmAllSuggestions: onConfirmAllSuggestions,
                           totalIssues: problemLocations.length,
                           currentIndex: activeIssueFocusIndex,
                         ),
@@ -244,6 +249,7 @@ class BulkImportPreviewSection extends StatelessWidget {
                           onRemoveBlock: onRemoveBlock,
                           onSelectPersonnel: onSelectPersonnel,
                           onRemovePerson: onRemovePerson,
+                          onConfirmPersonnelSuggestion: onConfirmPersonnelSuggestion,
                         );
                       },
                       childCount: visibleBlocks.length,

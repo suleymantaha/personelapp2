@@ -8,6 +8,7 @@ class PersonnelMatchCard extends StatelessWidget {
     required this.teamName,
     required this.onSelect,
     required this.onDelete,
+    this.onConfirmSuggestion,
     this.duplicateAssignments,
     this.isFocused = false,
     super.key,
@@ -19,6 +20,7 @@ class PersonnelMatchCard extends StatelessWidget {
   final bool isFocused;
   final VoidCallback onSelect;
   final VoidCallback onDelete;
+  final VoidCallback? onConfirmSuggestion;
 
   @override
   Widget build(BuildContext context) {
@@ -305,6 +307,43 @@ class PersonnelMatchCard extends StatelessWidget {
                       ],
                     ),
                   ),
+                  if (item.needsReview && item.isMatched && onConfirmSuggestion != null) ...[
+                    const SizedBox(width: 6),
+                    InkWell(
+                      key: const Key('bulk-person-confirm-suggestion'),
+                      onTap: onConfirmSuggestion,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF16A34A),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_circle_outline_rounded,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'Onayla',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -374,7 +413,9 @@ class MatchStatusIndicator extends StatelessWidget {
           Icons.account_tree_outlined,
         ),
       ParsedPersonnelItem(matchConfidence: < 0.9, isMatched: true) => (
-          'Eşleşmeyi kontrol edin',
+          item.matchConfidence > 0
+              ? 'Eşleşmeyi kontrol edin (%${(item.matchConfidence * 100).toInt()})'
+              : 'Eşleşmeyi kontrol edin',
           Colors.orange.shade800,
           Icons.help_rounded,
         ),
