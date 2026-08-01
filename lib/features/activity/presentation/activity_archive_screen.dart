@@ -23,8 +23,7 @@ class ActivityArchiveScreen extends ConsumerStatefulWidget {
 }
 
 class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
-  String _searchQuery = '';
-  DateTime? _selectedDateFilter;
+  DateTime _selectedDateFilter = DateTime.now();
   int? _selectedSquadFilter; // null = Tümü
   final Set<int> _selectedActivityIds = {};
   bool _selectionMode = false;
@@ -111,7 +110,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
     final dates = activities.map((activity) => activity.tarih).toSet().toList()
       ..sort();
     if (dates.isEmpty) {
-      return DateFormat('dd.MM.yyyy').format(DateTime.now());
+      return DateFormat('dd.MM.yyyy').format(_selectedDateFilter);
     }
     String display(String isoDate) {
       final parsed = DateTime.tryParse(isoDate);
@@ -134,11 +133,12 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
     final allAssignments = <FaaliyetPersonelAtamaTableData>[];
     final seenAssignmentIds = <int>{};
     final allowedPersonnelIds = pMap.keys.toSet();
+    final activityIds = activities.map((act) => act.id).toSet();
 
-    for (final act in activities) {
+    if (activityIds.isNotEmpty) {
       final assignments = await (db.select(
         db.faaliyetPersonelAtamaTable,
-      )..where((tbl) => tbl.faaliyetId.equals(act.id)))
+      )..where((tbl) => tbl.faaliyetId.isIn(activityIds)))
           .get();
 
       for (final a in assignments) {
@@ -365,9 +365,11 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         ? allPersonnel.where((p) => p.timId == session!.timId).toList()
         : (!isAdmin ? <PersonelTableData>[] : allPersonnel);
 
-    final dateFilterStr = _selectedDateFilter != null
-        ? DateFormat('yyyy-MM-dd').format(_selectedDateFilter!)
-        : null;
+    final dateFilterStr = DateFormat('yyyy-MM-dd').format(_selectedDateFilter);
+    final now = DateTime.now();
+    final isSelectedToday = _selectedDateFilter.year == now.year &&
+        _selectedDateFilter.month == now.month &&
+        _selectedDateFilter.day == now.day;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -408,11 +410,11 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
               icon: const Icon(Icons.checklist),
               label: const Text('Seç'),
             ),
-          if (!_selectionMode && _selectedDateFilter != null)
+          if (!_selectionMode && !isSelectedToday)
             IconButton(
-              icon: const Icon(Icons.clear),
-              tooltip: 'Tarih Filtresini Temizle',
-              onPressed: () => setState(() => _selectedDateFilter = null),
+              icon: const Icon(Icons.today),
+              tooltip: 'Bugüne Dön',
+              onPressed: () => setState(() => _selectedDateFilter = DateTime.now()),
             ),
           if (!_selectionMode && isAdmin)
             IconButton(
@@ -427,7 +429,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
               onPressed: () async {
                 final picked = await showDatePicker(
                   context: context,
-                  initialDate: _selectedDateFilter ?? DateTime.now(),
+                  initialDate: _selectedDateFilter,
                   firstDate: DateTime(2020),
                   lastDate: DateTime(2030),
                 );
@@ -445,43 +447,32 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
             // Header Metrics Card & Master Export Toolbar
             activitiesAsync.when(
               data: (activities) {
-                var filteredForExcel = activities;
-                if (dateFilterStr != null) {
-                  filteredForExcel = filteredForExcel
-                      .where((a) => a.tarih == dateFilterStr)
-                      .toList();
-                }
+                final filteredForDate = activities
+                    .where((a) => a.tarih == dateFilterStr)
+                    .toList();
 
                 return ArchiveHeaderStats(
                   isAdmin: isAdmin,
                   pendingCount: pendingCount,
-                  totalActivitiesCount: activities.length,
+                  totalActivitiesCount: filteredForDate.length,
                   selectedDateStr: dateFilterStr,
                   onExportMasterExcel: () =>
-                      _exportMasterExcel(filteredForExcel, personnelList),
+                      _exportMasterExcel(filteredForDate, personnelList),
                   onExportMasterPdf: () =>
-                      _exportMasterPdf(filteredForExcel, personnelList),
+                      _exportMasterPdf(filteredForDate, personnelList),
                   onExportMasterText: () =>
-                      _exportMasterText(filteredForExcel, personnelList),
+                      _exportMasterText(filteredForDate, personnelList),
                 );
               },
               loading: () => const SizedBox.shrink(),
               error: (err, _) => const SizedBox.shrink(),
             ),
 
-            // Filters Bar: Search & Squad Tabs for Admin
+            // Filters Bar: Squad Tabs for Admin
             ArchiveFilterBar(
               isAdmin: isAdmin,
               squads: squads,
               selectedSquadId: _selectedSquadFilter,
-              searchQuery: _searchQuery,
-              onSearchChanged: (val) {
-                setState(() {
-                  _searchQuery = val.trim().toLowerCase();
-                  _selectedActivityIds.clear();
-                  _selectionMode = false;
-                });
-              },
               onSquadSelected: (squadId) {
                 setState(() {
                   _selectedSquadFilter = squadId;
@@ -497,25 +488,19 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
             Expanded(
               child: activitiesAsync.when(
                 data: (activities) {
-                  final filtered = activities.where((act) {
-                    final nameMatch = act.faaliyetAdi.toLowerCase().contains(
-                          _searchQuery,
-                        );
-                    final dateMatch = act.tarih.toLowerCase().contains(
-                          _searchQuery,
-                        );
-                    final dateFilterMatch =
-                        dateFilterStr == null || act.tarih == dateFilterStr;
-                    return (nameMatch || dateMatch) && dateFilterMatch;
-                  }).toList();
+                  final filtered = activities
+                      .where((act) => act.tarih == dateFilterStr)
+                      .toList();
                   _pruneSelectionAfterBuild(
                     filtered.map((activity) => activity.id),
                   );
 
                   if (filtered.isEmpty) {
+                    final formattedDate = DateFormat('dd.MM.yyyy')
+                        .format(_selectedDateFilter);
                     return Center(
                       child: Text(
-                        'Aradığınız kriterlere uygun faaliyet kaydı bulunamadı.',
+                        '$formattedDate tarihine ait faaliyet kaydı bulunamadı.',
                         style: TextStyle(
                           color: context.textSecondary,
                           fontSize: 14,

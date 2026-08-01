@@ -2,6 +2,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/presentation/activity_archive_screen.dart';
@@ -17,18 +18,37 @@ void main() {
 
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);
-    const activities = [
+
+    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    const months = [
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık',
+    ];
+    final now = DateTime.now();
+    final headerDateStr = '${now.day} ${months[now.month - 1]}';
+
+    final activities = [
       GunlukFaaliyetTableData(
         id: 1,
         faaliyetAdi: 'Birinci Faaliyet',
-        tarih: '2026-07-28',
+        tarih: todayStr,
         olusturanKullanici: 'admin',
         olusturmaTarihi: '',
       ),
       GunlukFaaliyetTableData(
         id: 2,
         faaliyetAdi: 'İkinci Faaliyet',
-        tarih: '2026-07-28',
+        tarih: todayStr,
         olusturanKullanici: 'admin',
         olusturmaTarihi: '',
       ),
@@ -52,7 +72,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('28 Temmuz • 2 faaliyet'), findsOneWidget);
+    expect(find.text('$headerDateStr • 2 faaliyet'), findsOneWidget);
     expect(find.text('Dışa aktar'), findsOneWidget);
 
     await tester.longPress(find.byKey(const Key('activity-card-1')));
