@@ -7,12 +7,14 @@ class ProblemLocation {
     required this.description,
     this.personIndex,
     this.sourceLineNumber,
+    this.isCritical = true,
   });
 
   final int blockIndex;
   final int? personIndex;
   final int? sourceLineNumber;
   final String description;
+  final bool isCritical;
 }
 
 class BulkImportProblemWizard {
@@ -32,19 +34,20 @@ class BulkImportProblemWizard {
             personIndex: null,
             sourceLineNumber: null,
             description: '${blockEntry.value.parsedActivityType} kartında personel bulunamadı.',
+            isCritical: true,
           ),
         );
         addedKeys.add('${blockEntry.key}:null');
       }
     }
 
-    // Priority 2: Personnel needing match review
+    // Priority 2: Unmatched personnel (!isMatched)
     for (final blockEntry in blocks.asMap().entries) {
       for (final personEntry
           in blockEntry.value.personnelList.asMap().entries) {
         final key = '${blockEntry.key}:${personEntry.key}';
         final person = personEntry.value;
-        if (person.hasWarning && !addedKeys.contains(key)) {
+        if (!person.isMatched && !addedKeys.contains(key)) {
           final linePrefix = person.sourceLineNumber != null
               ? 'Satır ${person.sourceLineNumber}: '
               : '';
@@ -53,7 +56,8 @@ class BulkImportProblemWizard {
               blockIndex: blockEntry.key,
               personIndex: personEntry.key,
               sourceLineNumber: person.sourceLineNumber,
-              description: '$linePrefix${person.rawRank} ${person.rawName} - Eşleşme kontrolü gerektiriyor.',
+              description: '$linePrefix${person.rawRank} ${person.rawName} - Personel seçilmedi.',
+              isCritical: true,
             ),
           );
           addedKeys.add(key);
@@ -77,6 +81,34 @@ class BulkImportProblemWizard {
               personIndex: personEntry.key,
               sourceLineNumber: person.sourceLineNumber,
               description: '$linePrefix${person.rawRank} ${person.rawName} - Çakışan görev ekli.',
+              isCritical: true,
+            ),
+          );
+          addedKeys.add(key);
+        }
+      }
+    }
+
+    // Priority 4: Non-critical review warnings (fuzzy match < 1.0 or teamMismatch)
+    for (final blockEntry in blocks.asMap().entries) {
+      for (final personEntry
+          in blockEntry.value.personnelList.asMap().entries) {
+        final key = '${blockEntry.key}:${personEntry.key}';
+        final person = personEntry.value;
+        if (person.isMatched && person.hasWarning && !addedKeys.contains(key)) {
+          final linePrefix = person.sourceLineNumber != null
+              ? 'Satır ${person.sourceLineNumber}: '
+              : '';
+          final reason = person.teamMismatch
+              ? 'Tim kontrolü gerektiriyor.'
+              : 'Eşleşme kontrolü gerektiriyor.';
+          locs.add(
+            ProblemLocation(
+              blockIndex: blockEntry.key,
+              personIndex: personEntry.key,
+              sourceLineNumber: person.sourceLineNumber,
+              description: '$linePrefix${person.rawRank} ${person.rawName} - $reason',
+              isCritical: false,
             ),
           );
           addedKeys.add(key);

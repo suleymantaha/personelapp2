@@ -32,9 +32,18 @@ class CompactErrorSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasBlocking = parseIssues.any((issue) => issue.isBlocking);
-    final hasProblems = problemCount > 0;
-    final hasWarnings = warningCount > 0;
+    final criticalLocs = problemLocations.where((l) => l.isCritical).toList();
+    final warningLocs = problemLocations.where((l) => !l.isCritical).toList();
+
+    final blockingIssues = parseIssues.where((i) => i.isBlocking).toList();
+    final criticalCount = blockingIssues.length +
+        (problemLocations.isNotEmpty ? criticalLocs.length : problemCount);
+    final reviewWarningCount = problemLocations.isNotEmpty
+        ? warningLocs.length
+        : warningCount;
+
+    final hasCritical = criticalCount > 0;
+    final hasReviewWarnings = reviewWarningCount > 0;
 
     Color bgColor;
     Color borderColor;
@@ -43,20 +52,22 @@ class CompactErrorSummary extends StatelessWidget {
     String title;
     String subtitle;
 
-    if (hasBlocking || hasProblems) {
+    if (hasCritical) {
       bgColor = const Color(0xFFD32F2F).withValues(alpha: 0.08);
       borderColor = const Color(0xFFD32F2F).withValues(alpha: 0.3);
       textColor = const Color(0xFFD32F2F);
       icon = Icons.error_rounded;
       title = 'Kaydedilemiyor';
-      subtitle = '$problemCount kritik hata';
-    } else if (hasWarnings) {
-      bgColor = const Color(0xFFF59E0B).withValues(alpha: 0.08);
-      borderColor = const Color(0xFFF59E0B).withValues(alpha: 0.3);
-      textColor = const Color(0xFFF59E0B);
+      subtitle = hasReviewWarnings
+          ? '$criticalCount kritik hata • $reviewWarningCount inceleme'
+          : '$criticalCount kritik hata';
+    } else if (hasReviewWarnings) {
+      bgColor = const Color(0xFFF59E0B).withValues(alpha: 0.1);
+      borderColor = const Color(0xFFF59E0B).withValues(alpha: 0.4);
+      textColor = const Color(0xFFB45309);
       icon = Icons.warning_amber_rounded;
-      title = '$warningCount uyarı';
-      subtitle = 'Kayıt yapılabilir';
+      title = 'İnceleme Bekleyen Ögeler Var';
+      subtitle = '$reviewWarningCount eşleşme/tim kontrolü gerektiriyor';
     } else {
       bgColor = const Color(0xFF16A34A).withValues(alpha: 0.08);
       borderColor = const Color(0xFF16A34A).withValues(alpha: 0.3);
@@ -66,18 +77,30 @@ class CompactErrorSummary extends StatelessWidget {
       subtitle = 'Kayda hazır';
     }
 
-    final displayTotal = totalIssues > 0 ? totalIssues : problemCount;
+    final displayTotal = totalIssues > 0
+        ? totalIssues
+        : (criticalCount + reviewWarningCount);
     final displayIndex = currentIndex < 0
         ? 1
         : (displayTotal > 0 ? (currentIndex % displayTotal) + 1 : 1);
 
-    final allDisplayItems = <String>[];
+    final allDisplayItems = <_SummaryItem>[];
     for (final issue in parseIssues) {
       final lineText = issue.lineNumber > 0 ? 'Satır ${issue.lineNumber}: ' : '';
-      allDisplayItems.add('$lineText${issue.message}');
+      allDisplayItems.add(
+        _SummaryItem(
+          text: '$lineText${issue.message}',
+          isCritical: issue.isBlocking,
+        ),
+      );
     }
     for (final loc in problemLocations) {
-      allDisplayItems.add(loc.description);
+      allDisplayItems.add(
+        _SummaryItem(
+          text: loc.description,
+          isCritical: loc.isCritical,
+        ),
+      );
     }
 
     return Container(
@@ -118,14 +141,14 @@ class CompactErrorSummary extends StatelessWidget {
                         Text(
                           subtitle,
                           style: TextStyle(
-                            color: textColor.withValues(alpha: 0.8),
+                            color: textColor.withValues(alpha: 0.85),
                             fontSize: 12,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  if (hasProblems)
+                  if (hasCritical || hasReviewWarnings)
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -186,9 +209,12 @@ class CompactErrorSummary extends StatelessWidget {
                       itemCount: allDisplayItems.length,
                       separatorBuilder: (_, __) => const Divider(height: 10),
                       itemBuilder: (context, index) {
-                        final text = allDisplayItems[index];
+                        final item = allDisplayItems[index];
                         final isCurrentlyFocused = currentIndex >= 0 &&
                             index == (currentIndex % allDisplayItems.length);
+                        final itemTextColor = item.isCritical
+                            ? const Color(0xFFD32F2F)
+                            : const Color(0xFFB45309);
                         return InkWell(
                           onTap: onSelectIssue != null
                               ? () => onSelectIssue!(index)
@@ -206,14 +232,14 @@ class CompactErrorSummary extends StatelessWidget {
                                       ? Icons.arrow_right_rounded
                                       : Icons.circle,
                                   size: isCurrentlyFocused ? 18 : 6,
-                                  color: textColor,
+                                  color: itemTextColor,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    text,
+                                    item.text,
                                     style: TextStyle(
-                                      color: textColor,
+                                      color: itemTextColor,
                                       fontSize: 12,
                                       fontWeight: isCurrentlyFocused
                                           ? FontWeight.bold
@@ -236,4 +262,10 @@ class CompactErrorSummary extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SummaryItem {
+  const _SummaryItem({required this.text, required this.isCritical});
+  final String text;
+  final bool isCritical;
 }

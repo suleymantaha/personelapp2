@@ -78,7 +78,8 @@ class BulkImportPreviewSection extends StatelessWidget {
       final problemIndexes = <int>[];
       for (final personEntry
           in blockEntry.value.personnelList.asMap().entries) {
-        if (personEntry.value.needsReview ||
+        if (personEntry.value.hasWarning ||
+            !personEntry.value.isMatched ||
             duplicates.containsKey('${blockEntry.key}:${personEntry.key}')) {
           problemIndexes.add(personEntry.key);
         }
