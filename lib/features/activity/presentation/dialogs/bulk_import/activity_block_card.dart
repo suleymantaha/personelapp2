@@ -177,7 +177,7 @@ class ActivityBlockCard extends StatelessWidget {
                             .where((team) => team.id == item.matchedTimId)
                             .map((team) => team.timAdi)
                             .firstOrNull ??
-                        'Tim bilgisi yok',
+                        block.parsedTimName,
                     duplicateAssignments: duplicateWith,
                     isFocused: isFocused,
                     onSelect: () => onSelectPersonnel(blockIdx, pIdx),

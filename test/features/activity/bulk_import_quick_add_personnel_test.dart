@@ -22,7 +22,8 @@ void main() {
 
   tearDown(() => database.close());
 
-  testWidgets('Eşleşmeyen personel için "+ 6-B Timine Ekle" tıklandığında veritabanına eklenir',
+  testWidgets(
+      'Eşleşmeyen personel için "+ 6-B Timine Ekle" tıklandığında veritabanına eklenir',
       (tester) async {
     tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;

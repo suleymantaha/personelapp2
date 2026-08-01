@@ -279,73 +279,36 @@ class PersonnelMatchCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.accentOrOlive.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Değiştir',
-                          style: TextStyle(
-                            color: context.accentOrOlive,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                  if (item.isMatched)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: context.accentOrOlive.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Değiştir',
+                            style: TextStyle(
+                              color: context.accentOrOlive,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 2),
-                        Icon(
-                          Icons.chevron_right_rounded,
-                          size: 16,
-                          color: context.accentOrOlive,
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (!item.isMatched && onAddNewPerson != null) ...[
-                    const SizedBox(width: 6),
-                    InkWell(
-                      key: const Key('bulk-person-add-new'),
-                      onTap: onAddNewPerson,
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0284C7),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.person_add_alt_1_rounded,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              "+ $teamName'ne Ekle",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+                          const SizedBox(width: 2),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: 16,
+                            color: context.accentOrOlive,
+                          ),
+                        ],
                       ),
                     ),
-                  ],
                   if (item.needsReview && item.isMatched && onConfirmSuggestion != null) ...[
                     const SizedBox(width: 6),
                     InkWell(
@@ -365,13 +328,13 @@ class PersonnelMatchCard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              Icons.check_circle_outline_rounded,
+                              Icons.done_rounded,
                               size: 14,
                               color: Colors.white,
                             ),
                             SizedBox(width: 4),
                             Text(
-                              'Onayla',
+                              '✓ Onayla',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -387,6 +350,59 @@ class PersonnelMatchCard extends StatelessWidget {
               ),
             ),
           ),
+          if (!item.isMatched) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    key: const Key('bulk-person-select-btn'),
+                    onPressed: onSelect,
+                    icon: const Icon(Icons.search, size: 14),
+                    label: const Text(
+                      'Personel Seç',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      visualDensity: VisualDensity.compact,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+                if (onAddNewPerson != null) ...[
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton.icon(
+                      key: const Key('bulk-person-add-new'),
+                      onPressed: onAddNewPerson,
+                      icon: const Icon(Icons.person_add_alt_1_rounded, size: 14),
+                      label: Text(
+                        '+ ${teamName.toLowerCase().contains('tim') ? teamName : '$teamName Timine'} Ekle',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF0284C7),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        visualDensity: VisualDensity.compact,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
         ],
       ),
     );
