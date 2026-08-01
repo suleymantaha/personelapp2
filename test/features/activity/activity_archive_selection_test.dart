@@ -73,7 +73,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('$headerDateStr • 2 faaliyet'), findsOneWidget);
-    expect(find.text('Dışa aktar'), findsOneWidget);
+    expect(find.text('Dışa Aktar / Yazdır'), findsOneWidget);
 
     await tester.longPress(find.byKey(const Key('activity-card-1')));
     await tester.pump();
@@ -85,9 +85,9 @@ void main() {
 
     await tester.tap(find.byKey(const Key('activity-selection-export')));
     await tester.pumpAndSettle();
-    expect(find.text('PDF Paylaş'), findsOneWidget);
+    expect(find.text('PDF Belgesi Paylaş'), findsOneWidget);
     expect(find.text('Doğrudan Yazdır'), findsOneWidget);
-    expect(find.text('Excel Olarak Aktar'), findsOneWidget);
+    expect(find.text('Excel Olarak Aktar (.xlsx)'), findsOneWidget);
     expect(find.text('Metin Listesi Paylaş'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());

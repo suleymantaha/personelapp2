@@ -9,6 +9,7 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_summary_card.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_filter_bar.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_header_stats.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
@@ -296,6 +297,39 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
     );
   }
 
+  Future<void> _exportWithSheet(
+    List<GunlukFaaliyetTableData> activities,
+    List<PersonelTableData> personnelList, {
+    required String subtitle,
+  }) async {
+    if (activities.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dışa aktarılacak faaliyet bulunamadı.')),
+      );
+      return;
+    }
+
+    final action = await showArchiveExportSheet(
+      context,
+      subtitle: subtitle,
+    );
+    if (!mounted || action == null) return;
+    switch (action) {
+      case ArchiveExportType.excel:
+        await _exportMasterExcel(activities, personnelList);
+        return;
+      case ArchiveExportType.pdf:
+        await _exportMasterPdf(activities, personnelList);
+        return;
+      case ArchiveExportType.print:
+        await _printSelectedPdf(activities, personnelList);
+        return;
+      case ArchiveExportType.text:
+        await _exportMasterText(activities, personnelList);
+        return;
+    }
+  }
+
   Future<void> _showSelectedExportOptions(
     List<GunlukFaaliyetTableData> activities,
     List<PersonelTableData> personnelList,
@@ -305,47 +339,9 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         .toList();
     if (selected.isEmpty) return;
 
-    final action = await showModalBottomSheet<String>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.picture_as_pdf_outlined),
-              title: const Text('PDF Paylaş'),
-              onTap: () => Navigator.pop(sheetContext, 'pdf'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.print_outlined),
-              title: const Text('Doğrudan Yazdır'),
-              onTap: () => Navigator.pop(sheetContext, 'print'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.table_chart_outlined),
-              title: const Text('Excel Olarak Aktar'),
-              onTap: () => Navigator.pop(sheetContext, 'excel'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.share_outlined),
-              title: const Text('Metin Listesi Paylaş'),
-              onTap: () => Navigator.pop(sheetContext, 'text'),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (!mounted || action == null) return;
-    if (action == 'pdf') {
-      await _exportMasterPdf(selected, personnelList);
-    } else if (action == 'print') {
-      await _printSelectedPdf(selected, personnelList);
-    } else if (action == 'excel') {
-      await _exportMasterExcel(selected, personnelList);
-    } else if (action == 'text') {
-      await _exportMasterText(selected, personnelList);
-    }
+    final subtitle =
+        '${_buildExportDateTitle(selected)} • ${selected.length} Seçili Faaliyet';
+    await _exportWithSheet(selected, personnelList, subtitle: subtitle);
   }
 
   @override
@@ -451,17 +447,24 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                     .where((a) => a.tarih == dateFilterStr)
                     .toList();
 
+                final dateTitle = DateFormat('dd.MM.yyyy').format(_selectedDateFilter);
+                final squadText = _selectedSquadFilter != null &&
+                        squads.any((s) => s.id == _selectedSquadFilter)
+                    ? ' • ${squads.firstWhere((s) => s.id == _selectedSquadFilter).timAdi}'
+                    : '';
+                final subtitle =
+                    '$dateTitle • ${filteredForDate.length} Faaliyet$squadText';
+
                 return ArchiveHeaderStats(
                   isAdmin: isAdmin,
                   pendingCount: pendingCount,
                   totalActivitiesCount: filteredForDate.length,
                   selectedDateStr: dateFilterStr,
-                  onExportMasterExcel: () =>
-                      _exportMasterExcel(filteredForDate, personnelList),
-                  onExportMasterPdf: () =>
-                      _exportMasterPdf(filteredForDate, personnelList),
-                  onExportMasterText: () =>
-                      _exportMasterText(filteredForDate, personnelList),
+                  onExportRequested: () => _exportWithSheet(
+                    filteredForDate,
+                    personnelList,
+                    subtitle: subtitle,
+                  ),
                 );
               },
               loading: () => const SizedBox.shrink(),

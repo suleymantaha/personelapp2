@@ -7,9 +7,7 @@ class ArchiveHeaderStats extends StatelessWidget {
     required this.pendingCount,
     required this.totalActivitiesCount,
     required this.selectedDateStr,
-    required this.onExportMasterExcel,
-    required this.onExportMasterPdf,
-    required this.onExportMasterText,
+    required this.onExportRequested,
     super.key,
   });
 
@@ -17,9 +15,7 @@ class ArchiveHeaderStats extends StatelessWidget {
   final int pendingCount;
   final int totalActivitiesCount;
   final String? selectedDateStr;
-  final VoidCallback onExportMasterExcel;
-  final VoidCallback onExportMasterPdf;
-  final VoidCallback onExportMasterText;
+  final VoidCallback onExportRequested;
 
   @override
   Widget build(BuildContext context) {
@@ -98,178 +94,31 @@ class ArchiveHeaderStats extends StatelessWidget {
           const Divider(height: 1),
           const SizedBox(height: 8),
 
-          LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth < 520) {
-                return SizedBox(
-                  width: double.infinity,
-                  height: 40,
-                  child: PopupMenuButton<_ArchiveExportAction>(
-                    tooltip: 'Dışa aktarma seçenekleri',
-                    onSelected: (action) {
-                      switch (action) {
-                        case _ArchiveExportAction.excel:
-                          onExportMasterExcel();
-                          return;
-                        case _ArchiveExportAction.pdf:
-                          onExportMasterPdf();
-                          return;
-                        case _ArchiveExportAction.text:
-                          onExportMasterText();
-                          return;
-                      }
-                    },
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(
-                        value: _ArchiveExportAction.excel,
-                        child: ListTile(
-                          leading: Icon(Icons.table_chart),
-                          title: Text('Excel olarak al'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: _ArchiveExportAction.pdf,
-                        child: ListTile(
-                          leading: Icon(Icons.picture_as_pdf),
-                          title: Text('PDF / Yazdır'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: _ArchiveExportAction.text,
-                        child: ListTile(
-                          leading: Icon(Icons.share_outlined),
-                          title: Text('Metin olarak paylaş'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ],
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: context.accentOrOlive,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.ios_share_rounded,
-                              size: 18,
-                              color: context.onAccentOrOlive,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Dışa aktar',
-                              style: TextStyle(
-                                color: context.onAccentOrOlive,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.arrow_drop_down,
-                              color: context.onAccentOrOlive,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }
-
-              return Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 38,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.accentOrOlive,
-                          foregroundColor: context.onAccentOrOlive,
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 1,
-                        ),
-                        icon: const Icon(Icons.table_chart, size: 16),
-                        label: const Text(
-                          'Excel Al',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                          ),
-                        ),
-                        onPressed: onExportMasterExcel,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: SizedBox(
-                      height: 38,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.pdfButtonBg,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 1,
-                        ),
-                        icon: const Icon(Icons.picture_as_pdf, size: 16),
-                        label: const Text(
-                          'PDF / Yazdır',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                          ),
-                        ),
-                        onPressed: onExportMasterPdf,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: SizedBox(
-                      height: 38,
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: context.textPrimary,
-                          side: BorderSide(
-                            color: context.colorScheme.outline
-                                .withValues(alpha: 0.5),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        icon: const Icon(Icons.share, size: 16),
-                        label: const Text(
-                          'Metin',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                          ),
-                        ),
-                        onPressed: onExportMasterText,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
+          SizedBox(
+            width: double.infinity,
+            height: 40,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.accentOrOlive,
+                foregroundColor: context.onAccentOrOlive,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 1,
+              ),
+              icon: const Icon(Icons.ios_share_rounded, size: 18),
+              label: const Text(
+                'Dışa Aktar / Yazdır',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              onPressed: onExportRequested,
+            ),
           ),
         ],
       ),
     );
   }
 }
-
-enum _ArchiveExportAction { excel, pdf, text }
