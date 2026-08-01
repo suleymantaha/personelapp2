@@ -9,6 +9,7 @@ class PersonnelMatchCard extends StatelessWidget {
     required this.onSelect,
     required this.onDelete,
     this.onConfirmSuggestion,
+    this.onAddNewPerson,
     this.duplicateAssignments,
     this.isFocused = false,
     super.key,
@@ -21,6 +22,7 @@ class PersonnelMatchCard extends StatelessWidget {
   final VoidCallback onSelect;
   final VoidCallback onDelete;
   final VoidCallback? onConfirmSuggestion;
+  final VoidCallback? onAddNewPerson;
 
   @override
   Widget build(BuildContext context) {
@@ -307,6 +309,43 @@ class PersonnelMatchCard extends StatelessWidget {
                       ],
                     ),
                   ),
+                  if (!item.isMatched && onAddNewPerson != null) ...[
+                    const SizedBox(width: 6),
+                    InkWell(
+                      key: const Key('bulk-person-add-new'),
+                      onTap: onAddNewPerson,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0284C7),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.person_add_alt_1_rounded,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "+ $teamName'ne Ekle",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                   if (item.needsReview && item.isMatched && onConfirmSuggestion != null) ...[
                     const SizedBox(width: 6),
                     InkWell(

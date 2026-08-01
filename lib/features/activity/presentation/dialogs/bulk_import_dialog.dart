@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -542,6 +543,83 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     }
   }
 
+  Future<void> _quickAddNewPersonnelToTim(
+      int blockIndex, int personIndex) async {
+    final block = _parsedBlocks[blockIndex];
+    final item = block.personnelList[personIndex];
+
+    final normalizedTeam = block.parsedTimName
+        .toLowerCase()
+        .replaceAll('timi', '')
+        .replaceAll(' ', '');
+    final timId = _allSquads
+        .where(
+          (team) => team.timAdi
+              .toLowerCase()
+              .replaceAll('timi', '')
+              .replaceAll(' ', '')
+              .contains(normalizedTeam),
+        )
+        .map((team) => team.id)
+        .firstOrNull;
+
+    final timName = _allSquads
+            .where((t) => t.id == timId)
+            .map((t) => t.timAdi)
+            .firstOrNull ??
+        block.parsedTimName;
+
+    final todayStr = DateTime.now().toIso8601String().split('T').first;
+
+    final newId =
+        await widget.database.into(widget.database.personelTable).insert(
+              PersonelTableCompanion.insert(
+                adSoyad: item.rawName,
+                rutbe: item.rawRank,
+                birlik: block.parsedTimName,
+                timId: Value(timId),
+                kayitTarihi: todayStr,
+              ),
+            );
+
+    await _loadPersonnel();
+
+    if (!mounted || blockIndex >= _parsedBlocks.length) return;
+
+    setState(() {
+      final currentBlock = _parsedBlocks[blockIndex];
+      final updatedList =
+          List<ParsedPersonnelItem>.from(currentBlock.personnelList);
+      updatedList[personIndex] = updatedList[personIndex].copyWith(
+        matchedPersonnelId: newId,
+        matchedAdSoyad: item.rawName,
+        matchedRutbe: item.rawRank,
+        matchedTimId: timId,
+        matchConfidence: 1.0,
+        teamMismatch: false,
+        reviewConfirmed: true,
+      );
+      _parsedBlocks[blockIndex] =
+          currentBlock.copyWith(personnelList: updatedList);
+    });
+
+    await BulkImportLearningService(widget.database).rememberAlias(
+      rawName: item.rawName,
+      personnelId: newId,
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${item.rawRank} ${item.rawName} veritabanına ($timName) eklendi ve eşleştirildi.',
+          ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
   Widget _buildPreviewSection({required bool isMobile}) {
     final duplicates = _duplicateAssignments();
     final problemLocs = _getProblemLocations();
@@ -573,6 +651,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       onSelectPersonnel: _selectPersonnel,
       onRemovePerson: _removePerson,
       onConfirmPersonnelSuggestion: _confirmPersonnelSuggestion,
+      onAddNewPersonnel: _quickAddNewPersonnelToTim,
       onConfirmAllSuggestions:
           _hasReviewableSuggestions ? _confirmAllSuggestions : null,
       onSave: _saveAllToFaaliyet,
