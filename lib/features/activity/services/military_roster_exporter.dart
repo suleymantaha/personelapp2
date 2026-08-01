@@ -821,22 +821,7 @@ class MilitaryRosterExporter {
           CellIndex.indexByColumnRow(columnIndex: c, rowIndex: r),
         );
 
-        final left = isNone
-            ? _noneBorder
-            : (c == startCol ? border : _noneBorder);
-        final right = isNone
-            ? _noneBorder
-            : (c == endCol || (r == startRow && c == startCol)
-                ? border
-                : _noneBorder);
-        final top = isNone
-            ? _noneBorder
-            : (r == startRow ? border : _noneBorder);
-        final bottom = isNone
-            ? _noneBorder
-            : (r == endRow || (r == startRow && c == startCol)
-                ? border
-                : _noneBorder);
+        final cellBorder = isNone ? _noneBorder : border;
 
         cell.cellStyle = CellStyle(
           bold: baseStyle.isBold,
@@ -849,10 +834,10 @@ class MilitaryRosterExporter {
           horizontalAlign: baseStyle.horizontalAlignment,
           verticalAlign: baseStyle.verticalAlignment,
           textWrapping: baseStyle.wrap,
-          leftBorder: left,
-          rightBorder: right,
-          topBorder: top,
-          bottomBorder: bottom,
+          leftBorder: cellBorder,
+          rightBorder: cellBorder,
+          topBorder: cellBorder,
+          bottomBorder: cellBorder,
         );
       }
     }
