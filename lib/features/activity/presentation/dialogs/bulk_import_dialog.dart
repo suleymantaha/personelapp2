@@ -274,7 +274,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
 
   int get _unresolvedPersonnelCount => _parsedBlocks
       .expand((block) => block.personnelList)
-      .where((person) => person.needsReview)
+      .where((person) => !person.isMatched)
       .length;
 
   Future<void> _removePerson(int blockIndex, int personIndex) async {
@@ -473,7 +473,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
 
   bool get _hasReviewableSuggestions => _parsedBlocks
       .expand((b) => b.personnelList)
-      .any((p) => p.needsReview && p.isMatched && p.matchedPersonnelId != null);
+      .any((p) => p.hasWarning && p.isMatched && p.matchedPersonnelId != null);
 
   Future<void> _confirmPersonnelSuggestion(
       int blockIndex, int personIndex) async {
@@ -509,7 +509,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
 
         for (var pIdx = 0; pIdx < updatedList.length; pIdx++) {
           final item = updatedList[pIdx];
-          if (item.needsReview &&
+          if (item.hasWarning &&
               item.isMatched &&
               item.matchedPersonnelId != null) {
             updatedList[pIdx] = item.copyWith(

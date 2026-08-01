@@ -309,7 +309,7 @@ class PersonnelMatchCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                  if (item.needsReview && item.isMatched && onConfirmSuggestion != null) ...[
+                  if (item.hasWarning && item.isMatched && onConfirmSuggestion != null) ...[
                     const SizedBox(width: 6),
                     InkWell(
                       key: const Key('bulk-person-confirm-suggestion'),

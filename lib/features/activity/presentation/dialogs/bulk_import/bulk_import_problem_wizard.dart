@@ -44,7 +44,7 @@ class BulkImportProblemWizard {
           in blockEntry.value.personnelList.asMap().entries) {
         final key = '${blockEntry.key}:${personEntry.key}';
         final person = personEntry.value;
-        if (person.needsReview && !addedKeys.contains(key)) {
+        if (person.hasWarning && !addedKeys.contains(key)) {
           final linePrefix = person.sourceLineNumber != null
               ? 'Satır ${person.sourceLineNumber}: '
               : '';
