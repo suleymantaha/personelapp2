@@ -10,6 +10,7 @@ import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/edit_assignment_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_assignment_groups.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 
@@ -255,12 +256,56 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                   );
                   return;
                 }
-                await PdfRosterExporter.showStylePickerAndSharePdf(
+
+                final selectedTeamIds = selectedAssignments
+                    .map((a) => pMap[a.personelId]?.timId)
+                    .toSet();
+                final teamNames = selectedTeamIds
+                    .map(
+                      (id) => id == null
+                          ? 'Tim Dışı'
+                          : squadMap[id] ?? 'Bilinmeyen Tim',
+                    )
+                    .join(', ');
+
+                final action = await showArchiveExportSheet(
                   context,
-                  faaliyetAdi: activity.faaliyetAdi,
-                  tarih: activity.tarih,
-                  rows: selectedRows,
+                  subtitle: '${activity.faaliyetAdi} • $teamNames',
                 );
+                if (action == null || !context.mounted) return;
+
+                switch (action) {
+                  case ArchiveExportType.excel:
+                    await MilitaryRosterExporter.shareExcelRoster(
+                      faaliyetAdi: activity.faaliyetAdi,
+                      tarih: activity.tarih,
+                      rows: selectedRows,
+                    );
+                    return;
+                  case ArchiveExportType.pdf:
+                    await PdfRosterExporter.showStylePickerAndSharePdf(
+                      context,
+                      faaliyetAdi: activity.faaliyetAdi,
+                      tarih: activity.tarih,
+                      rows: selectedRows,
+                    );
+                    return;
+                  case ArchiveExportType.print:
+                    await PdfRosterExporter.showStylePickerAndPrintPdf(
+                      context,
+                      faaliyetAdi: activity.faaliyetAdi,
+                      tarih: activity.tarih,
+                      rows: selectedRows,
+                    );
+                    return;
+                  case ArchiveExportType.text:
+                    await MilitaryRosterExporter.shareTextRoster(
+                      faaliyetAdi: activity.faaliyetAdi,
+                      tarih: activity.tarih,
+                      rows: selectedRows,
+                    );
+                    return;
+                }
               },
               onDeleteSelected: !isAdmin
                   ? null
