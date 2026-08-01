@@ -76,11 +76,11 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
   }
 
   bool get _effectiveIsExpanded {
-    if (_userManualExpanded != null) {
-      return _userManualExpanded!;
-    }
     if (widget.focusedPersonKey != null) {
       return widget.focusedPersonKey!.startsWith('${widget.blockIdx}:');
+    }
+    if (_userManualExpanded != null) {
+      return _userManualExpanded!;
     }
     if (widget.isExpanded != null) {
       return widget.isExpanded!;
