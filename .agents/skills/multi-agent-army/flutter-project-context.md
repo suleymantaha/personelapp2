@@ -72,7 +72,9 @@ lib/
     │   ├── data/
     │   │   └── personnel_repository.dart  ← PersonnelRepository (Drift DAO)
     │   ├── presentation/
-    │   │   └── personnel_management_screen.dart
+    │   │   ├── personnel_management_screen.dart
+    │   │   └── dialogs/
+    │   │       └── make_commander_dialog.dart     ← Modüler Komutan Yetkilendirme Diyaloğu
     │   └── services/
     │       └── personnel_backup_service.dart ← Personel yedekleme/içe aktarma
     ├── activity/
@@ -85,11 +87,14 @@ lib/
     │   │   ├── bulk_import_learning_service.dart  ← Eşleşme öğrenme servisi
     │   │   ├── conflict_checker.dart              ← Çakışma & İzin rezervasyon kontrolü
     │   │   ├── duty_coverage.dart                 ← Görev süre ve gece aşım hesabı
-    │   │   ├── models/                            ← Parsed block & request modelleri
+    │   │   ├── models/                            ← Parsed block, request & repository modelleri
     │   │   └── parser/
+    │   │       ├── bulk_parser_models.dart        ← Ayrıştırıcı modelleri & tipleri
     │   │       └── bulk_text_parser.dart          ← Akıllı WhatsApp/Metin faaliyet ayrıştırıcısı
     │   ├── services/
     │   │   ├── bulk_import_preferences.dart      ← Ayrıştırma tercihleri
+    │   │   ├── excel_cell_styler.dart             ← Excel XML/HTML stil & escape yardımcıları
+    │   │   ├── military_excel_header_builder.dart ← Excel resmi başlık oluşturucu
     │   │   ├── military_roster_exporter.dart      ← Resmi Excel çizelge aktarıcısı
     │   │   └── pdf_roster_exporter.dart           ← Resmi PDF çizelge aktarıcısı
     │   └── presentation/

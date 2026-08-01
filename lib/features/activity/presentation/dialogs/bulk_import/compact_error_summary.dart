@@ -135,8 +135,10 @@ class CompactErrorSummary extends StatelessWidget {
                           style: TextStyle(
                             color: textColor,
                             fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                            fontSize: 13.5,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           subtitle,
@@ -144,6 +146,8 @@ class CompactErrorSummary extends StatelessWidget {
                             color: textColor.withValues(alpha: 0.85),
                             fontSize: 12,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -151,8 +155,8 @@ class CompactErrorSummary extends StatelessWidget {
                   if (hasCritical || hasReviewWarnings)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
+                        horizontal: 8,
+                        vertical: 3,
                       ),
                       decoration: BoxDecoration(
                         color: textColor.withValues(alpha: 0.15),
@@ -162,28 +166,28 @@ class CompactErrorSummary extends StatelessWidget {
                         '$displayIndex/$displayTotal',
                         style: TextStyle(
                           color: textColor,
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   if (onConfirmAllSuggestions != null) ...[
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     FilledButton.icon(
                       key: const Key('bulk-confirm-all-suggestions'),
                       onPressed: onConfirmAllSuggestions,
-                      icon: const Icon(Icons.done_all_rounded, size: 14),
+                      icon: const Icon(Icons.done_all_rounded, size: 13),
                       label: const Text(
                         'Tümünü Onayla',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
                       ),
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF16A34A),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         visualDensity: VisualDensity.compact,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),

@@ -9,22 +9,8 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 import 'package:personelapp2/features/matrix/domain/matrix_personnel_order.dart';
+import 'package:personelapp2/features/matrix/domain/mobile_matrix_list_entry.dart';
 import 'package:personelapp2/features/matrix/services/excel_xml_generator.dart';
-
-class _MobileMatrixListEntry {
-  const _MobileMatrixListEntry.header(this.teamName, this.memberCount)
-      : person = null;
-
-  const _MobileMatrixListEntry.person(this.person)
-      : teamName = null,
-        memberCount = null;
-
-  final String? teamName;
-  final int? memberCount;
-  final PersonelTableData? person;
-
-  bool get isHeader => person == null;
-}
 
 class MonthlyMatrixScreen extends ConsumerStatefulWidget {
   const MonthlyMatrixScreen({super.key});
@@ -393,16 +379,16 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
             for (final person in personnelList) {
               groupedPersonnel.putIfAbsent(person.timId, () => []).add(person);
             }
-            final mobileEntries = <_MobileMatrixListEntry>[
+            final mobileEntries = <MobileMatrixListEntry>[
               for (final group in groupedPersonnel.entries) ...[
-                _MobileMatrixListEntry.header(
+                MobileMatrixListEntry.header(
                   group.key == null
                       ? 'Timsiz Personel'
                       : (squadNames[group.key] ?? 'Bilinmeyen Tim'),
                   group.value.length,
                 ),
                 for (final person in group.value)
-                  _MobileMatrixListEntry.person(person),
+                  MobileMatrixListEntry.person(person),
               ],
             ];
 

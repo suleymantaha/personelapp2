@@ -35,7 +35,7 @@ metadata:
 # Multi-Agent Army — Flutter/Dart Hierarchical Agent Orchestration
 
 Bu skill **Jandarma Görev Takip Uygulaması** (Flutter + Dart + Riverpod + Drift) projesine
-özel olarak yapılandırılmıştır. (Son Güncelleme: 2026-08-01 — Statik Analiz: 0 Hata, 150/150 Test Başarılı)
+özel olarak yapılandırılmıştır. (Son Güncelleme: 2026-08-01 — Statik Analiz: 0 Hata, 156/156 Test Başarılı)
 
 Build a **multi-level agent army** where:
 - **Orchestrator** (depth 0) decomposes epics → assigns to Team Leads
@@ -60,22 +60,22 @@ personelapp2/                      ← Flutter project root
 │   └── features/
 │       ├── auth/presentation/     ← login_screen.dart
 │       ├── dashboard/presentation/← dashboard_screen.dart
-│       ├── personnel/             ← Personel & Tim yönetimi (data, presentation, services/personnel_backup_service)
+│       ├── personnel/             ← Personel & Tim yönetimi (data, presentation, dialogs/make_commander_dialog, backup_service)
 │       ├── activity/              ← Faaliyet çizelgesi & Toplu Aktarım
 │       │   ├── data/              ← ActivityRepository & MultiActivityRepository
-│       │   ├── domain/            ← ConflictChecker, DutyCoverage, TextParser, LearningService
-│       │   ├── services/          ← MilitaryRosterExporter (Excel) & PdfRosterExporter (PDF)
+│       │   ├── domain/            ← ConflictChecker, DutyCoverage, TextParser, bulk_parser_models, activity_repository_models
+│       │   ├── services/          ← MilitaryRosterExporter (Excel), ExcelCellStyler, MilitaryExcelHeaderBuilder, PdfRosterExporter (PDF)
 │       │   └── presentation/
 │       │       ├── screens/       ← activity_form_screen, activity_archive_screen, pending_approvals_screen
 │       │       ├── dialogs/       ← bulk_import_dialog.dart & bulk_import/ (15 modüler sub-widget)
 │       │       └── widgets/       ← activity_form/ (5 modüler sub-widget), activity_detail_sheet, vb.
 │       └── matrix/                ← Aylık matris
 │           ├── data/              ← MatrixRepository
-│           ├── domain/            ← MatrixDayCell, MatrixPersonnelOrder
+│           ├── domain/            ← MatrixDayCell, MatrixPersonnelOrder, MobileMatrixListEntry
 │           ├── services/          ← ExcelXmlGenerator
 │           └── presentation/      ← monthly_matrix_screen.dart
 ├── test/
-│   └── unit/                      ← 150+ Unit & Widget tests (flutter test)
+│   └── unit/                      ← 156 Unit & Widget tests (flutter test)
 ├── .agents/
 │   └── skills/
 │       ├── multi-agent-army/      ← Bu skill

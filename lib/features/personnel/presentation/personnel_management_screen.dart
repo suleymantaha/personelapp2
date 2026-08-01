@@ -9,6 +9,7 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
+import 'package:personelapp2/features/personnel/presentation/dialogs/make_commander_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/widgets/personnel_form_dialog.dart';
 
 class PersonnelManagementScreen extends ConsumerStatefulWidget {
@@ -46,135 +47,10 @@ class _PersonnelManagementScreenState
   }
 
   Future<void> _showMakeCommanderDialog(PersonelTableData p) async {
-    final suggestedUser = p.adSoyad
-        .toLowerCase()
-        .replaceAll(' ', '.')
-        .replaceAll('ç', 'c')
-        .replaceAll('ğ', 'g')
-        .replaceAll('ı', 'i')
-        .replaceAll('ö', 'o')
-        .replaceAll('ş', 's')
-        .replaceAll('ü', 'u');
-
-    final userCtrl = TextEditingController(text: suggestedUser);
-    var selectedSquadId = p.timId;
-
-    try {
-      await showDialog<void>(
-        context: context,
-        builder: (ctx) {
-          return StatefulBuilder(
-            builder: (context, setDialogState) {
-              final squadsAsync = ref.watch(allSquadsProvider);
-
-              return AlertDialog(
-                title: Text('⭐ Tim Komutanı Yap: ${p.rutbe} ${p.adSoyad}'),
-                content: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Bu personeli bir Time Komutan olarak atayabilir ve giriş yetkisi verebilirsiniz.',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: context.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: userCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Kullanıcı Adı (Giriş için)',
-                          prefixIcon: Icon(Icons.person),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      squadsAsync.when(
-                        data: (squads) {
-                          return DropdownButtonFormField<int?>(
-                            initialValue: selectedSquadId,
-                            decoration: const InputDecoration(
-                              labelText: 'Komutanı Olacağı Tim',
-                            ),
-                            items: squads.map((s) {
-                              return DropdownMenuItem<int?>(
-                                value: s.id,
-                                child: Text(s.timAdi),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              setDialogState(() => selectedSquadId = val);
-                            },
-                          );
-                        },
-                        loading: () => const LinearProgressIndicator(),
-                        error: (err, st) => Text('Hata: $err'),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '💡 Personel ilk girişinde kendi parolasını belirleyecektir.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: context.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Text('İPTAL'),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.accentOrOlive,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () async {
-                      final u = userCtrl.text.trim();
-                      if (u.isEmpty || selectedSquadId == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Lütfen kullanıcı adı ve tim seçiniz.',
-                            ),
-                          ),
-                        );
-                        return;
-                      }
-
-                      final repo = ref.read(personnelRepositoryProvider);
-                      await repo.assignPersonnelAsCommander(
-                        kullaniciAdi: u,
-                        timId: selectedSquadId!,
-                        personnelId: p.id,
-                      );
-
-                      if (ctx.mounted) {
-                        Navigator.of(ctx).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '${p.adSoyad} Tim Komutanı olarak yetkilendirildi!',
-                            ),
-                            backgroundColor: context.approvedColor,
-                          ),
-                        );
-                      }
-                    },
-                    child: const Text('KOMUTAN YAP VE YETKİLENDİR'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      );
-    } finally {
-      userCtrl.dispose();
-    }
+    await showDialog<void>(
+      context: context,
+      builder: (context) => MakeCommanderDialog(personnel: p),
+    );
   }
 
   Future<void> _showCommanderDelegationDialog() async {
