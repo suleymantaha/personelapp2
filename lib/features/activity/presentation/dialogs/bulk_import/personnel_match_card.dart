@@ -362,7 +362,7 @@ class PersonnelMatchCard extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   style: FilledButton.styleFrom(
-                                    backgroundColor: const Color(0xFF0284C7),
+                                    backgroundColor: context.accentOrOlive,
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 8,
@@ -370,7 +370,7 @@ class PersonnelMatchCard extends StatelessWidget {
                                     ),
                                     visualDensity: VisualDensity.compact,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(14),
                                     ),
                                   ),
                                 ),

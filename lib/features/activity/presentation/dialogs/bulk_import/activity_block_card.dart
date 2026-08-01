@@ -57,24 +57,26 @@ class ActivityBlockCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: context.accentOrOlive.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(9),
-                  ),
-                  child: Text(
-                    block.parsedTimName,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: context.accentOrOlive,
+                if (block.parsedTimName.isNotEmpty) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: context.accentOrOlive.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      block.parsedTimName,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: context.accentOrOlive,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
+                  const SizedBox(width: 8),
+                ],
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,12 +86,13 @@ class ActivityBlockCard extends StatelessWidget {
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
+                          letterSpacing: 0.1,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Wrap(
-                        spacing: 10,
-                        runSpacing: 4,
+                        spacing: 8,
+                        runSpacing: 2,
                         children: [
                           _MetadataLabel(
                             icon: Icons.calendar_today_rounded,
@@ -100,16 +103,31 @@ class ActivityBlockCard extends StatelessWidget {
                               icon: Icons.schedule_rounded,
                               text: block.parsedTimeRange!,
                             ),
-                          _MetadataLabel(
-                            icon: Icons.people_outline_rounded,
-                            text: visiblePersonnelIndexes == null
-                                ? '${block.personnelList.length} personel'
-                                : '$problemCount sorun / '
-                                    '${block.personnelList.length} personel',
-                          ),
                         ],
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(width: 6),
+                // Ekran görüntünüzdeki koyu haki oval pill rozeti
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: context.accentOrOlive,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    visiblePersonnelIndexes == null
+                        ? '${block.personnelList.length} personel'
+                        : '$problemCount sorun / ${block.personnelList.length} p.',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 PopupMenuButton<String>(
