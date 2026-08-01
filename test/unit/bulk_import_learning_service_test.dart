@@ -88,4 +88,33 @@ void main() {
       fingerprint,
     );
   });
+
+  test('rememberAliases saves multiple pairs and handles uppercase Turkish I/İ correctly', () async {
+    final service = BulkImportLearningService(database);
+    final norm1 = BulkImportLearningService.normalizeName('HÜSEYİN ORUCTUTAN');
+    final norm2 = BulkImportLearningService.normalizeName('ISMAİL KAYA');
+    expect(norm1, 'huseyin oructutan');
+    expect(norm2, 'ismail kaya');
+
+    await service.rememberAliases([
+      (rawName: 'HÜSEYİN ORUCTUTAN', personnelId: personnelId),
+      (rawName: 'ISMAİL KAYA', personnelId: personnelId),
+    ]);
+
+    final aliases = await service.loadAliases();
+    expect(aliases['huseyin oructutan'], personnelId);
+    expect(aliases['ismail kaya'], personnelId);
+  });
+
+  test('learned alias match sets reviewConfirmed to true', () async {
+    final service = BulkImportLearningService(database);
+    await service.rememberAlias(rawName: 'Hüseyin ORUCTUTAN', personnelId: personnelId);
+
+    final matched = await PersonnelFuzzyMatcher(database).matchBlocks([block('Hüseyin ORUCTUTAN')]);
+    final item = matched.single.personnelList.single;
+    expect(item.matchedPersonnelId, personnelId);
+    expect(item.matchConfidence, 1.0);
+    expect(item.reviewConfirmed, isTrue);
+  });
 }
+

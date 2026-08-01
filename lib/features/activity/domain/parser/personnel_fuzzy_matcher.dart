@@ -59,7 +59,7 @@ class PersonnelFuzzyMatcher {
           1,
           parsedTeamName,
           teamNames,
-        );
+        ).copyWith(reviewConfirmed: true);
       }
     }
 

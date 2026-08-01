@@ -136,6 +136,12 @@ class BulkImportSaveHandler {
       preparation.requests,
       actor: actor,
     );
+
+    final aliasPairs = blocks.expand((b) => b.personnelList).where(
+      (p) => p.matchedPersonnelId != null && p.rawName.trim().isNotEmpty,
+    ).map((p) => (rawName: p.rawName, personnelId: p.matchedPersonnelId!));
+    await learningService.rememberAliases(aliasPairs);
+
     await learningService.recordImport(
       fingerprint: fingerprint,
       blocks: blocks,

@@ -11,6 +11,8 @@ class BulkImportLearningService {
   final AppDatabase database;
 
   static String normalizeName(String input) => input
+      .replaceAll('I', 'ı')
+      .replaceAll('İ', 'i')
       .toLowerCase()
       .replaceAll('ı', 'i')
       .replaceAll('ğ', 'g')
@@ -60,6 +62,30 @@ class BulkImportLearningService {
       ),
     );
   }
+
+  Future<void> rememberAliases(
+    Iterable<({String rawName, int personnelId})> pairs,
+  ) async {
+    final uniqueMap = <String, ({String rawName, int personnelId})>{};
+    for (final pair in pairs) {
+      final normalized = normalizeName(pair.rawName);
+      if (normalized.isNotEmpty) {
+        uniqueMap[normalized] = (
+          rawName: pair.rawName.trim(),
+          personnelId: pair.personnelId,
+        );
+      }
+    }
+    if (uniqueMap.isEmpty) return;
+
+    for (final entry in uniqueMap.entries) {
+      await rememberAlias(
+        rawName: entry.value.rawName,
+        personnelId: entry.value.personnelId,
+      );
+    }
+  }
+
 
   static String fingerprint(Iterable<ParsedActivityBlock> blocks) {
     final assignments = <String>{};

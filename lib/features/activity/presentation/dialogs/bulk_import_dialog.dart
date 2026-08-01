@@ -501,6 +501,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
 
   Future<void> _confirmAllSuggestions() async {
     final learningService = BulkImportLearningService(widget.database);
+    final aliasPairs = <({String rawName, int personnelId})>[];
+
     setState(() {
       for (var bIdx = 0; bIdx < _parsedBlocks.length; bIdx++) {
         final block = _parsedBlocks[bIdx];
@@ -518,12 +520,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
               reviewConfirmed: true,
             );
             changed = true;
-            unawaited(
-              learningService.rememberAlias(
-                rawName: item.rawName,
-                personnelId: item.matchedPersonnelId!,
-              ),
-            );
+            aliasPairs.add((
+              rawName: item.rawName,
+              personnelId: item.matchedPersonnelId!,
+            ));
           }
         }
 
@@ -532,6 +532,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
         }
       }
     });
+
+    if (aliasPairs.isNotEmpty) {
+      await learningService.rememberAliases(aliasPairs);
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
