@@ -54,7 +54,7 @@ void main() {
 
     expect(find.text('K.H'), findsOneWidget);
     expect(find.text('7-B Timi'), findsOneWidget);
-    expect(find.text('1 kişi'), findsNWidgets(2));
+    expect(find.text('1 Personel'), findsNWidgets(2));
     expect(
       tester.getTopLeft(find.text('K.H')).dy,
       lessThan(tester.getTopLeft(find.text('7-B Timi')).dy),
