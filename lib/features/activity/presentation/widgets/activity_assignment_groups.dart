@@ -13,6 +13,7 @@ class ActivityAssignmentGroups extends StatefulWidget {
     this.selectedSquadId,
     this.onExportSelected,
     this.onDeleteSelected,
+    this.onTransferSquad,
     super.key,
   });
 
@@ -26,6 +27,9 @@ class ActivityAssignmentGroups extends StatefulWidget {
   final Future<void> Function(
     List<FaaliyetPersonelAtamaTableData> assignments,
   )? onDeleteSelected;
+  /// Called when the user taps "Taşı" on a squad header.
+  /// Receives [squadId] (nullable = "Tim Dışı") and [squadName].
+  final Future<void> Function(int? squadId, String squadName)? onTransferSquad;
   final Widget Function(FaaliyetPersonelAtamaTableData assignment)
       assignmentBuilder;
 
@@ -173,6 +177,16 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      if (widget.onTransferSquad != null && squadId != null)
+                        IconButton(
+                          key: Key('activity-team-transfer-$squadId'),
+                          icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                          tooltip: '$teamName timini başka karta taşı',
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(),
+                          onPressed: () =>
+                              widget.onTransferSquad!(squadId, teamName),
+                        ),
                       Checkbox(
                         key: Key('activity-team-select-$squadId'),
                         value: _selectedSquadIds.contains(squadId),

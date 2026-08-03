@@ -119,6 +119,26 @@ class AssignmentConflictException implements Exception {
   String toString() => message;
 }
 
+/// Result returned by [ActivityRepository.transferSquadBetweenActivities].
+class SquadTransferResult {
+  const SquadTransferResult({
+    required this.movedCount,
+    required this.skippedCount,
+    required this.skippedPersonnelIds,
+  });
+
+  /// Number of personnel successfully transferred to the target activity.
+  final int movedCount;
+
+  /// Number of personnel skipped because they were already in the target.
+  final int skippedCount;
+
+  /// Personnel IDs that were skipped (already present in target activity).
+  final List<int> skippedPersonnelIds;
+
+  bool get isComplete => skippedCount == 0;
+}
+
 class ActivityRepository {
   ActivityRepository(this.db);
 
@@ -1233,6 +1253,125 @@ class ActivityRepository {
               aciklama: Value(aciklama),
             ),
           );
+    });
+  }
+
+  /// Transfer all assignments belonging to a squad (timId) from one activity
+  /// to another within the same day in a single atomic transaction.
+  ///
+  /// For each personnel in [squadId]:
+  ///   1. Remove their assignment from [sourceActivityId].
+  ///   2. Re-evaluate conflict status against the [targetActivityId]'s date.
+  ///   3. Insert into [targetActivityId] with the new status.
+  ///
+  /// Returns a [SquadTransferResult] containing counts and any skipped personnel.
+  Future<SquadTransferResult> transferSquadBetweenActivities({
+    required int sourceActivityId,
+    required int targetActivityId,
+    required int squadId,
+    required UserSessionState actor,
+  }) {
+    _requireAdmin(actor);
+    return db.transaction(() async {
+      // Load both activities
+      final sourceActivity = await (db.select(db.gunlukFaaliyetTable)
+            ..where((tbl) => tbl.id.equals(sourceActivityId)))
+          .getSingleOrNull();
+      if (sourceActivity == null) {
+        throw ArgumentError('Kaynak faaliyet bulunamadı: $sourceActivityId');
+      }
+      final targetActivity = await (db.select(db.gunlukFaaliyetTable)
+            ..where((tbl) => tbl.id.equals(targetActivityId)))
+          .getSingleOrNull();
+      if (targetActivity == null) {
+        throw ArgumentError('Hedef faaliyet bulunamadı: $targetActivityId');
+      }
+
+      // Find source assignments that belong to the given squad
+      final allSourceAssignments = await (db.select(
+        db.faaliyetPersonelAtamaTable,
+      )..where((tbl) => tbl.faaliyetId.equals(sourceActivityId)))
+          .get();
+
+      // Filter by squadId via personnelTable
+      final squadPersonnel = await (db.select(db.personelTable)
+            ..where((tbl) => tbl.timId.equals(squadId)))
+          .get();
+      final squadPersonnelIds = squadPersonnel.map((p) => p.id).toSet();
+
+      final toTransfer = allSourceAssignments
+          .where((a) => squadPersonnelIds.contains(a.personelId))
+          .toList();
+
+      if (toTransfer.isEmpty) {
+        return const SquadTransferResult(
+          movedCount: 0,
+          skippedCount: 0,
+          skippedPersonnelIds: [],
+        );
+      }
+
+      // Load conflict data after removal will take place
+      // We pass excludeActivityId=sourceActivityId so those assignments won't
+      // block themselves in the conflict check.
+      final reports = await _loadDomainReports();
+      final existingAssignments = await _loadExistingAssignments();
+
+      var movedCount = 0;
+      var skippedCount = 0;
+      final skippedPersonnelIds = <int>[];
+
+      for (final assignment in toTransfer) {
+        // Check if the personnel already has an assignment in the target activity
+        final alreadyInTarget = await (db.select(
+          db.faaliyetPersonelAtamaTable,
+        )..where(
+                (tbl) =>
+                    tbl.faaliyetId.equals(targetActivityId) &
+                    tbl.personelId.equals(assignment.personelId),
+              ))
+            .getSingleOrNull();
+        if (alreadyInTarget != null) {
+          // Personnel already assigned to target; skip to avoid duplicate
+          skippedPersonnelIds.add(assignment.personelId);
+          skippedCount++;
+          continue;
+        }
+
+        // Evaluate conflict status for the target activity date,
+        // excluding the current source assignment so it doesn't block itself
+        final status = ConflictChecker.evaluateAssignmentStatus(
+          personelId: assignment.personelId,
+          targetDate: targetActivity.tarih,
+          targetDuty: assignment.gorevVeyaIzin,
+          reports: reports,
+          existingAssignments: existingAssignments,
+          excludeAssignmentId: assignment.id,
+        );
+
+        // Delete from source
+        await (db.delete(db.faaliyetPersonelAtamaTable)
+              ..where((tbl) => tbl.id.equals(assignment.id)))
+            .go();
+
+        // Insert into target
+        await db.into(db.faaliyetPersonelAtamaTable).insert(
+              FaaliyetPersonelAtamaTableCompanion.insert(
+                faaliyetId: targetActivityId,
+                personelId: assignment.personelId,
+                gorevVeyaIzin: assignment.gorevVeyaIzin,
+                durum: status,
+                aciklama: Value(assignment.aciklama),
+              ),
+            );
+        movedCount++;
+      }
+
+      return SquadTransferResult(
+        movedCount: movedCount,
+        skippedCount: skippedCount,
+        skippedPersonnelIds: skippedPersonnelIds,
+      );
     });
   }
 

@@ -9,6 +9,7 @@ import 'package:personelapp2/features/activity/domain/activity_assignment_order.
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/edit_assignment_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/transfer_squad_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_assignment_groups.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
@@ -244,6 +245,17 @@ class ActivityAssignmentDetails extends ConsumerWidget {
               personnelById: pMap,
               squadNames: squadMap,
               selectedSquadId: selectedSquadId,
+              onTransferSquad: !isAdmin
+                  ? null
+                  : (squadId, squadName) async {
+                      if (squadId == null) return;
+                      await showTransferSquadDialog(
+                        context,
+                        sourceActivity: activity,
+                        squadId: squadId,
+                        squadName: squadName,
+                      );
+                    },
               onExportSelected: (selectedAssignments) async {
                 final selectedRows = buildRosterRows(selectedAssignments);
                 if (selectedRows.isEmpty) {
