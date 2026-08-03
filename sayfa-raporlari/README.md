@@ -42,7 +42,8 @@ raporlarini icerir.
    aksiyonlari sunuyor.
 3. `ActivityArchiveScreen` ve bagli detay akislarinda komutan kullanicinin
    kapsam asan goruntuleme veya mutasyon yapabilme riski var.
-4. `MonthlyMatrixScreen` export aksiyonu gorunen filtre yerine ham personel
-   listesini kullanabildigi icin yetki disi veri disa aktarilabilir.
+4. `MonthlyMatrixScreen` export aksiyonunda session bazli filtreleme eklendi;
+   ancak `getTeamMonthlyCalendar()` repository seviyesinde rol kontrolu
+   yapmiyor.
 5. Backup/restore akisi tam restore degil; merge mantigi ile calisiyor ve
    komutan/yetki modelini eksik tasiyor.

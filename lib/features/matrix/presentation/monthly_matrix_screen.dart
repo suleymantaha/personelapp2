@@ -9,22 +9,8 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 import 'package:personelapp2/features/matrix/domain/matrix_personnel_order.dart';
+import 'package:personelapp2/features/matrix/presentation/widgets/team_duty_calendar_modal.dart';
 import 'package:personelapp2/features/matrix/services/excel_xml_generator.dart';
-
-class _MobileMatrixListEntry {
-  const _MobileMatrixListEntry.header(this.teamName, this.memberCount)
-      : person = null;
-
-  const _MobileMatrixListEntry.person(this.person)
-      : teamName = null,
-        memberCount = null;
-
-  final String? teamName;
-  final int? memberCount;
-  final PersonelTableData? person;
-
-  bool get isHeader => person == null;
-}
 
 class MonthlyMatrixScreen extends ConsumerStatefulWidget {
   const MonthlyMatrixScreen({super.key});
@@ -36,6 +22,9 @@ class MonthlyMatrixScreen extends ConsumerStatefulWidget {
 
 class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
   DateTime _selectedMonth = DateTime.now();
+
+  // Her bir timin açık/kapalı durumunu takip eden Set (null = timsiz)
+  final Set<int?> _expandedTeamIds = {};
 
   String _getAbbreviation(MatrixDayCell? cell) => cell?.displayCode ?? '-';
 
@@ -50,6 +39,26 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
       'SVK' => 'SEVK',
       _ => '',
     };
+  }
+
+  Future<void> _showTeamCalendarModal(
+    BuildContext context,
+    int? timId,
+    String timAdi,
+  ) async {
+    if (timId == null) return;
+    final repository = ref.read(matrixRepositoryProvider);
+    final calendarData = await repository.getTeamMonthlyCalendar(
+      timId: timId,
+      timAdi: timAdi,
+      year: _selectedMonth.year,
+      month: _selectedMonth.month,
+    );
+    if (!context.mounted) return;
+    await TeamDutyCalendarModal.show(
+      context,
+      calendarData: calendarData,
+    );
   }
 
   Future<void> _showCellDetails(
@@ -366,7 +375,6 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
       ),
       body: personnelAsync.when(
         data: (rawPersonnelList) {
-          // Role Filtering: If Commander, only show their squad's personnel
           final filteredPersonnel = (session != null &&
                   !session.isAdmin &&
                   session.timId != null)
@@ -384,505 +392,193 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
           }
 
           final matrixData = matrixAsync.value ?? {};
+          final squadNames = {
+            for (final squad in squads) squad.id: squad.timAdi,
+          };
 
-          if (context.isMobile) {
-            final squadNames = {
-              for (final squad in squads) squad.id: squad.timAdi,
-            };
-            final groupedPersonnel = <int?, List<PersonelTableData>>{};
-            for (final person in personnelList) {
-              groupedPersonnel.putIfAbsent(person.timId, () => []).add(person);
-            }
-            final mobileEntries = <_MobileMatrixListEntry>[
-              for (final group in groupedPersonnel.entries) ...[
-                _MobileMatrixListEntry.header(
-                  group.key == null
-                      ? 'Timsiz Personel'
-                      : (squadNames[group.key] ?? 'Bilinmeyen Tim'),
-                  group.value.length,
-                ),
-                for (final person in group.value)
-                  _MobileMatrixListEntry.person(person),
-              ],
-            ];
-
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: mobileEntries.length,
-              itemBuilder: (context, index) {
-                final entry = mobileEntries[index];
-                if (entry.isHeader) {
-                  return Container(
-                    key: ValueKey(
-                      'matrix-team-header-${entry.teamName}',
-                    ),
-                    margin: const EdgeInsets.fromLTRB(12, 10, 12, 2),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.accentOrOlive,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.groups_rounded,
-                          size: 20,
-                          color: context.onAccentOrOlive,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            entry.teamName!,
-                            style: TextStyle(
-                              color: context.onAccentOrOlive,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          '${entry.memberCount} kişi',
-                          style: TextStyle(
-                            color: context.onAccentOrOlive,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                final p = entry.person!;
-                final personnelIndex = personnelList.indexOf(p);
-                final pStatusMap = matrixData[p.id] ?? {};
-                final dutyCount = pStatusMap.values
-                    .where((s) => _getAbbreviation(s) == 'X')
-                    .length;
-                final leaveCount = pStatusMap.values
-                    .where(
-                      (s) =>
-                          _getAbbreviation(s) == 'İZ' ||
-                          _getAbbreviation(s) == 'RAP' ||
-                          _getAbbreviation(s) == 'İST',
-                    )
-                    .length;
-
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: context.cardBorderColor,
-                    ),
-                  ),
-                  child: ExpansionTile(
-                    leading: Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: context.accentOrOlive,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${personnelIndex + 1}',
-                        style: TextStyle(
-                          color: context.onAccentOrOlive,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    title: Text(
-                      p.adSoyad,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    subtitle: Row(
-                      children: [
-                        Text(
-                          p.rutbe,
-                          style: TextStyle(
-                            color: context.accentOrOlive,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const Spacer(),
-                        if (dutyCount > 0)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              'Görev: $dutyCount g',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.blue,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        if (leaveCount > 0) ...[
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              'İzin: $leaveCount g',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.orange,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Divider(),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Aylık Çizelge ($daysInMonth Gün):',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 5,
-                              runSpacing: 5,
-                              children: List.generate(daysInMonth, (dIndex) {
-                                final day = dIndex + 1;
-                                final cell = pStatusMap[day];
-                                final status = _statusForColor(cell);
-                                final bgColor = context.getStatusBgColor(
-                                  status,
-                                );
-                                final textColor = context.getStatusTextColor(
-                                  status,
-                                );
-                                final label = _getAbbreviation(cell);
-                                final isToday = DateTime.now().year ==
-                                        _selectedMonth.year &&
-                                    DateTime.now().month ==
-                                        _selectedMonth.month &&
-                                    DateTime.now().day == day;
-
-                                return GestureDetector(
-                                  onTap: cell == null
-                                      ? null
-                                      : () => _showCellDetails(
-                                            context,
-                                            p,
-                                            day,
-                                            cell,
-                                          ),
-                                  child: Container(
-                                    width: 42,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: bgColor,
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(
-                                        color: context.cellBorderColor(
-                                          isToday: isToday,
-                                        ),
-                                        width: isToday ? 2.0 : 1.0,
-                                      ),
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          '$day',
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.bold,
-                                            color: textColor.withValues(
-                                              alpha: 0.75,
-                                            ),
-                                          ),
-                                        ),
-                                        Text(
-                                          label,
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                            color: textColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
+          // Personnel'i tim bazlı grupla
+          final groupedPersonnel = <int?, List<PersonelTableData>>{};
+          for (final person in personnelList) {
+            groupedPersonnel.putIfAbsent(person.timId, () => []).add(person);
           }
 
-          return ResponsiveCenter(
-            maxWidth: 1400,
-            padding: EdgeInsets.zero,
-            child: SingleChildScrollView(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Sticky Left Column (Personnel Rütbe & Name with Sıra No)
-                  SizedBox(
-                    width: 210,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+          // Mobil Ekran Tasarımı (Varsayılan Kapalı Tim Akordeon Kartları)
+          if (context.isMobile) {
+            return ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              children: groupedPersonnel.entries.map((group) {
+                final teamId = group.key;
+                final teamName = teamId == null
+                    ? 'Timsiz Personel'
+                    : (squadNames[teamId] ?? 'Bilinmeyen Tim');
+                final members = group.value;
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  clipBehavior: Clip.antiAlias,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: context.cardBorderColor),
+                  ),
+                  child: ExpansionTile(
+                    initiallyExpanded: false, // Varsayılan KAPALI!
+                    leading: Icon(
+                      Icons.groups_rounded,
+                      color: context.accentOrOlive,
+                    ),
+                    title: Text(
+                      teamName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${members.length} Personel',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).hintColor,
+                      ),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Personnel Header Cell (Height 48 to match Days Header)
-                        SizedBox(
-                          height: 48,
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 2,
-                              vertical: 4,
+                        if (teamId != null)
+                          IconButton(
+                            icon: Icon(
+                              Icons.calendar_month_outlined,
+                              color: context.accentOrOlive,
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            decoration: BoxDecoration(
-                              color: context.headerBg,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 24,
-                                  child: Text(
-                                    'S.N.',
-                                    style: TextStyle(
-                                      color: context.onAccentOrOlive,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 60,
-                                  child: Text(
-                                    'Rütbe',
-                                    style: TextStyle(
-                                      color: context.onAccentOrOlive,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    'Adı Soyadı',
-                                    style: TextStyle(
-                                      color: context.onAccentOrOlive,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            tooltip: 'Görev Takvimi',
+                            onPressed: () => _showTeamCalendarModal(
+                              context,
+                              teamId,
+                              teamName,
                             ),
                           ),
-                        ),
-                        // Personnel Data Rows (Bounded Rounded Boxes matching status grid)
-                        ...personnelList.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final p = entry.value;
-                          final rowNumber = index + 1;
-
-                          return SizedBox(
-                            height: 48,
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 2,
-                                vertical: 2,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: context.cardBorderColor,
-                                  width: 1.2,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  // Sıra No Badge
-                                  Container(
-                                    width: 22,
-                                    height: 22,
-                                    decoration: BoxDecoration(
-                                      color: context.accentOrOlive,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      '$rowNumber',
-                                      style: TextStyle(
-                                        color: context.onAccentOrOlive,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  // Rütbe
-                                  SizedBox(
-                                    width: 60,
-                                    child: Text(
-                                      p.rutbe,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: context.accentOrOlive,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  // Ad Soyad
-                                  Expanded(
-                                    child: Text(
-                                      p.adSoyad,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
+                        const Icon(Icons.expand_more_rounded),
                       ],
                     ),
-                  ),
+                    children: members.map((p) {
+                      final personnelIndex = personnelList.indexOf(p);
+                      final pStatusMap = matrixData[p.id] ?? {};
+                      final dutyCount = pStatusMap.values
+                          .where(
+                            (s) =>
+                                _getAbbreviation(s) != '-' &&
+                                _getAbbreviation(s) != 'İZ' &&
+                                _getAbbreviation(s) != 'RAP' &&
+                                _getAbbreviation(s) != 'İST' &&
+                                _getAbbreviation(s) != 'SVK',
+                          )
+                          .length;
 
-                  // Horizontally Scrollable Days Grid (1 to 31)
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        width: daysInMonth * 48.0,
-                        child: Column(
-                          children: [
-                            // Days Header Row (Height 48 to match Personnel Header)
-                            SizedBox(
-                              height: 48,
-                              child: Row(
-                                children: List.generate(daysInMonth, (index) {
-                                  final dayNum = index + 1;
-                                  final isTodayHeader = DateTime.now().year ==
-                                          _selectedMonth.year &&
-                                      DateTime.now().month ==
-                                          _selectedMonth.month &&
-                                      DateTime.now().day == dayNum;
-
-                                  return SizedBox(
-                                    width: 48,
-                                    child: Container(
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 2,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: context.dayHeaderBg(
-                                          isToday: isTodayHeader,
-                                        ),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        '$dayNum',
-                                        style: TextStyle(
-                                          color: context.dayHeaderTextColor(
-                                            isToday: isTodayHeader,
-                                          ),
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }),
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: context.cardBorderColor),
+                        ),
+                        child: ExpansionTile(
+                          leading: Container(
+                            width: 26,
+                            height: 26,
+                            decoration: BoxDecoration(
+                              color: context.accentOrOlive,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '${personnelIndex + 1}',
+                              style: TextStyle(
+                                color: context.onAccentOrOlive,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
                               ),
                             ),
+                          ),
+                          title: Text(
+                            p.adSoyad,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                          subtitle: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  p.rutbe,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: context.textSecondary,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: dutyCount > 0
+                                      ? context.accentSubtleBg
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Görev: $dutyCount g',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: dutyCount > 0
+                                        ? context.accentOrOlive
+                                        : context.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Divider(),
+                                  Text(
+                                    'Aylık Çizelge ($daysInMonth Gün):',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Wrap(
+                                    spacing: 4,
+                                    runSpacing: 4,
+                                    children: List.generate(daysInMonth,
+                                        (dIndex) {
+                                      final day = dIndex + 1;
+                                      final cell = pStatusMap[day];
+                                      final status = _statusForColor(cell);
+                                      final bgColor =
+                                          context.getStatusBgColor(status);
+                                      final textColor =
+                                          context.getStatusTextColor(status);
+                                      final label = _getAbbreviation(cell);
+                                      final isToday = DateTime.now().year ==
+                                              _selectedMonth.year &&
+                                          DateTime.now().month ==
+                                              _selectedMonth.month &&
+                                          DateTime.now().day == day;
 
-                            // Status Grid Rows
-                            ...personnelList.asMap().entries.map((entry) {
-                              final p = entry.value;
-                              final pStatusMap = matrixData[p.id] ?? {};
-
-                              return SizedBox(
-                                height: 48,
-                                child: Row(
-                                  children: List.generate(daysInMonth, (
-                                    dIndex,
-                                  ) {
-                                    final day = dIndex + 1;
-                                    final cell = pStatusMap[day];
-                                    final status = _statusForColor(cell);
-                                    final bgColor = context.getStatusBgColor(
-                                      status,
-                                    );
-                                    final textColor =
-                                        context.getStatusTextColor(status);
-                                    final label = _getAbbreviation(cell);
-
-                                    final isToday = DateTime.now().year ==
-                                            _selectedMonth.year &&
-                                        DateTime.now().month ==
-                                            _selectedMonth.month &&
-                                        DateTime.now().day == day;
-
-                                    return SizedBox(
-                                      width: 48,
-                                      child: GestureDetector(
+                                      return GestureDetector(
                                         onTap: cell == null
                                             ? null
                                             : () => _showCellDetails(
@@ -892,42 +588,534 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                                   cell,
                                                 ),
                                         child: Container(
-                                          margin: const EdgeInsets.all(2),
+                                          width: 38,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 3,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: bgColor,
-                                            borderRadius: BorderRadius.circular(
-                                              6,
-                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
                                             border: Border.all(
                                               color: context.cellBorderColor(
                                                 isToday: isToday,
                                               ),
-                                              width: isToday ? 2.0 : 1.2,
+                                              width: isToday ? 2.0 : 1.0,
                                             ),
                                           ),
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            label,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 13,
-                                              color: textColor,
-                                            ),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                '$day',
+                                                style: TextStyle(
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: textColor.withValues(
+                                                    alpha: 0.75,
+                                                  ),
+                                                ),
+                                              ),
+                                              Text(
+                                                label,
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: textColor,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              );
-                            }),
+                                      );
+                                    }),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
-                      ),
-                    ),
+                      );
+                    }).toList(),
                   ),
-                ],
-              ),
+                );
+              }).toList(),
+            );
+          }
+
+          // Masaüstü / Tablet Ekran Tasarımı (Varsayılan Kapalı Tim Akordeon Gridi)
+          return ResponsiveCenter(
+            maxWidth: 1400,
+            padding: EdgeInsets.zero,
+            child: ListView(
+              padding: const EdgeInsets.all(12),
+              children: groupedPersonnel.entries.map((group) {
+                final teamId = group.key;
+                final teamName = teamId == null
+                    ? 'Timsiz Personel'
+                    : (squadNames[teamId] ?? 'Bilinmeyen Tim');
+                final members = group.value;
+                final isExpanded = _expandedTeamIds.contains(teamId);
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  clipBehavior: Clip.antiAlias,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: context.cardBorderColor),
+                  ),
+                  child: Column(
+                    children: [
+                      // Tim Başlık Şeridi (Tıklanınca açılır/kapanır)
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            if (isExpanded) {
+                              _expandedTeamIds.remove(teamId);
+                            } else {
+                              _expandedTeamIds.add(teamId);
+                            }
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: context.accentOrOlive,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                isExpanded
+                                    ? Icons.keyboard_arrow_down_rounded
+                                    : Icons.keyboard_arrow_right_rounded,
+                                color: context.onAccentOrOlive,
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.groups_rounded,
+                                color: context.onAccentOrOlive,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                teamName,
+                                style: TextStyle(
+                                  color: context.onAccentOrOlive,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: context.onAccentOrOlive
+                                      .withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${members.length} Personel',
+                                  style: TextStyle(
+                                    color: context.onAccentOrOlive,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const Spacer(),
+                              if (teamId != null)
+                                ElevatedButton.icon(
+                                  onPressed: () => _showTeamCalendarModal(
+                                    context,
+                                    teamId,
+                                    teamName,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.calendar_month_outlined,
+                                    size: 16,
+                                  ),
+                                  label: const Text('Görev Takvimi'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: context.onAccentOrOlive,
+                                    foregroundColor: context.accentOrOlive,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Tim Açıldığında Gösterilecek 31 Günlük Matris Tablosu
+                      if (isExpanded)
+                        SingleChildScrollView(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Sticky Left Personnel Column
+                              SizedBox(
+                                width: 260,
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    // Table Header Cell
+                                    SizedBox(
+                                      height: 44,
+                                      child: Container(
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 2,
+                                          vertical: 2,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: context.headerBg,
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 24,
+                                              child: Text(
+                                                'S.N.',
+                                                style: TextStyle(
+                                                  color:
+                                                      context.onAccentOrOlive,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 60,
+                                              child: Text(
+                                                'Rütbe',
+                                                style: TextStyle(
+                                                  color:
+                                                      context.onAccentOrOlive,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Text(
+                                                'Adı Soyadı',
+                                                style: TextStyle(
+                                                  color:
+                                                      context.onAccentOrOlive,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 36,
+                                              child: Text(
+                                                'Top.',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color:
+                                                      context.onAccentOrOlive,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    // Personnel Rows
+                                    ...members.asMap().entries.map((mEntry) {
+                                      final index = mEntry.key;
+                                      final p = mEntry.value;
+                                      final rowNumber = index + 1;
+                                      final pStatusMap =
+                                          matrixData[p.id] ?? {};
+                                      final dutyCount = pStatusMap.values
+                                          .where(
+                                            (s) =>
+                                                _getAbbreviation(s) != '-' &&
+                                                _getAbbreviation(s) != 'İZ' &&
+                                                _getAbbreviation(s) != 'RAP' &&
+                                                _getAbbreviation(s) != 'İST' &&
+                                                _getAbbreviation(s) != 'SVK',
+                                          )
+                                          .length;
+
+                                      return SizedBox(
+                                        height: 44,
+                                        child: Container(
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 2,
+                                            vertical: 2,
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).cardColor,
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                            border: Border.all(
+                                              color: context.cardBorderColor,
+                                              width: 1.2,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: 20,
+                                                height: 20,
+                                                decoration: BoxDecoration(
+                                                  color: context.accentOrOlive,
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                ),
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  '$rowNumber',
+                                                  style: TextStyle(
+                                                    color:
+                                                        context.onAccentOrOlive,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              SizedBox(
+                                                width: 60,
+                                                child: Text(
+                                                  p.rutbe,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                    color:
+                                                        context.accentOrOlive,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  p.adSoyad,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                width: 32,
+                                                height: 24,
+                                                decoration: BoxDecoration(
+                                                  color: dutyCount > 0
+                                                      ? context.accentOrOlive
+                                                          .withValues(
+                                                              alpha: 0.15)
+                                                      : Colors.transparent,
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                ),
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  '$dutyCount',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    color:
+                                                        context.accentOrOlive,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              ),
+
+                              // Days Grid Column (1 to 31)
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: SizedBox(
+                                    width: daysInMonth * 44.0,
+                                    child: Column(
+                                      children: [
+                                        // Header Row
+                                        SizedBox(
+                                          height: 44,
+                                          child: Row(
+                                            children: List.generate(
+                                                daysInMonth, (dIdx) {
+                                              final dayNum = dIdx + 1;
+                                              final isTodayHeader =
+                                                  DateTime.now().year ==
+                                                          _selectedMonth.year &&
+                                                      DateTime.now().month ==
+                                                          _selectedMonth
+                                                              .month &&
+                                                      DateTime.now().day ==
+                                                          dayNum;
+
+                                              return SizedBox(
+                                                width: 44,
+                                                child: Container(
+                                                  margin:
+                                                      const EdgeInsets.symmetric(
+                                                    horizontal: 2,
+                                                    vertical: 2,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: context.dayHeaderBg(
+                                                      isToday: isTodayHeader,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                      6,
+                                                    ),
+                                                  ),
+                                                  alignment: Alignment.center,
+                                                  child: Text(
+                                                    '$dayNum',
+                                                    style: TextStyle(
+                                                      color: context
+                                                          .dayHeaderTextColor(
+                                                        isToday: isTodayHeader,
+                                                      ),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            }),
+                                          ),
+                                        ),
+
+                                        // Status Grid Rows
+                                        ...members.map((p) {
+                                          final pStatusMap =
+                                              matrixData[p.id] ?? {};
+
+                                          return SizedBox(
+                                            height: 44,
+                                            child: Row(
+                                              children: List.generate(
+                                                  daysInMonth, (dIndex) {
+                                                final day = dIndex + 1;
+                                                final cell = pStatusMap[day];
+                                                final status =
+                                                    _statusForColor(cell);
+                                                final bgColor = context
+                                                    .getStatusBgColor(status);
+                                                final textColor = context
+                                                    .getStatusTextColor(status);
+                                                final label =
+                                                    _getAbbreviation(cell);
+
+                                                final isToday = DateTime.now()
+                                                            .year ==
+                                                        _selectedMonth.year &&
+                                                    DateTime.now().month ==
+                                                        _selectedMonth.month &&
+                                                    DateTime.now().day == day;
+
+                                                return SizedBox(
+                                                  width: 44,
+                                                  child: GestureDetector(
+                                                    onTap: cell == null
+                                                        ? null
+                                                        : () =>
+                                                            _showCellDetails(
+                                                              context,
+                                                              p,
+                                                              day,
+                                                              cell,
+                                                            ),
+                                                    child: Container(
+                                                      margin:
+                                                          const EdgeInsets.all(
+                                                        2,
+                                                      ),
+                                                      decoration:
+                                                          BoxDecoration(
+                                                        color: bgColor,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(6),
+                                                        border: Border.all(
+                                                          color: context
+                                                              .cellBorderColor(
+                                                            isToday: isToday,
+                                                          ),
+                                                          width: isToday
+                                                              ? 2.0
+                                                              : 1.2,
+                                                        ),
+                                                      ),
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: Text(
+                                                        label,
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 12,
+                                                          color: textColor,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              }),
+                                            ),
+                                          );
+                                        }),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
           );
         },
