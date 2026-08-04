@@ -380,221 +380,279 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                 final isApproved = atama.durum == AssignmentStatus.onaylandi;
 
                 return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 3),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
                   decoration: BoxDecoration(
                     color: context.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: context.colorScheme.outlineVariant.withValues(
-                        alpha: 0.3,
+                        alpha: 0.35,
                       ),
                     ),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
+                      // Row 1: name (always full width) + status chip
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
                               nameText,
                               style: const TextStyle(
                                 fontSize: 13,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                            if (subInfo.isNotEmpty)
-                              Text(
-                                subInfo,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: context.textSecondary,
-                                ),
-                              ),
-                            if (digerNote.isNotEmpty)
-                              Text(
-                                'Not: $digerNote',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontStyle: FontStyle.italic,
-                                  color: context.accentOrOlive,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isApproved
-                              ? context.approvedColor.withValues(alpha: 0.12)
-                              : (isPending
-                                  ? context.pendingColor.withValues(
-                                      alpha: 0.25,
-                                    )
-                                  : context.rejectedBgColor),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          isPending
-                              ? '${atama.gorevVeyaIzin} • BEKLİYOR'
-                              : atama.gorevVeyaIzin,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: isApproved
-                                ? context.approvedColor
-                                : (isPending
-                                    ? context.pendingColor
-                                    : context.rejectedColor),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 2),
-                      if (isAdmin)
-                        IconButton(
-                          icon: Icon(
-                            Icons.edit_outlined,
-                            color: context.blueGreyColor,
-                            size: 18,
-                          ),
-                          padding: const EdgeInsets.all(4),
-                          constraints: const BoxConstraints(),
-                          tooltip: 'Düzenle',
-                          onPressed: () async {
-                            final updated = await showDialog<bool>(
-                              context: context,
-                              builder: (ctx) => EditAssignmentDialog(
-                                assignment: atama,
-                                personnelName: displayName,
-                                isAdmin: isAdmin,
+                          const SizedBox(width: 8),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 160),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
                               ),
-                            );
-                            if (updated == true && context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    isAdmin
-                                        ? 'Görev güncellendi.'
-                                        : 'Görev değişikliği kaydedildi, Admin onayına gönderildi.',
-                                  ),
-                                  backgroundColor: isAdmin
+                              decoration: BoxDecoration(
+                                color: isApproved
+                                    ? context.approvedColor
+                                        .withValues(alpha: 0.12)
+                                    : (isPending
+                                        ? context.pendingColor
+                                            .withValues(alpha: 0.22)
+                                        : context.rejectedBgColor),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                isPending
+                                    ? '${atama.gorevVeyaIzin} • BEKLİYOR'
+                                    : atama.gorevVeyaIzin,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: isApproved
                                       ? context.approvedColor
-                                      : context.pendingColor,
+                                      : (isPending
+                                          ? context.pendingColor
+                                          : context.rejectedColor),
                                 ),
-                              );
-                            }
-                          },
-                        ),
-                      if (isAdmin)
-                        IconButton(
-                          icon: Icon(
-                            Icons.delete_outline,
-                            color: context.rejectedColor,
-                            size: 18,
-                          ),
-                          padding: const EdgeInsets.all(4),
-                          constraints: const BoxConstraints(),
-                          tooltip: 'Çıkar',
-                          onPressed: () async {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: const Text('Personeli Görevden Çıkar'),
-                                content: Text(
-                                  '$displayName adlı personel ${activity.faaliyetAdi} faaliyetinden çıkarılacaktır. Emin misiniz?',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.of(ctx).pop(false),
-                                    child: const Text('İPTAL'),
-                                  ),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: context.rejectedColor,
-                                    ),
-                                    onPressed: () =>
-                                        Navigator.of(ctx).pop(true),
-                                    child: const Text('ÇIKAR'),
-                                  ),
-                                ],
                               ),
-                            );
-
-                            if (confirm == true) {
-                              final repo = ref.read(activityRepositoryProvider);
-                              await repo.deleteAssignment(
-                                atama.id,
-                                actor: session!,
-                              );
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '$displayName faaliyetten çıkarıldı.',
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                        ),
-                      if (isAdmin && isPending) ...[
-                        IconButton(
-                          icon: Icon(
-                            Icons.check_circle,
-                            color: context.approvedColor,
-                            size: 20,
+                            ),
                           ),
-                          padding: const EdgeInsets.all(4),
-                          constraints: const BoxConstraints(),
-                          tooltip: 'Onayla',
-                          onPressed: () async {
-                            final repo = ref.read(activityRepositoryProvider);
-                            final result = await repo.approveAssignment(
-                              atama.id,
-                              actor: session!,
-                            );
-                            if (context.mounted && result.blockedCount > 0) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Onaylanamadı: '
-                                    '${result.conflictDescriptions.join(', ')}',
+                        ],
+                      ),
+                      // Row 2: rütbe + birlik bilgisi
+                      if (subInfo.isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          subInfo,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: context.textSecondary,
+                          ),
+                        ),
+                      ],
+                      // Row 3: not (varsa)
+                      if (digerNote.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'Not: $digerNote',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                            color: context.accentOrOlive,
+                          ),
+                        ),
+                      ],
+                      // Admin actions satırı
+                      if (isAdmin) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (isPending) ...[
+                              // Onayla ikonu
+                              SizedBox(
+                                width: 32,
+                                height: 28,
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.check_circle,
+                                    color: context.approvedColor,
+                                    size: 18,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  tooltip: 'Onayla',
+                                  onPressed: () async {
+                                    final repo =
+                                        ref.read(activityRepositoryProvider);
+                                    final result =
+                                        await repo.approveAssignment(
+                                      atama.id,
+                                      actor: session!,
+                                    );
+                                    if (context.mounted &&
+                                        result.blockedCount > 0) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Onaylanamadı: '
+                                            '${result.conflictDescriptions.join(', ')}',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
+                              // Reddet ikonu
+                              SizedBox(
+                                width: 32,
+                                height: 28,
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.cancel,
+                                    color: context.rejectedColor,
+                                    size: 18,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  tooltip: 'Reddet',
+                                  onPressed: () async {
+                                    final repo =
+                                        ref.read(activityRepositoryProvider);
+                                    await repo.updateAssignmentStatus(
+                                      atama.id,
+                                      AssignmentStatus.reddedildi,
+                                      actor: session!,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                            // Düzenle + Sil → 3-nokta menü
+                            PopupMenuButton<_AssignmentAction>(
+                              icon: Icon(
+                                Icons.more_horiz,
+                                color: context.textSecondary,
+                                size: 18,
+                              ),
+                              tooltip: 'İşlemler',
+                              padding: EdgeInsets.zero,
+                              onSelected: (action) async {
+                                switch (action) {
+                                  case _AssignmentAction.edit:
+                                    final updated = await showDialog<bool>(
+                                      context: context,
+                                      builder: (ctx) => EditAssignmentDialog(
+                                        assignment: atama,
+                                        personnelName: displayName,
+                                        isAdmin: isAdmin,
+                                      ),
+                                    );
+                                    if (updated == true && context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            isAdmin
+                                                ? 'Görev güncellendi.'
+                                                : 'Görev değişikliği kaydedildi, Admin onayına gönderildi.',
+                                          ),
+                                          backgroundColor: isAdmin
+                                              ? context.approvedColor
+                                              : context.pendingColor,
+                                        ),
+                                      );
+                                    }
+                                  case _AssignmentAction.delete:
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        title: const Text(
+                                            'Personeli Görevden Çıkar'),
+                                        content: Text(
+                                          '$displayName adlı personel '
+                                          '${activity.faaliyetAdi} '
+                                          'faaliyetinden çıkarılacaktır. '
+                                          'Emin misiniz?',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(ctx).pop(false),
+                                            child: const Text('İPTAL'),
+                                          ),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  context.rejectedColor,
+                                            ),
+                                            onPressed: () =>
+                                                Navigator.of(ctx).pop(true),
+                                            child: const Text('ÇIKAR'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                    if (confirm == true) {
+                                      final repo =
+                                          ref.read(activityRepositoryProvider);
+                                      await repo.deleteAssignment(
+                                        atama.id,
+                                        actor: session!,
+                                      );
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              '$displayName faaliyetten çıkarıldı.',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                }
+                              },
+                              itemBuilder: (ctx) => [
+                                const PopupMenuItem(
+                                  value: _AssignmentAction.edit,
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit_outlined, size: 16),
+                                      SizedBox(width: 8),
+                                      Text('Düzenle'),
+                                    ],
                                   ),
                                 ),
-                              );
-                            }
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.cancel,
-                            color: context.rejectedColor,
-                            size: 20,
-                          ),
-                          padding: const EdgeInsets.all(4),
-                          constraints: const BoxConstraints(),
-                          tooltip: 'Reddet',
-                          onPressed: () async {
-                            final repo = ref.read(activityRepositoryProvider);
-                            await repo.updateAssignmentStatus(
-                              atama.id,
-                              AssignmentStatus.reddedildi,
-                              actor: session!,
-                            );
-                          },
+                                PopupMenuItem(
+                                  value: _AssignmentAction.delete,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.delete_outline,
+                                        size: 16,
+                                        color: context.rejectedColor,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Faaliyetten Çıkar',
+                                        style: TextStyle(
+                                            color: context.rejectedColor),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ],
                     ],
@@ -607,3 +665,5 @@ class ActivityAssignmentDetails extends ConsumerWidget {
     );
   }
 }
+
+enum _AssignmentAction { edit, delete }

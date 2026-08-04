@@ -201,7 +201,7 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
                 ),
                 if (expanded)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
                     child: Column(
                       children: assignments
                           .map(widget.assignmentBuilder)

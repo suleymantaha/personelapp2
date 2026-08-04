@@ -395,8 +395,8 @@ class ActivityCard extends ConsumerWidget {
                 child: IgnorePointer(
                   ignoring: selectionMode,
                   child: ExpansionTile(
-                    tilePadding: const EdgeInsets.fromLTRB(14, 6, 10, 6),
-                    childrenPadding: const EdgeInsets.only(bottom: 6),
+                    tilePadding: const EdgeInsets.fromLTRB(16, 6, 12, 6),
+                    childrenPadding: const EdgeInsets.only(bottom: 8),
                     leading: CircleAvatar(
                       backgroundColor: statusColor,
                       child: Icon(statusIcon, color: Colors.white, size: 20),
