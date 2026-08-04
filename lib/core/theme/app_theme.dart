@@ -240,10 +240,13 @@ class AppTheme {
         iconTheme: IconThemeData(color: Colors.white),
       ),
       cardTheme: CardThemeData(
-        elevation: 0,
+        elevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.08),
         shape: RoundedRectangleBorder(
-          side: const BorderSide(color: AppColors.lightOlive),
-          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: AppColors.lightOlive.withValues(alpha: 0.6),
+          ),
+          borderRadius: BorderRadius.circular(14),
         ),
       ),
       chipTheme: ChipThemeData(

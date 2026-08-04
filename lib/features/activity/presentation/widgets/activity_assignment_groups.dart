@@ -27,6 +27,7 @@ class ActivityAssignmentGroups extends StatefulWidget {
   final Future<void> Function(
     List<FaaliyetPersonelAtamaTableData> assignments,
   )? onDeleteSelected;
+
   /// Called when the user taps "Taşı" on a squad header.
   /// Receives [squadId] (nullable = "Tim Dışı") and [squadName].
   final Future<void> Function(int? squadId, String squadName)? onTransferSquad;
@@ -215,7 +216,7 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
                 ),
                 if (expanded)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
                     child: Column(
                       children: assignments
                           .map(widget.assignmentBuilder)
