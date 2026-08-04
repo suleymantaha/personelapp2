@@ -166,44 +166,46 @@ class _TransferPersonnelDialogState
                 return ConstrainedBox(
                   constraints: const BoxConstraints(maxHeight: 260),
                   child: SingleChildScrollView(
-                    child: Column(
-                      children: sameDay.map((activity) {
-                        final isSelected = _selectedTargetId == activity.id;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          margin: const EdgeInsets.only(bottom: 6),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? context.accentOrOlive.withValues(alpha: 0.10)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
+                    child: RadioGroup<int>(
+                      groupValue: _selectedTargetId,
+                      onChanged: (val) =>
+                          setState(() => _selectedTargetId = val),
+                      child: Column(
+                        children: sameDay.map((activity) {
+                          final isSelected = _selectedTargetId == activity.id;
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            margin: const EdgeInsets.only(bottom: 6),
+                            decoration: BoxDecoration(
                               color: isSelected
-                                  ? context.accentOrOlive
-                                  : context.colorScheme.outlineVariant
-                                      .withValues(alpha: 0.4),
-                            ),
-                          ),
-                          child: RadioListTile<int>(
-                            key: Key('personnel-transfer-target-${activity.id}'),
-                            dense: true,
-                            value: activity.id,
-                            groupValue: _selectedTargetId,
-                            activeColor: context.accentOrOlive,
-                            title: Text(
-                              activity.faaliyetAdi,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
+                                  ? context.accentOrOlive.withValues(alpha: 0.10)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isSelected
+                                    ? context.accentOrOlive
+                                    : context.colorScheme.outlineVariant
+                                        .withValues(alpha: 0.4),
                               ),
                             ),
-                            onChanged: (val) =>
-                                setState(() => _selectedTargetId = val),
-                          ),
-                        );
-                      }).toList(),
+                            child: RadioListTile<int>(
+                              key: Key('personnel-transfer-target-${activity.id}'),
+                              dense: true,
+                              value: activity.id,
+                              activeColor: context.accentOrOlive,
+                              title: Text(
+                                activity.faaliyetAdi,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
                 );
@@ -244,6 +246,11 @@ class _TransferPersonnelDialogState
               ? null
               : () async {
                   setState(() => _isTransferring = true);
+                  final navigator = Navigator.of(context);
+                  final messenger = ScaffoldMessenger.of(context);
+                  final approvedColor = context.approvedColor;
+                  final pendingColor = context.pendingColor;
+                  final rejectedColor = context.rejectedColor;
                   try {
                     final result = await ref
                         .read(activityRepositoryProvider)
@@ -254,34 +261,34 @@ class _TransferPersonnelDialogState
                         );
 
                     if (!mounted) return;
-                    Navigator.of(context).pop(result.moved);
+                    navigator.pop(result.moved);
 
-                    if (result.moved && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                    if (result.moved) {
+                      messenger.showSnackBar(
                         SnackBar(
                           content: Text(
                             '${widget.personnelDisplayName} başarıyla taşındı.',
                           ),
-                          backgroundColor: context.approvedColor,
+                          backgroundColor: approvedColor,
                         ),
                       );
-                    } else if (!result.moved && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                    } else {
+                      messenger.showSnackBar(
                         SnackBar(
                           content: Text(result.reason ?? 'Taşıma yapılamadı.'),
-                          backgroundColor: context.pendingColor,
+                          backgroundColor: pendingColor,
                         ),
                       );
                     }
                   } catch (e) {
                     if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       SnackBar(
                         content: Text('Taşıma hatası: $e'),
-                        backgroundColor: context.rejectedColor,
+                        backgroundColor: rejectedColor,
                       ),
                     );
-                    Navigator.of(context).pop(false);
+                    navigator.pop(false);
                   } finally {
                     if (mounted) setState(() => _isTransferring = false);
                   }
