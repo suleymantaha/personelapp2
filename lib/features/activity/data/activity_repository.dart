@@ -139,6 +139,17 @@ class SquadTransferResult {
   bool get isComplete => skippedCount == 0;
 }
 
+/// Result returned by [ActivityRepository.transferPersonnelBetweenActivities].
+class PersonnelTransferResult {
+  const PersonnelTransferResult({required this.moved, this.reason});
+
+  /// Taşıma başarıyla gerçekleşti mi?
+  final bool moved;
+
+  /// [moved] == false ise neden taşınamadığı (kullanıcıya gösterilecek mesaj).
+  final String? reason;
+}
+
 class ActivityRepository {
   ActivityRepository(this.db);
 
@@ -1372,6 +1383,84 @@ class ActivityRepository {
         skippedCount: skippedCount,
         skippedPersonnelIds: skippedPersonnelIds,
       );
+    });
+  }
+
+  /// Tek bir personel atamasını (assignmentId) kaynak faaliyet kartından
+  /// [targetActivityId] numaralı karta atomik olarak taşır.
+  ///
+  /// İşlem adımları (tek transaction):
+  ///   1. [assignmentId]'yi doğrula — yoksa [ArgumentError].
+  ///   2. [targetActivityId]'yi doğrula — yoksa [ArgumentError].
+  ///   3. Hedefte aynı personel varsa [PersonnelTransferResult(moved: false)] döner.
+  ///   4. Çakışma kontrolü (ConflictChecker) — kaynak atamanın ID'si hariç tutulur.
+  ///   5. Kaynak atamayı siler, hedef karta yeni durum ile ekler.
+  Future<PersonnelTransferResult> transferPersonnelBetweenActivities({
+    required int assignmentId,
+    required int targetActivityId,
+    required UserSessionState actor,
+  }) {
+    _requireAdmin(actor);
+    return db.transaction(() async {
+      // 1. Kaynak atamayı yükle
+      final assignment = await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((tbl) => tbl.id.equals(assignmentId)))
+          .getSingleOrNull();
+      if (assignment == null) {
+        throw ArgumentError('Atama bulunamadı: $assignmentId');
+      }
+
+      // 2. Hedef faaliyeti yükle
+      final target = await (db.select(db.gunlukFaaliyetTable)
+            ..where((tbl) => tbl.id.equals(targetActivityId)))
+          .getSingleOrNull();
+      if (target == null) {
+        throw ArgumentError('Hedef faaliyet bulunamadı: $targetActivityId');
+      }
+
+      // 3. Hedefte zaten var mı?
+      final alreadyInTarget = await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where(
+              (tbl) =>
+                  tbl.faaliyetId.equals(targetActivityId) &
+                  tbl.personelId.equals(assignment.personelId),
+            ))
+          .getSingleOrNull();
+      if (alreadyInTarget != null) {
+        return const PersonnelTransferResult(
+          moved: false,
+          reason: 'Bu personel zaten hedef faaliyette mevcut.',
+        );
+      }
+
+      // 4. Çakışma kontrolü (kaynak atama ID'si dışlanır → kendini bloklamamak için)
+      final reports = await _loadDomainReports();
+      final existingAssignments = await _loadExistingAssignments();
+      final status = ConflictChecker.evaluateAssignmentStatus(
+        personelId: assignment.personelId,
+        targetDate: target.tarih,
+        targetDuty: assignment.gorevVeyaIzin,
+        reports: reports,
+        existingAssignments: existingAssignments,
+        excludeAssignmentId: assignment.id,
+      );
+
+      // 5. Sil & ekle
+      await (db.delete(db.faaliyetPersonelAtamaTable)
+            ..where((tbl) => tbl.id.equals(assignment.id)))
+          .go();
+
+      await db.into(db.faaliyetPersonelAtamaTable).insert(
+            FaaliyetPersonelAtamaTableCompanion.insert(
+              faaliyetId: targetActivityId,
+              personelId: assignment.personelId,
+              gorevVeyaIzin: assignment.gorevVeyaIzin,
+              durum: status,
+              aciklama: Value(assignment.aciklama),
+            ),
+          );
+
+      return const PersonnelTransferResult(moved: true);
     });
   }
 

@@ -9,6 +9,7 @@ import 'package:personelapp2/features/activity/domain/activity_assignment_order.
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/edit_assignment_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/transfer_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_squad_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_assignment_groups.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
@@ -473,6 +474,26 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 2),
+                      if (isAdmin)
+                        IconButton(
+                          key: Key('personnel-transfer-btn-${atama.id}'),
+                          icon: Icon(
+                            Icons.swap_horiz_rounded,
+                            color: context.accentOrOlive,
+                            size: 18,
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(),
+                          tooltip: '$displayName kişisini başka karta taşı',
+                          onPressed: () async {
+                            await showTransferPersonnelDialog(
+                              context,
+                              sourceActivity: activity,
+                              assignment: atama,
+                              personnelDisplayName: displayName,
+                            );
+                          },
+                        ),
                       if (isAdmin)
                         IconButton(
                           icon: Icon(
