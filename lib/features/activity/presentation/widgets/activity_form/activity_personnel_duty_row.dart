@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 
 class ActivityPersonnelDutyRow extends StatelessWidget {
   const ActivityPersonnelDutyRow({
@@ -59,6 +60,10 @@ class ActivityPersonnelDutyRow extends StatelessWidget {
               value: currentSelection,
               isDense: true,
               isExpanded: true,
+              menuMaxHeight: modernDropdownMenuMaxHeight(context),
+              borderRadius: modernDropdownBorderRadius,
+              dropdownColor: modernDropdownColor(context),
+              elevation: 5,
               hint: Text(
                 'SEÇİNİZ',
                 style: TextStyle(

@@ -14,6 +14,7 @@ import 'package:personelapp2/features/activity/presentation/dialogs/transfer_per
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_squad_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_assignment_groups.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
+import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 
@@ -224,6 +225,11 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                   size: 20,
                 ),
                 tooltip: 'Bu Faaliyeti Dışa Aktar',
+                elevation: 5,
+                shadowColor: context.shadowColor,
+                surfaceTintColor: context.colorScheme.surface,
+                shape: modernPopupShape(context),
+                constraints: const BoxConstraints(minWidth: 290, maxWidth: 330),
                 onSelected: (val) {
                   if (val == 'excel') {
                     unawaited(
@@ -253,34 +259,34 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                   }
                 },
                 itemBuilder: (ctx) => [
-                  const PopupMenuItem(
-                    value: 'excel',
-                    child: Row(
-                      children: [
-                        Icon(Icons.table_chart, size: 18),
-                        SizedBox(width: 8),
-                        Text('Excel Olarak Aktar'),
-                      ],
+                  const ModernMenuHeader<String>(
+                    title: 'Dışa Aktar',
+                    subtitle: 'Faaliyet listesini paylaş veya yazdır',
+                    icon: Icons.ios_share_rounded,
+                  ),
+                  const PopupMenuDivider(),
+                  ModernPopupMenuItem(
+                    option: const ModernActionOption(
+                      value: 'excel',
+                      title: 'Excel’e aktar',
+                      subtitle: 'Hesap tablosu olarak paylaş',
+                      icon: Icons.table_chart_outlined,
                     ),
                   ),
-                  const PopupMenuItem(
-                    value: 'pdf',
-                    child: Row(
-                      children: [
-                        Icon(Icons.picture_as_pdf, size: 18),
-                        SizedBox(width: 8),
-                        Text('PDF / Yazdır'),
-                      ],
+                  ModernPopupMenuItem(
+                    option: const ModernActionOption(
+                      value: 'pdf',
+                      title: 'PDF / Yazdır',
+                      subtitle: 'PDF oluştur veya doğrudan yazdır',
+                      icon: Icons.picture_as_pdf_outlined,
                     ),
                   ),
-                  const PopupMenuItem(
-                    value: 'text',
-                    child: Row(
-                      children: [
-                        Icon(Icons.share, size: 18),
-                        SizedBox(width: 8),
-                        Text('Metin Listesi Paylaş'),
-                      ],
+                  ModernPopupMenuItem(
+                    option: const ModernActionOption(
+                      value: 'text',
+                      title: 'Metin olarak paylaş',
+                      subtitle: 'Mesajlaşma uygulamaları için hazırla',
+                      icon: Icons.share_outlined,
                     ),
                   ),
                 ],
@@ -618,6 +624,14 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                               ),
                               tooltip: 'İşlemler',
                               padding: EdgeInsets.zero,
+                              elevation: 5,
+                              shadowColor: context.shadowColor,
+                              surfaceTintColor: context.colorScheme.surface,
+                              shape: modernPopupShape(context),
+                              constraints: const BoxConstraints(
+                                minWidth: 290,
+                                maxWidth: 330,
+                              ),
                               onSelected: (action) async {
                                 switch (action) {
                                   case _AssignmentAction.edit:
@@ -702,42 +716,38 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                                 }
                               },
                               itemBuilder: (ctx) => [
-                                const PopupMenuItem(
-                                  value: _AssignmentAction.edit,
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.edit_outlined, size: 16),
-                                      SizedBox(width: 8),
-                                      Text('Düzenle'),
-                                    ],
+                                ModernMenuHeader<_AssignmentAction>(
+                                  title: 'Atama İşlemleri',
+                                  subtitle: displayName,
+                                  icon: Icons.assignment_ind_outlined,
+                                ),
+                                const PopupMenuDivider(),
+                                ModernPopupMenuItem(
+                                  option: const ModernActionOption(
+                                    value: _AssignmentAction.edit,
+                                    title: 'Düzenle',
+                                    subtitle:
+                                        'Görev veya izin bilgisini değiştir',
+                                    icon: Icons.edit_outlined,
                                   ),
                                 ),
-                                const PopupMenuItem(
-                                  value: _AssignmentAction.transfer,
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.swap_horiz_rounded, size: 16),
-                                      SizedBox(width: 8),
-                                      Text('Başka Karta Taşı'),
-                                    ],
+                                ModernPopupMenuItem(
+                                  option: const ModernActionOption(
+                                    value: _AssignmentAction.transfer,
+                                    title: 'Başka karta taşı',
+                                    subtitle:
+                                        'Personeli farklı faaliyete aktar',
+                                    icon: Icons.swap_horiz_rounded,
                                   ),
                                 ),
-                                PopupMenuItem(
-                                  value: _AssignmentAction.delete,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.delete_outline,
-                                        size: 16,
-                                        color: context.rejectedColor,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Faaliyetten Çıkar',
-                                        style: TextStyle(
-                                            color: context.rejectedColor),
-                                      ),
-                                    ],
+                                const PopupMenuDivider(),
+                                ModernPopupMenuItem(
+                                  option: const ModernActionOption(
+                                    value: _AssignmentAction.delete,
+                                    title: 'Faaliyetten çıkar',
+                                    subtitle: 'Personelin bu atamasını kaldır',
+                                    icon: Icons.person_remove_outlined,
+                                    isDestructive: true,
                                   ),
                                 ),
                               ],

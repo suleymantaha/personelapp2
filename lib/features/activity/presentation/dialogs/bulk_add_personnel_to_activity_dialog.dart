@@ -7,6 +7,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
@@ -152,6 +153,9 @@ class _BulkAddPersonnelToActivityDialogState
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 DropdownButtonFormField<String>(
+                  menuMaxHeight: modernDropdownMenuMaxHeight(context),
+                  borderRadius: modernDropdownBorderRadius,
+                  dropdownColor: modernDropdownColor(context),
                   initialValue: rank,
                   isExpanded: true,
                   decoration: const InputDecoration(labelText: 'Rütbe'),
@@ -172,6 +176,9 @@ class _BulkAddPersonnelToActivityDialogState
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 DropdownButtonFormField<int?>(
+                  menuMaxHeight: modernDropdownMenuMaxHeight(context),
+                  borderRadius: modernDropdownBorderRadius,
+                  dropdownColor: modernDropdownColor(context),
                   initialValue: squadId,
                   isExpanded: true,
                   decoration: const InputDecoration(labelText: 'Tim'),
@@ -337,6 +344,9 @@ class _BulkAddPersonnelToActivityDialogState
               ),
               const SizedBox(height: AppSpacing.sm),
               DropdownButtonFormField<String>(
+                menuMaxHeight: modernDropdownMenuMaxHeight(context),
+                borderRadius: modernDropdownBorderRadius,
+                dropdownColor: modernDropdownColor(context),
                 key: const Key('activity-bulk-default-duty'),
                 initialValue: _defaultDuty,
                 isExpanded: true,
@@ -392,6 +402,9 @@ class _BulkAddPersonnelToActivityDialogState
                       ),
                       children: [
                         DropdownButtonFormField<int>(
+                          menuMaxHeight: modernDropdownMenuMaxHeight(context),
+                          borderRadius: modernDropdownBorderRadius,
+                          dropdownColor: modernDropdownColor(context),
                           key: Key('activity-bulk-match-${entry.key}'),
                           initialValue: person.matchedPersonnelId,
                           isExpanded: true,
@@ -466,6 +479,9 @@ class _BulkAddPersonnelToActivityDialogState
                         ],
                         const SizedBox(height: AppSpacing.sm),
                         DropdownButtonFormField<String>(
+                          menuMaxHeight: modernDropdownMenuMaxHeight(context),
+                          borderRadius: modernDropdownBorderRadius,
+                          dropdownColor: modernDropdownColor(context),
                           key: Key('activity-bulk-duty-${entry.key}'),
                           initialValue: row.duty,
                           isExpanded: true,

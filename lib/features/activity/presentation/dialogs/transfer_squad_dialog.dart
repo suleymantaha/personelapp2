@@ -44,6 +44,40 @@ class TransferSquadDialog extends ConsumerStatefulWidget {
 class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
   int? _selectedTargetId;
   bool _isTransferring = false;
+  bool _createNewActivity = false;
+  final _newActivityNameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _newActivityNameController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildNewActivityOption(BuildContext context) {
+    if (_createNewActivity) {
+      return TextField(
+        key: const Key('squad-transfer-new-activity-name'),
+        controller: _newActivityNameController,
+        autofocus: true,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: const InputDecoration(
+          labelText: 'Yeni faaliyet adı',
+          hintText: 'Örn. Gece Devriyesi',
+          prefixIcon: Icon(Icons.add_card_rounded),
+        ),
+        onChanged: (_) => setState(() {}),
+      );
+    }
+    return OutlinedButton.icon(
+      key: const Key('squad-transfer-create-activity'),
+      onPressed: () => setState(() {
+        _createNewActivity = true;
+        _selectedTargetId = null;
+      }),
+      icon: const Icon(Icons.add_card_rounded),
+      label: const Text('YENİ FAALİYET KARTI OLUŞTUR'),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +88,8 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Row(
         children: [
-          Icon(Icons.swap_horiz_rounded, color: context.accentOrOlive, size: 22),
+          Icon(Icons.swap_horiz_rounded,
+              color: context.accentOrOlive, size: 22),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -136,78 +171,91 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
                     )
                     .toList();
 
-                if (sameDay.isEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline,
-                          color: context.pendingColor,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '${widget.sourceActivity.tarih} tarihinde başka '
-                            'faaliyet kartı bulunamadı.',
-                            style: TextStyle(
+                final activityList = sameDay.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
                               color: context.pendingColor,
-                              fontStyle: FontStyle.italic,
-                              fontSize: 12,
+                              size: 18,
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 260),
-                  child: SingleChildScrollView(
-                    child: RadioGroup<int>(
-                      groupValue: _selectedTargetId,
-                      onChanged: (val) =>
-                          setState(() => _selectedTargetId = val),
-                      child: Column(
-                        children: sameDay.map((activity) {
-                          final isSelected = _selectedTargetId == activity.id;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            margin: const EdgeInsets.only(bottom: 6),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? context.accentOrOlive.withValues(alpha: 0.10)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: isSelected
-                                    ? context.accentOrOlive
-                                    : context.colorScheme.outlineVariant
-                                        .withValues(alpha: 0.4),
-                              ),
-                            ),
-                            child: RadioListTile<int>(
-                              key: Key('transfer-target-${activity.id}'),
-                              dense: true,
-                              value: activity.id,
-                              activeColor: context.accentOrOlive,
-                              title: Text(
-                                activity.faaliyetAdi,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '${widget.sourceActivity.tarih} tarihinde başka '
+                                'faaliyet kartı bulunamadı.',
                                 style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
+                                  color: context.pendingColor,
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 12,
                                 ),
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
+                          ],
+                        ),
+                      )
+                    : ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 260),
+                        child: SingleChildScrollView(
+                          child: RadioGroup<int>(
+                            groupValue: _selectedTargetId,
+                            onChanged: (val) => setState(() {
+                              _selectedTargetId = val;
+                              _createNewActivity = false;
+                            }),
+                            child: Column(
+                              children: sameDay.map((activity) {
+                                final isSelected =
+                                    _selectedTargetId == activity.id;
+                                return AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  margin: const EdgeInsets.only(bottom: 6),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? context.accentOrOlive
+                                            .withValues(alpha: 0.10)
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? context.accentOrOlive
+                                          : context.colorScheme.outlineVariant
+                                              .withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                  child: RadioListTile<int>(
+                                    key: Key('transfer-target-${activity.id}'),
+                                    dense: true,
+                                    value: activity.id,
+                                    activeColor: context.accentOrOlive,
+                                    title: Text(
+                                      activity.faaliyetAdi,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                      );
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    activityList,
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: _buildNewActivityOption(context),
                     ),
-                  ),
+                  ],
                 );
               },
               loading: () => const Padding(
@@ -224,9 +272,8 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: _isTransferring
-              ? null
-              : () => Navigator.of(context).pop(false),
+          onPressed:
+              _isTransferring ? null : () => Navigator.of(context).pop(false),
           child: const Text('İPTAL'),
         ),
         FilledButton.icon(
@@ -242,7 +289,10 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
                 )
               : const Icon(Icons.swap_horiz_rounded, size: 18),
           label: const Text('TAŞI'),
-          onPressed: (_selectedTargetId == null || _isTransferring)
+          onPressed: (_isTransferring ||
+                  (_selectedTargetId == null &&
+                      (!_createNewActivity ||
+                          _newActivityNameController.text.trim().isEmpty)))
               ? null
               : () async {
                   setState(() => _isTransferring = true);
@@ -252,14 +302,23 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
                   final pendingColor = context.pendingColor;
                   final rejectedColor = context.rejectedColor;
                   try {
-                    final result = await ref
-                        .read(activityRepositoryProvider)
-                        .transferSquadBetweenActivities(
-                          sourceActivityId: widget.sourceActivity.id,
-                          targetActivityId: _selectedTargetId!,
-                          squadId: widget.squadId,
-                          actor: session!,
-                        );
+                    if (session == null) {
+                      throw StateError('Oturum bilgisi bulunamadı.');
+                    }
+                    final repository = ref.read(activityRepositoryProvider);
+                    final result = _createNewActivity
+                        ? await repository.createActivityAndTransferSquad(
+                            sourceActivityId: widget.sourceActivity.id,
+                            squadId: widget.squadId,
+                            activityName: _newActivityNameController.text,
+                            actor: session,
+                          )
+                        : await repository.transferSquadBetweenActivities(
+                            sourceActivityId: widget.sourceActivity.id,
+                            targetActivityId: _selectedTargetId!,
+                            squadId: widget.squadId,
+                            actor: session,
+                          );
 
                     if (!mounted) return;
                     navigator.pop(result.movedCount > 0);

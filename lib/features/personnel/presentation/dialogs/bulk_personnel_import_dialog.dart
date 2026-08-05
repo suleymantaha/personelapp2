@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
@@ -149,6 +150,9 @@ class _BulkPersonnelImportDialogState
               ),
               const SizedBox(height: AppSpacing.md),
               DropdownButtonFormField<int?>(
+                menuMaxHeight: modernDropdownMenuMaxHeight(context),
+                borderRadius: modernDropdownBorderRadius,
+                dropdownColor: modernDropdownColor(context),
                 key: const Key('bulk-personnel-squad-field'),
                 initialValue: _selectedSquadId,
                 isExpanded: true,
@@ -260,6 +264,10 @@ class _BulkPersonnelImportDialogState
                             ),
                             const SizedBox(height: AppSpacing.sm),
                             DropdownButtonFormField<String>(
+                              menuMaxHeight:
+                                  modernDropdownMenuMaxHeight(context),
+                              borderRadius: modernDropdownBorderRadius,
+                              dropdownColor: modernDropdownColor(context),
                               key: Key('bulk-personnel-rank-${entry.key}'),
                               initialValue: entry.value.rank.isEmpty
                                   ? null
@@ -297,6 +305,10 @@ class _BulkPersonnelImportDialogState
                             ),
                             const SizedBox(height: AppSpacing.sm),
                             DropdownButtonFormField<int?>(
+                              menuMaxHeight:
+                                  modernDropdownMenuMaxHeight(context),
+                              borderRadius: modernDropdownBorderRadius,
+                              dropdownColor: modernDropdownColor(context),
                               key: Key('bulk-personnel-squad-${entry.key}'),
                               initialValue: entry.value.squadId,
                               isExpanded: true,

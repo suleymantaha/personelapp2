@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 
@@ -139,6 +140,9 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
+              menuMaxHeight: modernDropdownMenuMaxHeight(context),
+              borderRadius: modernDropdownBorderRadius,
+              dropdownColor: modernDropdownColor(context),
               initialValue: _selectedRank,
               isExpanded: true,
               decoration: const InputDecoration(labelText: 'Rütbe Seçiniz'),
@@ -168,6 +172,9 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
             const SizedBox(height: 12),
             squadsAsync.when(
               data: (squads) => DropdownButtonFormField<int?>(
+                menuMaxHeight: modernDropdownMenuMaxHeight(context),
+                borderRadius: modernDropdownBorderRadius,
+                dropdownColor: modernDropdownColor(context),
                 initialValue: _selectedSquadId,
                 isExpanded: true,
                 decoration: const InputDecoration(
@@ -207,35 +214,40 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                 ),
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.arrow_drop_down),
+                  tooltip: 'Birlik seç',
+                  elevation: 5,
+                  shadowColor: context.shadowColor,
+                  surfaceTintColor: context.colorScheme.surface,
+                  shape: modernPopupShape(context),
+                  constraints:
+                      const BoxConstraints(minWidth: 250, maxWidth: 300),
                   onSelected: (val) {
                     _unitController.text = val;
                   },
                   itemBuilder: (ctx) => [
-                    const PopupMenuItem(
-                      value: "1'inci Bl.",
-                      child: Text("1'inci Bl."),
+                    const ModernMenuHeader<String>(
+                      title: 'Birlik seç',
+                      subtitle: 'Sık kullanılan birlikler',
+                      icon: Icons.domain_outlined,
                     ),
-                    const PopupMenuItem(
-                      value: "2'nci Bl.",
-                      child: Text("2'nci Bl."),
+                    const PopupMenuDivider(),
+                    ...const [
+                      "1'inci Bl.",
+                      "2'nci Bl.",
+                      "3'üncü Bl.",
+                      "1'inci Bl. K.H",
+                      "2'nci Bl. K.H",
+                      "3'üncü Bl. K.H",
+                      'K.H',
+                    ].map(
+                      (unit) => ModernPopupMenuItem(
+                        option: ModernActionOption(
+                          value: unit,
+                          title: unit,
+                          icon: Icons.business_outlined,
+                        ),
+                      ),
                     ),
-                    const PopupMenuItem(
-                      value: "3'üncü Bl.",
-                      child: Text("3'üncü Bl."),
-                    ),
-                    const PopupMenuItem(
-                      value: "1'inci Bl. K.H",
-                      child: Text("1'inci Bl. K.H"),
-                    ),
-                    const PopupMenuItem(
-                      value: "2'nci Bl. K.H",
-                      child: Text("2'nci Bl. K.H"),
-                    ),
-                    const PopupMenuItem(
-                      value: "3'üncü Bl. K.H",
-                      child: Text("3'üncü Bl. K.H"),
-                    ),
-                    const PopupMenuItem(value: 'K.H', child: Text('K.H')),
                   ],
                 ),
               ],

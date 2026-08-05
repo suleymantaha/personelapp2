@@ -116,6 +116,29 @@ void main() {
     expect(await assignmentsFor(src), hasLength(1));
   });
 
+  test('yeni kart oluşturur ve personeli tek işlemde taşır', () async {
+    final personId = await addPersonnel('Yeni Kart Personeli');
+    final sourceId = await addActivity('2026-08-03', title: 'Kaynak Kart');
+    await addAssignment(activityId: sourceId, personnelId: personId);
+    final assignmentId = (await assignmentsFor(sourceId)).single.id;
+
+    final result = await repo.createActivityAndTransferPersonnel(
+      assignmentId: assignmentId,
+      activityName: 'Üçüncü Faaliyet Kartı',
+      actor: adminSession,
+    );
+
+    expect(result.moved, isTrue);
+    final activities = await db.select(db.gunlukFaaliyetTable).get();
+    expect(activities, hasLength(2));
+    final target = activities.singleWhere(
+      (activity) => activity.faaliyetAdi == 'Üçüncü Faaliyet Kartı',
+    );
+    expect(target.tarih, '2026-08-03');
+    expect(await assignmentsFor(sourceId), isEmpty);
+    expect((await assignmentsFor(target.id)).single.personelId, personId);
+  });
+
   test('onaylı durum korunur (aynı tarihte başka çakışma yok)', () async {
     final p = await addPersonnel('Ahmet Er');
     final src = await addActivity('2026-08-03');

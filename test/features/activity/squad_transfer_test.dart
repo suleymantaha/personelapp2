@@ -85,7 +85,8 @@ void main() {
       final p1 = await addPersonnel('Ali Er', squadId: squadId);
       final p2 = await addPersonnel('Veli Er', squadId: squadId);
 
-      final sourceId = await addActivity('2026-08-03', title: 'Sabah Faaliyeti');
+      final sourceId =
+          await addActivity('2026-08-03', title: 'Sabah Faaliyeti');
       final targetId = await addActivity('2026-08-03', title: 'Öğle Faaliyeti');
 
       await addAssignment(
@@ -129,6 +130,30 @@ void main() {
       expect(p1Assignment.aciklama, 'İlk nöbet');
     },
   );
+
+  test('creates a new card and transfers the squad in one operation', () async {
+    final squadId = await addSquad('Yeni Kart Timi');
+    final personId = await addPersonnel('Tim Personeli', squadId: squadId);
+    final sourceId = await addActivity('2026-08-03', title: 'Kaynak Kart');
+    await addAssignment(activityId: sourceId, personnelId: personId);
+
+    final result = await repo.createActivityAndTransferSquad(
+      sourceActivityId: sourceId,
+      squadId: squadId,
+      activityName: 'Yeni Hedef Kart',
+      actor: adminSession,
+    );
+
+    expect(result.movedCount, 1);
+    final activities = await db.select(db.gunlukFaaliyetTable).get();
+    expect(activities, hasLength(2));
+    final target = activities.singleWhere(
+      (activity) => activity.faaliyetAdi == 'Yeni Hedef Kart',
+    );
+    expect(target.tarih, '2026-08-03');
+    expect(await assignmentsFor(sourceId), isEmpty);
+    expect((await assignmentsFor(target.id)).single.personelId, personId);
+  });
 
   test(
     'skips personnel already present in the target activity',
@@ -218,8 +243,7 @@ void main() {
       final p1 = await addPersonnel('Kemal Er', squadId: squadId);
 
       final sourceId = await addActivity('2026-08-03');
-      final targetId =
-          await addActivity('2026-08-03', title: 'Öğleden Sonra');
+      final targetId = await addActivity('2026-08-03', title: 'Öğleden Sonra');
 
       await addAssignment(
         activityId: sourceId,

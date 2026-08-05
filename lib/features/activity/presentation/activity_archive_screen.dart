@@ -13,6 +13,7 @@ import 'package:personelapp2/features/activity/presentation/widgets/activity_sum
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_filter_bar.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_header_stats.dart';
+import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 
@@ -422,6 +423,11 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
             PopupMenuButton<String>(
               tooltip: 'Arşiv işlemleri',
               icon: const Icon(Icons.more_vert_rounded),
+              elevation: 5,
+              shadowColor: context.shadowColor,
+              surfaceTintColor: context.colorScheme.surface,
+              shape: modernPopupShape(context),
+              constraints: const BoxConstraints(minWidth: 280, maxWidth: 320),
               onSelected: (action) async {
                 switch (action) {
                   case 'select':
@@ -435,34 +441,44 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'select',
-                  child: ListTile(
-                    leading: Icon(Icons.checklist_rounded),
-                    title: Text('Faaliyet seç'),
+                const ModernMenuHeader<String>(
+                  title: 'Arşiv İşlemleri',
+                  subtitle: 'Görünüm ve arşiv araçları',
+                  icon: Icons.inventory_2_outlined,
+                ),
+                const PopupMenuDivider(),
+                ModernPopupMenuItem(
+                  option: const ModernActionOption(
+                    value: 'select',
+                    title: 'Faaliyet seç',
+                    subtitle: 'Birden fazla kayıt üzerinde çalış',
+                    icon: Icons.checklist_rounded,
                   ),
                 ),
                 if (!isSelectedToday)
-                  const PopupMenuItem(
-                    value: 'today',
-                    child: ListTile(
-                      leading: Icon(Icons.today_rounded),
-                      title: Text('Bugüne dön'),
+                  ModernPopupMenuItem(
+                    option: const ModernActionOption(
+                      value: 'today',
+                      title: 'Bugüne dön',
+                      subtitle: 'Güncel faaliyetleri göster',
+                      icon: Icons.today_rounded,
                     ),
                   ),
                 if (isAdmin)
-                  const PopupMenuItem(
-                    value: 'audit',
-                    child: ListTile(
-                      leading: Icon(Icons.fact_check_outlined),
-                      title: Text('Çakışmaları denetle'),
+                  ModernPopupMenuItem(
+                    option: const ModernActionOption(
+                      value: 'audit',
+                      title: 'Çakışmaları denetle',
+                      subtitle: 'Personel görevlendirmelerini kontrol et',
+                      icon: Icons.fact_check_outlined,
                     ),
                   ),
-                const PopupMenuItem(
-                  value: 'date',
-                  child: ListTile(
-                    leading: Icon(Icons.calendar_today_rounded),
-                    title: Text('Tarihe göre süz'),
+                ModernPopupMenuItem(
+                  option: const ModernActionOption(
+                    value: 'date',
+                    title: 'Tarihe göre süz',
+                    subtitle: 'Belirli bir günün arşivini aç',
+                    icon: Icons.calendar_today_rounded,
                   ),
                 ),
               ],

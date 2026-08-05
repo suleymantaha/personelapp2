@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
@@ -201,6 +202,9 @@ class _AddPersonnelToActivityDialogState
               ),
               const SizedBox(height: 14),
               DropdownButtonFormField<String>(
+                menuMaxHeight: modernDropdownMenuMaxHeight(context),
+                borderRadius: modernDropdownBorderRadius,
+                dropdownColor: modernDropdownColor(context),
                 initialValue: _selectedDuty,
                 isExpanded: true,
                 decoration: InputDecoration(

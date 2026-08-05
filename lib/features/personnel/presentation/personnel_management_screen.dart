@@ -8,6 +8,7 @@ import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/bulk_personnel_import_dialog.dart';
@@ -152,6 +153,9 @@ class _PersonnelManagementScreenState
                       squadsAsync.when(
                         data: (squads) {
                           return DropdownButtonFormField<int?>(
+                            menuMaxHeight: modernDropdownMenuMaxHeight(context),
+                            borderRadius: modernDropdownBorderRadius,
+                            dropdownColor: modernDropdownColor(context),
                             initialValue: selectedSquadId,
                             decoration: const InputDecoration(
                               labelText: 'Komutanı Olacağı Tim',
@@ -278,6 +282,11 @@ class _PersonnelManagementScreenState
                                     ),
                                     const SizedBox(height: 4),
                                     DropdownButtonFormField<int?>(
+                                      menuMaxHeight:
+                                          modernDropdownMenuMaxHeight(context),
+                                      borderRadius: modernDropdownBorderRadius,
+                                      dropdownColor:
+                                          modernDropdownColor(context),
                                       initialValue: cmd.timId,
                                       decoration: const InputDecoration(
                                         labelText: 'Atanan Tim',
@@ -584,6 +593,11 @@ class _PersonnelManagementScreenState
             PopupMenuButton<String>(
               tooltip: 'Yönetim işlemleri',
               icon: const Icon(Icons.more_vert_rounded),
+              elevation: 5,
+              shadowColor: context.shadowColor,
+              surfaceTintColor: context.colorScheme.surface,
+              shape: modernPopupShape(context),
+              constraints: const BoxConstraints(minWidth: 290, maxWidth: 330),
               onSelected: (action) async {
                 if (action == 'squad') {
                   await _showAddSquadDialog();
@@ -602,26 +616,35 @@ class _PersonnelManagementScreenState
                   }
                 }
               },
-              itemBuilder: (context) => const [
-                PopupMenuItem(
-                  value: 'squad',
-                  child: ListTile(
-                    leading: Icon(Icons.group_add_rounded),
-                    title: Text('Yeni tim'),
+              itemBuilder: (context) => [
+                const ModernMenuHeader<String>(
+                  title: 'Yönetim İşlemleri',
+                  subtitle: 'Personel ve uygulama yönetimi',
+                  icon: Icons.admin_panel_settings_outlined,
+                ),
+                const PopupMenuDivider(),
+                ModernPopupMenuItem(
+                  option: const ModernActionOption(
+                    value: 'squad',
+                    title: 'Yeni tim',
+                    subtitle: 'Yeni bir tim oluştur',
+                    icon: Icons.group_add_rounded,
                   ),
                 ),
-                PopupMenuItem(
-                  value: 'commander',
-                  child: ListTile(
-                    leading: Icon(Icons.manage_accounts),
-                    title: Text('Komutan yetkileri'),
+                ModernPopupMenuItem(
+                  option: const ModernActionOption(
+                    value: 'commander',
+                    title: 'Komutan yetkileri',
+                    subtitle: 'Tim komutanlarını ve yetkileri yönet',
+                    icon: Icons.manage_accounts_outlined,
                   ),
                 ),
-                PopupMenuItem(
-                  value: 'backup',
-                  child: ListTile(
-                    leading: Icon(Icons.import_export_rounded),
-                    title: Text('Yedekle ve geri yükle'),
+                ModernPopupMenuItem(
+                  option: const ModernActionOption(
+                    value: 'backup',
+                    title: 'Yedekle ve geri yükle',
+                    subtitle: 'Uygulama verilerini güvenli şekilde yönet',
+                    icon: Icons.import_export_rounded,
                   ),
                 ),
               ],
@@ -953,41 +976,39 @@ class _PersonnelManagementScreenState
                             ? 'Boşta / Kadro Dışı Personeller'
                             : (squadMap[timId] ?? 'Bilinmeyen Tim');
 
-                        return Card(
-                          elevation: 0,
-                          margin: const EdgeInsets.only(bottom: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: BorderSide(color: context.cardBorderColor),
+                        return ExpansionTile(
+                          initiallyExpanded: false,
+                          tilePadding: const EdgeInsets.symmetric(
+                            horizontal: 4,
                           ),
-                          child: ExpansionTile(
-                            tilePadding:
-                                const EdgeInsets.fromLTRB(16, 4, 12, 4),
-                            title: Text(
-                              squadName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: context.accentOrOlive,
+                          childrenPadding: const EdgeInsets.only(bottom: 14),
+                          shape: const Border(),
+                          collapsedShape: const Border(),
+                          title: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  squadName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: context.accentOrOlive,
+                                  ),
+                                ),
                               ),
-                            ),
-                            trailing: SizedBox(
-                              width: 100,
-                              height: 28,
-                              child: Container(
-                                alignment: Alignment.center,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
                                   color: context.accentOrOlive,
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: Text(
                                   '${members.length} personel',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: context.onAccentOrOlive,
                                     fontSize: 11.5,
@@ -995,24 +1016,28 @@ class _PersonnelManagementScreenState
                                   ),
                                 ),
                               ),
-                            ),
-                            children: [
-                              Divider(
-                                height: 1,
-                                color: context.cardBorderColor,
-                              ),
-                              ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: members.length,
-                                separatorBuilder: (context, _) => Divider(
-                                  height: 1,
-                                  color: context.cardBorderColor,
-                                ),
-                                itemBuilder: (context, index) {
-                                  final p = members[index];
+                            ],
+                          ),
+                          children: [
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: members.length,
+                              separatorBuilder: (context, _) =>
+                                  const SizedBox(height: 8),
+                              itemBuilder: (context, index) {
+                                final p = members[index];
 
-                                  return ListTile(
+                                return Card(
+                                  elevation: 0,
+                                  margin: EdgeInsets.zero,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                    side: BorderSide(
+                                      color: context.cardBorderColor,
+                                    ),
+                                  ),
+                                  child: ListTile(
                                     leading: CircleAvatar(
                                       backgroundColor: context.accentOrOlive,
                                       child: Text(
@@ -1039,6 +1064,15 @@ class _PersonnelManagementScreenState
                                         ? PopupMenuButton<String>(
                                             icon: const Icon(Icons.more_vert),
                                             tooltip: 'İşlemler',
+                                            elevation: 5,
+                                            shadowColor: context.shadowColor,
+                                            surfaceTintColor:
+                                                context.colorScheme.surface,
+                                            shape: modernPopupShape(context),
+                                            constraints: const BoxConstraints(
+                                              minWidth: 300,
+                                              maxWidth: 340,
+                                            ),
                                             onSelected: (action) async {
                                               if (action == 'edit') {
                                                 await _showEditPersonnelDialog(
@@ -1099,70 +1133,55 @@ class _PersonnelManagementScreenState
                                               }
                                             },
                                             itemBuilder: (context) => [
-                                              PopupMenuItem(
-                                                value: 'edit',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.edit,
-                                                      size: 20,
-                                                      color:
-                                                          context.blueGreyColor,
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                    const Text(
-                                                      'Düzenle / Tim Değiştir',
-                                                    ),
-                                                  ],
+                                              ModernMenuHeader<String>(
+                                                title: 'Personel İşlemleri',
+                                                subtitle:
+                                                    '${p.rutbe} ${p.adSoyad}',
+                                                icon: Icons.person_outline,
+                                              ),
+                                              const PopupMenuDivider(),
+                                              ModernPopupMenuItem(
+                                                option:
+                                                    const ModernActionOption(
+                                                  value: 'edit',
+                                                  title:
+                                                      'Düzenle / Tim değiştir',
+                                                  subtitle:
+                                                      'Personel bilgilerini güncelle',
+                                                  icon: Icons.edit_outlined,
                                                 ),
                                               ),
-                                              PopupMenuItem(
-                                                value: 'commander',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.star,
-                                                      size: 20,
-                                                      color:
-                                                          context.pendingColor,
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                    const Text(
-                                                      'Tim Komutanı Yap / Yetki Ver',
-                                                    ),
-                                                  ],
+                                              ModernPopupMenuItem(
+                                                option:
+                                                    const ModernActionOption(
+                                                  value: 'commander',
+                                                  title: 'Komutan yetkileri',
+                                                  subtitle:
+                                                      'Tim komutanı yap veya yetki ver',
+                                                  icon: Icons.star_outline,
                                                 ),
                                               ),
                                               const PopupMenuDivider(),
-                                              PopupMenuItem(
-                                                value: 'delete',
-                                                child: Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.delete,
-                                                      size: 20,
-                                                      color:
-                                                          context.rejectedColor,
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                    Text(
-                                                      'Personeli Sil',
-                                                      style: TextStyle(
-                                                        color: context
-                                                            .rejectedColor,
-                                                      ),
-                                                    ),
-                                                  ],
+                                              ModernPopupMenuItem(
+                                                option:
+                                                    const ModernActionOption(
+                                                  value: 'delete',
+                                                  title: 'Personeli sil',
+                                                  subtitle:
+                                                      'Bu işlem geri alınamaz',
+                                                  icon: Icons
+                                                      .delete_outline_rounded,
+                                                  isDestructive: true,
                                                 ),
                                               ),
                                             ],
                                           )
                                         : null,
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
                         );
                       }),
                     ],

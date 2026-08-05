@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 
 enum ExistingActivityAction { merge, createNew }
@@ -68,6 +69,9 @@ class _ExistingActivityDialogState extends State<ExistingActivityDialog> {
             const SizedBox(height: 12),
             if (widget.matches.length > 1)
               DropdownButtonFormField<int>(
+                menuMaxHeight: modernDropdownMenuMaxHeight(context),
+                borderRadius: modernDropdownBorderRadius,
+                dropdownColor: modernDropdownColor(context),
                 initialValue: _selectedId,
                 decoration: const InputDecoration(
                   labelText: 'Güncellenecek faaliyet',

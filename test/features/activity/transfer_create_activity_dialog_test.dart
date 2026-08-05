@@ -1,0 +1,107 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/transfer_personnel_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/transfer_squad_dialog.dart';
+
+void main() {
+  const source = GunlukFaaliyetTableData(
+    id: 1,
+    faaliyetAdi: 'Kaynak Kart',
+    tarih: '2026-08-05',
+    olusturanKullanici: 'admin',
+    olusturmaTarihi: '2026-08-05',
+  );
+  const assignment = FaaliyetPersonelAtamaTableData(
+    id: 10,
+    faaliyetId: 1,
+    personelId: 20,
+    gorevVeyaIzin: 'GÖREVLİ',
+    durum: 'onaylandi',
+  );
+
+  Widget subject(Widget child) => ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith(
+            (ref) => const UserSessionState(
+              username: 'admin',
+              role: UserRole.admin,
+            ),
+          ),
+          filteredActivitiesProvider.overrideWith(
+            (ref) => Stream.value(const [source]),
+          ),
+        ],
+        child: MaterialApp(home: Scaffold(body: child)),
+      );
+
+  testWidgets('personel taşıma yeni faaliyet adı girişini açar',
+      (tester) async {
+    await tester.pumpWidget(
+      subject(
+        const TransferPersonnelDialog(
+          sourceActivity: source,
+          assignment: assignment,
+          personnelDisplayName: 'Ali Veli',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('başka faaliyet kartı bulunamadı.'),
+        findsOneWidget);
+    await tester.tap(
+      find.byKey(const Key('personnel-transfer-create-activity')),
+    );
+    await tester.pump();
+    expect(
+      find.byKey(const Key('personnel-transfer-new-activity-name')),
+      findsOneWidget,
+    );
+
+    var confirm = tester.widget<FilledButton>(
+      find.byKey(const Key('personnel-transfer-confirm')),
+    );
+    expect(confirm.onPressed, isNull);
+    await tester.enterText(
+      find.byKey(const Key('personnel-transfer-new-activity-name')),
+      'Yeni Kart',
+    );
+    await tester.pump();
+    confirm = tester.widget<FilledButton>(
+      find.byKey(const Key('personnel-transfer-confirm')),
+    );
+    expect(confirm.onPressed, isNotNull);
+  });
+
+  testWidgets('tim taşıma yeni faaliyet adı girişini açar', (tester) async {
+    await tester.pumpWidget(
+      subject(
+        const TransferSquadDialog(
+          sourceActivity: source,
+          squadId: 3,
+          squadName: '3-B Timi',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('squad-transfer-create-activity')));
+    await tester.pump();
+    expect(
+      find.byKey(const Key('squad-transfer-new-activity-name')),
+      findsOneWidget,
+    );
+    await tester.enterText(
+      find.byKey(const Key('squad-transfer-new-activity-name')),
+      'Tim Hedef Kartı',
+    );
+    await tester.pump();
+    final confirm = tester.widget<FilledButton>(
+      find.byKey(const Key('transfer-squad-confirm')),
+    );
+    expect(confirm.onPressed, isNotNull);
+  });
+}

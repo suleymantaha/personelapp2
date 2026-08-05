@@ -110,6 +110,41 @@ class ActivityBatchCreateResult {
   final List<String> conflictDescriptions;
 }
 
+class ActivityAssignmentPreview {
+  const ActivityAssignmentPreview({
+    required this.items,
+    required this.squadNames,
+  });
+
+  final List<ActivityAssignmentPreviewItem> items;
+  final Map<int, String> squadNames;
+
+  int get warningCount => items.where((item) => item.hasConflict).length;
+  int get squadCount => items.map((item) => item.squadId).toSet().length;
+}
+
+class ActivityAssignmentPreviewItem {
+  const ActivityAssignmentPreviewItem({
+    required this.personnelId,
+    required this.name,
+    required this.rank,
+    required this.squadId,
+    required this.duty,
+    required this.expectedStatus,
+    required this.hasConflict,
+    this.note,
+  });
+
+  final int personnelId;
+  final String name;
+  final String rank;
+  final int? squadId;
+  final String duty;
+  final String? note;
+  final String expectedStatus;
+  final bool hasConflict;
+}
+
 class ActivityAssignmentBatchResult {
   const ActivityAssignmentBatchResult({
     required this.addedCount,
@@ -477,6 +512,62 @@ class ActivityRepository {
         requiresApproval: !actor.isAdmin,
       );
     });
+  }
+
+  Future<ActivityAssignmentPreview> previewActivityAssignments({
+    required String tarih,
+    required List<PersonnelAssignmentInput> personnelAssignments,
+    required UserSessionState actor,
+  }) async {
+    await _requirePersonnelScope(actor, personnelAssignments);
+    final reports = await _loadDomainReports();
+    final existingAssignments = await _loadExistingAssignments();
+    final personnelIds = personnelAssignments
+        .map((assignment) => assignment.personnelId)
+        .toSet();
+    final personnel = personnelIds.isEmpty
+        ? <PersonelTableData>[]
+        : await (db.select(db.personelTable)
+              ..where((table) => table.id.isIn(personnelIds)))
+            .get();
+    final personnelById = {for (final person in personnel) person.id: person};
+    final squads = await db.select(db.timTable).get();
+    final seen = <int>{};
+    final items = <ActivityAssignmentPreviewItem>[];
+
+    for (final assignment in personnelAssignments) {
+      final duty = assignment.duty.trim();
+      if (duty.isEmpty || !seen.add(assignment.personnelId)) continue;
+      final person = personnelById[assignment.personnelId];
+      if (person == null) continue;
+      final evaluatedStatus = ConflictChecker.evaluateAssignmentStatus(
+        personelId: person.id,
+        targetDate: tarih,
+        targetDuty: duty,
+        reports: reports,
+        existingAssignments: existingAssignments,
+      );
+      final hasConflict = evaluatedStatus == AssignmentStatus.beklemede;
+      items.add(
+        ActivityAssignmentPreviewItem(
+          personnelId: person.id,
+          name: person.adSoyad,
+          rank: person.rutbe,
+          squadId: person.timId,
+          duty: duty,
+          note: assignment.note,
+          expectedStatus: hasConflict || !actor.isAdmin
+              ? AssignmentStatus.beklemede
+              : AssignmentStatus.onaylandi,
+          hasConflict: hasConflict,
+        ),
+      );
+    }
+
+    return ActivityAssignmentPreview(
+      items: items,
+      squadNames: {for (final squad in squads) squad.id: squad.timAdi},
+    );
   }
 
   Future<List<ExistingActivityMatch>> findMatchingActivities({
@@ -1490,6 +1581,50 @@ class ActivityRepository {
     });
   }
 
+  /// Creates a new activity on the source activity's date and transfers the
+  /// selected squad into it as one atomic operation.
+  Future<SquadTransferResult> createActivityAndTransferSquad({
+    required int sourceActivityId,
+    required int squadId,
+    required String activityName,
+    required UserSessionState actor,
+  }) {
+    _requireAdmin(actor);
+    final trimmedName = activityName.trim();
+    if (trimmedName.isEmpty) {
+      throw ArgumentError.value(activityName, 'activityName', 'Boş olamaz.');
+    }
+    return db.transaction(() async {
+      final source = await (db.select(db.gunlukFaaliyetTable)
+            ..where((table) => table.id.equals(sourceActivityId)))
+          .getSingleOrNull();
+      if (source == null) {
+        throw ArgumentError('Kaynak faaliyet bulunamadı: $sourceActivityId');
+      }
+      final targetId = await _createActivityWithinTransaction(
+        ActivityCreateRequest(
+          faaliyetAdi: trimmedName,
+          tarih: source.tarih,
+          olusturanKullanici: actor.username,
+          personnelAssignments: const [],
+        ),
+        requiresApproval: false,
+      );
+      final result = await transferSquadBetweenActivities(
+        sourceActivityId: sourceActivityId,
+        targetActivityId: targetId,
+        squadId: squadId,
+        actor: actor,
+      );
+      if (result.movedCount == 0) {
+        await (db.delete(db.gunlukFaaliyetTable)
+              ..where((table) => table.id.equals(targetId)))
+            .go();
+      }
+      return result;
+    });
+  }
+
   /// Tek bir personel atamasını (assignmentId) kaynak faaliyet kartından
   /// [targetActivityId] numaralı karta atomik olarak taşır.
   ///
@@ -1565,6 +1700,49 @@ class ActivityRepository {
           );
 
       return const PersonnelTransferResult(moved: true);
+    });
+  }
+
+  /// Creates a new activity on the source assignment's date and transfers the
+  /// selected personnel into it as one atomic operation.
+  Future<PersonnelTransferResult> createActivityAndTransferPersonnel({
+    required int assignmentId,
+    required String activityName,
+    required UserSessionState actor,
+  }) {
+    _requireAdmin(actor);
+    final trimmedName = activityName.trim();
+    if (trimmedName.isEmpty) {
+      throw ArgumentError.value(activityName, 'activityName', 'Boş olamaz.');
+    }
+    return db.transaction(() async {
+      final assignment = await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((table) => table.id.equals(assignmentId)))
+          .getSingleOrNull();
+      if (assignment == null) {
+        throw ArgumentError('Atama bulunamadı: $assignmentId');
+      }
+      final source = await (db.select(db.gunlukFaaliyetTable)
+            ..where((table) => table.id.equals(assignment.faaliyetId)))
+          .getSingleOrNull();
+      if (source == null) {
+        throw ArgumentError(
+            'Kaynak faaliyet bulunamadı: ${assignment.faaliyetId}');
+      }
+      final targetId = await _createActivityWithinTransaction(
+        ActivityCreateRequest(
+          faaliyetAdi: trimmedName,
+          tarih: source.tarih,
+          olusturanKullanici: actor.username,
+          personnelAssignments: const [],
+        ),
+        requiresApproval: false,
+      );
+      return transferPersonnelBetweenActivities(
+        assignmentId: assignmentId,
+        targetActivityId: targetId,
+        actor: actor,
+      );
     });
   }
 

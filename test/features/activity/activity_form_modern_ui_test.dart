@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/drift.dart' hide isNull;
+import 'package:drift/native.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -92,5 +94,66 @@ void main() {
 
     expect(find.text('K.H'), findsNothing);
     expect(find.text('2-B Timi'), findsOneWidget);
+  });
+
+  testWidgets('save opens preview before writing activity data',
+      (tester) async {
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+    await database.into(database.timTable).insert(
+          TimTableCompanion.insert(
+            timAdi: 'K.H',
+            olusturmaTarihi: '2026-08-05',
+          ),
+        );
+    await database.into(database.personelTable).insert(
+          PersonelTableCompanion.insert(
+            adSoyad: personnel.first.adSoyad,
+            rutbe: personnel.first.rutbe,
+            birlik: personnel.first.birlik,
+            timId: const Value(1),
+            kayitTarihi: personnel.first.kayitTarihi,
+          ),
+        );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          databaseProvider.overrideWithValue(database),
+          userSessionProvider.overrideWith(
+            (ref) => const UserSessionState(
+              username: 'admin',
+              role: UserRole.admin,
+            ),
+          ),
+          allPersonnelProvider.overrideWith(
+            (ref) => Stream.value([personnel.first]),
+          ),
+          allSquadsProvider.overrideWith(
+            (ref) => Stream.value(const [
+              TimTableData(id: 1, timAdi: 'K.H', olusturmaTarihi: ''),
+            ]),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.militaryTheme,
+          home: const ActivityFormScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.text('Heybet'));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('batch-duty-button-K.H')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('batch-duty-HEYBET')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('save-activity-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Görevlendirme Önizlemesi'), findsOneWidget);
+    expect(
+      await database.select(database.gunlukFaaliyetTable).get(),
+      isEmpty,
+    );
   });
 }

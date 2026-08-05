@@ -11,6 +11,7 @@ import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/activity_assignment_preview_screen.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_form_controls.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_form_header.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_personnel_duty_row.dart';
@@ -83,18 +84,60 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
     }
 
     final repo = ref.read(activityRepositoryProvider);
+    try {
+      final preview = await repo.previewActivityAssignments(
+        tarih: dateStr,
+        personnelAssignments: payload,
+        actor: userSession,
+      );
+      if (!mounted) return;
+      final saved = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => ActivityAssignmentPreviewScreen(
+            activityName: name,
+            date: _selectedDate,
+            preview: preview,
+            requiresAdminApproval: !userSession.isAdmin,
+            onConfirm: () => _persistActivity(
+              name: name,
+              dateStr: dateStr,
+              payload: payload,
+              userSession: userSession,
+            ),
+          ),
+        ),
+      );
+      if (saved == true && mounted) Navigator.of(context).pop();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Önizleme hazırlanamadı: $error'),
+          backgroundColor: context.rejectedColor,
+        ),
+      );
+    }
+  }
+
+  Future<bool> _persistActivity({
+    required String name,
+    required String dateStr,
+    required List<PersonnelAssignmentInput> payload,
+    required UserSessionState userSession,
+  }) async {
+    final repo = ref.read(activityRepositoryProvider);
     final isCommander = !userSession.isAdmin;
     final matches = await repo.findMatchingActivities(
       faaliyetAdi: name,
       tarih: dateStr,
       personnelAssignments: payload,
     );
-    if (!mounted) return;
+    if (!mounted) return false;
 
     ActivityMergeResult? mergeResult;
     if (matches.isNotEmpty) {
       final choice = await ExistingActivityDialog.show(context, matches);
-      if (choice == null || !mounted) return;
+      if (choice == null || !mounted) return false;
       if (choice.action == ExistingActivityAction.merge) {
         mergeResult = await repo.mergeAssignmentsIntoActivity(
           activityId: choice.activityId!,
@@ -136,8 +179,9 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
               isCommander ? context.pendingColor : context.approvedColor,
         ),
       );
-      Navigator.of(context).pop();
+      return true;
     }
+    return false;
   }
 
   @override

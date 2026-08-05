@@ -277,6 +277,121 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
     );
   }
 
+  Widget _buildMobileCalendar({
+    required BuildContext context,
+    required PersonelTableData person,
+    required Map<int, MatrixDayCell> statusByDay,
+    required int daysInMonth,
+  }) {
+    const weekdayLabels = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+    final leadingEmptyCells =
+        DateTime(_selectedMonth.year, _selectedMonth.month).weekday - 1;
+    final cellCount = ((leadingEmptyCells + daysInMonth + 6) ~/ 7) * 7;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cellExtent = (constraints.maxWidth - 36) / 7;
+        return Column(
+          key: const ValueKey('monthly-calendar-grid'),
+          children: [
+            Row(
+              children: weekdayLabels
+                  .map(
+                    (label) => Expanded(
+                      child: Center(
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            color: context.textMuted,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: 6),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: cellCount,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                crossAxisSpacing: 6,
+                mainAxisSpacing: 6,
+                mainAxisExtent: cellExtent.clamp(34, 46),
+              ),
+              itemBuilder: (context, index) {
+                final day = index - leadingEmptyCells + 1;
+                if (day < 1 || day > daysInMonth) {
+                  return const SizedBox.shrink();
+                }
+
+                final cell = statusByDay[day];
+                final status = _statusForColor(cell);
+                final label = _getAbbreviation(cell);
+                final isToday = DateTime.now().year == _selectedMonth.year &&
+                    DateTime.now().month == _selectedMonth.month &&
+                    DateTime.now().day == day;
+                final hasStatus = cell != null;
+                final textColor = context.getStatusTextColor(status);
+
+                return Semantics(
+                  button: hasStatus,
+                  label: '$day. gün${hasStatus ? ', $label' : ', boş'}',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: cell == null
+                        ? null
+                        : () => _showCellDetails(context, person, day, cell),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        color: hasStatus
+                            ? context.getStatusBgColor(status)
+                            : context.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: context.cellBorderColor(isToday: isToday),
+                          width: isToday ? 2 : 1,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '$day',
+                            style: TextStyle(
+                              color: hasStatus ? textColor : context.textMuted,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          if (hasStatus)
+                            Text(
+                              label,
+                              maxLines: 1,
+                              overflow: TextOverflow.fade,
+                              style: TextStyle(
+                                color: textColor,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final yearMonthStr = DateFormat('yyyy-MM').format(_selectedMonth);
@@ -418,14 +533,22 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                 final members = group.value;
 
                 return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
+                  margin: const EdgeInsets.only(bottom: 10),
                   clipBehavior: Clip.antiAlias,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     side: BorderSide(color: context.cardBorderColor),
                   ),
                   child: ExpansionTile(
                     initiallyExpanded: false, // Varsayılan KAPALI!
+                    minTileHeight: 76,
+                    tilePadding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
+                    childrenPadding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                    collapsedBackgroundColor: context.accentSubtleBg,
+                    backgroundColor: context.accentSubtleBg,
+                    shape: const Border(),
+                    collapsedShape: const Border(),
                     leading: Icon(
                       Icons.groups_rounded,
                       color: context.accentOrOlive,
@@ -434,7 +557,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                       teamName,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 15,
+                        fontSize: 16,
                       ),
                     ),
                     subtitle: Text(
@@ -479,21 +602,33 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
 
                       return Container(
                         margin: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+                          vertical: 2,
                         ),
                         decoration: BoxDecoration(
                           color: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: context.cardBorderColor),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: ExpansionTile(
+                          key: ValueKey('personnel-${p.id}'),
+                          minTileHeight: 70,
+                          tilePadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 2,
+                          ),
+                          childrenPadding: EdgeInsets.zero,
+                          shape: Border(
+                            left: BorderSide(
+                              color: context.accentOrOlive,
+                              width: 4,
+                            ),
+                          ),
+                          collapsedShape: const Border(),
                           leading: Container(
-                            width: 26,
-                            height: 26,
+                            width: 34,
+                            height: 34,
                             decoration: BoxDecoration(
                               color: context.accentOrOlive,
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(9),
                             ),
                             alignment: Alignment.center,
                             child: Text(
@@ -501,7 +636,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                               style: TextStyle(
                                 color: context.onAccentOrOlive,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 11,
+                                fontSize: 12,
                               ),
                             ),
                           ),
@@ -509,7 +644,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                             p.adSoyad,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                              fontSize: 14,
                             ),
                           ),
                           subtitle: Row(
@@ -526,16 +661,18 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
-                                  vertical: 2,
+                                  vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
                                   color: dutyCount > 0
                                       ? context.accentSubtleBg
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(6),
+                                      : context
+                                          .colorScheme.surfaceContainerHighest
+                                          .withValues(alpha: 0.45),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  'Görev: $dutyCount g',
+                                  '$dutyCount gün',
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
@@ -549,89 +686,24 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                           ),
                           children: [
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                              padding: const EdgeInsets.fromLTRB(12, 2, 12, 14),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Divider(),
+                                  Divider(color: context.cardBorderColor),
                                   Text(
-                                    'Aylık Çizelge ($daysInMonth Gün):',
+                                    'Aylık çizelge · $daysInMonth gün',
                                     style: const TextStyle(
-                                      fontSize: 11,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
-                                  Wrap(
-                                    spacing: 4,
-                                    runSpacing: 4,
-                                    children:
-                                        List.generate(daysInMonth, (dIndex) {
-                                      final day = dIndex + 1;
-                                      final cell = pStatusMap[day];
-                                      final status = _statusForColor(cell);
-                                      final bgColor =
-                                          context.getStatusBgColor(status);
-                                      final textColor =
-                                          context.getStatusTextColor(status);
-                                      final label = _getAbbreviation(cell);
-                                      final isToday = DateTime.now().year ==
-                                              _selectedMonth.year &&
-                                          DateTime.now().month ==
-                                              _selectedMonth.month &&
-                                          DateTime.now().day == day;
-
-                                      return GestureDetector(
-                                        onTap: cell == null
-                                            ? null
-                                            : () => _showCellDetails(
-                                                  context,
-                                                  p,
-                                                  day,
-                                                  cell,
-                                                ),
-                                        child: Container(
-                                          width: 38,
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 3,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: bgColor,
-                                            borderRadius:
-                                                BorderRadius.circular(6),
-                                            border: Border.all(
-                                              color: context.cellBorderColor(
-                                                isToday: isToday,
-                                              ),
-                                              width: isToday ? 2.0 : 1.0,
-                                            ),
-                                          ),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                '$day',
-                                                style: TextStyle(
-                                                  fontSize: 8,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: textColor.withValues(
-                                                    alpha: 0.75,
-                                                  ),
-                                                ),
-                                              ),
-                                              Text(
-                                                label,
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: textColor,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }),
+                                  const SizedBox(height: 10),
+                                  _buildMobileCalendar(
+                                    context: context,
+                                    person: p,
+                                    statusByDay: pStatusMap,
+                                    daysInMonth: daysInMonth,
                                   ),
                                 ],
                               ),

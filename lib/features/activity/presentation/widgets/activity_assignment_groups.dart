@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
-import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/collapsible_squad_card.dart';
 
 class ActivityAssignmentGroups extends StatefulWidget {
   const ActivityAssignmentGroups({
@@ -150,89 +150,45 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
               ? _hasExpandedTimDisi
               : _expandedSquadId == squadId;
 
-          return Card(
-            key: Key('activity-team-card-$squadId'),
-            clipBehavior: Clip.antiAlias,
-            margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-              side: BorderSide(color: context.cardBorderColor),
-            ),
-            child: Column(
-              children: [
-                ListTile(
-                  key: Key('activity-team-header-$squadId'),
-                  dense: true,
-                  leading: Icon(
-                    Icons.shield_outlined,
-                    size: 19,
-                    color: context.accentOrOlive,
-                  ),
-                  title: Text(
-                    '$teamName — ${assignments.length} kişi',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (widget.onTransferSquad != null && squadId != null)
-                        IconButton(
-                          key: Key('activity-team-transfer-$squadId'),
-                          icon: const Icon(Icons.swap_horiz_rounded, size: 18),
-                          tooltip: '$teamName timini başka karta taşı',
-                          padding: const EdgeInsets.all(4),
-                          constraints: const BoxConstraints(),
-                          onPressed: () =>
-                              widget.onTransferSquad!(squadId, teamName),
-                        ),
-                      Checkbox(
-                        key: Key('activity-team-select-$squadId'),
-                        value: _selectedSquadIds.contains(squadId),
-                        onChanged: (selected) => setState(() {
-                          if (selected ?? false) {
-                            _selectedSquadIds.add(squadId);
-                          } else {
-                            _selectedSquadIds.remove(squadId);
-                          }
-                        }),
-                      ),
-                      Icon(
-                        expanded ? Icons.expand_less : Icons.expand_more,
-                      ),
-                    ],
-                  ),
-                  onTap: () => setState(() {
-                    if (squadId == null) {
-                      _hasExpandedTimDisi = !_hasExpandedTimDisi;
-                      _expandedSquadId = null;
-                    } else {
-                      _expandedSquadId = expanded ? null : squadId;
-                      _hasExpandedTimDisi = false;
-                    }
-                  }),
+          return CollapsibleSquadCard(
+            cardKey: Key('activity-team-card-$squadId'),
+            headerKey: Key('activity-team-header-$squadId'),
+            title: '$teamName — ${assignments.length} kişi',
+            expanded: expanded,
+            actions: [
+              if (widget.onTransferSquad != null && squadId != null)
+                IconButton(
+                  key: Key('activity-team-transfer-$squadId'),
+                  icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                  tooltip: '$teamName timini başka karta taşı',
+                  padding: const EdgeInsets.all(4),
+                  constraints: const BoxConstraints(),
+                  onPressed: () => widget.onTransferSquad!(squadId, teamName),
                 ),
-                if (expanded)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.cardGap,
-                      0,
-                      AppSpacing.cardGap,
-                      AppSpacing.sm,
-                    ),
-                    child: Column(
-                      children: assignments
-                          .map(widget.assignmentBuilder)
-                          .toList(growable: false),
-                    ),
-                  ),
-              ],
-            ),
+              Checkbox(
+                key: Key('activity-team-select-$squadId'),
+                value: _selectedSquadIds.contains(squadId),
+                onChanged: (selected) => setState(() {
+                  if (selected ?? false) {
+                    _selectedSquadIds.add(squadId);
+                  } else {
+                    _selectedSquadIds.remove(squadId);
+                  }
+                }),
+              ),
+            ],
+            onToggle: () => setState(() {
+              if (squadId == null) {
+                _hasExpandedTimDisi = !_hasExpandedTimDisi;
+                _expandedSquadId = null;
+              } else {
+                _expandedSquadId = expanded ? null : squadId;
+                _hasExpandedTimDisi = false;
+              }
+            }),
+            children: assignments
+                .map(widget.assignmentBuilder)
+                .toList(growable: false),
           );
         }),
       ],

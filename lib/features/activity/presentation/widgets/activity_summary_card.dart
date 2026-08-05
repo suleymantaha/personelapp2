@@ -7,6 +7,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
+import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 
 class ActivityCard extends ConsumerWidget {
   const ActivityCard({
@@ -128,6 +129,11 @@ class ActivityCard extends ConsumerWidget {
         key: Key('activity-actions-${activity.id}'),
         tooltip: 'Faaliyet işlemleri',
         icon: const Icon(Icons.more_vert_rounded),
+        elevation: 5,
+        shadowColor: context.shadowColor,
+        surfaceTintColor: context.colorScheme.surface,
+        shape: modernPopupShape(context),
+        constraints: const BoxConstraints(minWidth: 280, maxWidth: 320),
         onSelected: (action) async {
           switch (action) {
             case _ActivityAdminAction.approveAll:
@@ -142,35 +148,37 @@ class ActivityCard extends ConsumerWidget {
           }
         },
         itemBuilder: (context) => [
+          const ModernMenuHeader<_ActivityAdminAction>(
+            title: 'Faaliyet İşlemleri',
+            subtitle: 'Bu faaliyet için kullanılabilir işlemler',
+            icon: Icons.event_note_outlined,
+          ),
+          const PopupMenuDivider(),
           if (hasPending)
-            const PopupMenuItem(
-              value: _ActivityAdminAction.approveAll,
-              child: ListTile(
-                leading: Icon(Icons.done_all),
-                title: Text('Tümünü onayla'),
-                contentPadding: EdgeInsets.zero,
+            ModernPopupMenuItem(
+              option: const ModernActionOption(
+                value: _ActivityAdminAction.approveAll,
+                title: 'Tümünü onayla',
+                subtitle: 'Bekleyen tüm atamaları onayla',
+                icon: Icons.done_all_rounded,
               ),
             ),
-          const PopupMenuItem(
-            value: _ActivityAdminAction.changeDate,
-            child: ListTile(
-              leading: Icon(Icons.edit_calendar_outlined),
-              title: Text('Tarihi değiştir'),
-              contentPadding: EdgeInsets.zero,
+          ModernPopupMenuItem(
+            option: const ModernActionOption(
+              value: _ActivityAdminAction.changeDate,
+              title: 'Tarihi değiştir',
+              subtitle: 'Faaliyeti başka bir güne taşı',
+              icon: Icons.edit_calendar_outlined,
             ),
           ),
-          PopupMenuItem(
-            value: _ActivityAdminAction.delete,
-            child: ListTile(
-              leading: Icon(
-                Icons.delete_outline,
-                color: context.rejectedColor,
-              ),
-              title: Text(
-                'Faaliyeti sil',
-                style: TextStyle(color: context.rejectedColor),
-              ),
-              contentPadding: EdgeInsets.zero,
+          const PopupMenuDivider(),
+          ModernPopupMenuItem(
+            option: const ModernActionOption(
+              value: _ActivityAdminAction.delete,
+              title: 'Faaliyeti sil',
+              subtitle: 'Bu işlem geri alınamaz',
+              icon: Icons.delete_outline_rounded,
+              isDestructive: true,
             ),
           ),
         ],

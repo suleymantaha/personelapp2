@@ -59,5 +59,16 @@ void main() {
       tester.getTopLeft(find.text('K.H')).dy,
       lessThan(tester.getTopLeft(find.text('7-B Timi')).dy),
     );
+
+    await tester.tap(find.text('K.H'));
+    await tester.pumpAndSettle();
+    expect(find.text('Karargah Personeli'), findsOneWidget);
+
+    await tester.tap(find.text('Karargah Personeli'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('monthly-calendar-grid')), findsOneWidget);
+    expect(find.text('Pzt'), findsOneWidget);
+    expect(find.text('Paz'), findsOneWidget);
+    expect(find.textContaining('Aylık çizelge ·'), findsOneWidget);
   });
 }
