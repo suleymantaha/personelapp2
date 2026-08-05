@@ -7,6 +7,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 import 'package:personelapp2/features/matrix/domain/matrix_personnel_order.dart';
 import 'package:personelapp2/features/matrix/presentation/widgets/team_duty_calendar_modal.dart';
@@ -405,7 +406,10 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
           // Mobil Ekran Tasarımı (Varsayılan Kapalı Tim Akordeon Kartları)
           if (context.isMobile) {
             return ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              padding: const EdgeInsets.symmetric(
+                vertical: AppSpacing.sm,
+                horizontal: AppSpacing.compactPagePadding,
+              ),
               children: groupedPersonnel.entries.map((group) {
                 final teamId = group.key;
                 final teamName = teamId == null
@@ -545,8 +549,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                           ),
                           children: [
                             Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -562,8 +565,8 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                   Wrap(
                                     spacing: 4,
                                     runSpacing: 4,
-                                    children: List.generate(daysInMonth,
-                                        (dIndex) {
+                                    children:
+                                        List.generate(daysInMonth, (dIndex) {
                                       final day = dIndex + 1;
                                       final cell = pStatusMap[day];
                                       final status = _statusForColor(cell);
@@ -648,7 +651,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
             maxWidth: 1400,
             padding: EdgeInsets.zero,
             child: ListView(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppSpacing.compactPagePadding),
               children: groupedPersonnel.entries.map((group) {
                 final teamId = group.key;
                 final teamName = teamId == null
@@ -850,8 +853,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                       final index = mEntry.key;
                                       final p = mEntry.value;
                                       final rowNumber = index + 1;
-                                      final pStatusMap =
-                                          matrixData[p.id] ?? {};
+                                      final pStatusMap = matrixData[p.id] ?? {};
                                       final dutyCount = pStatusMap.values
                                           .where(
                                             (s) =>
@@ -977,8 +979,8 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                         SizedBox(
                                           height: 44,
                                           child: Row(
-                                            children: List.generate(
-                                                daysInMonth, (dIdx) {
+                                            children: List.generate(daysInMonth,
+                                                (dIdx) {
                                               final dayNum = dIdx + 1;
                                               final isTodayHeader =
                                                   DateTime.now().year ==
@@ -992,8 +994,8 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                               return SizedBox(
                                                 width: 44,
                                                 child: Container(
-                                                  margin:
-                                                      const EdgeInsets.symmetric(
+                                                  margin: const EdgeInsets
+                                                      .symmetric(
                                                     horizontal: 2,
                                                     vertical: 2,
                                                   ),
@@ -1070,8 +1072,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
                                                           const EdgeInsets.all(
                                                         2,
                                                       ),
-                                                      decoration:
-                                                          BoxDecoration(
+                                                      decoration: BoxDecoration(
                                                         color: bgColor,
                                                         borderRadius:
                                                             BorderRadius

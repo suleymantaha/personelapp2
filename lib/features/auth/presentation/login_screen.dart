@@ -6,6 +6,7 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/password_hasher.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -119,13 +120,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                       if (p1.length < 12) {
                         setDialogState(
-                          () => errorText =
-                              'Parola en az 12 karakter olmalıdır.',
+                          () =>
+                              errorText = 'Parola en az 12 karakter olmalıdır.',
                         );
                         return;
                       }
                       if (p1 != p2) {
-                        setDialogState(() => errorText = 'Parolalar eşleşmiyor!');
+                        setDialogState(
+                            () => errorText = 'Parolalar eşleşmiyor!');
                         return;
                       }
 
@@ -159,7 +161,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (user.rol == 'tim_komutani' && timId == null) {
       final squad = await (db.select(
         db.timTable,
-      )..where((tbl) => tbl.timKomutaniId.equals(user.id))).getSingleOrNull();
+      )..where((tbl) => tbl.timKomutaniId.equals(user.id)))
+          .getSingleOrNull();
       timId = squad?.id;
     }
 
@@ -189,7 +192,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final db = ref.read(databaseProvider);
     final user = await (db.select(
       db.kullaniciTable,
-    )..where((tbl) => tbl.kullaniciAdi.equals(username))).getSingleOrNull();
+    )..where((tbl) => tbl.kullaniciAdi.equals(username)))
+        .getSingleOrNull();
 
     if (user != null) {
       if (user.sifre.isEmpty) {
@@ -233,12 +237,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final outerPadding = context.responsiveValue<EdgeInsetsGeometry>(
-      mobile: const EdgeInsets.all(16),
-      desktop: const EdgeInsets.all(24),
+      mobile: const EdgeInsets.all(AppSpacing.pagePadding),
+      desktop: const EdgeInsets.all(AppSpacing.widePagePadding),
     );
     final cardPadding = context.responsiveValue<EdgeInsetsGeometry>(
-      mobile: const EdgeInsets.all(20),
-      desktop: const EdgeInsets.all(32),
+      mobile: const EdgeInsets.all(AppSpacing.pagePadding),
+      desktop: const EdgeInsets.all(AppSpacing.xl),
     );
 
     return Scaffold(
@@ -252,7 +256,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
               ),
               child: Padding(
                 padding: cardPadding,
@@ -267,11 +271,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Nizam',
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: context.accentOrOlive,
-                          ),
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: context.accentOrOlive,
+                              ),
                       textAlign: TextAlign.center,
                     ),
                     Text(

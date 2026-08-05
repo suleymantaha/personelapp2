@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 
@@ -152,10 +153,10 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
           return Card(
             key: Key('activity-team-card-$squadId'),
             clipBehavior: Clip.antiAlias,
-            margin: const EdgeInsets.only(bottom: 8),
+            margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
               side: BorderSide(color: context.cardBorderColor),
             ),
             child: Column(
@@ -170,6 +171,8 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
                   ),
                   title: Text(
                     '$teamName — ${assignments.length} kişi',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
@@ -216,7 +219,12 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
                 ),
                 if (expanded)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.cardGap,
+                      0,
+                      AppSpacing.cardGap,
+                      AppSpacing.sm,
+                    ),
                     child: Column(
                       children: assignments
                           .map(widget.assignmentBuilder)

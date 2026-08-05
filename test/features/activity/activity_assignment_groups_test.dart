@@ -56,6 +56,8 @@ void main() {
 
   Widget buildSubject({
     int? selectedSquadId,
+    Map<int, String> squadNames = const {1: 'K.H', 2: '7-B Timi'},
+    Future<void> Function(int? squadId, String squadName)? onTransferSquad,
     Future<void> Function(List<FaaliyetPersonelAtamaTableData>)?
         onExportSelected,
     Future<void> Function(List<FaaliyetPersonelAtamaTableData>)?
@@ -66,8 +68,9 @@ void main() {
         body: ActivityAssignmentGroups(
           assignments: assignments,
           personnelById: personnel,
-          squadNames: const {1: 'K.H', 2: '7-B Timi'},
+          squadNames: squadNames,
           selectedSquadId: selectedSquadId,
+          onTransferSquad: onTransferSquad,
           onExportSelected: onExportSelected,
           onDeleteSelected: onDeleteSelected,
           assignmentBuilder: (assignment) => Text(
@@ -111,6 +114,34 @@ void main() {
 
     expect(find.byKey(const Key('assignment-3')), findsOneWidget);
     expect(find.byKey(const Key('assignment-1')), findsNothing);
+  });
+
+  testWidgets('long team names remain usable at 320px with large text',
+      (tester) async {
+    tester.view
+      ..physicalSize = const Size(320, 700)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(textScaler: TextScaler.linear(1.3)),
+        child: buildSubject(
+          squadNames: const {
+            1: 'Çok Uzun Karargâh Hizmet Destek Timi',
+            2: '7-B Timi',
+          },
+          onTransferSquad: (_, __) async {},
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const Key('activity-team-select-1')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('activity-team-header-1')));
+    await tester.pump();
+    expect(find.byKey(const Key('assignment-1')), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('exports and deletes all assignments from selected teams',

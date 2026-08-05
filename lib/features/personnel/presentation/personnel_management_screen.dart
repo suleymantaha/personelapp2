@@ -5,6 +5,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
@@ -579,7 +580,7 @@ class _PersonnelManagementScreenState
           : null,
       body: SingleChildScrollView(
         child: ResponsiveCenter(
-          maxWidth: 860,
+          maxWidth: AppSpacing.readableContentWidth,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -678,9 +679,8 @@ class _PersonnelManagementScreenState
                           },
                           selectedColor: context.accentOrOlive,
                           labelStyle: TextStyle(
-                            color: isSelected
-                                ? Colors.white
-                                : context.textPrimary,
+                            color:
+                                isSelected ? Colors.white : context.textPrimary,
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,
@@ -807,16 +807,16 @@ class _PersonnelManagementScreenState
                     }
 
                     // Search query filter
-                                        if (_searchQuery.isNotEmpty) {
-                                          // Use fuzzy matching for better search results
-                                          final matches = PersonnelFuzzyMatcher.searchPersonnel(
-                                            _searchQuery,
-                                            [p],
-                                            threshold: 0.3, // Lower threshold for filtering
-                                            maxResults: 1,
-                                          );
-                                          if (matches.isEmpty) return false;
-                                        }
+                    if (_searchQuery.isNotEmpty) {
+                      // Use fuzzy matching for better search results
+                      final matches = PersonnelFuzzyMatcher.searchPersonnel(
+                        _searchQuery,
+                        [p],
+                        threshold: 0.3, // Lower threshold for filtering
+                        maxResults: 1,
+                      );
+                      if (matches.isEmpty) return false;
+                    }
 
                     return true;
                   }).toList();
@@ -883,7 +883,6 @@ class _PersonnelManagementScreenState
                         ],
                       ),
                       const SizedBox(height: 10),
-
                       ...sortedTimIds.map((timId) {
                         final members = grouped[timId]!
                           ..sort(
@@ -945,14 +944,14 @@ class _PersonnelManagementScreenState
                                 color: context.cardBorderColor,
                               ),
                               ListView.separated(
-                                                              shrinkWrap: true,
-                                                              physics: const NeverScrollableScrollPhysics(),
-                                                              itemCount: members.length,
-                                                              separatorBuilder: (context, _) => Divider(
-                                                                height: 1,
-                                                                color: context.cardBorderColor,
-                                                              ),
-                                                              itemBuilder: (context, index) {
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: members.length,
+                                separatorBuilder: (context, _) => Divider(
+                                  height: 1,
+                                  color: context.cardBorderColor,
+                                ),
+                                itemBuilder: (context, index) {
                                   final p = members[index];
 
                                   return ListTile(
@@ -993,7 +992,8 @@ class _PersonnelManagementScreenState
                                                   p,
                                                 );
                                               } else if (action == 'delete') {
-                                                final confirm = await showDialog<bool>(
+                                                final confirm =
+                                                    await showDialog<bool>(
                                                   context: context,
                                                   builder: (ctx) => AlertDialog(
                                                     title: const Text(
@@ -1006,22 +1006,23 @@ class _PersonnelManagementScreenState
                                                       TextButton(
                                                         onPressed: () =>
                                                             Navigator.of(
-                                                              ctx,
-                                                            ).pop(false),
+                                                          ctx,
+                                                        ).pop(false),
                                                         child: const Text(
                                                           'İPTAL',
                                                         ),
                                                       ),
                                                       ElevatedButton(
-                                                        style: ElevatedButton.styleFrom(
+                                                        style: ElevatedButton
+                                                            .styleFrom(
                                                           backgroundColor:
                                                               context
                                                                   .rejectedColor,
                                                         ),
                                                         onPressed: () =>
                                                             Navigator.of(
-                                                              ctx,
-                                                            ).pop(true),
+                                                          ctx,
+                                                        ).pop(true),
                                                         child: const Text(
                                                           'SİL',
                                                         ),

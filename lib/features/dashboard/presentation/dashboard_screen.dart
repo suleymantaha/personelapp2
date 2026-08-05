@@ -7,6 +7,7 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -148,9 +149,8 @@ class DashboardScreen extends ConsumerWidget {
                           subtitle: Text(isDarkMode ? 'Aktif' : 'Pasif'),
                           value: isDarkMode,
                           onChanged: (value) async {
-                            final newMode = value
-                                ? ThemeMode.dark
-                                : ThemeMode.light;
+                            final newMode =
+                                value ? ThemeMode.dark : ThemeMode.light;
                             ref.read(themeModeProvider.notifier).state =
                                 newMode;
                             await SessionStorage.saveThemeMode(newMode);
@@ -186,8 +186,8 @@ class DashboardScreen extends ConsumerWidget {
                               final repo = ref.read(
                                 personnelRepositoryProvider,
                               );
-                              final count = await repo
-                                  .seedTestPersonnelPerSquad();
+                              final count =
+                                  await repo.seedTestPersonnelPerSquad();
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -259,7 +259,6 @@ class DashboardScreen extends ConsumerWidget {
                             },
                           ),
                         ],
-
                         ListTile(
                           leading: Icon(
                             Icons.logout,
@@ -376,8 +375,8 @@ class DashboardScreen extends ConsumerWidget {
                 crossAxisCount: crossAxisCount,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+                crossAxisSpacing: AppSpacing.cardGap,
+                mainAxisSpacing: AppSpacing.cardGap,
                 childAspectRatio: context.responsiveValue(
                   mobile: 1.2,
                   tablet: 1.25,
@@ -470,40 +469,39 @@ class _MenuCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
       child: Card(
         color: color.withValues(alpha: context.isDarkMode ? 0.18 : 0.1),
         shape: RoundedRectangleBorder(
           side: BorderSide(
             color: color.withValues(alpha: context.isDarkMode ? 0.4 : 0.3),
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          padding: const EdgeInsets.all(AppSpacing.cardPadding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 32, color: color),
-              const SizedBox(height: 6),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
+              Icon(icon, size: 28, color: color),
+              const SizedBox(height: AppSpacing.rowGap),
+              Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: color,
                 ),
               ),
-              const SizedBox(height: 2),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 11, color: context.textSecondary),
-                ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 11, color: context.textSecondary),
               ),
             ],
           ),

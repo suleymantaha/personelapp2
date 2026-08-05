@@ -5,6 +5,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
@@ -218,9 +219,8 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
 
     final personnelAsync = ref.watch(allPersonnelProvider);
     final squadsAsync = ref.watch(allSquadsProvider);
-    final selectedPersonnelCount = _assignments.values
-        .where((assignment) => assignment.isNotEmpty)
-        .length;
+    final selectedPersonnelCount =
+        _assignments.values.where((assignment) => assignment.isNotEmpty).length;
 
     const adminOnlyDuties = [
       DutyOrLeaveType.heybetKomutani,
@@ -268,8 +268,13 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
       body: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: ResponsiveCenter(
-          maxWidth: 860,
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          maxWidth: AppSpacing.readableContentWidth,
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.pagePadding,
+            AppSpacing.pagePadding,
+            AppSpacing.pagePadding,
+            AppSpacing.xl,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -300,7 +305,6 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                     setState(() => _personnelFilter = filter),
               ),
               const SizedBox(height: 10),
-
               personnelAsync.when(
                 data: (rawPersonnelList) {
                   // If Commander, strictly filter by their squad
@@ -341,9 +345,8 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                           for (final s in squads) s.id: s.timAdi,
                         };
 
-                        final query = _searchController.text
-                            .trim()
-                            .toLowerCase();
+                        final query =
+                            _searchController.text.trim().toLowerCase();
                         final visiblePersonnel = personnelList.where((p) {
                           final matchesQuery = query.isEmpty ||
                               p.adSoyad.toLowerCase().contains(query) ||
@@ -506,7 +509,6 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, st) => Text('Hata: $err'),
               ),
-
               const SizedBox(height: 24),
             ],
           ),

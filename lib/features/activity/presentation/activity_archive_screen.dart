@@ -5,6 +5,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
@@ -367,6 +368,17 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         _selectedDateFilter.month == now.month &&
         _selectedDateFilter.day == now.day;
 
+    Future<void> pickArchiveDate() async {
+      final picked = await showDatePicker(
+        context: context,
+        initialDate: _selectedDateFilter,
+        firstDate: DateTime(2020),
+        lastDate: DateTime(2030),
+      );
+      if (!mounted || picked == null) return;
+      setState(() => _selectedDateFilter = picked);
+    }
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -406,48 +418,89 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
               icon: const Icon(Icons.checklist),
               label: const Text('Seç'),
             ),
-          if (!_selectionMode && !isSelectedToday)
+          if (!_selectionMode && context.isMobile)
+            PopupMenuButton<String>(
+              tooltip: 'Arşiv işlemleri',
+              icon: const Icon(Icons.more_vert_rounded),
+              onSelected: (action) async {
+                switch (action) {
+                  case 'select':
+                    setState(() => _selectionMode = true);
+                  case 'today':
+                    setState(() => _selectedDateFilter = DateTime.now());
+                  case 'audit':
+                    await _showConflictAudit();
+                  case 'date':
+                    await pickArchiveDate();
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'select',
+                  child: ListTile(
+                    leading: Icon(Icons.checklist_rounded),
+                    title: Text('Faaliyet seç'),
+                  ),
+                ),
+                if (!isSelectedToday)
+                  const PopupMenuItem(
+                    value: 'today',
+                    child: ListTile(
+                      leading: Icon(Icons.today_rounded),
+                      title: Text('Bugüne dön'),
+                    ),
+                  ),
+                if (isAdmin)
+                  const PopupMenuItem(
+                    value: 'audit',
+                    child: ListTile(
+                      leading: Icon(Icons.fact_check_outlined),
+                      title: Text('Çakışmaları denetle'),
+                    ),
+                  ),
+                const PopupMenuItem(
+                  value: 'date',
+                  child: ListTile(
+                    leading: Icon(Icons.calendar_today_rounded),
+                    title: Text('Tarihe göre süz'),
+                  ),
+                ),
+              ],
+            ),
+          if (!_selectionMode && !context.isMobile && !isSelectedToday)
             IconButton(
               icon: const Icon(Icons.today),
               tooltip: 'Bugüne Dön',
-              onPressed: () => setState(() => _selectedDateFilter = DateTime.now()),
+              onPressed: () =>
+                  setState(() => _selectedDateFilter = DateTime.now()),
             ),
-          if (!_selectionMode && isAdmin)
+          if (!_selectionMode && !context.isMobile && isAdmin)
             IconButton(
               icon: const Icon(Icons.fact_check_outlined),
               tooltip: 'Geçmiş Çakışmaları Denetle',
               onPressed: _showConflictAudit,
             ),
-          if (!_selectionMode)
+          if (!_selectionMode && !context.isMobile)
             IconButton(
               icon: const Icon(Icons.calendar_today),
               tooltip: 'Tarihe Göre Süz',
-              onPressed: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: _selectedDateFilter,
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime(2030),
-                );
-                if (!mounted || picked == null) return;
-                setState(() => _selectedDateFilter = picked);
-              },
+              onPressed: pickArchiveDate,
             ),
         ],
       ),
       body: ResponsiveCenter(
-        maxWidth: 860,
+        maxWidth: AppSpacing.readableContentWidth,
         padding: EdgeInsets.zero,
         child: Column(
           children: [
             // Header Metrics Card & Master Export Toolbar
             activitiesAsync.when(
               data: (activities) {
-                final filteredForDate = activities
-                    .where((a) => a.tarih == dateFilterStr)
-                    .toList();
+                final filteredForDate =
+                    activities.where((a) => a.tarih == dateFilterStr).toList();
 
-                final dateTitle = DateFormat('dd.MM.yyyy').format(_selectedDateFilter);
+                final dateTitle =
+                    DateFormat('dd.MM.yyyy').format(_selectedDateFilter);
                 final squadText = _selectedSquadFilter != null &&
                         squads.any((s) => s.id == _selectedSquadFilter)
                     ? ' • ${squads.firstWhere((s) => s.id == _selectedSquadFilter).timAdi}'
@@ -499,8 +552,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                   );
 
                   if (filtered.isEmpty) {
-                    final formattedDate = DateFormat('dd.MM.yyyy')
-                        .format(_selectedDateFilter);
+                    final formattedDate =
+                        DateFormat('dd.MM.yyyy').format(_selectedDateFilter);
                     return Center(
                       child: Text(
                         '$formattedDate tarihine ait faaliyet kaydı bulunamadı.',

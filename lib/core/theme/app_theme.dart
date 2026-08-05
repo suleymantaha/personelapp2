@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/theme/spacing.dart';
 
 class AppColors {
   // Askeri Haki / Zeytin Yeşili Paleti
@@ -246,7 +247,7 @@ class AppTheme {
           side: BorderSide(
             color: AppColors.lightOlive.withValues(alpha: 0.6),
           ),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
         ),
       ),
       chipTheme: ChipThemeData(
@@ -280,7 +281,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

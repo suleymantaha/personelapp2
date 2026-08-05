@@ -1,4 +1,4 @@
-/// Uygulama genelinde tutarli bosluk skalasi (4pt grid tabanli).
+/// Uygulama genelinde tutarlı boşluk skalası (4pt grid tabanlı).
 class AppSpacing {
   AppSpacing._();
 
@@ -19,4 +19,11 @@ class AppSpacing {
   static const double chipPadV = 3.0;
   static const double iconTextGap = 8.0;
   static const double sectionGap = 24.0;
+
+  // Sayfa ve erişilebilirlik ölçüleri
+  static const double compactPagePadding = 12.0;
+  static const double pagePadding = 16.0;
+  static const double widePagePadding = 24.0;
+  static const double minTouchTarget = 48.0;
+  static const double readableContentWidth = 860.0;
 }

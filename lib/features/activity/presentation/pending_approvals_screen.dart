@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
 class PendingApprovalsScreen extends ConsumerWidget {
@@ -42,9 +43,9 @@ class PendingApprovalsScreen extends ConsumerWidget {
           }
 
           return ResponsiveCenter(
-            maxWidth: 900,
+            maxWidth: AppSpacing.readableContentWidth,
             child: ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.pagePadding),
               itemCount: pendingList.length,
               itemBuilder: (context, index) {
                 final atama = pendingList[index];
@@ -58,13 +59,13 @@ class PendingApprovalsScreen extends ConsumerWidget {
 
                 return Card(
                   elevation: 3,
-                  margin: const EdgeInsets.only(bottom: 12),
+                  margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
                   shape: RoundedRectangleBorder(
                     side: BorderSide(color: context.pendingColor, width: 1.5),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.cardPadding),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -139,8 +140,10 @@ class PendingApprovalsScreen extends ConsumerWidget {
                           ),
                         ],
                         const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                        OverflowBar(
+                          alignment: MainAxisAlignment.end,
+                          spacing: AppSpacing.sm,
+                          overflowSpacing: AppSpacing.sm,
                           children: [
                             OutlinedButton(
                               style: OutlinedButton.styleFrom(
@@ -158,7 +161,6 @@ class PendingApprovalsScreen extends ConsumerWidget {
                               },
                               child: const Text('REDDET'),
                             ),
-                            const SizedBox(width: 12),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: context.approvedColor,
