@@ -4,6 +4,30 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/password_hasher.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 
+class PersonnelImportEntry {
+  const PersonnelImportEntry({
+    required this.adSoyad,
+    required this.rutbe,
+    required this.birlik,
+    this.timId,
+  });
+
+  final String adSoyad;
+  final String rutbe;
+  final String birlik;
+  final int? timId;
+}
+
+class PersonnelImportResult {
+  const PersonnelImportResult({
+    required this.addedCount,
+    required this.skippedCount,
+  });
+
+  final int addedCount;
+  final int skippedCount;
+}
+
 class PersonnelRepository {
   PersonnelRepository(this.db);
 
@@ -12,9 +36,10 @@ class PersonnelRepository {
   /// Return all personnel sorted by rank weight (seniority)
   Stream<List<PersonelTableData>> watchAllPersonnelSorted() {
     return db.select(db.personelTable).watch().map((list) {
-      return List<PersonelTableData>.from(list)..sort(
-        (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
-      );
+      return List<PersonelTableData>.from(list)
+        ..sort(
+          (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
+        );
     });
   }
 
@@ -22,10 +47,13 @@ class PersonnelRepository {
   Stream<List<PersonelTableData>> watchPersonnelBySquad(int timId) {
     return (db.select(
       db.personelTable,
-    )..where((tbl) => tbl.timId.equals(timId))).watch().map((list) {
-      return List<PersonelTableData>.from(list)..sort(
-        (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
-      );
+    )..where((tbl) => tbl.timId.equals(timId)))
+        .watch()
+        .map((list) {
+      return List<PersonelTableData>.from(list)
+        ..sort(
+          (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
+        );
     });
   }
 
@@ -37,9 +65,7 @@ class PersonnelRepository {
     int? timId,
   }) async {
     return db.transaction(() async {
-      final newId = await db
-          .into(db.personelTable)
-          .insert(
+      final newId = await db.into(db.personelTable).insert(
             PersonelTableCompanion.insert(
               adSoyad: adSoyad,
               rutbe: rutbe,
@@ -50,9 +76,7 @@ class PersonnelRepository {
           );
 
       if (timId != null) {
-        await db
-            .into(db.timUyelikGecmisiTable)
-            .insert(
+        await db.into(db.timUyelikGecmisiTable).insert(
               TimUyelikGecmisiTableCompanion.insert(
                 personelId: newId,
                 timId: Value(timId),
@@ -66,18 +90,84 @@ class PersonnelRepository {
     });
   }
 
+  Future<PersonnelImportResult> importPersonnelBatch(
+    List<PersonnelImportEntry> entries, {
+    required String kayitTarihi,
+  }) async {
+    return db.transaction(() async {
+      final existing = await db.select(db.personelTable).get();
+      final knownKeys = existing
+          .map((person) => _personnelKey(person.adSoyad, person.rutbe))
+          .toSet();
+      var addedCount = 0;
+      var skippedCount = 0;
+
+      for (final entry in entries) {
+        final name = entry.adSoyad.trim();
+        final rank = normalizeRank(entry.rutbe.trim());
+        final key = _personnelKey(name, rank);
+        if (name.isEmpty || knownKeys.contains(key)) {
+          skippedCount++;
+          continue;
+        }
+
+        final newId = await db.into(db.personelTable).insert(
+              PersonelTableCompanion.insert(
+                adSoyad: name,
+                rutbe: rank.isEmpty ? 'J.Er' : rank,
+                birlik: entry.birlik.trim().isEmpty
+                    ? 'Asayiş Timi'
+                    : entry.birlik.trim(),
+                timId: Value(entry.timId),
+                kayitTarihi: kayitTarihi,
+              ),
+            );
+        if (entry.timId != null) {
+          await db.into(db.timUyelikGecmisiTable).insert(
+                TimUyelikGecmisiTableCompanion.insert(
+                  personelId: newId,
+                  timId: Value(entry.timId),
+                  tarih: kayitTarihi,
+                  islem: 'eklendi',
+                ),
+              );
+        }
+        knownKeys.add(key);
+        addedCount++;
+      }
+
+      return PersonnelImportResult(
+        addedCount: addedCount,
+        skippedCount: skippedCount,
+      );
+    });
+  }
+
+  static String _personnelKey(String name, String rank) {
+    String fold(String value) => value
+        .trim()
+        .toLowerCase()
+        .replaceAll('ı', 'i')
+        .replaceAll('ğ', 'g')
+        .replaceAll('ü', 'u')
+        .replaceAll('ş', 's')
+        .replaceAll('ö', 'o')
+        .replaceAll('ç', 'c')
+        .replaceAll(RegExp(r'\s+'), ' ');
+    return '${fold(normalizeRank(rank))}|${fold(name)}';
+  }
+
   Future<bool> updatePersonnel(PersonelTableData data, {String? tarih}) async {
     final oldData = await (db.select(
       db.personelTable,
-    )..where((tbl) => tbl.id.equals(data.id))).getSingleOrNull();
+    )..where((tbl) => tbl.id.equals(data.id)))
+        .getSingleOrNull();
 
     final result = await db.update(db.personelTable).replace(data);
 
     if (oldData != null && oldData.timId != data.timId) {
       final islemStr = data.timId == null ? 'çıkarıldı' : 'eklendi';
-      await db
-          .into(db.timUyelikGecmisiTable)
-          .insert(
+      await db.into(db.timUyelikGecmisiTable).insert(
             TimUyelikGecmisiTableCompanion.insert(
               personelId: data.id,
               timId: Value(data.timId),
@@ -94,12 +184,11 @@ class PersonnelRepository {
     return db.transaction(() async {
       final p = await (db.select(
         db.personelTable,
-      )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+      )..where((tbl) => tbl.id.equals(id)))
+          .getSingleOrNull();
 
       if (p != null && p.timId != null) {
-        await db
-            .into(db.timUyelikGecmisiTable)
-            .insert(
+        await db.into(db.timUyelikGecmisiTable).insert(
               TimUyelikGecmisiTableCompanion.insert(
                 personelId: id,
                 timId: Value(p.timId),
@@ -112,15 +201,17 @@ class PersonnelRepository {
 
       return (db.delete(
         db.personelTable,
-      )..where((tbl) => tbl.id.equals(id))).go();
+      )..where((tbl) => tbl.id.equals(id)))
+          .go();
     });
   }
 
   /// History Log Operations
   Stream<List<TimUyelikGecmisiTableData>> watchAllHistory() {
-    return (db.select(db.timUyelikGecmisiTable)..orderBy([
-          (tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.desc),
-        ]))
+    return (db.select(db.timUyelikGecmisiTable)
+          ..orderBy([
+            (tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.desc),
+          ]))
         .watch();
   }
 
@@ -149,9 +240,7 @@ class PersonnelRepository {
     final nowStr = DateTime.now().toIso8601String();
     for (final name in defaultSquads) {
       if (!existingNames.contains(name)) {
-        await db
-            .into(db.timTable)
-            .insert(
+        await db.into(db.timTable).insert(
               TimTableCompanion.insert(
                 timAdi: name,
                 olusturmaTarihi: nowStr,
@@ -172,9 +261,7 @@ class PersonnelRepository {
     required String olusturmaTarihi,
     int? timKomutaniId,
   }) {
-    return db
-        .into(db.timTable)
-        .insert(
+    return db.into(db.timTable).insert(
           TimTableCompanion.insert(
             timAdi: timAdi,
             olusturmaTarihi: olusturmaTarihi,
@@ -190,9 +277,7 @@ class PersonnelRepository {
   }) async {
     return db.transaction(() async {
       // 1. Create commander user account with pending password setup
-      final userId = await db
-          .into(db.kullaniciTable)
-          .insert(
+      final userId = await db.into(db.kullaniciTable).insert(
             KullaniciTableCompanion.insert(
               kullaniciAdi: komutanKullaniciAdi,
               sifre: const Value(''),
@@ -201,9 +286,7 @@ class PersonnelRepository {
           );
 
       // 2. Create squad linked to commander user
-      return db
-          .into(db.timTable)
-          .insert(
+      return db.into(db.timTable).insert(
             TimTableCompanion.insert(
               timAdi: timAdi,
               olusturmaTarihi: olusturmaTarihi,
@@ -219,9 +302,7 @@ class PersonnelRepository {
     required String rol,
     int? timId,
   }) {
-    return db
-        .into(db.kullaniciTable)
-        .insert(
+    return db.into(db.kullaniciTable).insert(
           KullaniciTableCompanion.insert(
             kullaniciAdi: kullaniciAdi,
             sifre: const Value(''),
@@ -246,7 +327,8 @@ class PersonnelRepository {
   Stream<List<KullaniciTableData>> watchAllCommanders() {
     return (db.select(
       db.kullaniciTable,
-    )..where((tbl) => tbl.rol.equals('tim_komutani'))).watch();
+    )..where((tbl) => tbl.rol.equals('tim_komutani')))
+        .watch();
   }
 
   /// Reassign or revoke a Tim Komutanı's squad authority
@@ -290,26 +372,24 @@ class PersonnelRepository {
           .write(PersonelTableCompanion(timId: Value(timId)));
 
       // 2. Check if user already exists
-      final existingUser =
-          await (db.select(db.kullaniciTable)
-                ..where((tbl) => tbl.kullaniciAdi.equals(kullaniciAdi)))
-              .getSingleOrNull();
+      final existingUser = await (db.select(db.kullaniciTable)
+            ..where((tbl) => tbl.kullaniciAdi.equals(kullaniciAdi)))
+          .getSingleOrNull();
 
       int userId;
       if (existingUser != null) {
         userId = existingUser.id;
         await (db.update(
           db.kullaniciTable,
-        )..where((tbl) => tbl.id.equals(userId))).write(
+        )..where((tbl) => tbl.id.equals(userId)))
+            .write(
           KullaniciTableCompanion(
             rol: const Value('tim_komutani'),
             timId: Value(timId),
           ),
         );
       } else {
-        userId = await db
-            .into(db.kullaniciTable)
-            .insert(
+        userId = await db.into(db.kullaniciTable).insert(
               KullaniciTableCompanion.insert(
                 kullaniciAdi: kullaniciAdi,
                 sifre: const Value(''),
@@ -407,7 +487,8 @@ class PersonnelRepository {
             PersonelTableCompanion.insert(
               adSoyad: '$fName $lName',
               rutbe: rank,
-              birlik: MilitaryStructureHelper.getOfficialBirlikName(squad.timAdi),
+              birlik:
+                  MilitaryStructureHelper.getOfficialBirlikName(squad.timAdi),
               timId: Value(squad.id),
               kayitTarihi: today,
             ),

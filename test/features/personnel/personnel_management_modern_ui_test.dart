@@ -75,4 +75,39 @@ void main() {
     expect(find.byKey(const Key('new-squad-name-field')), findsOneWidget);
     expect(find.byKey(const Key('create-squad-button')), findsOneWidget);
   });
+
+  testWidgets('personnel add action offers text import and opens preview flow',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(buildSubject());
+    await tester.pump();
+
+    await tester.tap(find.text('Personel Ekle'));
+    await tester.pumpAndSettle();
+    expect(find.text('Tek Personel Ekle'), findsOneWidget);
+    expect(find.text('Metinden Toplu Ekle'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('add-personnel-from-text-option')));
+    await tester.pumpAndSettle();
+    expect(find.text('Metinden Personel Ekle'), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('bulk-personnel-text-field')),
+      '1. J.Asb.Çvş. Ahmet YILMAZ',
+    );
+    await tester.pump();
+    await tester.ensureVisible(
+      find.byKey(const Key('bulk-personnel-preview-button')),
+    );
+    await tester.tap(find.byKey(const Key('bulk-personnel-preview-button')));
+    await tester.pump();
+
+    expect(find.text('1 personel bulundu'), findsOneWidget);
+    expect(find.text('Ahmet YILMAZ'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

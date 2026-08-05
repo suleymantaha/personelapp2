@@ -60,6 +60,18 @@ class BulkDeclaredTotal {
   final String activityType;
 }
 
+class PersonnelListParseResult {
+  const PersonnelListParseResult({
+    required this.personnel,
+    required this.issues,
+  });
+
+  final List<ParsedPersonnelItem> personnel;
+  final List<BulkParseIssue> issues;
+
+  bool get hasPersonnel => personnel.isNotEmpty;
+}
+
 class BulkTextParser {
   static const Map<String, int> _turkishMonths = {
     'ocak': 1,
@@ -253,7 +265,9 @@ class BulkTextParser {
 
   static bool _isCommentOrNoteLine(String line) {
     final trimmed = line.trim();
-    if (trimmed.startsWith('(') && trimmed.endsWith(')') && !_rankPattern.hasMatch(trimmed)) {
+    if (trimmed.startsWith('(') &&
+        trimmed.endsWith(')') &&
+        !_rankPattern.hasMatch(trimmed)) {
       return true;
     }
     final folded = _fold(trimmed);
@@ -263,7 +277,8 @@ class BulkTextParser {
         folded.contains('degisimli') ||
         folded.contains('altin kaz') ||
         folded.contains('ciftligi')) {
-      if (!_rankPattern.hasMatch(trimmed) && !_numberedPersonnelPattern.hasMatch(trimmed)) {
+      if (!_rankPattern.hasMatch(trimmed) &&
+          !_numberedPersonnelPattern.hasMatch(trimmed)) {
         return true;
       }
     }
@@ -542,6 +557,70 @@ class BulkTextParser {
     );
   }
 
+  /// Parses a plain personnel roster without requiring activity, date or team
+  /// headers. It deliberately reuses the activity importer's line and rank
+  /// normalization so both paste flows interpret names consistently.
+  static PersonnelListParseResult parsePersonnelList(String rawText) {
+    final personnel = <ParsedPersonnelItem>[];
+    final issues = <BulkParseIssue>[];
+    var nextIndex = 1;
+
+    final rawLines =
+        rawText.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
+    for (var lineIndex = 0; lineIndex < rawLines.length; lineIndex++) {
+      final rawLine = rawLines[lineIndex];
+      final lineNumber = lineIndex + 1;
+      for (final rawSubLine in _splitLineIfMultiplePersonnel(rawLine)) {
+        final line = _normalizeLine(rawSubLine);
+        if (line.isEmpty ||
+            _messageMetadataPattern.hasMatch(line) ||
+            _isHeader(line) ||
+            _isCommentOrNoteLine(line) ||
+            _summaryPattern.hasMatch(line)) {
+          continue;
+        }
+
+        final candidate = _personnelCandidate(line);
+        final content = (candidate?.content ?? line)
+            .replaceAll(_fullDayAnnotationPattern, ' ')
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trim();
+        final parsed = _parsePersonnelLine(
+          content,
+          candidate?.index ?? nextIndex,
+          lineNumber,
+        );
+        if (parsed == null) {
+          issues.add(BulkParseIssue(
+            lineNumber: lineNumber,
+            rawLine: rawSubLine,
+            code: 'invalid_personnel',
+            message: 'Personel satırı çözümlenemedi.',
+            severity: BulkParseIssueSeverity.error,
+          ));
+          continue;
+        }
+
+        personnel.add(parsed.item);
+        nextIndex = parsed.item.rawIndex + 1;
+        if (!parsed.rankKnown) {
+          issues.add(BulkParseIssue(
+            lineNumber: lineNumber,
+            rawLine: rawSubLine,
+            code: 'unknown_rank',
+            message: 'Rütbe tanınamadı.',
+            severity: BulkParseIssueSeverity.warning,
+          ));
+        }
+      }
+    }
+
+    return PersonnelListParseResult(
+      personnel: List.unmodifiable(personnel),
+      issues: List.unmodifiable(issues),
+    );
+  }
+
   static String _normalizeLine(String input) => input
       .replaceAll('\u00a0', ' ')
       .replaceAll('\t', ' ')
@@ -612,11 +691,16 @@ class BulkTextParser {
     }
 
     final suffix = rawSuffix.toUpperCase();
-    if (suffix == 'TIM' || suffix == 'TIMI' || suffix == 'BÖLÜK' || suffix == 'BOLUK') {
+    if (suffix == 'TIM' ||
+        suffix == 'TIMI' ||
+        suffix == 'BÖLÜK' ||
+        suffix == 'BOLUK') {
       return number;
     }
     final cleanSuffix = suffix.replaceAll(RegExp(r'[^A-ZÇĞİÖŞÜ]'), '');
-    return match.group(2) != null ? '$number/$cleanSuffix' : '$number$cleanSuffix';
+    return match.group(2) != null
+        ? '$number/$cleanSuffix'
+        : '$number$cleanSuffix';
   }
 
   static (String, bool) _extractActivity(String line) {
@@ -752,9 +836,6 @@ class BulkTextParser {
     if (clean.contains('yzb')) {
       return 'J.Yzb.';
     }
-    if (clean.contains('bçvş') || clean.contains('bcvs')) {
-      return 'J.Bçvş.';
-    }
     if (clean.contains('asbkdüçvş') ||
         clean.contains('asbkducvs') ||
         clean.contains('asbkdüçvs')) {
@@ -775,6 +856,9 @@ class BulkTextParser {
         clean.contains('asbcvs') ||
         clean.contains('asbçvs')) {
       return 'J.Asb.Çvş.';
+    }
+    if (clean.contains('bçvş') || clean.contains('bcvs')) {
+      return 'J.Bçvş.';
     }
     return 'J.Uzm.Çvş.';
   }

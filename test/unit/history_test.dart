@@ -60,4 +60,49 @@ void main() {
       expect(historyList.first.islem, equals('çıkarıldı'));
     },
   );
+
+  test('batch import adds unique personnel and skips duplicates', () async {
+    final timId = await repo.addSquad(
+      timAdi: '3. Asayiş Timi',
+      olusturmaTarihi: '2026-08-05',
+    );
+    await repo.addPersonnel(
+      adSoyad: 'Ahmet YILMAZ',
+      rutbe: 'J.Asb.Çvş.',
+      birlik: 'Asayiş Timi',
+      kayitTarihi: '2026-08-05',
+      timId: timId,
+    );
+
+    final result = await repo.importPersonnelBatch(
+      [
+        PersonnelImportEntry(
+          adSoyad: 'ahmet yilmaz',
+          rutbe: 'J.Asb.Çvş.',
+          birlik: 'Asayiş Timi',
+          timId: timId,
+        ),
+        PersonnelImportEntry(
+          adSoyad: 'Mehmet DEMİR',
+          rutbe: 'J.Uzm.Çvş.',
+          birlik: 'Asayiş Timi',
+          timId: timId,
+        ),
+        PersonnelImportEntry(
+          adSoyad: 'Mehmet DEMİR',
+          rutbe: 'J.Uzm.Çvş.',
+          birlik: 'Asayiş Timi',
+          timId: timId,
+        ),
+      ],
+      kayitTarihi: '2026-08-05',
+    );
+
+    expect(result.addedCount, 1);
+    expect(result.skippedCount, 2);
+    final personnel = await db.select(db.personelTable).get();
+    expect(personnel, hasLength(2));
+    final history = await db.select(db.timUyelikGecmisiTable).get();
+    expect(history, hasLength(2));
+  });
 }

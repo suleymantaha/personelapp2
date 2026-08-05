@@ -10,6 +10,7 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
+import 'package:personelapp2/features/personnel/presentation/dialogs/bulk_personnel_import_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/widgets/personnel_form_dialog.dart';
 
 class PersonnelManagementScreen extends ConsumerStatefulWidget {
@@ -33,9 +34,66 @@ class _PersonnelManagementScreenState
   }
 
   Future<void> _showAddPersonnelDialog() async {
-    await showDialog<void>(
+    final action = await showModalBottomSheet<String>(
       context: context,
-      builder: (context) => const PersonnelFormDialog(),
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.pagePadding,
+            0,
+            AppSpacing.pagePadding,
+            AppSpacing.pagePadding,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Personel Ekle',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              ListTile(
+                key: const Key('add-single-personnel-option'),
+                leading: const Icon(Icons.person_add_alt_1_rounded),
+                title: const Text('Tek Personel Ekle'),
+                subtitle: const Text('Bilgileri form üzerinden girin'),
+                onTap: () => Navigator.of(context).pop('single'),
+              ),
+              ListTile(
+                key: const Key('add-personnel-from-text-option'),
+                leading: const Icon(Icons.content_paste_go_rounded),
+                title: const Text('Metinden Toplu Ekle'),
+                subtitle: const Text('Listeyi yapıştırıp önizleyin'),
+                onTap: () => Navigator.of(context).pop('bulk'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted || action == null) return;
+
+    if (action == 'single') {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => const PersonnelFormDialog(),
+      );
+      return;
+    }
+
+    final result = await showBulkPersonnelImportDialog(context);
+    if (!mounted || result == null) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '${result.addedCount} personel eklendi, '
+          '${result.skippedCount} mükerrer kayıt atlandı.',
+        ),
+      ),
     );
   }
 
