@@ -152,6 +152,13 @@ class BulkTextParser {
     r'^\s*(?:toplam|tolam)\b',
     caseSensitive: false,
   );
+  static final RegExp _singleTimePattern = RegExp(
+    r'^\s*(?:[01]?\d|2[0-3])[.:][0-5]\d\s*$',
+  );
+  static final RegExp _shiftWordPattern = RegExp(
+    r'\b(?:sabah|akşam|aksam|öğlen|oglen|gece|gündüz|gunduz)\b',
+    caseSensitive: false,
+  );
 
   static const Map<String, String> _activityTypes = {
     'gülüşkür': DutyOrLeaveType.guluskur,
@@ -384,7 +391,7 @@ class BulkTextParser {
       final subLines = _splitLineIfMultiplePersonnel(rawLine);
 
       for (final rawSubLine in subLines) {
-        final line = _normalizeLine(rawSubLine);
+        var line = _normalizeLine(rawSubLine);
         if (line.isEmpty || _messageMetadataPattern.hasMatch(line)) continue;
 
         final dateMatch = _extractDateFromLine(line, currentDate);
@@ -441,6 +448,29 @@ class BulkTextParser {
           continue;
         }
 
+        // Free-form lists commonly put the date and a name on the same line,
+        // for example "5 Ağustos Hasan Akbaş". Apply the date to the block,
+        // then continue parsing only the meaningful remainder as personnel.
+        if (dateMatch != null) {
+          if (currentDate != dateMatch) {
+            flushBlock();
+            currentDate = dateMatch;
+          }
+          line = _removeDateAndDayWords(line);
+          if (line.isEmpty) continue;
+        }
+
+        if (_isShiftOnlyLine(line)) {
+          ignoredLineCount++;
+          continue;
+        }
+
+        line = _stripShiftWordsAtEdges(line);
+        if (line.isEmpty) {
+          ignoredLineCount++;
+          continue;
+        }
+
         final timeMatch = _timeRangePattern.firstMatch(line);
         if (timeMatch != null || _timeLikePattern.hasMatch(line)) {
           ignoredLineCount++;
@@ -461,6 +491,11 @@ class BulkTextParser {
               currentTimeRange = null;
             }
           }
+          continue;
+        }
+
+        if (_singleTimePattern.hasMatch(line)) {
+          ignoredLineCount++;
           continue;
         }
 
@@ -632,6 +667,43 @@ class BulkTextParser {
       .replaceFirst(_bulletPattern, '')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
+
+  static String _removeDateAndDayWords(String line) {
+    var clean = line
+        .replaceAll(_datePattern, ' ')
+        .replaceAll(_textMonthDatePattern, ' ');
+    for (final day in _dayNames) {
+      clean = clean.replaceAll(RegExp('\\b$day\\b', caseSensitive: false), ' ');
+    }
+    return clean.replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
+  static bool _isShiftOnlyLine(String line) {
+    var folded = _fold(line);
+    folded = folded.replaceAll(_shiftWordPattern, ' ');
+    for (final activity in _activityTypes.keys) {
+      folded = folded.replaceAll(activity, ' ');
+    }
+    return folded.replaceAll(RegExp(r'\s+'), '').isEmpty;
+  }
+
+  static String _stripShiftWordsAtEdges(String line) {
+    var clean = line.replaceFirst(
+      RegExp(
+        r'^\s*(?:sabah|akşam|aksam|öğlen|oglen|gece|gündüz|gunduz)\b\s*',
+        caseSensitive: false,
+      ),
+      '',
+    );
+    clean = clean.replaceFirst(
+      RegExp(
+        r'\s*\b(?:sabah|akşam|aksam|öğlen|oglen|gece|gündüz|gunduz)\s*$',
+        caseSensitive: false,
+      ),
+      '',
+    );
+    return clean.trim();
+  }
 
   static bool _isHeader(String line) {
     final folded = _fold(line);

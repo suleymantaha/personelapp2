@@ -68,7 +68,9 @@ TOLAM 3 KİŞİ 2 KİŞİ 24 SAAT KALACAK
     expect(result.declaredTotals.single.teamName, '9/B');
   });
 
-  test('parses full user prompt with Turkish text months and unranked personnel names', () {
+  test(
+      'parses full user prompt with Turkish text months and unranked personnel names',
+      () {
     const input = '''
 *30.07.2026*
 *10/B Timi Heybet İsim Listesi*
@@ -179,8 +181,7 @@ Nuri demir
     );
   });
 
-  test('ignores invisible unicode format chars around the first date line',
-      () {
+  test('ignores invisible unicode format chars around the first date line', () {
     // WhatsApp kopyalarında satır başına/sonuna yapışan görünmez karakterler:
     // U+200E (LRM), U+200B (ZWSP), U+FEFF (BOM/ZWNBSP).
     const input = '\u200E*30.07.2026*\u200B\n'
@@ -198,5 +199,85 @@ Nuri demir
       result.blocks.map((block) => block.parsedDate),
       everyElement('2026-07-30'),
     );
+  });
+
+  test('parses chaotic date, shift and unranked-name combinations safely', () {
+    const input = '''
+06 Ağustos 2026
+Muhammed Ali Yakar
+06 Ağustos heybet
+Recep göral
+Ferhat Ayyıldız
+İlyas Teksan
+06 AĞUSTOS 2026
+
+AHMET MUSTAFA ÇALIŞKAN
+OĞUZHAN AYAZ
+SABAH
+6 Ağustos
+
+Ferhat AKKEŞ
+
+Sabah
+6 ağustos heybet
+
+Serdar AÇIKGÖZ
+Mehmet AKDOĞAN
+
+Sabah
+6 Ağustos Heybet
+Hasan Akbaş
+06 Ağustos
+Recai KAYA
+Akşam heybet
+Nuri demir akşam
+5 ağustos heybet
+Mahmut DEMİRBAŞ
+Serdar AÇIKGÖZ
+Mehmet AKDOĞAN
+Recai KAYA
+17.30
+05 AĞUSTOS 2026
+
+AHMET MUSTAFA ÇALIŞKAN
+OĞUZHAN AYAZ
+05 Ağustos heybet
+Recep göral
+Ferhat Ayyıldız
+5 Ağustos Hasan Akbaş
+5 Ağustos Muhammet GÜRDEN
+5 Ağustos Penah Can İŞLEK
+Nuri demir
+akşam
+''';
+
+    final result = BulkTextParser.parse(input);
+    final names = result.blocks
+        .expand((block) => block.personnelList)
+        .map((person) => person.rawName)
+        .toList();
+
+    expect(result.blocks.map((block) => block.parsedDate).toSet(), {
+      '2026-08-05',
+      '2026-08-06',
+    });
+    expect(
+      names,
+      containsAll(<String>[
+        'Muhammed Ali Yakar',
+        'AHMET MUSTAFA ÇALIŞKAN',
+        'Ferhat AKKEŞ',
+        'Nuri demir',
+        'Hasan Akbaş',
+        'Muhammet GÜRDEN',
+        'Penah Can İŞLEK',
+      ]),
+    );
+    expect(names, isNot(contains('SABAH')));
+    expect(names, isNot(contains('Sabah')));
+    expect(names, isNot(contains('akşam')));
+    expect(names, isNot(contains('17.30')));
+    expect(names.any((name) => name.contains('Ağustos')), isFalse);
+    expect(names.any((name) => name.toLowerCase().endsWith(' akşam')), isFalse);
   });
 }

@@ -115,8 +115,6 @@ class BulkImportLearningService {
         .go();
   }
 
-
-
   static String fingerprint(Iterable<ParsedActivityBlock> blocks) {
     final assignments = <String>{};
     for (final block in blocks) {
@@ -153,8 +151,7 @@ class BulkImportLearningService {
         if (pId == null) continue;
         final match = rows.any((row) {
           final activity = row.readTable(database.gunlukFaaliyetTable);
-          final assignment =
-              row.readTable(database.faaliyetPersonelAtamaTable);
+          final assignment = row.readTable(database.faaliyetPersonelAtamaTable);
           return activity.tarih == block.parsedDate &&
               assignment.personelId == pId &&
               assignment.gorevVeyaIzin.trim().toUpperCase() ==
@@ -193,15 +190,20 @@ class BulkImportLearningService {
             .whereType<int>(),
       );
     }
+    final record = TopluAktarimGecmisiTableCompanion.insert(
+      parmakIzi: fingerprint,
+      tarihler: dates.join(', '),
+      blokSayisi: blocks.length,
+      personelSayisi: personnel.length,
+      aktaranKullanici: actor,
+      kayitTarihi: DateTime.now().toIso8601String(),
+      hamMetin: Value(rawText),
+    );
     await database.into(database.topluAktarimGecmisiTable).insert(
-          TopluAktarimGecmisiTableCompanion.insert(
-            parmakIzi: fingerprint,
-            tarihler: dates.join(', '),
-            blokSayisi: blocks.length,
-            personelSayisi: personnel.length,
-            aktaranKullanici: actor,
-            kayitTarihi: DateTime.now().toIso8601String(),
-            hamMetin: Value(rawText),
+          record,
+          onConflict: DoUpdate(
+            (_) => record,
+            target: [database.topluAktarimGecmisiTable.parmakIzi],
           ),
         );
   }
@@ -226,4 +228,3 @@ class LearnedAliasItem {
     required this.kayitTarihi,
   });
 }
-

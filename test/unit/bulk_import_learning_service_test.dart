@@ -89,7 +89,41 @@ void main() {
     );
   });
 
-  test('rememberAliases saves multiple pairs and handles uppercase Turkish I/İ correctly', () async {
+  test('recordImport updates an existing fingerprint instead of failing',
+      () async {
+    final service = BulkImportLearningService(database);
+    final matchedBlock = block('HÃ¼seyin ORUÃ‡TUTAN').copyWith(
+      personnelList: [
+        block('HÃ¼seyin ORUÃ‡TUTAN')
+            .personnelList
+            .single
+            .copyWith(matchedPersonnelId: personnelId),
+      ],
+    );
+    final fingerprint = BulkImportLearningService.fingerprint([matchedBlock]);
+
+    await service.recordImport(
+      fingerprint: fingerprint,
+      blocks: [matchedBlock],
+      actor: 'first-user',
+    );
+    await service.recordImport(
+      fingerprint: fingerprint,
+      blocks: [matchedBlock],
+      actor: 'second-user',
+      rawText: 're-imported content',
+    );
+
+    final records =
+        await database.select(database.topluAktarimGecmisiTable).get();
+    expect(records, hasLength(1));
+    expect(records.single.aktaranKullanici, 'second-user');
+    expect(records.single.hamMetin, 're-imported content');
+  });
+
+  test(
+      'rememberAliases saves multiple pairs and handles uppercase Turkish I/İ correctly',
+      () async {
     final service = BulkImportLearningService(database);
     final norm1 = BulkImportLearningService.normalizeName('HÜSEYİN ORUCTUTAN');
     final norm2 = BulkImportLearningService.normalizeName('ISMAİL KAYA');
@@ -108,18 +142,23 @@ void main() {
 
   test('learned alias match sets reviewConfirmed to true', () async {
     final service = BulkImportLearningService(database);
-    await service.rememberAlias(rawName: 'Hüseyin ORUCTUTAN', personnelId: personnelId);
+    await service.rememberAlias(
+        rawName: 'Hüseyin ORUCTUTAN', personnelId: personnelId);
 
-    final matched = await PersonnelFuzzyMatcher(database).matchBlocks([block('Hüseyin ORUCTUTAN')]);
+    final matched = await PersonnelFuzzyMatcher(database)
+        .matchBlocks([block('Hüseyin ORUCTUTAN')]);
     final item = matched.single.personnelList.single;
     expect(item.matchedPersonnelId, personnelId);
     expect(item.matchConfidence, 1.0);
     expect(item.reviewConfirmed, isTrue);
   });
 
-  test('getAliasList returns joined personnel details and deleteAlias removes entry', () async {
+  test(
+      'getAliasList returns joined personnel details and deleteAlias removes entry',
+      () async {
     final service = BulkImportLearningService(database);
-    await service.rememberAlias(rawName: 'Hüseyin ORUCTUTAN', personnelId: personnelId);
+    await service.rememberAlias(
+        rawName: 'Hüseyin ORUCTUTAN', personnelId: personnelId);
 
     final list = await service.getAliasList();
     expect(list.length, 1);
@@ -131,4 +170,3 @@ void main() {
     expect(updatedList.isEmpty, isTrue);
   });
 }
-
