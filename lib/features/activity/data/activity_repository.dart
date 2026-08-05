@@ -110,6 +110,20 @@ class ActivityBatchCreateResult {
   final List<String> conflictDescriptions;
 }
 
+class ActivityAssignmentBatchResult {
+  const ActivityAssignmentBatchResult({
+    required this.addedCount,
+    required this.alreadyAssignedCount,
+    required this.conflictSkippedCount,
+    this.conflictDescriptions = const [],
+  });
+
+  final int addedCount;
+  final int alreadyAssignedCount;
+  final int conflictSkippedCount;
+  final List<String> conflictDescriptions;
+}
+
 class AssignmentConflictException implements Exception {
   const AssignmentConflictException(this.message);
 
@@ -1264,6 +1278,96 @@ class ActivityRepository {
               aciklama: Value(aciklama),
             ),
           );
+    });
+  }
+
+  /// Adds multiple personnel to one existing activity in a single
+  /// transaction. Existing members and conflicting assignments are reported
+  /// separately instead of aborting the whole import.
+  Future<ActivityAssignmentBatchResult> addAssignmentsToActivity({
+    required int activityId,
+    required List<PersonnelAssignmentInput> assignments,
+    required UserSessionState actor,
+  }) {
+    return db.transaction(() async {
+      await _requirePersonnelScope(actor, assignments);
+      final activity = await (db.select(db.gunlukFaaliyetTable)
+            ..where((table) => table.id.equals(activityId)))
+          .getSingleOrNull();
+      if (activity == null) {
+        throw ArgumentError.value(
+            activityId, 'activityId', 'Faaliyet bulunamadı');
+      }
+
+      final existingInActivity = await (db.select(
+        db.faaliyetPersonelAtamaTable,
+      )..where((table) => table.faaliyetId.equals(activityId)))
+          .get();
+      final existingPersonnelIds =
+          existingInActivity.map((row) => row.personelId).toSet();
+      final reports = await _loadDomainReports();
+      final existingAssignments = await _loadExistingAssignments();
+      final seenPersonnelIds = <int>{};
+      final conflictDescriptions = <String>[];
+      var addedCount = 0;
+      var alreadyAssignedCount = 0;
+      var conflictSkippedCount = 0;
+
+      for (final assignment in assignments) {
+        if (!seenPersonnelIds.add(assignment.personnelId) ||
+            existingPersonnelIds.contains(assignment.personnelId)) {
+          alreadyAssignedCount++;
+          continue;
+        }
+        final duty = assignment.duty.trim();
+        if (duty.isEmpty) continue;
+
+        var status = ConflictChecker.evaluateAssignmentStatus(
+          personelId: assignment.personnelId,
+          targetDate: activity.tarih,
+          targetDuty: duty,
+          reports: reports,
+          existingAssignments: existingAssignments,
+        );
+        if (status == AssignmentStatus.beklemede) {
+          conflictSkippedCount++;
+          conflictDescriptions.add(
+            'Personel #${assignment.personnelId}: '
+            '${activity.tarih} tarihinde başka bir kayıt bulunuyor.',
+          );
+          continue;
+        }
+        if (!actor.isAdmin) status = AssignmentStatus.beklemede;
+
+        final id = await db.into(db.faaliyetPersonelAtamaTable).insert(
+              FaaliyetPersonelAtamaTableCompanion.insert(
+                faaliyetId: activityId,
+                personelId: assignment.personnelId,
+                gorevVeyaIzin: duty,
+                durum: status,
+                aciklama: Value(assignment.note?.trim()),
+              ),
+            );
+        existingAssignments.add(
+          ExistingDutyAssignment(
+            id: id,
+            faaliyetId: activityId,
+            personelId: assignment.personnelId,
+            tarih: activity.tarih,
+            gorevVeyaIzin: duty,
+            durum: status,
+          ),
+        );
+        existingPersonnelIds.add(assignment.personnelId);
+        addedCount++;
+      }
+
+      return ActivityAssignmentBatchResult(
+        addedCount: addedCount,
+        alreadyAssignedCount: alreadyAssignedCount,
+        conflictSkippedCount: conflictSkippedCount,
+        conflictDescriptions: conflictDescriptions,
+      );
     });
   }
 

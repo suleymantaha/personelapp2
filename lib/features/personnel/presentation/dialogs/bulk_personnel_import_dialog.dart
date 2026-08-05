@@ -5,9 +5,10 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
-import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
+import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 import 'package:personelapp2/features/personnel/data/personnel_repository.dart';
+import 'package:personelapp2/features/personnel/domain/personnel_import_draft.dart';
 
 Future<PersonnelImportResult?> showBulkPersonnelImportDialog(
   BuildContext context,
@@ -29,7 +30,7 @@ class BulkPersonnelImportDialog extends ConsumerStatefulWidget {
 class _BulkPersonnelImportDialogState
     extends ConsumerState<BulkPersonnelImportDialog> {
   final _textController = TextEditingController();
-  List<ParsedPersonnelItem> _items = [];
+  List<PersonnelImportDraft> _items = [];
   List<BulkParseIssue> _issues = [];
   int? _selectedSquadId;
   bool _previewReady = false;
@@ -43,10 +44,32 @@ class _BulkPersonnelImportDialogState
 
   void _parse() {
     final result = BulkTextParser.parsePersonnelList(_textController.text);
+    final squads = ref.read(allSquadsProvider).valueOrNull ?? [];
+    final selectedSquad =
+        squads.where((squad) => squad.id == _selectedSquadId).firstOrNull;
+    final initialUnit = selectedSquad == null
+        ? ''
+        : MilitaryStructureHelper.getBolukName(selectedSquad.timAdi);
     setState(() {
-      _items = result.personnel;
+      _items = result.personnel
+          .map(
+            (item) => PersonnelImportDraft(
+              name: item.rawName,
+              rank: item.rawRank,
+              unit: initialUnit,
+              squadId: _selectedSquadId,
+              sourceLineNumber: item.sourceLineNumber,
+            ),
+          )
+          .toList(growable: false);
       _issues = result.issues;
       _previewReady = true;
+    });
+  }
+
+  void _updateItem(int index, PersonnelImportDraft item) {
+    setState(() {
+      _items = List.of(_items)..[index] = item;
     });
   }
 
@@ -54,19 +77,13 @@ class _BulkPersonnelImportDialogState
     if (_items.isEmpty || _saving) return;
     setState(() => _saving = true);
     try {
-      final squads = ref.read(allSquadsProvider).valueOrNull ?? [];
-      final selectedSquad =
-          squads.where((squad) => squad.id == _selectedSquadId).firstOrNull;
-      final unit = selectedSquad == null
-          ? 'Asayiş Timi'
-          : MilitaryStructureHelper.getBolukName(selectedSquad.timAdi);
       final entries = _items
           .map(
             (item) => PersonnelImportEntry(
-              adSoyad: item.rawName,
-              rutbe: item.rawRank.isEmpty ? 'J.Er' : item.rawRank,
-              birlik: unit,
-              timId: _selectedSquadId,
+              adSoyad: item.name,
+              rutbe: item.rank,
+              birlik: item.unit,
+              timId: item.squadId,
             ),
           )
           .toList(growable: false);
@@ -85,8 +102,20 @@ class _BulkPersonnelImportDialogState
   @override
   Widget build(BuildContext context) {
     final squads = ref.watch(allSquadsProvider).valueOrNull ?? [];
+    final existingPersonnel =
+        ref.watch(allPersonnelProvider).valueOrNull ?? const [];
     final unknownRankCount =
-        _items.where((item) => item.rawRank.isEmpty).length;
+        _items.where((item) => item.rank.trim().isEmpty).length;
+    final invalidCount = _items.where((item) => !item.isValid).length;
+    final seenKeys = existingPersonnel
+        .map((person) => _draftKey(person.adSoyad, person.rutbe))
+        .toSet();
+    final duplicateIndexes = <int>{};
+    for (final entry in _items.asMap().entries) {
+      if (!seenKeys.add(_draftKey(entry.value.name, entry.value.rank))) {
+        duplicateIndexes.add(entry.key);
+      }
+    }
 
     return AlertDialog(
       title: const Row(
@@ -136,7 +165,24 @@ class _BulkPersonnelImportDialogState
                     ),
                   ),
                 ],
-                onChanged: (value) => setState(() => _selectedSquadId = value),
+                onChanged: (value) => setState(() {
+                  _selectedSquadId = value;
+                  final selectedSquad =
+                      squads.where((squad) => squad.id == value).firstOrNull;
+                  final unit = selectedSquad == null
+                      ? ''
+                      : MilitaryStructureHelper.getBolukName(
+                          selectedSquad.timAdi,
+                        );
+                  _items = [
+                    for (final item in _items)
+                      item.copyWith(
+                        squadId: value,
+                        clearSquad: value == null,
+                        unit: unit,
+                      ),
+                  ];
+                }),
               ),
               if (_previewReady) ...[
                 const SizedBox(height: AppSpacing.md),
@@ -150,7 +196,7 @@ class _BulkPersonnelImportDialogState
                   Padding(
                     padding: const EdgeInsets.only(top: AppSpacing.sm),
                     child: Text(
-                      '$unknownRankCount satırda rütbe bulunamadı; J.Er olarak kaydedilecek.',
+                      '$unknownRankCount satırda rütbe bulunamadı. Kaydetmeden önce seçin.',
                       style: TextStyle(color: context.pendingColor),
                     ),
                   ),
@@ -162,24 +208,31 @@ class _BulkPersonnelImportDialogState
                       style: TextStyle(color: context.rejectedColor),
                     ),
                   ),
+                if (duplicateIndexes.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: Text(
+                      '${duplicateIndexes.length} mükerrer satır kayıtta atlanacak.',
+                      style: TextStyle(color: context.pendingColor),
+                    ),
+                  ),
                 const SizedBox(height: AppSpacing.sm),
                 ..._items.asMap().entries.map(
                       (entry) => Card(
                         key: Key('bulk-personnel-preview-${entry.key}'),
-                        child: ListTile(
-                          dense: true,
-                          leading: CircleAvatar(
-                            child: Text('${entry.key + 1}'),
-                          ),
+                        child: ExpansionTile(
+                          initiallyExpanded: !entry.value.isValid,
                           title: Text(
-                            entry.value.rawName,
+                            entry.value.name,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                           subtitle: Text(
-                            entry.value.rawRank.isEmpty
-                                ? 'J.Er (varsayılan)'
-                                : entry.value.rawRank,
+                            duplicateIndexes.contains(entry.key)
+                                ? 'Mükerrer kayıt • Atlanacak'
+                                : entry.value.rank.isEmpty
+                                    ? 'Rütbe seçilmeli'
+                                    : entry.value.rank,
                           ),
                           trailing: IconButton(
                             tooltip: 'Listeden çıkar',
@@ -188,6 +241,88 @@ class _BulkPersonnelImportDialogState
                               _items = List.of(_items)..removeAt(entry.key);
                             }),
                           ),
+                          childrenPadding: const EdgeInsets.fromLTRB(
+                            AppSpacing.cardPadding,
+                            0,
+                            AppSpacing.cardPadding,
+                            AppSpacing.cardPadding,
+                          ),
+                          children: [
+                            TextFormField(
+                              key: Key('bulk-personnel-name-${entry.key}'),
+                              initialValue: entry.value.name,
+                              decoration:
+                                  const InputDecoration(labelText: 'Ad Soyad'),
+                              onChanged: (value) => _updateItem(
+                                entry.key,
+                                entry.value.copyWith(name: value),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            DropdownButtonFormField<String>(
+                              key: Key('bulk-personnel-rank-${entry.key}'),
+                              initialValue: entry.value.rank.isEmpty
+                                  ? null
+                                  : entry.value.rank,
+                              isExpanded: true,
+                              decoration:
+                                  const InputDecoration(labelText: 'Rütbe'),
+                              items: kAskeriRutbeler
+                                  .map(
+                                    (rank) => DropdownMenuItem(
+                                      value: rank,
+                                      child: Text(rank),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  _updateItem(
+                                    entry.key,
+                                    entry.value.copyWith(rank: value),
+                                  );
+                                }
+                              },
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            TextFormField(
+                              key: Key('bulk-personnel-unit-${entry.key}'),
+                              initialValue: entry.value.unit,
+                              decoration:
+                                  const InputDecoration(labelText: 'Birlik'),
+                              onChanged: (value) => _updateItem(
+                                entry.key,
+                                entry.value.copyWith(unit: value),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            DropdownButtonFormField<int?>(
+                              key: Key('bulk-personnel-squad-${entry.key}'),
+                              initialValue: entry.value.squadId,
+                              isExpanded: true,
+                              decoration:
+                                  const InputDecoration(labelText: 'Tim'),
+                              items: [
+                                const DropdownMenuItem<int?>(
+                                  value: null,
+                                  child: Text('Tim dışı'),
+                                ),
+                                ...squads.map(
+                                  (squad) => DropdownMenuItem<int?>(
+                                    value: squad.id,
+                                    child: Text(squad.timAdi),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (value) => _updateItem(
+                                entry.key,
+                                entry.value.copyWith(
+                                  squadId: value,
+                                  clearSquad: value == null,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -211,7 +346,8 @@ class _BulkPersonnelImportDialogState
         else
           FilledButton.icon(
             key: const Key('bulk-personnel-save-button'),
-            onPressed: _items.isEmpty || _saving ? null : _save,
+            onPressed:
+                _items.isEmpty || invalidCount > 0 || _saving ? null : _save,
             icon: _saving
                 ? const SizedBox.square(
                     dimension: 18,
@@ -222,5 +358,19 @@ class _BulkPersonnelImportDialogState
           ),
       ],
     );
+  }
+
+  static String _draftKey(String name, String rank) {
+    String fold(String value) => value
+        .trim()
+        .toLowerCase()
+        .replaceAll('ı', 'i')
+        .replaceAll('ğ', 'g')
+        .replaceAll('ü', 'u')
+        .replaceAll('ş', 's')
+        .replaceAll('ö', 'o')
+        .replaceAll('ç', 'c')
+        .replaceAll(RegExp(r'\s+'), ' ');
+    return '${fold(normalizeRank(rank))}|${fold(name)}';
   }
 }

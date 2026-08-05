@@ -108,6 +108,12 @@ void main() {
 
     expect(find.text('1 personel bulundu'), findsOneWidget);
     expect(find.text('Ahmet YILMAZ'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('bulk-personnel-preview-0')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('bulk-personnel-name-0')), findsOneWidget);
+    expect(find.byKey(const Key('bulk-personnel-rank-0')), findsOneWidget);
+    expect(find.byKey(const Key('bulk-personnel-unit-0')), findsOneWidget);
+    expect(find.byKey(const Key('bulk-personnel-squad-0')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

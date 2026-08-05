@@ -7,6 +7,25 @@ import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
 
+const List<String> kActivityAssignmentDuties = [
+  DutyOrLeaveType.heybetKomutani,
+  DutyOrLeaveType.nobSb,
+  DutyOrLeaveType.mebsNob,
+  DutyOrLeaveType.garajNob,
+  DutyOrLeaveType.ttzaNob,
+  DutyOrLeaveType.kuleNob,
+  DutyOrLeaveType.hazirKita,
+  DutyOrLeaveType.guluskur,
+  DutyOrLeaveType.heybet,
+  DutyOrLeaveType.gorevli,
+  DutyOrLeaveType.nobetci,
+  DutyOrLeaveType.izinli,
+  DutyOrLeaveType.istirahatli,
+  DutyOrLeaveType.raporlu,
+  DutyOrLeaveType.sevk,
+  DutyOrLeaveType.diger,
+];
+
 /// Dialog to add a single personnel to an existing activity
 class AddPersonnelToActivityDialog extends ConsumerStatefulWidget {
   const AddPersonnelToActivityDialog({
@@ -40,25 +59,6 @@ class _AddPersonnelToActivityDialogState
   String _selectedDuty = DutyOrLeaveType.gorevli;
   final _noteController = TextEditingController();
   late final Future<Map<int, String>> _reservationDescriptions;
-
-  static const List<String> availableDuties = [
-    DutyOrLeaveType.heybetKomutani,
-    DutyOrLeaveType.nobSb,
-    DutyOrLeaveType.mebsNob,
-    DutyOrLeaveType.garajNob,
-    DutyOrLeaveType.ttzaNob,
-    DutyOrLeaveType.kuleNob,
-    DutyOrLeaveType.hazirKita,
-    DutyOrLeaveType.guluskur,
-    DutyOrLeaveType.heybet,
-    DutyOrLeaveType.gorevli,
-    DutyOrLeaveType.nobetci,
-    DutyOrLeaveType.izinli,
-    DutyOrLeaveType.istirahatli,
-    DutyOrLeaveType.raporlu,
-    DutyOrLeaveType.sevk,
-    DutyOrLeaveType.diger,
-  ];
 
   @override
   void initState() {
@@ -98,8 +98,8 @@ class _AddPersonnelToActivityDialogState
     }
 
     final filteredDuties = widget.isAdmin
-        ? availableDuties
-        : availableDuties
+        ? kActivityAssignmentDuties
+        : kActivityAssignmentDuties
             .where((duty) => !_adminOnlyDuties.contains(duty))
             .toList(growable: false);
 

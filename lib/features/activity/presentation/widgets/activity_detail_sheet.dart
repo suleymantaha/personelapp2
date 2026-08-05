@@ -8,6 +8,7 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_add_personnel_to_activity_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/edit_assignment_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_squad_dialog.dart';
@@ -113,7 +114,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (isAdmin)
+              if (session != null)
                 TextButton.icon(
                   style: TextButton.styleFrom(
                     foregroundColor: context.accentOrOlive,
@@ -130,6 +131,66 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                   ),
                   onPressed: () async {
+                    final action = await showModalBottomSheet<String>(
+                      context: context,
+                      showDragHandle: true,
+                      builder: (sheetContext) => SafeArea(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              key: const Key(
+                                'activity-add-single-personnel-option',
+                              ),
+                              leading: const Icon(
+                                Icons.person_add_alt_1_rounded,
+                              ),
+                              title: const Text('Tek Personel Ekle'),
+                              subtitle: const Text(
+                                'Kayıtlı personelden bir kişi seçin',
+                              ),
+                              onTap: () =>
+                                  Navigator.of(sheetContext).pop('single'),
+                            ),
+                            ListTile(
+                              key: const Key(
+                                'activity-add-bulk-personnel-option',
+                              ),
+                              leading: const Icon(
+                                Icons.content_paste_go_rounded,
+                              ),
+                              title: const Text('Metinden Toplu Ekle'),
+                              subtitle: const Text(
+                                'İsim listesini yapıştırıp eşleştirin',
+                              ),
+                              onTap: () =>
+                                  Navigator.of(sheetContext).pop('bulk'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                    if (!context.mounted || action == null) return;
+                    if (action == 'bulk') {
+                      final result = await showBulkAddPersonnelToActivityDialog(
+                        context,
+                        activity: activity,
+                        existingPersonnelIds: existingPersonnelIds,
+                      );
+                      if (result != null && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '${result.addedCount} personel eklendi, '
+                              '${result.alreadyAssignedCount} mevcut, '
+                              '${result.conflictSkippedCount} çakışma nedeniyle atlandı.',
+                            ),
+                          ),
+                        );
+                      }
+                      return;
+                    }
+
                     final added = await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AddPersonnelToActivityDialog(
