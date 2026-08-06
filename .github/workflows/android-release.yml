@@ -2,10 +2,12 @@ name: Android Release Build
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - agent/temgundrap-module
     tags:
       - 'v*'
-  workflow_dispatch: # manual trigger
+  workflow_dispatch:
 
 permissions:
   contents: write
