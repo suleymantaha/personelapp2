@@ -1,6 +1,156 @@
 part of 'monthly_matrix_screen.dart';
 
 extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
+  Widget _buildMobileMatrixAppBar({
+    required BuildContext context,
+    required int totalPersonnelCount,
+    required int visiblePersonnelCount,
+    required VoidCallback? onExport,
+  }) {
+    final monthLabel = DateFormat('MMM yyyy', 'tr_TR').format(_selectedMonth);
+
+    return SliverAppBar(
+      floating: true,
+      snap: true,
+      toolbarHeight: 64,
+      titleSpacing: 8,
+      title: _isMobileSearchOpen
+          ? TextField(
+              key: const ValueKey('matrix-personnel-search'),
+              controller: _searchController,
+              autofocus: true,
+              onChanged: (value) => _updateState(() => _searchQuery = value),
+              textInputAction: TextInputAction.search,
+              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+              decoration: InputDecoration(
+                hintText: 'Personel veya rütbe ara',
+                hintStyle: TextStyle(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onPrimary
+                      .withValues(alpha: 0.7),
+                ),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+                suffixIcon: _searchQuery.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Aramayı temizle',
+                        onPressed: _clearSearch,
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.14),
+                contentPadding: EdgeInsets.zero,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            )
+          : Row(
+              children: [
+                IconButton(
+                  tooltip: 'Önceki ay',
+                  onPressed: () => _changeMonth(-1),
+                  icon: const Icon(Icons.chevron_left_rounded),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => _selectMonthYear(context),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.calendar_month_outlined, size: 18),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              monthLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Sonraki ay',
+                  onPressed: () => _changeMonth(1),
+                  icon: const Icon(Icons.chevron_right_rounded),
+                ),
+              ],
+            ),
+      actions: [
+        IconButton(
+          key: const ValueKey('matrix-mobile-search-button'),
+          tooltip: _isMobileSearchOpen ? 'Aramayı kapat' : 'Personel ara',
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            _updateState(() => _isMobileSearchOpen = !_isMobileSearchOpen);
+          },
+          icon: Icon(
+            _isMobileSearchOpen
+                ? Icons.arrow_back_rounded
+                : Icons.search_rounded,
+          ),
+        ),
+        if (!_isMobileSearchOpen)
+          IconButton(
+            key: const ValueKey('matrix-export-button'),
+            tooltip: "Excel'e aktar",
+            onPressed: onExport,
+            icon: const Icon(Icons.file_download_outlined),
+          ),
+        const SizedBox(width: 4),
+      ],
+      bottom: _searchQuery.trim().isEmpty
+          ? null
+          : PreferredSize(
+              preferredSize: const Size.fromHeight(28),
+              child: Container(
+                width: double.infinity,
+                height: 28,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                alignment: Alignment.centerLeft,
+                color: Theme.of(context).colorScheme.surface,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '“$_searchQuery” · $visiblePersonnelCount/$totalPersonnelCount kişi',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: _clearSearch,
+                      child: const Icon(Icons.close_rounded, size: 18),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+
   PreferredSizeWidget _buildMatrixAppBar({
     required BuildContext context,
     required int totalPersonnelCount,

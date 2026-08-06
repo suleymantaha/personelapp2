@@ -145,4 +145,57 @@ void main() {
     expect(find.text('7-B Timi'), findsOneWidget);
     expect(find.text('Karargah'), findsOneWidget);
   });
+
+  testWidgets('mobile matrix uses a compact expandable search bar', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(500, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    const squads = [
+      TimTableData(id: 1, timAdi: 'Merkez Timi', olusturmaTarihi: ''),
+    ];
+    const personnel = [
+      PersonelTableData(
+        id: 1,
+        adSoyad: 'Mehmet Yılmaz',
+        rutbe: 'Astsubay',
+        birlik: '',
+        timId: 1,
+        kayitTarihi: '',
+      ),
+    ];
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          allPersonnelProvider.overrideWith((ref) => Stream.value(personnel)),
+          allSquadsProvider.overrideWith((ref) => Stream.value(squads)),
+          monthlyMatrixProvider.overrideWith((ref, month) => Stream.value({})),
+        ],
+        child: const MaterialApp(home: MonthlyMatrixScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('matrix-personnel-search')), findsNothing);
+    await tester.tap(
+      find.byKey(const ValueKey('matrix-mobile-search-button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+        find.byKey(const ValueKey('matrix-personnel-search')), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const ValueKey('matrix-personnel-search')),
+      'bulunmayan',
+    );
+    await tester.pump();
+    expect(
+      find.text('Aramanızla eşleşen personel bulunamadı'),
+      findsOneWidget,
+    );
+  });
 }

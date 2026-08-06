@@ -30,6 +30,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
   DateTime _selectedMonth = DateTime.now();
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  bool _isMobileSearchOpen = false;
 
   // Her bir timin açık/kapalı durumunu takip eden Set (null = timsiz)
   final Set<int?> _expandedTeamIds = {};
@@ -63,63 +64,83 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
       0,
     ).day;
 
+    final onExport = availablePersonnel.isEmpty
+        ? null
+        : () => _exportMatrix(
+              personnel: orderMatrixPersonnel(availablePersonnel, squads),
+              matrixData: matrixAsync.value ?? {},
+            );
+    final body = personnelAsync.when(
+      data: (rawPersonnelList) {
+        final filteredPersonnel = _personnelAvailableToSession(
+          rawPersonnelList,
+          session,
+        ).where(_matchesPersonnelSearch).toList();
+        final personnelList = orderMatrixPersonnel(filteredPersonnel, squads);
+
+        if (personnelList.isEmpty) {
+          return _buildEmptyPersonnelState(context);
+        }
+
+        final matrixData = matrixAsync.value ?? {};
+        final squadNames = {
+          for (final squad in squads) squad.id: squad.timAdi,
+        };
+
+        // Personnel'i tim bazlı grupla
+        final groupedPersonnel = <int?, List<PersonelTableData>>{};
+        for (final person in personnelList) {
+          groupedPersonnel.putIfAbsent(person.timId, () => []).add(person);
+        }
+
+        final mobileBody = _buildMonthlyMobileBody(
+          context: context,
+          groupedPersonnel: groupedPersonnel,
+          squadNames: squadNames,
+          personnelList: personnelList,
+          matrixData: matrixData,
+          daysInMonth: daysInMonth,
+        );
+        if (mobileBody != null) return mobileBody;
+
+        return _buildMonthlyDesktopBody(
+          context: context,
+          groupedPersonnel: groupedPersonnel,
+          squadNames: squadNames,
+          personnelList: personnelList,
+          matrixData: matrixData,
+          daysInMonth: daysInMonth,
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, st) => Center(child: Text('Hata: $err')),
+    );
+
+    if (MediaQuery.sizeOf(context).width < 680) {
+      return Scaffold(
+        body: NestedScrollView(
+          floatHeaderSlivers: true,
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            _buildMobileMatrixAppBar(
+              context: context,
+              totalPersonnelCount: availablePersonnel.length,
+              visiblePersonnelCount: visiblePersonnelCount,
+              onExport: onExport,
+            ),
+          ],
+          body: body,
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: _buildMatrixAppBar(
         context: context,
         totalPersonnelCount: availablePersonnel.length,
         visiblePersonnelCount: visiblePersonnelCount,
-        onExport: availablePersonnel.isEmpty
-            ? null
-            : () => _exportMatrix(
-                  personnel: orderMatrixPersonnel(availablePersonnel, squads),
-                  matrixData: matrixAsync.value ?? {},
-                ),
+        onExport: onExport,
       ),
-      body: personnelAsync.when(
-        data: (rawPersonnelList) {
-          final filteredPersonnel = _personnelAvailableToSession(
-            rawPersonnelList,
-            session,
-          ).where(_matchesPersonnelSearch).toList();
-          final personnelList = orderMatrixPersonnel(filteredPersonnel, squads);
-
-          if (personnelList.isEmpty) {
-            return _buildEmptyPersonnelState(context);
-          }
-
-          final matrixData = matrixAsync.value ?? {};
-          final squadNames = {
-            for (final squad in squads) squad.id: squad.timAdi,
-          };
-
-          // Personnel'i tim bazlı grupla
-          final groupedPersonnel = <int?, List<PersonelTableData>>{};
-          for (final person in personnelList) {
-            groupedPersonnel.putIfAbsent(person.timId, () => []).add(person);
-          }
-
-          final mobileBody = _buildMonthlyMobileBody(
-            context: context,
-            groupedPersonnel: groupedPersonnel,
-            squadNames: squadNames,
-            personnelList: personnelList,
-            matrixData: matrixData,
-            daysInMonth: daysInMonth,
-          );
-          if (mobileBody != null) return mobileBody;
-
-          return _buildMonthlyDesktopBody(
-            context: context,
-            groupedPersonnel: groupedPersonnel,
-            squadNames: squadNames,
-            personnelList: personnelList,
-            matrixData: matrixData,
-            daysInMonth: daysInMonth,
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, st) => Center(child: Text('Hata: $err')),
-      ),
+      body: body,
     );
   }
 }
