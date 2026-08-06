@@ -9,10 +9,14 @@ void main() {
   testWidgets('dashboard keeps one personnel and squad entry point', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(1000, 1200);
+    tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 1.2;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(
+      tester.platformDispatcher.clearTextScaleFactorTestValue,
+    );
 
     final router = GoRouter(
       initialLocation: '/dashboard',
@@ -48,6 +52,25 @@ void main() {
     );
     await tester.pump();
 
+    for (final size in <Size>[
+      const Size(390, 844),
+      const Size(844, 390),
+      const Size(600, 960),
+      const Size(1280, 800),
+    ]) {
+      tester.view.physicalSize = size;
+      await tester.pump();
+      expect(tester.takeException(), isNull, reason: 'Taşma oluştu: $size');
+    }
+
+    tester.view.physicalSize = const Size(390, 844);
+    await tester.pump();
+
+    expect(find.byType(SingleChildScrollView), findsNothing);
+    expect(
+      tester.widget<GridView>(find.byType(GridView)).physics,
+      isA<NeverScrollableScrollPhysics>(),
+    );
     expect(find.text('Personel & Tim'), findsOneWidget);
     expect(find.text('Kayıt ve Yetki'), findsOneWidget);
     expect(find.text('Yeni Tim Ekle'), findsNothing);
