@@ -41,6 +41,7 @@ void main() {
   ) async {
     var printCount = 0;
     var shareCount = 0;
+    var excelCount = 0;
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -51,6 +52,7 @@ void main() {
           document: document,
           onPrint: () async => printCount++,
           onShare: () async => shareCount++,
+          onExcel: () async => excelCount++,
         ),
       ),
     );
@@ -58,10 +60,13 @@ void main() {
     expect(find.text('ELAZIĞ İL MERKEZ'), findsOneWidget);
     expect(find.text('YAZDIR'), findsOneWidget);
     expect(find.text('PDF PAYLAŞ'), findsOneWidget);
+    expect(find.text('EXCEL'), findsOneWidget);
     await tester.tap(find.byKey(const Key('preview-print')));
     await tester.tap(find.byKey(const Key('preview-share')));
+    await tester.tap(find.byKey(const Key('preview-excel')));
     expect(printCount, 1);
     expect(shareCount, 1);
+    expect(excelCount, 1);
     expect(tester.takeException(), isNull);
   });
 }

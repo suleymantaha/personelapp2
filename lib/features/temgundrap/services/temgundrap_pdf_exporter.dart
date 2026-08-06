@@ -22,18 +22,49 @@ class TemgundrapPdfExporter {
     final pdf = pw.Document(
       theme: pw.ThemeData.withFont(base: regular, bold: bold),
     );
-    const headers = [
-      'S.NU',
-      'ÇIKARAN BİRLİK',
-      'OPERASYON BÖLGESİ',
-      'KUVVETİ',
-      'OPERASYON KOMUTANI',
-      'MEVCUT',
-      'BAŞLAMA',
-      'BİTİŞ',
-      'MAKSAT',
-      'AÇIKLAMA',
-    ];
+    pw.Widget cell(String text, {bool bold = false}) => pw.Container(
+          alignment: pw.Alignment.center,
+          padding: const pw.EdgeInsets.all(3),
+          child: pw.Text(
+            text,
+            textAlign: pw.TextAlign.center,
+            style: pw.TextStyle(
+              fontSize: 6.5,
+              fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
+            ),
+          ),
+        );
+    pw.Widget forceSubtable(List<String> values, {bool bold = false}) =>
+        pw.Table(
+          border: pw.TableBorder.all(width: .6),
+          columnWidths: const {
+            0: pw.FlexColumnWidth(1.25),
+            1: pw.FlexColumnWidth(2.1),
+            2: pw.FlexColumnWidth(.8),
+            3: pw.FlexColumnWidth(.35),
+          },
+          children: [
+            pw.TableRow(
+              children: values.map((value) => cell(value, bold: bold)).toList(),
+            ),
+          ],
+        );
+    pw.Widget forceGroup(List<String> values, {bool header = false}) => header
+        ? pw.Column(children: [
+            pw.Container(
+              width: double.infinity,
+              padding: const pw.EdgeInsets.all(3),
+              alignment: pw.Alignment.center,
+              decoration: const pw.BoxDecoration(
+                border: pw.Border(bottom: pw.BorderSide(width: .6)),
+              ),
+              child: pw.Text('OPERASYON KUVVETİ',
+                  style: pw.TextStyle(
+                      fontSize: 7, fontWeight: pw.FontWeight.bold)),
+            ),
+            forceSubtable(values, bold: true),
+          ])
+        : forceSubtable(values);
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4.landscape,
@@ -44,38 +75,61 @@ class TemgundrapPdfExporter {
             textAlign: pw.TextAlign.center,
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
           ),
-          pw.SizedBox(height: 10),
-          pw.TableHelper.fromTextArray(
-            headers: headers,
-            data: document.operations.asMap().entries.map((entry) {
-              final item = entry.value;
-              final strength = [
-                ...item.strength.byLabel.entries.map(
-                  (e) => '${e.key} ${e.value}',
-                ),
-                'TOPLAM ${item.totalStrength}',
-              ].join('\n');
-              return [
-                '${entry.key + 1}',
-                item.issuingUnit,
-                item.operationArea,
-                item.forceDescription,
-                item.commander.displayText,
-                strength,
-                TemgundrapFormatters.militaryDateTime(item.startAt),
-                TemgundrapFormatters.militaryDateTime(item.endAt),
-                item.purpose,
-                item.description,
-              ];
-            }).toList(),
-            headerStyle: pw.TextStyle(
-              fontWeight: pw.FontWeight.bold,
-              fontSize: 6.5,
-            ),
-            cellStyle: const pw.TextStyle(fontSize: 6.5),
-            headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
-            cellAlignment: pw.Alignment.center,
+          pw.SizedBox(height: 2),
+          pw.Table(
             border: pw.TableBorder.all(width: .6),
+            columnWidths: const {
+              0: pw.FlexColumnWidth(.55),
+              1: pw.FlexColumnWidth(1.7),
+              2: pw.FlexColumnWidth(2.0),
+              3: pw.FlexColumnWidth(4.5),
+              4: pw.FlexColumnWidth(1.65),
+              5: pw.FlexColumnWidth(1.65),
+              6: pw.FlexColumnWidth(2.15),
+              7: pw.FlexColumnWidth(1.7),
+            },
+            children: [
+              pw.TableRow(
+                decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+                children: [
+                  cell('S.NU', bold: true),
+                  cell('ÇIKARAN BİRLİK', bold: true),
+                  cell('OPERASYON BÖLGESİ', bold: true),
+                  forceGroup(
+                    ['KUVVETİ', 'OPERASYON KOMUTANI', 'MEVCUT', ''],
+                    header: true,
+                  ),
+                  cell('BAŞLAMA ZAMANI', bold: true),
+                  cell('BİTİŞ ZAMANI', bold: true),
+                  cell('OPERASYON MAKSADI', bold: true),
+                  cell('AÇIKLAMA', bold: true),
+                ],
+              ),
+              ...document.operations.asMap().entries.map((entry) {
+                final item = entry.value;
+                final labels =
+                    [...item.strength.byLabel.keys, 'TOPLAM'].join('\n');
+                final counts = [
+                  ...item.strength.byLabel.values,
+                  item.totalStrength,
+                ].join('\n');
+                return pw.TableRow(children: [
+                  cell('${entry.key + 1}'),
+                  cell(item.issuingUnit),
+                  cell(item.operationArea),
+                  forceGroup([
+                    item.forceDescription,
+                    item.commander.displayText,
+                    labels,
+                    counts,
+                  ]),
+                  cell(TemgundrapFormatters.militaryDateTime(item.startAt)),
+                  cell(TemgundrapFormatters.militaryDateTime(item.endAt)),
+                  cell(item.purpose),
+                  cell(item.description),
+                ]);
+              }),
+            ],
           ),
         ],
       ),
