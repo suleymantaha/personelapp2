@@ -49,7 +49,7 @@ jobs:
         run: flutter analyze --no-fatal-infos
 
       - name: Run tests
-        run: flutter test --no-coverage
+        run: flutter test
 
       - name: Build Release APK
         run: flutter build apk --release --split-per-abi
