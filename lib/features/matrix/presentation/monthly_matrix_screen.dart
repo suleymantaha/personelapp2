@@ -14,6 +14,7 @@ import 'package:personelapp2/features/matrix/presentation/widgets/team_duty_cale
 import 'package:personelapp2/features/matrix/services/excel_xml_generator.dart';
 
 part 'monthly_matrix_actions.dart';
+part 'monthly_matrix_app_bar.dart';
 part 'monthly_matrix_mobile_view.dart';
 part 'monthly_matrix_desktop_view.dart';
 
@@ -27,6 +28,8 @@ class MonthlyMatrixScreen extends ConsumerStatefulWidget {
 
 class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
   DateTime _selectedMonth = DateTime.now();
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   // Her bir timin açık/kapalı durumunu takip eden Set (null = timsiz)
   final Set<int?> _expandedTeamIds = {};
@@ -36,12 +39,23 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
   void _updateState(VoidCallback callback) => setState(callback);
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final yearMonthStr = DateFormat('yyyy-MM').format(_selectedMonth);
     final personnelAsync = ref.watch(allPersonnelProvider);
     final squads = ref.watch(allSquadsProvider).valueOrNull ?? const [];
     final matrixAsync = ref.watch(monthlyMatrixProvider(yearMonthStr));
     final session = ref.watch(userSessionProvider);
+    final availablePersonnel = personnelAsync.valueOrNull == null
+        ? <PersonelTableData>[]
+        : _personnelAvailableToSession(personnelAsync.valueOrNull!, session);
+    final visiblePersonnelCount =
+        availablePersonnel.where(_matchesPersonnelSearch).length;
 
     final daysInMonth = DateTime(
       _selectedMonth.year,
@@ -50,104 +64,27 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
     ).day;
 
     return Scaffold(
-      appBar: AppBar(
-        title: InkWell(
-          onTap: () => _selectMonthYear(context),
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  DateFormat('MMMM yyyy', 'tr_TR').format(_selectedMonth),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+      appBar: _buildMatrixAppBar(
+        context: context,
+        totalPersonnelCount: availablePersonnel.length,
+        visiblePersonnelCount: visiblePersonnelCount,
+        onExport: availablePersonnel.isEmpty
+            ? null
+            : () => _exportMatrix(
+                  personnel: orderMatrixPersonnel(availablePersonnel, squads),
+                  matrixData: matrixAsync.value ?? {},
                 ),
-                const Icon(Icons.arrow_drop_down, size: 20),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left),
-            tooltip: 'Önceki Ay',
-            onPressed: () {
-              setState(() {
-                _selectedMonth = DateTime(
-                  _selectedMonth.year,
-                  _selectedMonth.month - 1,
-                );
-              });
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.chevron_right),
-            tooltip: 'Sonraki Ay',
-            onPressed: () {
-              setState(() {
-                _selectedMonth = DateTime(
-                  _selectedMonth.year,
-                  _selectedMonth.month + 1,
-                );
-              });
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.calendar_month),
-            tooltip: 'Ay/Yıl Seç',
-            onPressed: () => _selectMonthYear(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.file_download),
-            tooltip: "Excel'e Aktar",
-            onPressed: () {
-              final filteredPersonnel =
-                  (session != null && !session.isAdmin && session.timId != null)
-                      ? (personnelAsync.value ?? [])
-                          .where((p) => p.timId == session.timId)
-                          .toList()
-                      : (session != null && !session.isAdmin)
-                          ? <PersonelTableData>[]
-                          : (personnelAsync.value ?? []);
-              final personnel = orderMatrixPersonnel(
-                filteredPersonnel,
-                squads,
-              );
-              final matrixData = matrixAsync.value ?? {};
-              if (personnel.isEmpty) return;
-
-              unawaited(
-                ExcelXmlGenerator.exportAndShareXml(
-                  personnel: personnel,
-                  matrixData: matrixData,
-                  year: _selectedMonth.year,
-                  month: _selectedMonth.month,
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: personnelAsync.when(
         data: (rawPersonnelList) {
-          final filteredPersonnel = (session != null &&
-                  !session.isAdmin &&
-                  session.timId != null)
-              ? rawPersonnelList.where((p) => p.timId == session.timId).toList()
-              : rawPersonnelList;
-          final personnelList = orderMatrixPersonnel(
-            filteredPersonnel,
-            squads,
-          );
+          final filteredPersonnel = _personnelAvailableToSession(
+            rawPersonnelList,
+            session,
+          ).where(_matchesPersonnelSearch).toList();
+          final personnelList = orderMatrixPersonnel(filteredPersonnel, squads);
 
           if (personnelList.isEmpty) {
-            return const Center(
-              child: Text('Gösterilecek kayıtlı personel bulunmuyor.'),
-            );
+            return _buildEmptyPersonnelState(context);
           }
 
           final matrixData = matrixAsync.value ?? {};
