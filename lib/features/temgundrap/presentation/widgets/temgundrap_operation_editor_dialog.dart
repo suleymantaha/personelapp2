@@ -4,6 +4,7 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
 import 'package:personelapp2/features/temgundrap/presentation/view_models/temgundrap_operation_draft.dart';
 import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_commander_picker.dart';
+import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_operation_area_picker.dart';
 import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_strength_editor.dart';
 import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_time_section.dart';
 import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_vehicle_editor.dart';
@@ -19,7 +20,6 @@ class _TemgundrapOperationEditorDialogState
     extends ConsumerState<TemgundrapOperationEditorDialog> {
   final _formKey = GlobalKey<FormState>();
   final _draft = TemgundrapOperationDraft();
-  final _areaController = TextEditingController();
   final _descriptionController = TextEditingController();
   @override
   void initState() {
@@ -31,7 +31,6 @@ class _TemgundrapOperationEditorDialogState
   void dispose() {
     _draft.removeListener(_refresh);
     _draft.dispose();
-    _areaController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -55,7 +54,6 @@ class _TemgundrapOperationEditorDialogState
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    _draft.operationArea = _areaController.text;
     _draft.description = _descriptionController.text;
     final error = _draft.validate();
     if (error != null) {
@@ -109,15 +107,8 @@ class _TemgundrapOperationEditorDialogState
                               _draft.issuingUnit = value ?? '',
                         ),
                         const SizedBox(height: 12),
-                        TextFormField(
-                          key: const Key('operation-area'),
-                          controller: _areaController,
-                          decoration: const InputDecoration(
-                              labelText: 'Operasyon bölgesi'),
-                          validator: (value) =>
-                              value == null || value.trim().isEmpty
-                                  ? 'Operasyon bölgesi zorunludur.'
-                                  : null,
+                        TemgundrapOperationAreaPicker(
+                          onChanged: (value) => _draft.operationArea = value,
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
