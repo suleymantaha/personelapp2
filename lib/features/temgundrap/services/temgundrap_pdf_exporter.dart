@@ -63,7 +63,7 @@ class TemgundrapPdfExporter {
           columnWidths: const {
             0: pw.FlexColumnWidth(1.25),
             1: pw.FlexColumnWidth(2.1),
-            2: pw.FlexColumnWidth(.8),
+            2: pw.FlexColumnWidth(1.15),
             3: pw.FlexColumnWidth(.35),
           },
           children: [

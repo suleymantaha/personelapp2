@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
-import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
@@ -26,11 +25,14 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
 
   void _reload() => _documents = _repository.getAll();
 
+  Future<void> _refresh() async {
+    setState(_reload);
+    await _documents;
+  }
+
   Future<void> _openForm([TemgundrapDocument? document]) async {
-    final changed = await context.push<bool>(
-      '/temgundrap/form',
-      extra: document,
-    );
+    final changed =
+        await context.push<bool>('/temgundrap/form', extra: document);
     if (changed == true && mounted) setState(_reload);
   }
 
@@ -42,13 +44,11 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
         content: const Text('Bu TEMGÜNDRAP çizelgesi kalıcı olarak silinecek.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('VAZGEÇ'),
-          ),
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('VAZGEÇ')),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('SİL'),
-          ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('SİL')),
         ],
       ),
     );
@@ -65,18 +65,16 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
       icon: Icons.description_outlined,
       options: const [
         ModernActionOption(
-          value: 'edit',
-          title: 'Düzenle',
-          subtitle: 'Çizelge bilgilerini güncelle',
-          icon: Icons.edit_outlined,
-        ),
+            value: 'edit',
+            title: 'Düzenle',
+            subtitle: 'Çizelge bilgilerini güncelle',
+            icon: Icons.edit_outlined),
         ModernActionOption(
-          value: 'delete',
-          title: 'Sil',
-          subtitle: 'Bu çizelgeyi kalıcı olarak kaldır',
-          icon: Icons.delete_outline,
-          isDestructive: true,
-        ),
+            value: 'delete',
+            title: 'Sil',
+            subtitle: 'Bu çizelgeyi kalıcı olarak kaldır',
+            icon: Icons.delete_outline,
+            isDestructive: true),
       ],
     );
     if (!mounted) return;
@@ -85,87 +83,293 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('TEMGÜNDRAP')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openForm,
-        icon: const Icon(Icons.add),
-        label: const Text('Yeni Çizelge'),
-      ),
-      body: ResponsiveCenter(
-        child: FutureBuilder<List<TemgundrapDocument>>(
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text('TEMGÜNDRAP')),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _openForm,
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('Yeni Çizelge'),
+        ),
+        body: FutureBuilder<List<TemgundrapDocument>>(
           future: _documents,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
               return const Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
-              return Center(
-                child: Text('Kayıtlar yüklenemedi: ${snapshot.error}'),
+              return _MessageState(
+                icon: Icons.cloud_off_outlined,
+                title: 'Kayıtlar yüklenemedi',
+                message: '${snapshot.error}',
+                action: FilledButton.icon(
+                    onPressed: () => setState(_reload),
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('TEKRAR DENE')),
               );
             }
             final documents = snapshot.data ?? const [];
             if (documents.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.table_chart_outlined,
-                      size: 72,
-                      color: context.accentOrOlive,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Henüz TEMGÜNDRAP çizelgesi yok.',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text('İlk operasyon takip çizelgesini oluşturun.'),
-                  ],
-                ),
+              return _MessageState(
+                icon: Icons.table_chart_outlined,
+                title: 'Henüz TEMGÜNDRAP çizelgesi yok',
+                message: 'İlk operasyon takip çizelgesini oluşturun.',
+                action: FilledButton.icon(
+                    onPressed: _openForm,
+                    icon: const Icon(Icons.add_rounded),
+                    label: const Text('YENİ ÇİZELGE')),
               );
             }
-            return ListView.separated(
-              padding: const EdgeInsets.only(bottom: 96),
-              itemCount: documents.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (context, index) {
-                final document = documents[index];
-                return Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: context.accentOrOlive.withValues(
-                        alpha: .12,
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final padding = constraints.maxWidth < 600 ? 16.0 : 28.0;
+                final contentWidth =
+                    (constraints.maxWidth - padding * 2).clamp(0.0, 1180.0);
+                final columns = contentWidth >= 960
+                    ? 3
+                    : contentWidth >= 620
+                        ? 2
+                        : 1;
+                return RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverPadding(
+                        padding: EdgeInsets.fromLTRB(padding, 20, padding, 18),
+                        sliver: SliverToBoxAdapter(
+                          child: Center(
+                              child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 1180),
+                                  child:
+                                      _OverviewHeader(documents: documents))),
+                        ),
                       ),
-                      child: Icon(
-                        Icons.description_outlined,
-                        color: context.accentOrOlive,
+                      SliverPadding(
+                        padding: EdgeInsets.fromLTRB(padding, 0, padding, 104),
+                        sliver: SliverGrid(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: columns,
+                                  crossAxisSpacing: 14,
+                                  mainAxisSpacing: 14,
+                                  mainAxisExtent: 178),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) => _DocumentCard(
+                              document: documents[index],
+                              onOpen: () => context.push('/temgundrap/preview',
+                                  extra: documents[index]),
+                              onActions: () =>
+                                  _showDocumentActions(documents[index]),
+                            ),
+                            childCount: documents.length,
+                          ),
+                        ),
                       ),
-                    ),
-                    title: Text(
-                      DateFormat('dd MMMM yyyy', 'tr_TR').format(document.date),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      '${document.operations.length} operasyon • ${document.isDraft ? 'Taslak' : 'Tamamlandı'}',
-                    ),
-                    onTap: () =>
-                        context.push('/temgundrap/preview', extra: document),
-                    trailing: IconButton(
-                      key: Key('temgundrap-actions-${document.id}'),
-                      tooltip: 'Çizelge işlemleri',
-                      onPressed: () => _showDocumentActions(document),
-                      icon: const Icon(Icons.more_horiz_rounded),
-                    ),
+                    ],
                   ),
                 );
               },
             );
           },
         ),
+      );
+}
+
+class _OverviewHeader extends StatelessWidget {
+  const _OverviewHeader({required this.documents});
+  final List<TemgundrapDocument> documents;
+
+  @override
+  Widget build(BuildContext context) {
+    final operations =
+        documents.fold<int>(0, (sum, item) => sum + item.operations.length);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [
+          context.accentOrOlive.withValues(alpha: .18),
+          Theme.of(context).colorScheme.surfaceContainerLow
+        ]),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: context.accentOrOlive.withValues(alpha: .22)),
+      ),
+      child: Wrap(
+        spacing: 18,
+        runSpacing: 16,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          CircleAvatar(
+              radius: 27,
+              backgroundColor: context.accentOrOlive,
+              child: const Icon(Icons.map_outlined, color: Colors.white)),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 210, maxWidth: 550),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Operasyon takip çizelgeleri',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 4),
+                  Text(
+                      'Güncel ve geçmiş TEMGÜNDRAP kayıtlarını tek noktadan yönetin.',
+                      style: TextStyle(color: context.textSecondary)),
+                ]),
+          ),
+          _SummaryPill(
+              icon: Icons.description_outlined,
+              value: '${documents.length}',
+              label: 'Çizelge'),
+          _SummaryPill(
+              icon: Icons.shield_outlined,
+              value: '$operations',
+              label: 'Operasyon'),
+        ],
       ),
     );
   }
+}
+
+class _SummaryPill extends StatelessWidget {
+  const _SummaryPill(
+      {required this.icon, required this.value, required this.label});
+  final IconData icon;
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+        decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: .85),
+            borderRadius: BorderRadius.circular(16)),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icon, size: 19, color: context.accentOrOlive),
+          const SizedBox(width: 7),
+          Text(value,
+              style:
+                  const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          const SizedBox(width: 5),
+          Text(label, style: TextStyle(color: context.textSecondary)),
+        ]),
+      );
+}
+
+class _DocumentCard extends StatelessWidget {
+  const _DocumentCard(
+      {required this.document, required this.onOpen, required this.onActions});
+  final TemgundrapDocument document;
+  final VoidCallback onOpen;
+  final VoidCallback onActions;
+
+  @override
+  Widget build(BuildContext context) => Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onOpen,
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                        color: context.accentOrOlive.withValues(alpha: .12),
+                        borderRadius: BorderRadius.circular(14)),
+                    child: Icon(Icons.description_outlined,
+                        color: context.accentOrOlive)),
+                const Spacer(),
+                IconButton(
+                    key: Key('temgundrap-actions-${document.id}'),
+                    tooltip: 'Çizelge işlemleri',
+                    onPressed: onActions,
+                    icon: const Icon(Icons.more_horiz_rounded)),
+              ]),
+              const Spacer(),
+              Text(DateFormat('dd MMMM yyyy', 'tr_TR').format(document.date),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w800, fontSize: 17)),
+              const SizedBox(height: 8),
+              Row(children: [
+                Icon(Icons.shield_outlined,
+                    size: 18, color: context.textSecondary),
+                const SizedBox(width: 6),
+                Expanded(
+                    child: Text('${document.operations.length} operasyon',
+                        style: TextStyle(color: context.textSecondary))),
+                _StatusBadge(isDraft: document.isDraft),
+              ]),
+            ]),
+          ),
+        ),
+      );
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.isDraft});
+  final bool isDraft;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isDraft ? Colors.orange.shade800 : context.accentOrOlive;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+          color: color.withValues(alpha: .12),
+          borderRadius: BorderRadius.circular(99)),
+      child: Text(isDraft ? 'TASLAK' : 'TAMAMLANDI',
+          style: TextStyle(
+              fontSize: 11, fontWeight: FontWeight.w800, color: color)),
+    );
+  }
+}
+
+class _MessageState extends StatelessWidget {
+  const _MessageState(
+      {required this.icon,
+      required this.title,
+      required this.message,
+      required this.action});
+  final IconData icon;
+  final String title;
+  final String message;
+  final Widget action;
+
+  @override
+  Widget build(BuildContext context) => Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                      color: context.accentOrOlive.withValues(alpha: .12),
+                      shape: BoxShape.circle),
+                  child: Icon(icon, size: 44, color: context.accentOrOlive)),
+              const SizedBox(height: 18),
+              Text(title,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 8),
+              Text(message,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: context.textSecondary)),
+              const SizedBox(height: 22),
+              action,
+            ]),
+          ),
+        ),
+      );
 }

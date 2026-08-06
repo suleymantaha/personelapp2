@@ -4,6 +4,7 @@ import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
+import 'package:personelapp2/features/temgundrap/services/temgundrap_pdf_exporter.dart';
 import 'package:share_plus/share_plus.dart';
 
 class TemgundrapExcelExporter {
@@ -57,7 +58,8 @@ class TemgundrapExcelExporter {
       }
     }
 
-    set(0, 0, document.unitTitle, titleStyle);
+    // Keep the official document heading identical in both export formats.
+    set(0, 0, TemgundrapPdfExporter.documentTitle(document), titleStyle);
     merge(0, 0, 10, 0);
     const mainHeaders = <int, String>{
       0: 'S.NU',
@@ -115,7 +117,7 @@ class TemgundrapExcelExporter {
       26.0,
       17.0,
       30.0,
-      10.0,
+      14.0,
       4.5,
       22.0,
       22.0,
@@ -126,7 +128,7 @@ class TemgundrapExcelExporter {
       sheet.setColumnWidth(column, widths[column]);
     }
     sheet
-      ..setRowHeight(0, 22)
+      ..setRowHeight(0, 34)
       ..setRowHeight(1, 24)
       ..setRowHeight(2, 24);
     return excel.encode() ?? <int>[];

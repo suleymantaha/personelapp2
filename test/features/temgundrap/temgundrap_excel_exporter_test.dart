@@ -2,6 +2,7 @@ import 'package:excel/excel.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/services/temgundrap_excel_exporter.dart';
+import 'package:personelapp2/features/temgundrap/services/temgundrap_pdf_exporter.dart';
 
 void main() {
   test('Excel resmi iki seviyeli TEMGÜNDRAP başlığını ve veriyi üretir', () {
@@ -40,7 +41,7 @@ void main() {
     final sheet = workbook['TEMGÜNDRAP'];
     String value(String address) =>
         sheet.cell(CellIndex.indexByString(address)).value?.toString() ?? '';
-    expect(value('A1'), document.unitTitle);
+    expect(value('A1'), TemgundrapPdfExporter.documentTitle(document));
     expect(value('D2'), 'OPERASYON KUVVETİ');
     expect(value('E3'), 'OPERASYON KOMUTANI');
     expect(value('D4'), contains('(1) TRANSİT'));
