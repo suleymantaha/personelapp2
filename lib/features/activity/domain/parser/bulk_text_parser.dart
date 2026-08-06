@@ -4,27 +4,29 @@ import 'package:personelapp2/features/activity/domain/parser/bulk_parse_models.d
 
 export 'package:personelapp2/features/activity/domain/parser/bulk_parse_models.dart';
 
-part 'bulk_text_parser_engine.dart';
+part 'bulk_text_title_parser.dart';
+part 'bulk_text_block_parser.dart';
+part 'bulk_text_personnel_parser.dart';
 
 class BulkTextParser {
   static ParsedActivityTitle parseTitle(
     String titleLine, [
     String? defaultDate,
   ]) =>
-      _BulkTextParserEngine.parseTitle(titleLine, defaultDate);
+      _parseBulkTitle(titleLine, defaultDate);
 
   static String extractActivityType(String titleLine) =>
-      _BulkTextParserEngine.extractActivityType(titleLine);
+      _extractBulkActivityType(titleLine);
 
   static String mapActivityTypeToDutyOrLeave(String activityType) =>
-      _BulkTextParserEngine.mapActivityTypeToDutyOrLeave(activityType);
+      _mapBulkActivityTypeToDutyOrLeave(activityType);
 
   static BulkParseResult parse(
     String rawText, {
     String? defaultDate,
   }) =>
-      _BulkTextParserEngine.parse(rawText, defaultDate: defaultDate);
+      _parseBulkText(rawText, defaultDate: defaultDate);
 
   static PersonnelListParseResult parsePersonnelList(String rawText) =>
-      _BulkTextParserEngine.parsePersonnelList(rawText);
+      _parsePersonnelList(rawText);
 }
