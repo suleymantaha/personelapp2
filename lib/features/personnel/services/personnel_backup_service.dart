@@ -37,6 +37,7 @@ class PersonnelBackupService {
               'adSoyad': p.adSoyad,
               'rutbe': p.rutbe,
               'birlik': p.birlik,
+              'telefon': p.telefon,
               'timId': p.timId,
               'kayitTarihi': p.kayitTarihi,
             },
@@ -144,6 +145,11 @@ class PersonnelBackupService {
                   adSoyad: adSoyad,
                   rutbe: rutbe,
                   birlik: birlik,
+                  telefon: Value(
+                    _readString(p, 'telefon').trim().isEmpty
+                        ? null
+                        : _readString(p, 'telefon').trim(),
+                  ),
                   timId: Value(timId),
                   kayitTarihi: _readString(
                     p,

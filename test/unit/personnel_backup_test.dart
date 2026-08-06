@@ -36,6 +36,7 @@ void main() {
             rutbe: 'J.Uzm.Çvş.',
             birlik: '1.J.KÖK.Tug.K.lığı',
             timId: Value(squadId),
+            telefon: const Value('533 158 35 97'),
             kayitTarihi: '2026-07-26',
           ),
         );
@@ -68,6 +69,7 @@ void main() {
     final restoredPersonnel = await db.select(db.personelTable).get();
     expect(restoredPersonnel.length, equals(1));
     expect(restoredPersonnel.first.adSoyad, equals('Ahmet KAYA'));
+    expect(restoredPersonnel.first.telefon, equals('533 158 35 97'));
 
     final restoredSquads = await db.select(db.timTable).get();
     expect(restoredSquads.length, equals(1));

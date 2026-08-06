@@ -612,6 +612,12 @@ class $PersonelTableTable extends PersonelTable
   late final GeneratedColumn<String> birlik = GeneratedColumn<String>(
       'birlik', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _telefonMeta =
+      const VerificationMeta('telefon');
+  @override
+  late final GeneratedColumn<String> telefon = GeneratedColumn<String>(
+      'telefon', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _timIdMeta = const VerificationMeta('timId');
   @override
   late final GeneratedColumn<int> timId = GeneratedColumn<int>(
@@ -628,7 +634,7 @@ class $PersonelTableTable extends PersonelTable
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, adSoyad, rutbe, birlik, timId, kayitTarihi];
+      [id, adSoyad, rutbe, birlik, telefon, timId, kayitTarihi];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -660,6 +666,10 @@ class $PersonelTableTable extends PersonelTable
     } else if (isInserting) {
       context.missing(_birlikMeta);
     }
+    if (data.containsKey('telefon')) {
+      context.handle(_telefonMeta,
+          telefon.isAcceptableOrUnknown(data['telefon']!, _telefonMeta));
+    }
     if (data.containsKey('tim_id')) {
       context.handle(
           _timIdMeta, timId.isAcceptableOrUnknown(data['tim_id']!, _timIdMeta));
@@ -689,6 +699,8 @@ class $PersonelTableTable extends PersonelTable
           .read(DriftSqlType.string, data['${effectivePrefix}rutbe'])!,
       birlik: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}birlik'])!,
+      telefon: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}telefon']),
       timId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}tim_id']),
       kayitTarihi: attachedDatabase.typeMapping
@@ -708,6 +720,7 @@ class PersonelTableData extends DataClass
   final String adSoyad;
   final String rutbe;
   final String birlik;
+  final String? telefon;
   final int? timId;
   final String kayitTarihi;
   const PersonelTableData(
@@ -715,6 +728,7 @@ class PersonelTableData extends DataClass
       required this.adSoyad,
       required this.rutbe,
       required this.birlik,
+      this.telefon,
       this.timId,
       required this.kayitTarihi});
   @override
@@ -724,6 +738,9 @@ class PersonelTableData extends DataClass
     map['ad_soyad'] = Variable<String>(adSoyad);
     map['rutbe'] = Variable<String>(rutbe);
     map['birlik'] = Variable<String>(birlik);
+    if (!nullToAbsent || telefon != null) {
+      map['telefon'] = Variable<String>(telefon);
+    }
     if (!nullToAbsent || timId != null) {
       map['tim_id'] = Variable<int>(timId);
     }
@@ -737,6 +754,9 @@ class PersonelTableData extends DataClass
       adSoyad: Value(adSoyad),
       rutbe: Value(rutbe),
       birlik: Value(birlik),
+      telefon: telefon == null && nullToAbsent
+          ? const Value.absent()
+          : Value(telefon),
       timId:
           timId == null && nullToAbsent ? const Value.absent() : Value(timId),
       kayitTarihi: Value(kayitTarihi),
@@ -751,6 +771,7 @@ class PersonelTableData extends DataClass
       adSoyad: serializer.fromJson<String>(json['adSoyad']),
       rutbe: serializer.fromJson<String>(json['rutbe']),
       birlik: serializer.fromJson<String>(json['birlik']),
+      telefon: serializer.fromJson<String?>(json['telefon']),
       timId: serializer.fromJson<int?>(json['timId']),
       kayitTarihi: serializer.fromJson<String>(json['kayitTarihi']),
     );
@@ -763,6 +784,7 @@ class PersonelTableData extends DataClass
       'adSoyad': serializer.toJson<String>(adSoyad),
       'rutbe': serializer.toJson<String>(rutbe),
       'birlik': serializer.toJson<String>(birlik),
+      'telefon': serializer.toJson<String?>(telefon),
       'timId': serializer.toJson<int?>(timId),
       'kayitTarihi': serializer.toJson<String>(kayitTarihi),
     };
@@ -773,6 +795,7 @@ class PersonelTableData extends DataClass
           String? adSoyad,
           String? rutbe,
           String? birlik,
+          Value<String?> telefon = const Value.absent(),
           Value<int?> timId = const Value.absent(),
           String? kayitTarihi}) =>
       PersonelTableData(
@@ -780,6 +803,7 @@ class PersonelTableData extends DataClass
         adSoyad: adSoyad ?? this.adSoyad,
         rutbe: rutbe ?? this.rutbe,
         birlik: birlik ?? this.birlik,
+        telefon: telefon.present ? telefon.value : this.telefon,
         timId: timId.present ? timId.value : this.timId,
         kayitTarihi: kayitTarihi ?? this.kayitTarihi,
       );
@@ -789,6 +813,7 @@ class PersonelTableData extends DataClass
       adSoyad: data.adSoyad.present ? data.adSoyad.value : this.adSoyad,
       rutbe: data.rutbe.present ? data.rutbe.value : this.rutbe,
       birlik: data.birlik.present ? data.birlik.value : this.birlik,
+      telefon: data.telefon.present ? data.telefon.value : this.telefon,
       timId: data.timId.present ? data.timId.value : this.timId,
       kayitTarihi:
           data.kayitTarihi.present ? data.kayitTarihi.value : this.kayitTarihi,
@@ -802,6 +827,7 @@ class PersonelTableData extends DataClass
           ..write('adSoyad: $adSoyad, ')
           ..write('rutbe: $rutbe, ')
           ..write('birlik: $birlik, ')
+          ..write('telefon: $telefon, ')
           ..write('timId: $timId, ')
           ..write('kayitTarihi: $kayitTarihi')
           ..write(')'))
@@ -810,7 +836,7 @@ class PersonelTableData extends DataClass
 
   @override
   int get hashCode =>
-      Object.hash(id, adSoyad, rutbe, birlik, timId, kayitTarihi);
+      Object.hash(id, adSoyad, rutbe, birlik, telefon, timId, kayitTarihi);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -819,6 +845,7 @@ class PersonelTableData extends DataClass
           other.adSoyad == this.adSoyad &&
           other.rutbe == this.rutbe &&
           other.birlik == this.birlik &&
+          other.telefon == this.telefon &&
           other.timId == this.timId &&
           other.kayitTarihi == this.kayitTarihi);
 }
@@ -828,6 +855,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
   final Value<String> adSoyad;
   final Value<String> rutbe;
   final Value<String> birlik;
+  final Value<String?> telefon;
   final Value<int?> timId;
   final Value<String> kayitTarihi;
   const PersonelTableCompanion({
@@ -835,6 +863,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
     this.adSoyad = const Value.absent(),
     this.rutbe = const Value.absent(),
     this.birlik = const Value.absent(),
+    this.telefon = const Value.absent(),
     this.timId = const Value.absent(),
     this.kayitTarihi = const Value.absent(),
   });
@@ -843,6 +872,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
     required String adSoyad,
     required String rutbe,
     required String birlik,
+    this.telefon = const Value.absent(),
     this.timId = const Value.absent(),
     required String kayitTarihi,
   })  : adSoyad = Value(adSoyad),
@@ -854,6 +884,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
     Expression<String>? adSoyad,
     Expression<String>? rutbe,
     Expression<String>? birlik,
+    Expression<String>? telefon,
     Expression<int>? timId,
     Expression<String>? kayitTarihi,
   }) {
@@ -862,6 +893,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
       if (adSoyad != null) 'ad_soyad': adSoyad,
       if (rutbe != null) 'rutbe': rutbe,
       if (birlik != null) 'birlik': birlik,
+      if (telefon != null) 'telefon': telefon,
       if (timId != null) 'tim_id': timId,
       if (kayitTarihi != null) 'kayit_tarihi': kayitTarihi,
     });
@@ -872,6 +904,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
       Value<String>? adSoyad,
       Value<String>? rutbe,
       Value<String>? birlik,
+      Value<String?>? telefon,
       Value<int?>? timId,
       Value<String>? kayitTarihi}) {
     return PersonelTableCompanion(
@@ -879,6 +912,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
       adSoyad: adSoyad ?? this.adSoyad,
       rutbe: rutbe ?? this.rutbe,
       birlik: birlik ?? this.birlik,
+      telefon: telefon ?? this.telefon,
       timId: timId ?? this.timId,
       kayitTarihi: kayitTarihi ?? this.kayitTarihi,
     );
@@ -899,6 +933,9 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
     if (birlik.present) {
       map['birlik'] = Variable<String>(birlik.value);
     }
+    if (telefon.present) {
+      map['telefon'] = Variable<String>(telefon.value);
+    }
     if (timId.present) {
       map['tim_id'] = Variable<int>(timId.value);
     }
@@ -915,6 +952,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
           ..write('adSoyad: $adSoyad, ')
           ..write('rutbe: $rutbe, ')
           ..write('birlik: $birlik, ')
+          ..write('telefon: $telefon, ')
           ..write('timId: $timId, ')
           ..write('kayitTarihi: $kayitTarihi')
           ..write(')'))
@@ -3909,6 +3947,7 @@ typedef $$PersonelTableTableCreateCompanionBuilder = PersonelTableCompanion
   required String adSoyad,
   required String rutbe,
   required String birlik,
+  Value<String?> telefon,
   Value<int?> timId,
   required String kayitTarihi,
 });
@@ -3918,6 +3957,7 @@ typedef $$PersonelTableTableUpdateCompanionBuilder = PersonelTableCompanion
   Value<String> adSoyad,
   Value<String> rutbe,
   Value<String> birlik,
+  Value<String?> telefon,
   Value<int?> timId,
   Value<String> kayitTarihi,
 });
@@ -4016,6 +4056,9 @@ class $$PersonelTableTableFilterComposer
 
   ColumnFilters<String> get birlik => $composableBuilder(
       column: $table.birlik, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get telefon => $composableBuilder(
+      column: $table.telefon, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get kayitTarihi => $composableBuilder(
       column: $table.kayitTarihi, builder: (column) => ColumnFilters(column));
@@ -4130,6 +4173,9 @@ class $$PersonelTableTableOrderingComposer
   ColumnOrderings<String> get birlik => $composableBuilder(
       column: $table.birlik, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get telefon => $composableBuilder(
+      column: $table.telefon, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get kayitTarihi => $composableBuilder(
       column: $table.kayitTarihi, builder: (column) => ColumnOrderings(column));
 
@@ -4174,6 +4220,9 @@ class $$PersonelTableTableAnnotationComposer
 
   GeneratedColumn<String> get birlik =>
       $composableBuilder(column: $table.birlik, builder: (column) => column);
+
+  GeneratedColumn<String> get telefon =>
+      $composableBuilder(column: $table.telefon, builder: (column) => column);
 
   GeneratedColumn<String> get kayitTarihi => $composableBuilder(
       column: $table.kayitTarihi, builder: (column) => column);
@@ -4299,6 +4348,7 @@ class $$PersonelTableTableTableManager extends RootTableManager<
             Value<String> adSoyad = const Value.absent(),
             Value<String> rutbe = const Value.absent(),
             Value<String> birlik = const Value.absent(),
+            Value<String?> telefon = const Value.absent(),
             Value<int?> timId = const Value.absent(),
             Value<String> kayitTarihi = const Value.absent(),
           }) =>
@@ -4307,6 +4357,7 @@ class $$PersonelTableTableTableManager extends RootTableManager<
             adSoyad: adSoyad,
             rutbe: rutbe,
             birlik: birlik,
+            telefon: telefon,
             timId: timId,
             kayitTarihi: kayitTarihi,
           ),
@@ -4315,6 +4366,7 @@ class $$PersonelTableTableTableManager extends RootTableManager<
             required String adSoyad,
             required String rutbe,
             required String birlik,
+            Value<String?> telefon = const Value.absent(),
             Value<int?> timId = const Value.absent(),
             required String kayitTarihi,
           }) =>
@@ -4323,6 +4375,7 @@ class $$PersonelTableTableTableManager extends RootTableManager<
             adSoyad: adSoyad,
             rutbe: rutbe,
             birlik: birlik,
+            telefon: telefon,
             timId: timId,
             kayitTarihi: kayitTarihi,
           ),
