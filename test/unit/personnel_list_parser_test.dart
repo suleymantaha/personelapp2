@@ -24,5 +24,37 @@ Personel Listesi
       expect(result.personnel.single.rawRank, isEmpty);
       expect(result.issues.single.code, 'unknown_rank');
     });
+    test('ignores list headers, comments, and summary lines', () {
+      final result = BulkTextParser.parsePersonnelList('''
+Personel Listesi
+(Location note)
+1. J.Asb.Cvs. Ahmet YILMAZ
+Toplam: 1 personel
+*Sabit kalinacak*
+''');
+
+      expect(result.personnel, hasLength(1));
+      expect(result.personnel.single.rawName, 'Ahmet YILMAZ');
+      expect(result.issues, isEmpty);
+    });
+
+    test('reports the original line number for an invalid personnel row', () {
+      final result = BulkTextParser.parsePersonnelList('''Personel Listesi
+1.''');
+
+      expect(result.personnel, isEmpty);
+      expect(result.issues, hasLength(1));
+      expect(result.issues.single.code, 'invalid_personnel');
+      expect(result.issues.single.lineNumber, 2);
+      expect(result.issues.single.rawLine, '1.');
+    });
+
+    test('returns an empty result for whitespace-only input', () {
+      final result = BulkTextParser.parsePersonnelList('  \n\t');
+
+      expect(result.personnel, isEmpty);
+      expect(result.issues, isEmpty);
+      expect(result.hasPersonnel, isFalse);
+    });
   });
 }
