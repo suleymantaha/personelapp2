@@ -39,4 +39,23 @@ void main() {
     expect(bytes, isNotEmpty);
     expect(String.fromCharCodes(bytes.take(4)), '%PDF');
   });
+
+  test('PDF başlığını birlik ve Türkçe tarih ile oluşturur', () {
+    final document = TemgundrapDocument(
+      id: 'title',
+      date: DateTime(2026, 8, 6),
+      unitTitle: 'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI',
+      approverName: '',
+      approverRank: '',
+      approverDuty: '',
+      operations: const [],
+      isDraft: true,
+      updatedAt: DateTime(2026, 8, 6),
+    );
+    expect(
+      TemgundrapPdfExporter.documentTitle(document),
+      'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI 06 AĞUSTOS 2026 TARİHİNDE '
+      'PLANLANAN OPERASYON TAKİP ÇİZELGESİ',
+    );
+  });
 }

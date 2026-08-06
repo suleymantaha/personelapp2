@@ -12,6 +12,29 @@ import 'package:share_plus/share_plus.dart';
 class TemgundrapPdfExporter {
   const TemgundrapPdfExporter._();
 
+  static const _turkishMonths = <String>[
+    'OCAK',
+    'ŞUBAT',
+    'MART',
+    'NİSAN',
+    'MAYIS',
+    'HAZİRAN',
+    'TEMMUZ',
+    'AĞUSTOS',
+    'EYLÜL',
+    'EKİM',
+    'KASIM',
+    'ARALIK',
+  ];
+
+  static String documentTitle(TemgundrapDocument document) {
+    final date = document.date;
+    final day = date.day.toString().padLeft(2, '0');
+    final month = _turkishMonths[date.month - 1];
+    return '${document.unitTitle} $day $month ${date.year} TARİHİNDE '
+        'PLANLANAN OPERASYON TAKİP ÇİZELGESİ';
+  }
+
   static Future<pw.Document> build(TemgundrapDocument document) async {
     final regular = pw.Font.ttf(
       await rootBundle.load('assets/fonts/Roboto-Regular.ttf'),
@@ -70,10 +93,17 @@ class TemgundrapPdfExporter {
         pageFormat: PdfPageFormat.a4.landscape,
         margin: const pw.EdgeInsets.all(22),
         build: (_) => [
-          pw.Text(
-            document.unitTitle,
-            textAlign: pw.TextAlign.center,
-            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+          pw.Container(
+            width: double.infinity,
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              documentTitle(document),
+              textAlign: pw.TextAlign.center,
+              style: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
           ),
           pw.SizedBox(height: 2),
           pw.Table(
