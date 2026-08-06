@@ -1,132 +1,310 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
+import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
+import 'package:personelapp2/features/temgundrap/services/temgundrap_pdf_exporter.dart';
 
 class TemgundrapPreviewScreen extends StatelessWidget {
-  const TemgundrapPreviewScreen({required this.document, super.key});
+  const TemgundrapPreviewScreen({
+    required this.document,
+    this.onPrint,
+    this.onShare,
+    super.key,
+  });
 
   final TemgundrapDocument document;
+  final Future<void> Function()? onPrint;
+  final Future<void> Function()? onShare;
+
+  Future<void> _print() =>
+      onPrint?.call() ?? TemgundrapPdfExporter.printDocument(document);
+  Future<void> _share() =>
+      onShare?.call() ?? TemgundrapPdfExporter.shareDocument(document);
 
   @override
   Widget build(BuildContext context) {
-    final date =
-        DateFormat('dd MMMM yyyy', 'tr_TR').format(document.date).toUpperCase();
+    final date = DateFormat('dd MMMM yyyy', 'tr_TR').format(document.date);
     return Scaffold(
-      appBar: AppBar(title: const Text('TEMGÜNDRAP Önizleme')),
+      appBar: AppBar(
+        title: const Text('TEMGÜNDRAP Önizleme'),
+        actions: [
+          IconButton(
+            key: const Key('preview-print-icon'),
+            tooltip: 'Yazdır',
+            onPressed: _print,
+            icon: const Icon(Icons.print_outlined),
+          ),
+          IconButton(
+            key: const Key('preview-share-icon'),
+            tooltip: 'PDF paylaş',
+            onPressed: _share,
+            icon: const Icon(Icons.ios_share_outlined),
+          ),
+        ],
+      ),
+      bottomNavigationBar: _OutputBar(onPrint: _print, onShare: _share),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          if (constraints.maxWidth < 800) return _mobile(date);
-          return _table(date);
+          final wide = constraints.maxWidth >= 760;
+          return CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  wide ? 32 : 16,
+                  20,
+                  wide ? 32 : 16,
+                  12,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1100),
+                      child: _DocumentHeader(document: document, date: date),
+                    ),
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  wide ? 32 : 16,
+                  0,
+                  wide ? 32 : 16,
+                  28,
+                ),
+                sliver: wide
+                    ? SliverGrid(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 1.18,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) => _OperationCard(
+                            index: index,
+                            operation: document.operations[index],
+                          ),
+                          childCount: document.operations.length,
+                        ),
+                      )
+                    : SliverList.separated(
+                        itemCount: document.operations.length,
+                        itemBuilder: (context, index) => _OperationCard(
+                          index: index,
+                          operation: document.operations[index],
+                        ),
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      ),
+              ),
+            ],
+          );
         },
       ),
     );
   }
+}
 
-  Widget _mobile(String date) => ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(document.unitTitle,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text('$date TARİHİNDE PLANLANAN OPERASYON TAKİP ÇİZELGESİ',
-              textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          ...document.operations.asMap().entries.map((entry) {
-            final item = entry.value;
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${entry.key + 1}. OPERASYON',
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                      const Divider(),
-                      _line('Çıkaran Birlik', item.issuingUnit),
-                      _line('Operasyon Bölgesi', item.operationArea),
-                      _line('Kuvveti', item.forceDescription),
-                      _line('Operasyon Komutanı', item.commander.displayText),
-                      _line('Mevcut', '${item.totalStrength} personel'),
-                      _line('Başlama',
-                          TemgundrapFormatters.militaryDateTime(item.startAt)),
-                      _line('Bitiş',
-                          TemgundrapFormatters.militaryDateTime(item.endAt)),
-                      _line('Maksat', item.purpose),
-                      _line('Açıklama', item.description),
-                    ]),
-              ),
-            );
-          }),
-        ],
-      );
-
-  Widget _table(String date) => SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(children: [
-          Text(document.unitTitle,
-              style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text('$date TARİHİNDE PLANLANAN OPERASYON TAKİP ÇİZELGESİ'),
-          const SizedBox(height: 18),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text('S.NO')),
-                DataColumn(label: Text('ÇIKARAN BİRLİK')),
-                DataColumn(label: Text('OPERASYON BÖLGESİ')),
-                DataColumn(label: Text('KUVVETİ')),
-                DataColumn(label: Text('OPERASYON KOMUTANI')),
-                DataColumn(label: Text('MEVCUT')),
-                DataColumn(label: Text('BAŞLAMA ZAMANI')),
-                DataColumn(label: Text('BİTİŞ ZAMANI')),
-                DataColumn(label: Text('OPERASYON MAKSADI')),
-                DataColumn(label: Text('AÇIKLAMA')),
-              ],
-              rows: document.operations.asMap().entries.map((entry) {
-                final item = entry.value;
-                return DataRow(cells: [
-                  DataCell(Text('${entry.key + 1}')),
-                  DataCell(SizedBox(width: 140, child: Text(item.issuingUnit))),
-                  DataCell(
-                      SizedBox(width: 140, child: Text(item.operationArea))),
-                  DataCell(
-                      SizedBox(width: 160, child: Text(item.forceDescription))),
-                  DataCell(SizedBox(
-                      width: 160, child: Text(item.commander.displayText))),
-                  DataCell(Text('${item.totalStrength}')),
-                  DataCell(Text(
-                      TemgundrapFormatters.militaryDateTime(item.startAt))),
-                  DataCell(
-                      Text(TemgundrapFormatters.militaryDateTime(item.endAt))),
-                  DataCell(Text(item.purpose)),
-                  DataCell(SizedBox(width: 260, child: Text(item.description))),
-                ]);
-              }).toList(),
+class _DocumentHeader extends StatelessWidget {
+  const _DocumentHeader({required this.document, required this.date});
+  final TemgundrapDocument document;
+  final String date;
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              context.accentOrOlive.withValues(alpha: .16),
+              context.colorScheme.surfaceContainerLow,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(22),
+          border:
+              Border.all(color: context.accentOrOlive.withValues(alpha: .25)),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 28,
+              backgroundColor: context.accentOrOlive,
+              child:
+                  const Icon(Icons.description_outlined, color: Colors.white),
             ),
-          ),
-          const SizedBox(height: 32),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Column(children: [
-              Text(document.approverRank),
-              Text(document.approverName,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(document.approverDuty),
-            ]),
-          ),
-        ]),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    document.unitTitle,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 17,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '$date • ${document.operations.length} operasyon',
+                    style: TextStyle(color: context.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            Chip(label: Text(document.isDraft ? 'TASLAK' : 'TAMAMLANDI')),
+          ],
+        ),
       );
+}
 
-  Widget _line(String label, String value) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SizedBox(
-              width: 135,
-              child: Text(label,
-                  style: const TextStyle(fontWeight: FontWeight.w600))),
-          Expanded(child: Text(value.isEmpty ? '-' : value)),
-        ]),
+class _OperationCard extends StatelessWidget {
+  const _OperationCard({required this.index, required this.operation});
+  final int index;
+  final TemgundrapOperation operation;
+  @override
+  Widget build(BuildContext context) => Card(
+        key: Key('preview-operation-$index'),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor:
+                        context.accentOrOlive.withValues(alpha: .12),
+                    child: Text(
+                      '${index + 1}',
+                      style: TextStyle(
+                        color: context.accentOrOlive,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      operation.operationArea,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  Chip(
+                    avatar: const Icon(Icons.groups_2_outlined, size: 17),
+                    label: Text('${operation.totalStrength}'),
+                  ),
+                ],
+              ),
+              const Divider(height: 24),
+              _InfoRow(
+                icon: Icons.account_balance_outlined,
+                label: 'Çıkaran birlik',
+                value: operation.issuingUnit,
+              ),
+              _InfoRow(
+                icon: Icons.shield_outlined,
+                label: 'Komutan',
+                value: operation.commander.displayText,
+              ),
+              _InfoRow(
+                icon: Icons.route_outlined,
+                label: 'Kuvvet',
+                value: operation.forceDescription,
+              ),
+              _InfoRow(
+                icon: Icons.schedule_outlined,
+                label: 'Zaman',
+                value:
+                    '${TemgundrapFormatters.militaryDateTime(operation.startAt)}\n${TemgundrapFormatters.militaryDateTime(operation.endAt)}',
+              ),
+              _InfoRow(
+                icon: Icons.flag_outlined,
+                label: 'Maksat',
+                value: operation.purpose,
+              ),
+              if (operation.description.isNotEmpty)
+                _InfoRow(
+                  icon: Icons.notes_outlined,
+                  label: 'Açıklama',
+                  value: operation.description,
+                ),
+            ],
+          ),
+        ),
+      );
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+  final IconData icon;
+  final String label;
+  final String value;
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 19, color: context.accentOrOlive),
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 92,
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                value.isEmpty ? '-' : value,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      );
+}
+
+class _OutputBar extends StatelessWidget {
+  const _OutputBar({required this.onPrint, required this.onShare});
+  final VoidCallback onPrint;
+  final VoidCallback onShare;
+  @override
+  Widget build(BuildContext context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  key: const Key('preview-share'),
+                  onPressed: onShare,
+                  icon: const Icon(Icons.picture_as_pdf_outlined),
+                  label: const Text('PDF PAYLAŞ'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton.icon(
+                  key: const Key('preview-print'),
+                  onPressed: onPrint,
+                  icon: const Icon(Icons.print_outlined),
+                  label: const Text('YAZDIR'),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
 }

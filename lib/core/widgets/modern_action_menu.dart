@@ -86,33 +86,29 @@ class _ModernMenuHeaderState<T> extends State<ModernMenuHeader<T>> {
 }
 
 class ModernPopupMenuItem<T> extends PopupMenuItem<T> {
-  ModernPopupMenuItem({
-    required ModernActionOption<T> option,
-    super.key,
-  }) : super(
-          value: option.value,
-          height: option.subtitle == null ? 56 : 66,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ModernActionTile(option: option),
-        );
+  ModernPopupMenuItem({required ModernActionOption<T> option, super.key})
+    : super(
+        value: option.value,
+        height: option.subtitle == null ? 56 : 66,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: ModernActionTile(option: option),
+      );
 }
 
 class ModernActionTile<T> extends StatelessWidget {
-  const ModernActionTile({
-    required this.option,
-    super.key,
-    this.onTap,
-  });
+  const ModernActionTile({required this.option, super.key, this.onTap});
 
   final ModernActionOption<T> option;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final foreground =
-        option.isDestructive ? context.rejectedColor : context.textPrimary;
-    final iconColor =
-        option.isDestructive ? context.rejectedColor : context.accentOrOlive;
+    final foreground = option.isDestructive
+        ? context.rejectedColor
+        : context.textPrimary;
+    final iconColor = option.isDestructive
+        ? context.rejectedColor
+        : context.accentOrOlive;
 
     return InkWell(
       onTap: onTap,
@@ -168,12 +164,97 @@ class ModernActionTile<T> extends StatelessWidget {
   }
 }
 
-class _ActionIcon extends StatelessWidget {
-  const _ActionIcon({
+Future<T?> showModernActionSheet<T>(
+  BuildContext context, {
+  required String title,
+  required IconData icon,
+  required List<ModernActionOption<T>> options,
+  String? subtitle,
+}) {
+  return showModalBottomSheet<T>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (context) => ModernActionSheet<T>(
+      title: title,
+      subtitle: subtitle,
+      icon: icon,
+      options: options,
+    ),
+  );
+}
+
+class ModernActionSheet<T> extends StatelessWidget {
+  const ModernActionSheet({
+    required this.title,
     required this.icon,
-    this.color,
-    this.destructive = false,
+    required this.options,
+    this.subtitle,
+    super.key,
   });
+
+  final String title;
+  final String? subtitle;
+  final IconData icon;
+  final List<ModernActionOption<T>> options;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  _ActionIcon(icon: icon),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        if (subtitle != null)
+                          Text(
+                            subtitle!,
+                            style: TextStyle(
+                              color: context.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ...options.map(
+              (option) => ModernActionTile<T>(
+                option: option,
+                onTap: () => Navigator.pop(context, option.value),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionIcon extends StatelessWidget {
+  const _ActionIcon({required this.icon, this.color, this.destructive = false});
 
   final IconData icon;
   final Color? color;
@@ -197,14 +278,13 @@ class _ActionIcon extends StatelessWidget {
   }
 }
 
-ButtonStyle modernPopupStyle(BuildContext context) => IconButton.styleFrom(
-      minimumSize: const Size(44, 44),
-    );
+ButtonStyle modernPopupStyle(BuildContext context) =>
+    IconButton.styleFrom(minimumSize: const Size(44, 44));
 
 ShapeBorder modernPopupShape(BuildContext context) => RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-      side: BorderSide(color: context.cardBorderColor),
-    );
+  borderRadius: BorderRadius.circular(16),
+  side: BorderSide(color: context.cardBorderColor),
+);
 
 BorderRadius get modernDropdownBorderRadius => BorderRadius.circular(16);
 

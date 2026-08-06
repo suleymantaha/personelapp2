@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 
@@ -41,17 +42,46 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
         content: const Text('Bu TEMGÜNDRAP çizelgesi kalıcı olarak silinecek.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('VAZGEÇ')),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('VAZGEÇ'),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('SİL')),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('SİL'),
+          ),
         ],
       ),
     );
     if (confirmed != true) return;
     await _repository.delete(document.id);
     if (mounted) setState(_reload);
+  }
+
+  Future<void> _showDocumentActions(TemgundrapDocument document) async {
+    final action = await showModernActionSheet<String>(
+      context,
+      title: 'Çizelge İşlemleri',
+      subtitle: DateFormat('dd MMMM yyyy', 'tr_TR').format(document.date),
+      icon: Icons.description_outlined,
+      options: const [
+        ModernActionOption(
+          value: 'edit',
+          title: 'Düzenle',
+          subtitle: 'Çizelge bilgilerini güncelle',
+          icon: Icons.edit_outlined,
+        ),
+        ModernActionOption(
+          value: 'delete',
+          title: 'Sil',
+          subtitle: 'Bu çizelgeyi kalıcı olarak kaldır',
+          icon: Icons.delete_outline,
+          isDestructive: true,
+        ),
+      ],
+    );
+    if (!mounted) return;
+    if (action == 'edit') await _openForm(document);
+    if (action == 'delete') await _delete(document);
   }
 
   @override
@@ -72,7 +102,8 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
             }
             if (snapshot.hasError) {
               return Center(
-                  child: Text('Kayıtlar yüklenemedi: ${snapshot.error}'));
+                child: Text('Kayıtlar yüklenemedi: ${snapshot.error}'),
+              );
             }
             final documents = snapshot.data ?? const [];
             if (documents.isEmpty) {
@@ -80,11 +111,16 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.table_chart_outlined,
-                        size: 72, color: context.accentOrOlive),
+                    Icon(
+                      Icons.table_chart_outlined,
+                      size: 72,
+                      color: context.accentOrOlive,
+                    ),
                     const SizedBox(height: 16),
-                    const Text('Henüz TEMGÜNDRAP çizelgesi yok.',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Henüz TEMGÜNDRAP çizelgesi yok.',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 6),
                     const Text('İlk operasyon takip çizelgesini oluşturun.'),
                   ],
@@ -100,28 +136,28 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
                 return Card(
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor:
-                          context.accentOrOlive.withValues(alpha: .12),
-                      child: Icon(Icons.description_outlined,
-                          color: context.accentOrOlive),
+                      backgroundColor: context.accentOrOlive.withValues(
+                        alpha: .12,
+                      ),
+                      child: Icon(
+                        Icons.description_outlined,
+                        color: context.accentOrOlive,
+                      ),
                     ),
                     title: Text(
                       DateFormat('dd MMMM yyyy', 'tr_TR').format(document.date),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                        '${document.operations.length} operasyon • ${document.isDraft ? 'Taslak' : 'Tamamlandı'}'),
+                      '${document.operations.length} operasyon • ${document.isDraft ? 'Taslak' : 'Tamamlandı'}',
+                    ),
                     onTap: () =>
                         context.push('/temgundrap/preview', extra: document),
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (value) {
-                        if (value == 'edit') _openForm(document);
-                        if (value == 'delete') _delete(document);
-                      },
-                      itemBuilder: (_) => const [
-                        PopupMenuItem(value: 'edit', child: Text('Düzenle')),
-                        PopupMenuItem(value: 'delete', child: Text('Sil')),
-                      ],
+                    trailing: IconButton(
+                      key: Key('temgundrap-actions-${document.id}'),
+                      tooltip: 'Çizelge işlemleri',
+                      onPressed: () => _showDocumentActions(document),
+                      icon: const Icon(Icons.more_horiz_rounded),
                     ),
                   ),
                 );
