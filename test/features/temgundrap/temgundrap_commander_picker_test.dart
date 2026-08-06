@@ -6,7 +6,7 @@ import 'package:personelapp2/features/temgundrap/services/device_contact_picker.
 
 class _FakeContactPicker implements DeviceContactPicker {
   @override
-  Future<String?> pickPhoneNumber() async => '0532 111 22 33';
+  Future<List<String>> pickPhoneNumbers() async => ['0532 111 22 33'];
 }
 
 void main() {

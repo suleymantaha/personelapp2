@@ -89,7 +89,34 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
     }
     setState(() => _pickingContact = true);
     try {
-      final rawPhone = await widget.contactPicker.pickPhoneNumber();
+      final phones = await widget.contactPicker.pickPhoneNumbers();
+      if (phones.isEmpty || !mounted) return;
+      final rawPhone = phones.length == 1
+          ? phones.single
+          : await showModalBottomSheet<String>(
+              context: context,
+              showDragHandle: true,
+              builder: (context) => SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const ListTile(
+                      title: Text(
+                        'Kullanılacak numarayı seçin',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    ...phones.map(
+                      (phone) => ListTile(
+                        leading: const Icon(Icons.phone_outlined),
+                        title: Text(TemgundrapFormatters.phone(phone)),
+                        onTap: () => Navigator.pop(context, phone),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
       if (rawPhone == null || !mounted) return;
       final phone = TemgundrapFormatters.phone(rawPhone);
       if (!TemgundrapFormatters.isValidTurkishMobile(phone)) {
