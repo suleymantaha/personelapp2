@@ -18,6 +18,8 @@ import 'package:personelapp2/features/activity/presentation/widgets/activity_for
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_squad_expansion_tile.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/existing_activity_dialog.dart';
 
+part 'activity_form_actions.dart';
+
 class ActivityFormScreen extends ConsumerStatefulWidget {
   const ActivityFormScreen({super.key});
 
@@ -47,143 +49,6 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
   // Maps personelId to custom notes
   final Map<int, String> _notes = {};
 
-  Future<void> _submitActivity() async {
-    final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
-    final name = _activityNameController.text.trim();
-    final userSession = ref.read(userSessionProvider);
-    if (userSession == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Oturum doğrulanamadı.')),
-      );
-      return;
-    }
-
-    if (name.isEmpty) {
-      setState(() => _showNameError = true);
-      return;
-    }
-
-    final payload = _assignments.entries.where((e) => e.value.isNotEmpty).map((
-      e,
-    ) {
-      final note = _notes[e.key]?.trim();
-      return PersonnelAssignmentInput(
-        personnelId: e.key,
-        duty: e.value,
-        note: (note != null && note.isNotEmpty) ? note : null,
-      );
-    }).toList();
-
-    if (payload.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lütfen en az bir personel için görev seçiniz.'),
-        ),
-      );
-      return;
-    }
-
-    final repo = ref.read(activityRepositoryProvider);
-    try {
-      final preview = await repo.previewActivityAssignments(
-        tarih: dateStr,
-        personnelAssignments: payload,
-        actor: userSession,
-      );
-      if (!mounted) return;
-      final saved = await Navigator.of(context).push<bool>(
-        MaterialPageRoute(
-          builder: (_) => ActivityAssignmentPreviewScreen(
-            activityName: name,
-            date: _selectedDate,
-            preview: preview,
-            requiresAdminApproval: !userSession.isAdmin,
-            onConfirm: () => _persistActivity(
-              name: name,
-              dateStr: dateStr,
-              payload: payload,
-              userSession: userSession,
-            ),
-          ),
-        ),
-      );
-      if (saved == true && mounted) Navigator.of(context).pop();
-    } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Önizleme hazırlanamadı: $error'),
-          backgroundColor: context.rejectedColor,
-        ),
-      );
-    }
-  }
-
-  Future<bool> _persistActivity({
-    required String name,
-    required String dateStr,
-    required List<PersonnelAssignmentInput> payload,
-    required UserSessionState userSession,
-  }) async {
-    final repo = ref.read(activityRepositoryProvider);
-    final isCommander = !userSession.isAdmin;
-    final matches = await repo.findMatchingActivities(
-      faaliyetAdi: name,
-      tarih: dateStr,
-      personnelAssignments: payload,
-    );
-    if (!mounted) return false;
-
-    ActivityMergeResult? mergeResult;
-    if (matches.isNotEmpty) {
-      final choice = await ExistingActivityDialog.show(context, matches);
-      if (choice == null || !mounted) return false;
-      if (choice.action == ExistingActivityAction.merge) {
-        mergeResult = await repo.mergeAssignmentsIntoActivity(
-          activityId: choice.activityId!,
-          personnelAssignments: payload,
-          updateDifferentAssignments: choice.updateDifferentAssignments,
-          actor: userSession,
-        );
-      } else {
-        await repo.createActivityWithAssignments(
-          faaliyetAdi: name,
-          tarih: dateStr,
-          olusturanKullanici: userSession.username,
-          personnelAssignments: payload,
-          actor: userSession,
-        );
-      }
-    } else {
-      await repo.createActivityWithAssignments(
-        faaliyetAdi: name,
-        tarih: dateStr,
-        olusturanKullanici: userSession.username,
-        personnelAssignments: payload,
-        actor: userSession,
-      );
-    }
-
-    if (mounted) {
-      final msg = mergeResult != null
-          ? '${mergeResult.addedCount} personel eklendi, '
-              '${mergeResult.updatedCount} güncellendi, '
-              '${mergeResult.skippedCount} kayıt korundu.'
-          : isCommander
-              ? 'Faaliyet Kaydedildi! Admin onayına gönderildi.'
-              : 'Faaliyet Çizelgesi Kaydedildi & Çakışma Denetimi Yapıldı!';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(msg),
-          backgroundColor:
-              isCommander ? context.pendingColor : context.approvedColor,
-        ),
-      );
-      return true;
-    }
-    return false;
-  }
-
   @override
   void dispose() {
     _activityNameController.dispose();
@@ -191,70 +56,7 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
     super.dispose();
   }
 
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2025),
-      lastDate: DateTime(2030),
-    );
-    if (picked != null && mounted) {
-      setState(() => _selectedDate = picked);
-    }
-  }
-
-  Future<void> _showBulkImportSheet() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Toplu metin içe aktar',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Birden fazla faaliyet ve personel kaydını panodaki '
-                'metinden hızlıca oluşturun.',
-                style: context.textStyleSecondary,
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.content_paste_go_rounded),
-                  label: const Text('Metni yapıştır'),
-                  onPressed: () async {
-                    Navigator.pop(sheetContext);
-                    final db = ref.read(databaseProvider);
-                    final activityRepo = ref.read(activityRepositoryProvider);
-                    final result = await showDialog<bool>(
-                      context: context,
-                      builder: (dialogContext) => BulkImportDialog(
-                        database: db,
-                        activityRepository: activityRepo,
-                      ),
-                    );
-                    if (result == true && mounted) {
-                      ref.invalidate(activityRepositoryProvider);
-                      Navigator.pop(context);
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  void _updateState(VoidCallback callback) => setState(callback);
 
   @override
   Widget build(BuildContext context) {
