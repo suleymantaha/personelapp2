@@ -3,30 +3,9 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/password_hasher.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/features/personnel/domain/personnel_import_models.dart';
 
-class PersonnelImportEntry {
-  const PersonnelImportEntry({
-    required this.adSoyad,
-    required this.rutbe,
-    required this.birlik,
-    this.timId,
-  });
-
-  final String adSoyad;
-  final String rutbe;
-  final String birlik;
-  final int? timId;
-}
-
-class PersonnelImportResult {
-  const PersonnelImportResult({
-    required this.addedCount,
-    required this.skippedCount,
-  });
-
-  final int addedCount;
-  final int skippedCount;
-}
+export 'package:personelapp2/features/personnel/domain/personnel_import_models.dart';
 
 class PersonnelRepository {
   PersonnelRepository(this.db);

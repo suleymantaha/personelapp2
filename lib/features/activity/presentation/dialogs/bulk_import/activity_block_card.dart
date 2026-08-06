@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/activity_metadata_label.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
@@ -219,7 +220,7 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                             runSpacing: 4,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              _MetadataLabel(
+                              ActivityMetadataLabel(
                                 icon: Icons.calendar_today_rounded,
                                 text: widget.block.parsedDate,
                               ),
@@ -227,7 +228,7 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                                       ?.trim()
                                       .isNotEmpty ==
                                   true)
-                                _MetadataLabel(
+                                ActivityMetadataLabel(
                                   icon: Icons.schedule_rounded,
                                   text: widget.block.parsedTimeRange!,
                                 ),
@@ -489,32 +490,6 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _MetadataLabel extends StatelessWidget {
-  const _MetadataLabel({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 13, color: Colors.grey.shade600),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Text(
-            text,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
-          ),
-        ),
-      ],
     );
   }
 }
