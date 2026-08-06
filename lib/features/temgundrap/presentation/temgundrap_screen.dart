@@ -129,6 +129,7 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
                     : contentWidth >= 620
                         ? 2
                         : 1;
+                final compact = constraints.maxWidth < 600;
                 return RefreshIndicator(
                   onRefresh: _refresh,
                   child: CustomScrollView(
@@ -141,8 +142,8 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
                               child: ConstrainedBox(
                                   constraints:
                                       const BoxConstraints(maxWidth: 1180),
-                                  child:
-                                      _OverviewHeader(documents: documents))),
+                                  child: _OverviewHeader(
+                                      documents: documents, compact: compact))),
                         ),
                       ),
                       SliverPadding(
@@ -153,10 +154,11 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
                                   crossAxisCount: columns,
                                   crossAxisSpacing: 14,
                                   mainAxisSpacing: 14,
-                                  mainAxisExtent: 178),
+                                  mainAxisExtent: compact ? 148 : 178),
                           delegate: SliverChildBuilderDelegate(
                             (context, index) => _DocumentCard(
                               document: documents[index],
+                              compact: compact,
                               onOpen: () => context.push('/temgundrap/preview',
                                   extra: documents[index]),
                               onActions: () =>
@@ -177,15 +179,16 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
 }
 
 class _OverviewHeader extends StatelessWidget {
-  const _OverviewHeader({required this.documents});
+  const _OverviewHeader({required this.documents, required this.compact});
   final List<TemgundrapDocument> documents;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final operations =
         documents.fold<int>(0, (sum, item) => sum + item.operations.length);
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(compact ? 16 : 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(colors: [
           context.accentOrOlive.withValues(alpha: .18),
@@ -195,25 +198,25 @@ class _OverviewHeader extends StatelessWidget {
         border: Border.all(color: context.accentOrOlive.withValues(alpha: .22)),
       ),
       child: Wrap(
-        spacing: 18,
-        runSpacing: 16,
+        spacing: compact ? 12 : 18,
+        runSpacing: compact ? 12 : 16,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           CircleAvatar(
-              radius: 27,
+              radius: compact ? 22 : 27,
               backgroundColor: context.accentOrOlive,
               child: const Icon(Icons.map_outlined, color: Colors.white)),
           ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 210, maxWidth: 550),
+            constraints:
+                BoxConstraints(minWidth: 210, maxWidth: compact ? 290 : 550),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('Operasyon takip çizelgeleri',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(fontWeight: FontWeight.w800)),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          fontSize: compact ? 18 : null)),
                   const SizedBox(height: 4),
                   Text(
                       'Güncel ve geçmiş TEMGÜNDRAP kayıtlarını tek noktadan yönetin.',
@@ -261,8 +264,12 @@ class _SummaryPill extends StatelessWidget {
 
 class _DocumentCard extends StatelessWidget {
   const _DocumentCard(
-      {required this.document, required this.onOpen, required this.onActions});
+      {required this.document,
+      required this.compact,
+      required this.onOpen,
+      required this.onActions});
   final TemgundrapDocument document;
+  final bool compact;
   final VoidCallback onOpen;
   final VoidCallback onActions;
 
@@ -272,12 +279,12 @@ class _DocumentCard extends StatelessWidget {
         child: InkWell(
           onTap: onOpen,
           child: Padding(
-            padding: const EdgeInsets.all(18),
+            padding: EdgeInsets.all(compact ? 14 : 18),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
                 Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: EdgeInsets.all(compact ? 8 : 10),
                     decoration: BoxDecoration(
                         color: context.accentOrOlive.withValues(alpha: .12),
                         borderRadius: BorderRadius.circular(14)),
@@ -296,7 +303,7 @@ class _DocumentCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                       fontWeight: FontWeight.w800, fontSize: 17)),
-              const SizedBox(height: 8),
+              SizedBox(height: compact ? 5 : 8),
               Row(children: [
                 Icon(Icons.shield_outlined,
                     size: 18, color: context.textSecondary),
