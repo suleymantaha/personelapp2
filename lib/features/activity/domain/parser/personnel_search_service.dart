@@ -46,9 +46,14 @@ class PersonnelSearchService {
       else if (searchableText.contains(cleanQuery)) {
         score = 0.95;
       }
-      // 3. Token subset match across name, rank and unit
+      // 3. Every query word matches the start of a searchable word. This keeps
+      // results stable while the user continues typing ("meh uz" etc.).
       else if (queryTokens.isNotEmpty &&
-          searchableTokens.containsAll(queryTokens)) {
+          queryTokens.every(
+            (queryToken) => searchableTokens.any(
+              (searchableToken) => searchableToken.startsWith(queryToken),
+            ),
+          )) {
         score = 0.9;
       }
       // 4. First letter + surname match
@@ -67,7 +72,7 @@ class PersonnelSearchService {
         }
       }
       // 5. Fuzzy match (Levenshtein via fuzzy package)
-      else {
+      else if (cleanQuery.length >= 3 && queryTokens.length == 1) {
         final fuzzy = Fuzzy<String>([cleanName],
             options: FuzzyOptions<String>(
               shouldSort: true,
@@ -92,8 +97,12 @@ class PersonnelSearchService {
           }
         }
       }
-      // 7. Jaro-Winkler for short queries
-      if (score < 0.5 && cleanQuery.length <= 20) {
+      // 7. Jaro-Winkler for typo tolerance. Very short queries are deliberately
+      // excluded because their similarity scores produce many false matches.
+      if (score < 0.5 &&
+          cleanQuery.length >= 4 &&
+          cleanQuery.length <= 20 &&
+          queryTokens.length == 1) {
         final jwScore = _jaroWinklerStatic(cleanQuery, cleanName);
         if (jwScore > score) {
           score = jwScore * 0.7;

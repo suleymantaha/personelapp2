@@ -107,7 +107,7 @@ class _PersonnelManagementScreenState
                       final matches = PersonnelFuzzyMatcher.searchPersonnel(
                         _searchQuery,
                         [p],
-                        threshold: 0.3, // Lower threshold for filtering
+                        threshold: 0.5,
                         maxResults: 1,
                       );
                       if (matches.isEmpty) return false;

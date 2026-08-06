@@ -41,4 +41,30 @@ void main() {
       [personnel.last],
     );
   });
+
+  test('yazı uzadıkça doğru personel eşleşmeye devam eder', () {
+    expect(
+      PersonnelSearchService.searchPersonnel('me', personnel),
+      contains(personnel.last),
+    );
+
+    for (final query in ['meh', 'mehm', 'mehmet', 'mehmet uz']) {
+      expect(
+        PersonnelSearchService.searchPersonnel(query, personnel),
+        [personnel.last],
+        reason: '"$query" sorgusu Mehmet Demir sonucunu korumalı',
+      );
+    }
+  });
+
+  test('iki harfli ilgisiz sorguyu yaklaşık eşleşme saymaz', () {
+    expect(
+      PersonnelSearchService.searchPersonnel(
+        'zz',
+        personnel,
+        threshold: 0.3,
+      ),
+      isEmpty,
+    );
+  });
 }
