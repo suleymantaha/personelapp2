@@ -40,8 +40,12 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
         title: const Text('Çizelgeyi sil'),
         content: const Text('Bu TEMGÜNDRAP çizelgesi kalıcı olarak silinecek.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('VAZGEÇ')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('SİL')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('VAZGEÇ')),
+          FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('SİL')),
         ],
       ),
     );
@@ -67,7 +71,8 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
-              return Center(child: Text('Kayıtlar yüklenemedi: ${snapshot.error}'));
+              return Center(
+                  child: Text('Kayıtlar yüklenemedi: ${snapshot.error}'));
             }
             final documents = snapshot.data ?? const [];
             if (documents.isEmpty) {
@@ -75,9 +80,11 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.table_chart_outlined, size: 72, color: context.accentOrOlive),
+                    Icon(Icons.table_chart_outlined,
+                        size: 72, color: context.accentOrOlive),
                     const SizedBox(height: 16),
-                    const Text('Henüz TEMGÜNDRAP çizelgesi yok.', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text('Henüz TEMGÜNDRAP çizelgesi yok.',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
                     const Text('İlk operasyon takip çizelgesini oluşturun.'),
                   ],
@@ -93,15 +100,19 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
                 return Card(
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: context.accentOrOlive.withValues(alpha: .12),
-                      child: Icon(Icons.description_outlined, color: context.accentOrOlive),
+                      backgroundColor:
+                          context.accentOrOlive.withValues(alpha: .12),
+                      child: Icon(Icons.description_outlined,
+                          color: context.accentOrOlive),
                     ),
                     title: Text(
                       DateFormat('dd MMMM yyyy', 'tr_TR').format(document.date),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    subtitle: Text('${document.operations.length} operasyon • ${document.isDraft ? 'Taslak' : 'Tamamlandı'}'),
-                    onTap: () => context.push('/temgundrap/preview', extra: document),
+                    subtitle: Text(
+                        '${document.operations.length} operasyon • ${document.isDraft ? 'Taslak' : 'Tamamlandı'}'),
+                    onTap: () =>
+                        context.push('/temgundrap/preview', extra: document),
                     trailing: PopupMenuButton<String>(
                       onSelected: (value) {
                         if (value == 'edit') _openForm(document);

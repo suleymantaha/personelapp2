@@ -63,6 +63,7 @@ class PersonnelRepository {
     required String birlik,
     required String kayitTarihi,
     int? timId,
+    String? telefon,
   }) async {
     return db.transaction(() async {
       final newId = await db.into(db.personelTable).insert(
@@ -71,6 +72,7 @@ class PersonnelRepository {
               rutbe: rutbe,
               birlik: birlik,
               timId: Value(timId),
+              telefon: Value(telefon),
               kayitTarihi: kayitTarihi,
             ),
           );

@@ -31,6 +31,7 @@ class PersonelTable extends Table {
   TextColumn get adSoyad => text()();
   TextColumn get rutbe => text()();
   TextColumn get birlik => text()();
+  TextColumn get telefon => text().nullable()();
   IntColumn get timId => integer().nullable().references(
         TimTable,
         #id,

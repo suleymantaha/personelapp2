@@ -25,7 +25,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -44,6 +44,15 @@ class AppDatabase extends _$AppDatabase {
         if (from < 3) {
           await m.createTable(personelIsimTakmaAdTable);
           await m.createTable(topluAktarimGecmisiTable);
+        }
+        if (from < 4) {
+          final personnelTableExists = await customSelect(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' "
+            "AND name = 'personel_table';",
+          ).getSingleOrNull();
+          if (personnelTableExists != null) {
+            await m.addColumn(personelTable, personelTable.telefon);
+          }
         }
       },
     );

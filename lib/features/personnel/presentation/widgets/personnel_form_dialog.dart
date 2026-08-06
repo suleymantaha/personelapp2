@@ -26,6 +26,7 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
   late final TextEditingController _nameController;
   late final TextEditingController _unitController;
   late final TextEditingController _customRankController;
+  late final TextEditingController _phoneController;
 
   String? _selectedRank;
   int? _selectedSquadId;
@@ -38,6 +39,7 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
     final p = widget.personnelToEdit;
     _nameController = TextEditingController(text: p?.adSoyad ?? '');
     _unitController = TextEditingController(text: p?.birlik ?? '');
+    _phoneController = TextEditingController(text: p?.telefon ?? '');
 
     if (p != null) {
       final normalizedRutbe = normalizeRank(p.rutbe);
@@ -59,6 +61,7 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
     _nameController.dispose();
     _unitController.dispose();
     _customRankController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -103,6 +106,9 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
           adSoyad: name,
           rutbe: finalRank.isEmpty ? 'J.Er' : finalRank,
           birlik: birlik,
+          telefon: Value(_phoneController.text.trim().isEmpty
+              ? null
+              : _phoneController.text.trim()),
           timId: Value(_selectedSquadId),
         ),
       );
@@ -113,6 +119,9 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
         birlik: birlik,
         timId: _selectedSquadId,
         kayitTarihi: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+        telefon: _phoneController.text.trim().isEmpty
+            ? null
+            : _phoneController.text.trim(),
       );
     }
 
@@ -137,6 +146,17 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Ad Soyad'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              key: const Key('personnel-phone-field'),
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(
+                labelText: 'Telefon',
+                hintText: '533 158 35 97',
+                prefixIcon: Icon(Icons.phone_outlined),
+              ),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(

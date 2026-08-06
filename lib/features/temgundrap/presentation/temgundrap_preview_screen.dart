@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
 
 class TemgundrapPreviewScreen extends StatelessWidget {
   const TemgundrapPreviewScreen({required this.document, super.key});
@@ -9,7 +10,8 @@ class TemgundrapPreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = DateFormat('dd MMMM yyyy', 'tr_TR').format(document.date).toUpperCase();
+    final date =
+        DateFormat('dd MMMM yyyy', 'tr_TR').format(document.date).toUpperCase();
     return Scaffold(
       appBar: AppBar(title: const Text('TEMGÜNDRAP Önizleme')),
       body: LayoutBuilder(
@@ -24,28 +26,36 @@ class TemgundrapPreviewScreen extends StatelessWidget {
   Widget _mobile(String date) => ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(document.unitTitle, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(document.unitTitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text('$date TARİHİNDE PLANLANAN OPERASYON TAKİP ÇİZELGESİ', textAlign: TextAlign.center),
+          Text('$date TARİHİNDE PLANLANAN OPERASYON TAKİP ÇİZELGESİ',
+              textAlign: TextAlign.center),
           const SizedBox(height: 16),
           ...document.operations.asMap().entries.map((entry) {
             final item = entry.value;
             return Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('${entry.key + 1}. OPERASYON', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const Divider(),
-                  _line('Çıkaran Birlik', item.issuingUnit),
-                  _line('Operasyon Bölgesi', item.operationArea),
-                  _line('Kuvveti', item.forceDescription),
-                  _line('Operasyon Komutanı', item.commander),
-                  _line('Mevcut', '${item.totalStrength} personel'),
-                  _line('Başlama', DateFormat('dd.MM.yyyy HH:mm').format(item.startAt)),
-                  _line('Bitiş', DateFormat('dd.MM.yyyy HH:mm').format(item.endAt)),
-                  _line('Maksat', item.purpose),
-                  _line('Açıklama', item.description),
-                ]),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${entry.key + 1}. OPERASYON',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const Divider(),
+                      _line('Çıkaran Birlik', item.issuingUnit),
+                      _line('Operasyon Bölgesi', item.operationArea),
+                      _line('Kuvveti', item.forceDescription),
+                      _line('Operasyon Komutanı', item.commander.displayText),
+                      _line('Mevcut', '${item.totalStrength} personel'),
+                      _line('Başlama',
+                          TemgundrapFormatters.militaryDateTime(item.startAt)),
+                      _line('Bitiş',
+                          TemgundrapFormatters.militaryDateTime(item.endAt)),
+                      _line('Maksat', item.purpose),
+                      _line('Açıklama', item.description),
+                    ]),
               ),
             );
           }),
@@ -55,7 +65,8 @@ class TemgundrapPreviewScreen extends StatelessWidget {
   Widget _table(String date) => SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(children: [
-          Text(document.unitTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(document.unitTitle,
+              style: const TextStyle(fontWeight: FontWeight.bold)),
           Text('$date TARİHİNDE PLANLANAN OPERASYON TAKİP ÇİZELGESİ'),
           const SizedBox(height: 18),
           SingleChildScrollView(
@@ -78,12 +89,17 @@ class TemgundrapPreviewScreen extends StatelessWidget {
                 return DataRow(cells: [
                   DataCell(Text('${entry.key + 1}')),
                   DataCell(SizedBox(width: 140, child: Text(item.issuingUnit))),
-                  DataCell(SizedBox(width: 140, child: Text(item.operationArea))),
-                  DataCell(SizedBox(width: 160, child: Text(item.forceDescription))),
-                  DataCell(SizedBox(width: 140, child: Text(item.commander))),
+                  DataCell(
+                      SizedBox(width: 140, child: Text(item.operationArea))),
+                  DataCell(
+                      SizedBox(width: 160, child: Text(item.forceDescription))),
+                  DataCell(SizedBox(
+                      width: 160, child: Text(item.commander.displayText))),
                   DataCell(Text('${item.totalStrength}')),
-                  DataCell(Text(DateFormat('dd.MM.yy HH:mm').format(item.startAt))),
-                  DataCell(Text(DateFormat('dd.MM.yy HH:mm').format(item.endAt))),
+                  DataCell(Text(
+                      TemgundrapFormatters.militaryDateTime(item.startAt))),
+                  DataCell(
+                      Text(TemgundrapFormatters.militaryDateTime(item.endAt))),
                   DataCell(Text(item.purpose)),
                   DataCell(SizedBox(width: 260, child: Text(item.description))),
                 ]);
@@ -95,7 +111,8 @@ class TemgundrapPreviewScreen extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: Column(children: [
               Text(document.approverRank),
-              Text(document.approverName, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(document.approverName,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               Text(document.approverDuty),
             ]),
           ),
@@ -105,7 +122,10 @@ class TemgundrapPreviewScreen extends StatelessWidget {
   Widget _line(String label, String value) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SizedBox(width: 135, child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600))),
+          SizedBox(
+              width: 135,
+              child: Text(label,
+                  style: const TextStyle(fontWeight: FontWeight.w600))),
           Expanded(child: Text(value.isEmpty ? '-' : value)),
         ]),
       );

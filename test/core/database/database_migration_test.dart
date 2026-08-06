@@ -38,7 +38,7 @@ void main() {
           'toplu_aktarim_gecmisi_table',
         ],
       );
-      expect(sqliteDatabase.userVersion, 3);
+      expect(sqliteDatabase.userVersion, 4);
     });
 
     test('propagates migration failures instead of marking schema ready',
@@ -63,6 +63,37 @@ void main() {
         throwsA(anything),
       );
       expect(sqliteDatabase.userVersion, 1);
+    });
+
+    test('upgrades version 3 personnel table with nullable phone column',
+        () async {
+      final sqliteDatabase = sqlite3.openInMemory()
+        ..execute('''
+          CREATE TABLE personel_table (
+            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            ad_soyad TEXT NOT NULL,
+            rutbe TEXT NOT NULL,
+            birlik TEXT NOT NULL,
+            tim_id INTEGER NULL,
+            kayit_tarihi TEXT NOT NULL
+          );
+        ''')
+        ..execute('PRAGMA user_version = 3;');
+      final db = AppDatabase(NativeDatabase.opened(
+        sqliteDatabase,
+        closeUnderlyingOnClose: false,
+      ));
+      addTearDown(() async {
+        await db.close();
+        sqliteDatabase.close();
+      });
+
+      final columns =
+          await db.customSelect('PRAGMA table_info(personel_table);').get();
+
+      expect(
+          columns.map((row) => row.read<String>('name')), contains('telefon'));
+      expect(sqliteDatabase.userVersion, 4);
     });
   });
 }
