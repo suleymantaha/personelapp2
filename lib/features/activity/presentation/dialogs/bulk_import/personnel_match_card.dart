@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/match_status_indicator.dart';
+
+export 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/match_status_indicator.dart';
 
 class PersonnelMatchCard extends StatelessWidget {
   const PersonnelMatchCard({
@@ -36,7 +38,9 @@ class PersonnelMatchCard extends StatelessWidget {
 
     final borderColor = isFocused
         ? Colors.amber.shade800
-        : (problem ? accentColor.withValues(alpha: 0.4) : context.cardBorderColor);
+        : (problem
+            ? accentColor.withValues(alpha: 0.4)
+            : context.cardBorderColor);
 
     final bgColor = isFocused
         ? Colors.amber.shade50
@@ -51,7 +55,8 @@ class PersonnelMatchCard extends StatelessWidget {
         : 'Personel seçilmedi';
 
     final hasNameDiff = item.isMatched &&
-        (rawNameText.toLowerCase() != (item.matchedAdSoyad ?? '').toLowerCase() ||
+        (rawNameText.toLowerCase() !=
+                (item.matchedAdSoyad ?? '').toLowerCase() ||
             (rawRankText.isNotEmpty &&
                 item.matchedRutbe != null &&
                 rawRankText.toLowerCase() != item.matchedRutbe!.toLowerCase()));
@@ -100,7 +105,8 @@ class PersonnelMatchCard extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: context.accentOrOlive.withValues(alpha: 0.12),
+                              color:
+                                  context.accentOrOlive.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -121,7 +127,9 @@ class PersonnelMatchCard extends StatelessWidget {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        item.isMatched ? matchedName : rawNameText,
+                                        item.isMatched
+                                            ? matchedName
+                                            : rawNameText,
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 15,
@@ -146,7 +154,8 @@ class PersonnelMatchCard extends StatelessWidget {
                                           ),
                                           decoration: BoxDecoration(
                                             color: Colors.amber.shade50,
-                                            borderRadius: BorderRadius.circular(6),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
                                             border: Border.all(
                                               color: Colors.amber.shade400,
                                               width: 0.8,
@@ -176,12 +185,14 @@ class PersonnelMatchCard extends StatelessWidget {
                                     ],
                                   ],
                                 ),
-                                if (hasNameDiff || item.sourceLineNumber != null) ...[
+                                if (hasNameDiff ||
+                                    item.sourceLineNumber != null) ...[
                                   const SizedBox(height: 2),
                                   Text(
                                     [
                                       if (hasNameDiff)
-                                        'Metinde: $rawRankText $rawNameText'.trim(),
+                                        'Metinde: $rawRankText $rawNameText'
+                                            .trim(),
                                       if (item.sourceLineNumber != null)
                                         '📍 Satır ${item.sourceLineNumber}',
                                     ].join(' • '),
@@ -299,7 +310,8 @@ class PersonnelMatchCard extends StatelessWidget {
                                     const SizedBox(width: 4),
                                     Text(
                                       'Tim uyuşmazlığı (Onayla)',
-                                      key: const Key('bulk-team-mismatch-warning'),
+                                      key: const Key(
+                                          'bulk-team-mismatch-warning'),
                                       style: TextStyle(
                                         color: Colors.orange.shade900,
                                         fontSize: 11,
@@ -334,9 +346,11 @@ class PersonnelMatchCard extends StatelessWidget {
                               ),
                             ),
                             const Spacer(),
-                            if (item.hasWarning && onConfirmSuggestion != null) ...[
+                            if (item.hasWarning &&
+                                onConfirmSuggestion != null) ...[
                               FilledButton.icon(
-                                key: const Key('bulk-person-confirm-suggestion'),
+                                key:
+                                    const Key('bulk-person-confirm-suggestion'),
                                 onPressed: onConfirmSuggestion,
                                 icon: const Icon(Icons.done_rounded, size: 14),
                                 label: const Text(
@@ -472,145 +486,3 @@ class PersonnelMatchCard extends StatelessWidget {
     );
   }
 }
-
-class MatchStatusIndicator extends StatelessWidget {
-  const MatchStatusIndicator({required this.item, super.key});
-
-  final ParsedPersonnelItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    final (label, color, icon) = switch (item) {
-      ParsedPersonnelItem(reviewConfirmed: true, isMatched: true) => (
-          'Kullanıcı onayladı',
-          context.approvedColor,
-          Icons.verified_rounded,
-        ),
-      ParsedPersonnelItem(teamMismatch: true) => (
-          'Tim onayı gerekli',
-          Colors.orange.shade800,
-          Icons.account_tree_outlined,
-        ),
-      ParsedPersonnelItem(matchConfidence: < 0.9, isMatched: true) => (
-          item.matchConfidence > 0
-              ? 'Eşleşmeyi kontrol edin (%${(item.matchConfidence * 100).toInt()})'
-              : 'Eşleşmeyi kontrol edin',
-          Colors.orange.shade800,
-          Icons.help_rounded,
-        ),
-      ParsedPersonnelItem(matchConfidence: >= 0.9, isMatched: true) => (
-          'Eşleşti',
-          context.approvedColor,
-          Icons.check_circle_rounded,
-        ),
-      _ => (
-          'Eşleşmedi',
-          Colors.red.shade700,
-          Icons.warning_amber_rounded,
-        ),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 14),
-          const SizedBox(width: 3),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// -----------------------------------------------------------------------------
-// Flutter Widget Previews (@Preview)
-// -----------------------------------------------------------------------------
-
-@Preview(name: 'Tam Eşleşmiş Personel Kartı', group: 'Bulk Import')
-Widget personnelMatchCardMatchedPreview() {
-  return MaterialApp(
-    home: Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: PersonnelMatchCard(
-          item: ParsedPersonnelItem(
-            rawIndex: 1,
-            rawRank: 'J.Asb.Çvş.',
-            rawName: 'Ahmet TINAS',
-            matchedPersonnelId: 1,
-            matchedAdSoyad: 'Ahmet TINAS',
-            matchedRutbe: 'J.Asb.Çvş.',
-            matchedTimId: 1,
-            matchConfidence: 1.0,
-          ),
-          teamName: '9-B Timi',
-          onSelect: () {},
-          onDelete: () {},
-        ),
-      ),
-    ),
-  );
-}
-
-@Preview(name: 'Kısmi Eşleşmiş Onay Bekleyen Personel Kartı', group: 'Bulk Import')
-Widget personnelMatchCardReviewPreview() {
-  return MaterialApp(
-    home: Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: PersonnelMatchCard(
-          item: ParsedPersonnelItem(
-            rawIndex: 2,
-            rawRank: 'J.Uzm.Çvş.',
-            rawName: 'Ramazan',
-            matchedPersonnelId: 2,
-            matchedAdSoyad: 'Ramazan BOSTAN',
-            matchedRutbe: 'J.Uzm.Çvş.',
-            matchedTimId: 2,
-            matchConfidence: 0.85,
-          ),
-          teamName: '9-B Timi',
-          onSelect: () {},
-          onDelete: () {},
-          onConfirmSuggestion: () {},
-        ),
-      ),
-    ),
-  );
-}
-
-@Preview(name: 'Eşleşmemiş Hızlı Ekle Butonlu Personel Kartı', group: 'Bulk Import')
-Widget personnelMatchCardUnmatchedPreview() {
-  return MaterialApp(
-    home: Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: PersonnelMatchCard(
-          item: ParsedPersonnelItem(
-            rawIndex: 3,
-            rawRank: 'J.Uzm.Çvş.',
-            rawName: 'Hakan KAYA',
-          ),
-          teamName: '6-B Timi',
-          onSelect: () {},
-          onDelete: () {},
-          onAddNewPerson: () {},
-        ),
-      ),
-    ),
-  );
-}
-
