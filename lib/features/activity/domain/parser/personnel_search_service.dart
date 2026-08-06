@@ -4,7 +4,8 @@ import 'package:personelapp2/features/activity/domain/bulk_import_learning_servi
 
 class PersonnelSearchService {
   static String _sanitizeString(String input) {
-    return BulkImportLearningService.normalizeName(input);
+    final separated = input.replaceAll(RegExp(r'[-./_]+'), ' ');
+    return BulkImportLearningService.normalizeName(separated);
   }
 
   /// Public static method for external search/filter usage
@@ -27,6 +28,11 @@ class PersonnelSearchService {
 
     for (final p in personnelList) {
       final cleanName = _sanitizeString(p.adSoyad);
+      final cleanRank = _sanitizeString(p.rutbe);
+      final cleanUnit = _sanitizeString(p.birlik);
+      final searchableText = '$cleanName $cleanRank $cleanUnit';
+      final searchableTokens =
+          searchableText.split(' ').where((token) => token.isNotEmpty).toSet();
       final nameTokens =
           cleanName.split(' ').where((e) => e.isNotEmpty).toSet();
 
@@ -36,12 +42,13 @@ class PersonnelSearchService {
       if (cleanName == cleanQuery) {
         score = 1.0;
       }
-      // 2. Starts with query
-      else if (cleanName.startsWith(cleanQuery)) {
+      // 2. Direct match in name, rank or unit
+      else if (searchableText.contains(cleanQuery)) {
         score = 0.95;
       }
-      // 3. Token subset match (all query tokens in name)
-      else if (queryTokens.isNotEmpty && nameTokens.containsAll(queryTokens)) {
+      // 3. Token subset match across name, rank and unit
+      else if (queryTokens.isNotEmpty &&
+          searchableTokens.containsAll(queryTokens)) {
         score = 0.9;
       }
       // 4. First letter + surname match

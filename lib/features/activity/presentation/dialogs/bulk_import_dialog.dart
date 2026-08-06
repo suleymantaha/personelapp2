@@ -201,54 +201,63 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 768;
+        final isMobile = constraints.maxWidth < 600;
+        final borderRadius = isMobile ? 0.0 : 20.0;
         return Dialog(
-          insetPadding: EdgeInsets.symmetric(
-            horizontal: isMobile ? 12 : 24,
-            vertical: isKeyboardVisible ? 8 : (isMobile ? 24 : 32),
-          ),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: isMobile
+              ? EdgeInsets.zero
+              : EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: isKeyboardVisible ? 8 : 32,
+                ),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(borderRadius)),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(borderRadius),
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                maxWidth: 1180,
-                maxHeight: mediaQuery.size.height * 0.9,
+                maxWidth: isMobile ? mediaQuery.size.width : 1180,
+                maxHeight: isMobile
+                    ? mediaQuery.size.height
+                    : mediaQuery.size.height * 0.9,
               ),
               child: SizedBox(
                 width: isMobile
-                    ? constraints.maxWidth
+                    ? mediaQuery.size.width
                     : constraints.maxWidth * 0.85,
-                height: double.infinity,
-                child: ColoredBox(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  child: Column(
-                    children: [
-                      BulkImportHeaderBanner(
-                        isKeyboardVisible: isKeyboardVisible,
-                        onOpenMemory: () => LearnedAliasesDialog.show(
-                          context,
-                          widget.database,
+                height: isMobile ? mediaQuery.size.height : double.infinity,
+                child: SafeArea(
+                  top: isMobile,
+                  bottom: isMobile,
+                  child: ColoredBox(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: Column(
+                      children: [
+                        BulkImportHeaderBanner(
+                          isKeyboardVisible: isKeyboardVisible,
+                          onOpenMemory: () => LearnedAliasesDialog.show(
+                            context,
+                            widget.database,
+                          ),
+                          onClose: () => Navigator.pop(context),
                         ),
-                        onClose: () => Navigator.pop(context),
-                      ),
-                      BulkImportStepper(
-                        currentStep: _currentStep,
-                        hasBlocks: _parsedBlocks.isNotEmpty,
-                        onStepTapped: (int step) {
-                          if (step <= _currentStep ||
-                              (step == 1 && _parsedBlocks.isNotEmpty)) {
-                            setState(() => _currentStep = step);
-                          }
-                        },
-                      ),
-                      Expanded(
-                        child: isMobile
-                            ? _buildMobileBody(isKeyboardVisible)
-                            : _buildDesktopBody(isKeyboardVisible),
-                      ),
-                    ],
+                        BulkImportStepper(
+                          currentStep: _currentStep,
+                          hasBlocks: _parsedBlocks.isNotEmpty,
+                          onStepTapped: (int step) {
+                            if (step <= _currentStep ||
+                                (step == 1 && _parsedBlocks.isNotEmpty)) {
+                              setState(() => _currentStep = step);
+                            }
+                          },
+                        ),
+                        Expanded(
+                          child: isMobile
+                              ? _buildMobileBody(isKeyboardVisible)
+                              : _buildDesktopBody(isKeyboardVisible),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -280,4 +280,67 @@ akşam
     expect(names.any((name) => name.contains('Ağustos')), isFalse);
     expect(names.any((name) => name.toLowerCase().endsWith(' akşam')), isFalse);
   });
+
+  test(
+      'preserves Turkish dates while extracting names from inline date and shift text',
+      () {
+    const input = '''
+05 AĞUSTOS 2026
+2/B Heybet Listesi
+AHMET MUSTAFA ÇALIŞKAN
+OĞUZHAN AYAZ
+5 Ağustos Hasan Akbaş
+5 Ağustos Muhammet GÜRDEN
+Nuri Demir AKŞAM
+Sabah
+
+06 AĞUSTOS 2026
+2/B Heybet Listesi
+Muhammed Ali YAKAR
+Recep Göral
+İlyas Teksan AKŞAM
+''';
+
+    final result = BulkTextParser.parse(input);
+
+    expect(result.hasBlockingIssues, isFalse);
+    expect(result.blocks, hasLength(2));
+
+    final august5 = result.blocks.singleWhere(
+      (block) => block.parsedDate == '2026-08-05',
+    );
+    expect(august5.parsedTimName, '2/B');
+    expect(august5.parsedActivityType, DutyOrLeaveType.heybet);
+    expect(
+      august5.personnelList.map((person) => person.rawName),
+      [
+        'AHMET MUSTAFA ÇALIŞKAN',
+        'OĞUZHAN AYAZ',
+        'Hasan Akbaş',
+        'Muhammet GÜRDEN',
+        'Nuri Demir',
+      ],
+    );
+
+    final august6 = result.blocks.singleWhere(
+      (block) => block.parsedDate == '2026-08-06',
+    );
+    expect(august6.parsedTimName, '2/B');
+    expect(august6.parsedActivityType, DutyOrLeaveType.heybet);
+    expect(
+      august6.personnelList.map((person) => person.rawName),
+      ['Muhammed Ali YAKAR', 'Recep Göral', 'İlyas Teksan'],
+    );
+
+    final allNames = result.blocks
+        .expand((block) => block.personnelList)
+        .map((person) => person.rawName)
+        .toList();
+    expect(allNames, isNot(contains('Sabah')));
+    expect(allNames.any((name) => name.contains('Ağustos')), isFalse);
+    expect(
+      allNames.any((name) => name.toUpperCase().endsWith(' AKŞAM')),
+      isFalse,
+    );
+  });
 }

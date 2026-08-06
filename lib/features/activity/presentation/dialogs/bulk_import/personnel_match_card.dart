@@ -137,7 +137,9 @@ class PersonnelMatchCard extends StatelessWidget {
                                               ? null
                                               : Colors.red.shade700,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.fade,
+                                        softWrap: true,
                                       ),
                                     ),
                                     if (item.isMatched &&
@@ -329,86 +331,99 @@ class PersonnelMatchCard extends StatelessWidget {
 
                       // Alt Aksiyon Satırı
                       if (item.isMatched)
-                        Row(
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Icon(
-                              Icons.groups_outlined,
-                              size: 14,
-                              color: Colors.grey.shade600,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              teamName,
-                              style: TextStyle(
-                                color: Colors.grey.shade700,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const Spacer(),
                             if (item.hasWarning &&
                                 onConfirmSuggestion != null) ...[
-                              FilledButton.icon(
-                                key:
-                                    const Key('bulk-person-confirm-suggestion'),
-                                onPressed: onConfirmSuggestion,
-                                icon: const Icon(Icons.done_rounded, size: 14),
-                                label: const Text(
-                                  '✓ Onayla',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: FilledButton.icon(
+                                  key: const Key(
+                                      'bulk-person-confirm-suggestion'),
+                                  onPressed: onConfirmSuggestion,
+                                  icon:
+                                      const Icon(Icons.done_rounded, size: 14),
+                                  label: const Text(
+                                    'Onayla',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFF16A34A),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  visualDensity: VisualDensity.compact,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: const Color(0xFF16A34A),
+                                    foregroundColor: Colors.white,
+                                    minimumSize: const Size(0, 48),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 6),
+                              const SizedBox(height: 6),
                             ],
-                            InkWell(
-                              key: const Key('bulk-person-select'),
-                              onTap: onSelect,
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.groups_outlined,
+                                  size: 16,
+                                  color: Colors.grey.shade700,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: context.accentOrOlive
-                                      .withValues(alpha: 0.12),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    teamName,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.fade,
+                                    style: TextStyle(
+                                      color: Colors.grey.shade800,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                InkWell(
+                                  key: const Key('bulk-person-select'),
+                                  onTap: onSelect,
                                   borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'Değiştir',
-                                      style: TextStyle(
-                                        color: context.accentOrOlive,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                  child: Container(
+                                    constraints:
+                                        const BoxConstraints(minHeight: 48),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
                                     ),
-                                    const SizedBox(width: 2),
-                                    Icon(
-                                      Icons.chevron_right_rounded,
-                                      size: 16,
-                                      color: context.accentOrOlive,
+                                    decoration: BoxDecoration(
+                                      color: context.accentOrOlive
+                                          .withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
-                                  ],
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Değiştir',
+                                          style: TextStyle(
+                                            color: context.accentOrOlive,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 2),
+                                        Icon(
+                                          Icons.chevron_right_rounded,
+                                          size: 16,
+                                          color: context.accentOrOlive,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ],
                         )

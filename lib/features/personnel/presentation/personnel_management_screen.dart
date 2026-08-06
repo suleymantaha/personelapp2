@@ -213,6 +213,9 @@ class _PersonnelManagementScreenState
                                 ),
                               ),
                               Container(
+                                constraints: const BoxConstraints(
+                                  minWidth: 112,
+                                ),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                   vertical: 6,
@@ -223,6 +226,7 @@ class _PersonnelManagementScreenState
                                 ),
                                 child: Text(
                                   '${members.length} personel',
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: context.onAccentOrOlive,
                                     fontSize: 11.5,
