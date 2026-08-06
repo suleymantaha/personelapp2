@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
+import 'package:personelapp2/features/temgundrap/services/temgundrap_excel_exporter.dart';
 import 'package:personelapp2/features/temgundrap/services/temgundrap_pdf_exporter.dart';
 
 class TemgundrapPreviewScreen extends StatelessWidget {
@@ -10,17 +11,21 @@ class TemgundrapPreviewScreen extends StatelessWidget {
     required this.document,
     this.onPrint,
     this.onShare,
+    this.onExcel,
     super.key,
   });
 
   final TemgundrapDocument document;
   final Future<void> Function()? onPrint;
   final Future<void> Function()? onShare;
+  final Future<void> Function()? onExcel;
 
   Future<void> _print() =>
       onPrint?.call() ?? TemgundrapPdfExporter.printDocument(document);
   Future<void> _share() =>
       onShare?.call() ?? TemgundrapPdfExporter.shareDocument(document);
+  Future<void> _shareExcel() =>
+      onExcel?.call() ?? TemgundrapExcelExporter.share(document);
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +48,11 @@ class TemgundrapPreviewScreen extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: _OutputBar(onPrint: _print, onShare: _share),
+      bottomNavigationBar: _OutputBar(
+        onPrint: _print,
+        onShare: _share,
+        onExcel: _shareExcel,
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final wide = constraints.maxWidth >= 760;
@@ -277,9 +286,14 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _OutputBar extends StatelessWidget {
-  const _OutputBar({required this.onPrint, required this.onShare});
+  const _OutputBar({
+    required this.onPrint,
+    required this.onShare,
+    required this.onExcel,
+  });
   final VoidCallback onPrint;
   final VoidCallback onShare;
+  final VoidCallback onExcel;
   @override
   Widget build(BuildContext context) => SafeArea(
         child: Padding(
@@ -288,13 +302,22 @@ class _OutputBar extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
+                  key: const Key('preview-excel'),
+                  onPressed: onExcel,
+                  icon: const Icon(Icons.table_view_outlined),
+                  label: const Text('EXCEL'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
                   key: const Key('preview-share'),
                   onPressed: onShare,
                   icon: const Icon(Icons.picture_as_pdf_outlined),
-                  label: const Text('PDF PAYLAŞ'),
+                  label: const FittedBox(child: Text('PDF PAYLAŞ')),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: FilledButton.icon(
                   key: const Key('preview-print'),

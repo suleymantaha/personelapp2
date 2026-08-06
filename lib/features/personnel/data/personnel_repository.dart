@@ -161,6 +161,14 @@ class PersonnelRepository {
     return result;
   }
 
+  /// Remembers the phone selected for a personnel record so future
+  /// TEMGÜNDRAP forms can suggest it automatically.
+  Future<int> updatePersonnelPhone(int personnelId, String phone) {
+    return (db.update(db.personelTable)
+          ..where((table) => table.id.equals(personnelId)))
+        .write(PersonelTableCompanion(telefon: Value(phone.trim())));
+  }
+
   Future<int> deletePersonnel(int id, {String? tarih}) async {
     return db.transaction(() async {
       final p = await (db.select(

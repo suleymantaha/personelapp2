@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/features/personnel/data/personnel_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/presentation/view_models/temgundrap_operation_draft.dart';
 import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_commander_picker.dart';
 import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_operation_area_picker.dart';
@@ -10,7 +12,9 @@ import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap
 import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_vehicle_editor.dart';
 
 class TemgundrapOperationEditorDialog extends ConsumerStatefulWidget {
-  const TemgundrapOperationEditorDialog({super.key});
+  const TemgundrapOperationEditorDialog({super.key, this.initialOperation});
+
+  final TemgundrapOperation? initialOperation;
   @override
   ConsumerState<TemgundrapOperationEditorDialog> createState() =>
       _TemgundrapOperationEditorDialogState();
@@ -19,11 +23,13 @@ class TemgundrapOperationEditorDialog extends ConsumerStatefulWidget {
 class _TemgundrapOperationEditorDialogState
     extends ConsumerState<TemgundrapOperationEditorDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _draft = TemgundrapOperationDraft();
+  late final TemgundrapOperationDraft _draft;
   final _descriptionController = TextEditingController();
   @override
   void initState() {
     super.initState();
+    _draft = TemgundrapOperationDraft(initial: widget.initialOperation);
+    _descriptionController.text = _draft.description;
     _draft.addListener(_refresh);
   }
 
@@ -61,7 +67,10 @@ class _TemgundrapOperationEditorDialogState
           .showSnackBar(SnackBar(content: Text(error)));
       return;
     }
-    Navigator.pop(context, _draft.buildOperation());
+    Navigator.pop(
+      context,
+      _draft.buildOperation(id: widget.initialOperation?.id),
+    );
   }
 
   @override
@@ -70,7 +79,9 @@ class _TemgundrapOperationEditorDialogState
     return Dialog.fullscreen(
         child: Scaffold(
       appBar: AppBar(
-        title: const Text('Operasyon Ekle'),
+        title: Text(widget.initialOperation == null
+            ? 'Operasyon Ekle'
+            : 'Operasyonu Düzenle'),
         leading: IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.close)),
@@ -79,7 +90,8 @@ class _TemgundrapOperationEditorDialogState
               key: const Key('operation-save'),
               onPressed: _submit,
               icon: const Icon(Icons.check),
-              label: const Text('EKLE'))
+              label:
+                  Text(widget.initialOperation == null ? 'EKLE' : 'GÜNCELLE'))
         ],
       ),
       body: Form(
@@ -126,6 +138,7 @@ class _TemgundrapOperationEditorDialogState
                       ]))),
               personnel.when(
                 data: (items) => TemgundrapCommanderPicker(
+                  initialValue: _draft.commander,
                   options: items
                       .map((item) => TemgundrapCommanderOption(
                           id: item.id,
@@ -134,6 +147,11 @@ class _TemgundrapOperationEditorDialogState
                           phone: item.telefon ?? ''))
                       .toList(),
                   onChanged: _draft.setCommander,
+                  onPhoneLearned: (personnelId, phone) async {
+                    await PersonnelRepository(ref.read(databaseProvider))
+                        .updatePersonnelPhone(personnelId, phone);
+                    ref.invalidate(allPersonnelProvider);
+                  },
                 ),
                 loading: () => const Card(
                     child: Padding(
@@ -183,9 +201,11 @@ class _TemgundrapOperationEditorDialogState
               FilledButton.icon(
                   onPressed: _submit,
                   icon: const Icon(Icons.check),
-                  label: const Padding(
-                      padding: EdgeInsets.all(14),
-                      child: Text('OPERASYONU EKLE'))),
+                  label: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Text(widget.initialOperation == null
+                          ? 'OPERASYONU EKLE'
+                          : 'OPERASYONU GÜNCELLE'))),
             ]),
           ))),
     ));

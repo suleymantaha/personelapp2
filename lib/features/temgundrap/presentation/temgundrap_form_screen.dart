@@ -63,6 +63,19 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
     if (operation != null) setState(() => _operations.add(operation));
   }
 
+  Future<void> _editOperation(int index) async {
+    final operation = await showDialog<TemgundrapOperation>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => TemgundrapOperationEditorDialog(
+        initialOperation: _operations[index],
+      ),
+    );
+    if (operation != null) {
+      setState(() => _operations[index] = operation);
+    }
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_operations.isEmpty) {
@@ -145,11 +158,24 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                         subtitle: Text(
                             '${entry.value.commander.name} • ${entry.value.totalStrength} personel\n${entry.value.purpose}'),
                         isThreeLine: true,
-                        trailing: IconButton(
-                            key: Key('delete-operation-${entry.key}'),
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () => setState(
-                                () => _operations.removeAt(entry.key))),
+                        onTap: () => _editOperation(entry.key),
+                        trailing: Wrap(
+                          spacing: 2,
+                          children: [
+                            IconButton(
+                              key: Key('edit-operation-${entry.key}'),
+                              tooltip: 'Operasyonu düzenle',
+                              icon: const Icon(Icons.edit_outlined),
+                              onPressed: () => _editOperation(entry.key),
+                            ),
+                            IconButton(
+                                key: Key('delete-operation-${entry.key}'),
+                                tooltip: 'Operasyonu sil',
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: () => setState(
+                                    () => _operations.removeAt(entry.key))),
+                          ],
+                        ),
                       ))),
                 const Divider(height: 32),
                 const Text('Onay Bilgileri',

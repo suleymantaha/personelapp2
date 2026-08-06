@@ -3,17 +3,25 @@ import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 
 class TemgundrapOperationDraft extends ChangeNotifier {
-  TemgundrapOperationDraft({DateTime? now})
-      : startAt = now ?? DateTime.now(),
-        endAt = (now ?? DateTime.now()).add(const Duration(hours: 1));
+  TemgundrapOperationDraft({DateTime? now, TemgundrapOperation? initial})
+      : issuingUnit = initial?.issuingUnit ?? defaultTemgundrapIssuingUnit,
+        operationArea = initial?.operationArea ?? '',
+        purpose = initial?.purpose ?? defaultTemgundrapPurposes.first,
+        description = initial?.description ?? '',
+        commander = initial?.commander,
+        strength = initial?.strength ?? const TemgundrapStrength(),
+        vehicles = [...?initial?.vehicles],
+        startAt = initial?.startAt ?? now ?? DateTime.now(),
+        endAt = initial?.endAt ??
+            (now ?? DateTime.now()).add(const Duration(hours: 1));
 
-  String issuingUnit = defaultTemgundrapIssuingUnit;
-  String operationArea = '';
-  String purpose = defaultTemgundrapPurposes.first;
-  String description = '';
+  String issuingUnit;
+  String operationArea;
+  String purpose;
+  String description;
   CommanderSnapshot? commander;
-  TemgundrapStrength strength = const TemgundrapStrength();
-  final List<TemgundrapVehicleAssignment> vehicles = [];
+  TemgundrapStrength strength;
+  final List<TemgundrapVehicleAssignment> vehicles;
   DateTime startAt;
   DateTime endAt;
 

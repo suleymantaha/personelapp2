@@ -16,6 +16,7 @@ dependencies:
   excel: ^4.0.6
   flutter:
     sdk: flutter
+  flutter_contacts: ^1.1.9+2
   flutter_riverpod: ^2.6.1
   fuzzy: ^0.5.1
   go_router: ^17.3.0
