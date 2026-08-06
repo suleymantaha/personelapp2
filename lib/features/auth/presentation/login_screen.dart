@@ -57,102 +57,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     String username,
     KullaniciTableData user,
   ) async {
-    final pass1Ctrl = TextEditingController();
-    final pass2Ctrl = TextEditingController();
-    String? errorText;
+    final password = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _PasswordCreationDialog(username: username),
+    );
+    if (password == null || !mounted) return;
 
-    try {
-      await showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) {
-          return StatefulBuilder(
-            builder: (ctx, setDialogState) {
-              return AlertDialog(
-                title: const Text('İlk Giriş: Parola Belirleyin'),
-                content: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Sayın $username, hesabınız için yeni bir parola belirleyiniz.',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: context.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: pass1Ctrl,
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Yeni Parola',
-                          prefixIcon: Icon(Icons.lock_outline),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: pass2Ctrl,
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Yeni Parola (Tekrar)',
-                          prefixIcon: Icon(Icons.lock_reset),
-                        ),
-                      ),
-                      if (errorText != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          errorText!,
-                          style: TextStyle(
-                            color: context.colorScheme.error,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                actions: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      final p1 = pass1Ctrl.text.trim();
-                      final p2 = pass2Ctrl.text.trim();
-
-                      if (p1.length < 12) {
-                        setDialogState(
-                          () =>
-                              errorText = 'Parola en az 12 karakter olmalıdır.',
-                        );
-                        return;
-                      }
-                      if (p1 != p2) {
-                        setDialogState(
-                            () => errorText = 'Parolalar eşleşmiyor!');
-                        return;
-                      }
-
-                      final repo = ref.read(personnelRepositoryProvider);
-                      await repo.updateUserPassword(
-                        kullaniciAdi: username,
-                        newPassword: p1,
-                      );
-
-                      if (ctx.mounted) Navigator.of(ctx).pop();
-
-                      await _loginUserSession(user);
-                    },
-                    child: const Text('PAROLAYI KAYDET VE GİRİŞ YAP'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      );
-    } finally {
-      pass1Ctrl.dispose();
-      pass2Ctrl.dispose();
-    }
+    final repo = ref.read(personnelRepositoryProvider);
+    await repo.updateUserPassword(
+      kullaniciAdi: username,
+      newPassword: password,
+    );
+    await _loginUserSession(user);
   }
 
   Future<void> _loginUserSession(KullaniciTableData user) async {
@@ -315,6 +232,97 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PasswordCreationDialog extends StatefulWidget {
+  const _PasswordCreationDialog({required this.username});
+
+  final String username;
+
+  @override
+  State<_PasswordCreationDialog> createState() =>
+      _PasswordCreationDialogState();
+}
+
+class _PasswordCreationDialogState extends State<_PasswordCreationDialog> {
+  final _passwordController = TextEditingController();
+  final _confirmationController = TextEditingController();
+  String? _errorText;
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _confirmationController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final password = _passwordController.text.trim();
+    final confirmation = _confirmationController.text.trim();
+
+    if (password.length < 12) {
+      setState(() => _errorText = 'Parola en az 12 karakter olmalıdır.');
+      return;
+    }
+    if (password != confirmation) {
+      setState(() => _errorText = 'Parolalar eşleşmiyor!');
+      return;
+    }
+
+    Navigator.of(context).pop(password);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('İlk Giriş: Parola Belirleyin'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Sayın ${widget.username}, hesabınız için yeni bir parola belirleyiniz.',
+              style: TextStyle(fontSize: 13, color: context.textPrimary),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Yeni Parola',
+                prefixIcon: Icon(Icons.lock_outline),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _confirmationController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Yeni Parola (Tekrar)',
+                prefixIcon: Icon(Icons.lock_reset),
+              ),
+            ),
+            if (_errorText != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _errorText!,
+                style: TextStyle(
+                  color: context.colorScheme.error,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        ElevatedButton(
+          onPressed: _submit,
+          child: const Text('PAROLAYI KAYDET VE GİRİŞ YAP'),
+        ),
+      ],
     );
   }
 }
