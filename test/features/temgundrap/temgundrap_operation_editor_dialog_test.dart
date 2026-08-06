@@ -16,7 +16,7 @@ void main() {
     ));
     await tester.pump();
     expect(find.byKey(const Key('issuing-unit')), findsOneWidget);
-    expect(find.byKey(const Key('operation-area')), findsOneWidget);
+    expect(find.byKey(const Key('operation-area-picker')), findsOneWidget);
     expect(find.byKey(const Key('operation-purpose')), findsOneWidget);
     expect(find.byKey(const Key('strength-total')), findsOneWidget);
     await tester.scrollUntilVisible(
