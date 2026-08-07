@@ -24,7 +24,8 @@ class ActivityFormHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormatted = DateFormat('dd MMMM yyyy', 'tr_TR').format(selectedDate);
+    final dateFormatted =
+        DateFormat('dd MMMM yyyy', 'tr_TR').format(selectedDate);
     final selectedActivity = activityNameController.text.trim();
 
     return Container(
@@ -54,7 +55,8 @@ class ActivityFormHeader extends StatelessWidget {
             key: const Key('activity-name-field'),
             icon: Icons.shield_outlined,
             label: 'Faaliyet',
-            value: selectedActivity.isEmpty ? 'Faaliyet seçin' : selectedActivity,
+            value:
+                selectedActivity.isEmpty ? 'Faaliyet seçin' : selectedActivity,
             showError: showNameError,
             onTap: () => _showActivityPicker(context),
           ),
@@ -64,7 +66,7 @@ class ActivityFormHeader extends StatelessWidget {
   }
 
   Future<void> _showActivityPicker(BuildContext context) async {
-    await showModalBottomSheet<void>(
+    final template = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
@@ -93,7 +95,8 @@ class ActivityFormHeader extends StatelessWidget {
                     shrinkWrap: true,
                     children: templates.map((template) {
                       final isOther = template == 'Diğer';
-                      final selected = activityNameController.text.trim() == template;
+                      final selected =
+                          activityNameController.text.trim() == template;
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Container(
@@ -102,18 +105,22 @@ class ActivityFormHeader extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: selected
                                 ? sheetContext.accentSubtleBg
-                                : sheetContext.colorScheme.surfaceContainerHighest,
+                                : sheetContext
+                                    .colorScheme.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
-                            isOther ? Icons.edit_rounded : Icons.shield_outlined,
+                            isOther
+                                ? Icons.edit_rounded
+                                : Icons.shield_outlined,
                             color: sheetContext.accentOrOlive,
                           ),
                         ),
                         title: Text(
                           template,
                           style: TextStyle(
-                            fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                            fontWeight:
+                                selected ? FontWeight.w800 : FontWeight.w600,
                           ),
                         ),
                         trailing: selected
@@ -122,14 +129,7 @@ class ActivityFormHeader extends StatelessWidget {
                                 color: sheetContext.accentOrOlive,
                               )
                             : const Icon(Icons.chevron_right_rounded),
-                        onTap: () {
-                          Navigator.pop(sheetContext);
-                          if (isOther) {
-                            _showCustomActivityDialog(context);
-                          } else {
-                            onTemplateSelected(template);
-                          }
-                        },
+                        onTap: () => Navigator.pop(sheetContext, template),
                       );
                     }).toList(),
                   ),
@@ -140,23 +140,30 @@ class ActivityFormHeader extends StatelessWidget {
         );
       },
     );
+    if (!context.mounted || template == null) return;
+    if (template == 'Diğer') {
+      await _showCustomActivityDialog(context);
+      return;
+    }
+    onTemplateSelected(template);
   }
 
   Future<void> _showCustomActivityDialog(BuildContext context) async {
-    final controller = TextEditingController(text: activityNameController.text);
+    var customValue = activityNameController.text;
     final value = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Faaliyet adı'),
-        content: TextField(
-          controller: controller,
+        content: TextFormField(
+          key: const Key('custom-activity-name-field'),
+          initialValue: customValue,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
           decoration: const InputDecoration(
             hintText: 'Faaliyet adını yazın',
           ),
-          onChanged: onNameChanged,
-          onSubmitted: (value) => Navigator.pop(context, value.trim()),
+          onChanged: (value) => customValue = value,
+          onFieldSubmitted: (value) => Navigator.pop(context, value.trim()),
         ),
         actions: [
           TextButton(
@@ -164,15 +171,14 @@ class ActivityFormHeader extends StatelessWidget {
             child: const Text('Vazgeç'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            onPressed: () => Navigator.pop(context, customValue.trim()),
             child: const Text('Tamam'),
           ),
         ],
       ),
     );
 
-    controller.dispose();
-    if (value == null || value.isEmpty) return;
+    if (!context.mounted || value == null || value.isEmpty) return;
     activityNameController.text = value;
     onNameChanged(value);
   }
@@ -235,7 +241,8 @@ class _ActionRow extends StatelessWidget {
                   if (showError)
                     Text(
                       'Faaliyet adı zorunludur',
-                      style: TextStyle(fontSize: 12, color: context.rejectedColor),
+                      style:
+                          TextStyle(fontSize: 12, color: context.rejectedColor),
                     ),
                 ],
               ),

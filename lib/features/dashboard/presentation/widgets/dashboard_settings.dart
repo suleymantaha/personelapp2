@@ -7,6 +7,7 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
 
 class DashboardSettings {
   const DashboardSettings._();
@@ -170,6 +171,30 @@ class DashboardSettings {
                         ),
                         if (isAdmin) ...[
                           const Divider(),
+                          ListTile(
+                            leading: Icon(
+                              Icons.storage_rounded,
+                              color: context.accentOrOlive,
+                            ),
+                            title: const Text('Tam Yedekleme'),
+                            subtitle: const Text(
+                              'Tüm uygulama verilerini cihazda sakla veya geri yükle',
+                            ),
+                            onTap: () async {
+                              Navigator.pop(ctx);
+                              final restored = await showBackupRestoreSurface(
+                                context: context,
+                                database: ref.read(databaseProvider),
+                              );
+                              if (restored) {
+                                ref.invalidate(allPersonnelProvider);
+                                ref.invalidate(allSquadsProvider);
+                                ref.invalidate(allCommandersProvider);
+                                ref.invalidate(filteredActivitiesProvider);
+                                ref.invalidate(pendingAssignmentsProvider);
+                              }
+                            },
+                          ),
                           ListTile(
                             leading: Icon(
                               Icons.group_add,

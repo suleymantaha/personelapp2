@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
-import 'package:personelapp2/features/personnel/services/personnel_backup_service.dart';
+import 'package:personelapp2/core/services/app_backup_service.dart';
+import 'package:personelapp2/core/services/backup_file_gateway.dart';
 
 Future<bool> showBackupRestoreSurface({
   required BuildContext context,
@@ -21,7 +23,6 @@ Future<bool> showBackupRestoreSurface({
         ) ??
         false;
   }
-
   return await showDialog<bool>(
         context: context,
         builder: (context) => BackupRestoreDialog(database: database),
@@ -33,20 +34,29 @@ class BackupRestoreDialog extends StatefulWidget {
   const BackupRestoreDialog({
     required this.database,
     this.isBottomSheet = false,
+    this.backupService,
+    this.fileGateway,
     super.key,
   });
 
   final AppDatabase database;
   final bool isBottomSheet;
+  final AppBackupService? backupService;
+  final BackupFileGateway? fileGateway;
 
   @override
   State<BackupRestoreDialog> createState() => _BackupRestoreDialogState();
 }
 
 class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
+  late final AppBackupService _service =
+      widget.backupService ?? AppBackupService(widget.database);
+  late final BackupFileGateway _fileGateway =
+      widget.fileGateway ?? DeviceBackupFileGateway();
   final TextEditingController _textController = TextEditingController();
   _BackupMode _mode = _BackupMode.export;
   _BackupNotice? _notice;
+  AppBackupPreview? _preview;
   bool _isLoading = false;
   bool _didImport = false;
 
@@ -63,19 +73,27 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
       _isLoading = true;
       _notice = null;
     });
-
     try {
-      final service = PersonnelBackupService(widget.database);
-      final json = await service.exportBackupJson();
+      final json = await _service.exportBackupJson();
+      _textController.text = json;
+      if (!mounted) return;
+      final box = context.findRenderObject() as RenderBox?;
+      final saved = await _fileGateway.saveBackup(
+        json,
+        shareOrigin:
+            box == null ? null : box.localToGlobal(Offset.zero) & box.size,
+      );
       if (!mounted) return;
       setState(() {
-        _textController.text = json;
-        _notice = const _BackupNotice(
-          type: _BackupNoticeType.success,
-          message: 'Personel ve tim yedeği başarıyla oluşturuldu.',
+        _notice = _BackupNotice(
+          type: saved ? _BackupNoticeType.success : _BackupNoticeType.warning,
+          message: saved
+              ? 'Tam uygulama yedeği dışa aktarıldı.'
+              : 'Kaydetme işlemi iptal edildi.',
         );
       });
-    } on Object catch (_) {
+    } on Object catch (error, stackTrace) {
+      _reportBackupError('Yedek oluşturulamadı', error, stackTrace);
       if (!mounted) return;
       setState(() {
         _notice = const _BackupNotice(
@@ -88,56 +106,104 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
     }
   }
 
-  Future<void> _importBackup() async {
-    final input = _textController.text.trim();
-    if (input.isEmpty) {
-      setState(() {
-        _notice = const _BackupNotice(
-          type: _BackupNoticeType.warning,
-          message: 'Önce yedek metnini kutuya yapıştırın.',
-        );
-      });
-      return;
-    }
-
+  Future<void> _pickBackup() async {
     setState(() {
       _isLoading = true;
       _notice = null;
+      _preview = null;
     });
-
     try {
-      final service = PersonnelBackupService(widget.database);
-      final count = await service.importBackupJson(input);
+      final contents = await _fileGateway.openBackup();
+      if (contents == null || !mounted) return;
+      await _loadBackupText(contents);
+    } on FormatException catch (error) {
+      if (mounted) _showError(error.message);
+    } on Object catch (error, stackTrace) {
+      _reportBackupError('Yedek dosyası okunamadı', error, stackTrace);
+      if (mounted) _showError('Yedek dosyası okunamadı.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadBackupText(String contents) async {
+    final preview = await _service.inspectBackupJson(contents);
+    if (!mounted) return;
+    setState(() {
+      _textController.text = contents;
+      _preview = preview;
+      _notice = const _BackupNotice(
+        type: _BackupNoticeType.success,
+        message: 'Yedek doğrulandı ve geri yüklemeye hazır.',
+      );
+    });
+  }
+
+  Future<void> _importBackup() async {
+    final input = _textController.text.trim();
+    if (input.isEmpty) {
+      _showError('Önce bir yedek dosyası seçin.');
+      return;
+    }
+    try {
+      final preview = _preview ?? await _service.inspectBackupJson(input);
+      if (!mounted) return;
+      final confirmed = await _confirmRestore(preview);
+      if (!confirmed || !mounted) return;
+      setState(() {
+        _isLoading = true;
+        _notice = null;
+      });
+      final result = await _service.restoreBackupJson(input);
       if (!mounted) return;
       setState(() {
         _didImport = true;
         _notice = _BackupNotice(
           type: _BackupNoticeType.success,
-          message: count == 0
-              ? 'Yedek kontrol edildi; eklenecek yeni kayıt bulunamadı.'
-              : '$count yeni personel ve tim kaydı içe aktarıldı.',
+          message: result.legacy
+              ? '${result.importedPersonnel} yeni personel eski yedekten aktarıldı.'
+              : 'Geri yükleme tamamlandı: ${result.importedPersonnel} personel, '
+                  '${result.importedActivities} faaliyet ve '
+                  '${result.importedTemgundrapDocuments} TEMGÜNDRAP belgesi.',
         );
       });
     } on FormatException catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _notice = _BackupNotice(
-          type: _BackupNoticeType.error,
-          message: error.message,
-        );
-      });
-    } on Exception catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _notice = const _BackupNotice(
-          type: _BackupNoticeType.error,
-          message:
-              'Yedek içe aktarılamadı. Veritabanı işlemini tekrar deneyin.',
-        );
-      });
+      if (mounted) _showError(error.message);
+    } on Object catch (error, stackTrace) {
+      _reportBackupError('Yedek geri yüklenemedi', error, stackTrace);
+      if (mounted) {
+        _showError('Yedek geri yüklenemedi; mevcut veriler korunmuştur.');
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<bool> _confirmRestore(AppBackupPreview preview) async {
+    if (preview.legacy) return true;
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Mevcut veriler değiştirilsin mi?'),
+            content: const Text(
+              'Tam geri yükleme mevcut personel, görev, matris ve '
+              'TEMGÜNDRAP kayıtlarının yerine yedekteki verileri koyar. '
+              'Bu işlem geri alınamaz.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Vazgeç'),
+              ),
+              FilledButton(
+                key: const Key('backup-confirm-restore'),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Geri yükle'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   Future<void> _copyBackup() async {
@@ -154,39 +220,55 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
 
   Future<void> _pasteBackup() async {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
-    if (!mounted) return;
     final text = data?.text;
     if (text == null || text.trim().isEmpty) {
-      setState(() {
-        _notice = const _BackupNotice(
-          type: _BackupNoticeType.warning,
-          message: 'Panoda yapıştırılabilecek bir yedek metni bulunamadı.',
-        );
-      });
+      if (mounted) _showError('Panoda yedek metni bulunamadı.');
       return;
     }
+    setState(() => _isLoading = true);
+    try {
+      await _loadBackupText(text);
+    } on FormatException catch (error) {
+      if (mounted) _showError(error.message);
+    } on Object catch (error, stackTrace) {
+      _reportBackupError('Panodaki yedek okunamadı', error, stackTrace);
+      if (mounted) _showError('Panodaki yedek okunamadı.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
+  void _showError(String message) {
     setState(() {
-      _textController.text = text;
-      _notice = const _BackupNotice(
-        type: _BackupNoticeType.success,
-        message: 'Panodaki metin kutuya yapıştırıldı.',
-      );
+      _notice = _BackupNotice(type: _BackupNoticeType.error, message: message);
     });
+  }
+
+  void _reportBackupError(
+    String context,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    FlutterError.reportError(
+      FlutterErrorDetails(
+        exception: error,
+        stack: stackTrace,
+        library: 'Nizam yedekleme',
+        context: ErrorDescription(context),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final keyboardVisible = mediaQuery.viewInsets.bottom > 0;
-    final verticalReservedSpace = widget.isBottomSheet ? 12.0 : 48.0;
-    final maxHeightFactor = widget.isBottomSheet ? 0.94 : 0.88;
-    final availableHeight = (mediaQuery.size.height -
+    final maxHeight = (mediaQuery.size.height -
             mediaQuery.viewInsets.bottom -
             mediaQuery.padding.top -
-            verticalReservedSpace)
-        .clamp(280.0, mediaQuery.size.height * maxHeightFactor);
-
+            (widget.isBottomSheet ? 12 : 48))
+        .clamp(
+            360.0, mediaQuery.size.height * (widget.isBottomSheet ? .94 : .88));
     final surface = Material(
       color: Theme.of(context).colorScheme.surface,
       clipBehavior: Clip.antiAlias,
@@ -198,26 +280,23 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
       ),
       child: SizedBox(
         width: widget.isBottomSheet ? double.infinity : 620,
-        height: availableHeight,
+        height: maxHeight,
         child: Column(
           children: [
-            _buildHeader(keyboardVisible),
+            _buildHeader(),
             if (_isLoading) const LinearProgressIndicator(minHeight: 2),
-            Expanded(child: _buildScrollableContent(keyboardVisible)),
+            Expanded(child: _buildContent(keyboardVisible)),
           ],
         ),
       ),
     );
-
     if (widget.isBottomSheet) {
       return AnimatedPadding(
         duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOut,
         padding: EdgeInsets.only(bottom: mediaQuery.viewInsets.bottom),
         child: surface,
       );
     }
-
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       backgroundColor: Colors.transparent,
@@ -225,10 +304,10 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
     );
   }
 
-  Widget _buildHeader(bool keyboardVisible) {
+  Widget _buildHeader() {
     final colors = Theme.of(context).colorScheme;
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, keyboardVisible ? 10 : 16, 12, 10),
+      padding: const EdgeInsets.fromLTRB(20, 16, 12, 10),
       child: Row(
         children: [
           Container(
@@ -238,175 +317,208 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
               color: colors.primaryContainer,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
-              Icons.cloud_sync_outlined,
-              color: colors.onPrimaryContainer,
-            ),
+            child:
+                Icon(Icons.storage_rounded, color: colors.onPrimaryContainer),
           ),
           const SizedBox(width: 12),
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Yedekleme ve geri yükleme',
+                Text(
+                  'Tam yedekleme ve geri yükleme',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
-                if (!keyboardVisible) ...[
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Personel ve tim verilerinizi güvenle taşıyın.',
-                    style: TextStyle(fontSize: 13),
-                  ),
-                ],
+                Text('Bulut gerekmez; dosya sizin seçtiğiniz yerde kalır.'),
               ],
             ),
           ),
-          IconButton(
-            tooltip: 'Kapat',
-            icon: const Icon(Icons.close_rounded),
-            onPressed: _close,
-          ),
+          IconButton(onPressed: _close, icon: const Icon(Icons.close_rounded)),
         ],
       ),
     );
   }
 
-  Widget _buildScrollableContent(bool keyboardVisible) {
-    final readOnly = _mode == _BackupMode.export;
+  Widget _buildContent(bool keyboardVisible) {
+    final isExport = _mode == _BackupMode.export;
     return SingleChildScrollView(
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: EdgeInsets.fromLTRB(20, 6, 20, keyboardVisible ? 12 : 20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(
-            width: double.infinity,
-            child: SegmentedButton<_BackupMode>(
-              segments: const [
-                ButtonSegment(
-                  value: _BackupMode.export,
-                  icon: Icon(Icons.file_download_outlined),
-                  label: Text('Yedek oluştur'),
-                ),
-                ButtonSegment(
-                  value: _BackupMode.import,
-                  icon: Icon(Icons.file_upload_outlined),
-                  label: Text('Geri yükle'),
-                ),
-              ],
-              selected: {_mode},
-              onSelectionChanged: _isLoading
-                  ? null
-                  : (selection) {
-                      setState(() {
-                        _mode = selection.first;
-                        _notice = null;
-                      });
-                    },
-            ),
+          SegmentedButton<_BackupMode>(
+            segments: const [
+              ButtonSegment(
+                value: _BackupMode.export,
+                icon: Icon(Icons.save_alt_rounded),
+                label: Text('Yedekle'),
+              ),
+              ButtonSegment(
+                value: _BackupMode.import,
+                icon: Icon(Icons.restore_rounded),
+                label: Text('Geri yükle'),
+              ),
+            ],
+            selected: {_mode},
+            onSelectionChanged: _isLoading
+                ? null
+                : (selection) => setState(() {
+                      _mode = selection.first;
+                      _notice = null;
+                    }),
           ),
           if (_notice != null) ...[
             const SizedBox(height: 12),
             _NoticeCard(notice: _notice!),
           ],
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  readOnly ? 'Oluşturulan yedek' : 'İçe aktarılacak yedek',
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-              ),
-              if (readOnly && _textController.text.isNotEmpty)
-                TextButton.icon(
-                  key: const Key('backup-copy'),
-                  onPressed: _isLoading ? null : _copyBackup,
-                  icon: const Icon(Icons.copy_rounded, size: 18),
-                  label: const Text('Kopyala'),
-                ),
-              if (!readOnly)
-                TextButton.icon(
-                  key: const Key('backup-paste'),
-                  onPressed: _isLoading ? null : _pasteBackup,
-                  icon: const Icon(Icons.content_paste_rounded, size: 18),
-                  label: const Text('Panodan yapıştır'),
-                ),
-            ],
+          const SizedBox(height: 16),
+          if (isExport) _buildExportContent() else _buildRestoreContent(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExportContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _InfoCard(
+          icon: Icons.inventory_2_outlined,
+          title: 'Yedekte neler var?',
+          text: 'İsimler, timler, kullanıcılar, telefonlar, görevler, aylık '
+              'matris, faaliyet arşivi, raporlar, takma adlar, toplu aktarım '
+              'geçmişi ve TEMGÜNDRAP belgeleri.',
+        ),
+        const SizedBox(height: 12),
+        const _InfoCard(
+          icon: Icons.folder_outlined,
+          title: 'Uygulama silinse de koruyun',
+          text: 'Açılan kaydet ekranından İndirilenler gibi cihazın yerel '
+              'bir klasörünü seçin. Uygulamanın kendi klasörüne bırakmayın.',
+        ),
+        const SizedBox(height: 12),
+        const _InfoCard(
+          icon: Icons.privacy_tip_outlined,
+          title: 'Dosyayı güvenli tutun',
+          text: 'Yedek kişisel bilgiler içerir. Yalnızca güvenilir bir yerel '
+              'klasörde saklayın ve başkalarıyla paylaşmayın.',
+        ),
+        const SizedBox(height: 20),
+        FilledButton.icon(
+          key: const Key('backup-create'),
+          onPressed: _isLoading ? null : _exportBackup,
+          icon: const Icon(Icons.save_alt_rounded),
+          label: const Text('Tam yedeği cihazda sakla'),
+        ),
+        if (_textController.text.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          TextButton.icon(
+            key: const Key('backup-copy'),
+            onPressed: _copyBackup,
+            icon: const Icon(Icons.copy_rounded),
+            label: const Text('Yedek metnini de kopyala'),
           ),
-          const SizedBox(height: 6),
-          SizedBox(
-            height: keyboardVisible ? 150 : 230,
+        ],
+      ],
+    );
+  }
+
+  Widget _buildRestoreContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        OutlinedButton.icon(
+          key: const Key('backup-pick-file'),
+          onPressed: _isLoading ? null : _pickBackup,
+          icon: const Icon(Icons.folder_open_rounded),
+          label: const Text('Yedek dosyası seç'),
+        ),
+        TextButton.icon(
+          key: const Key('backup-paste'),
+          onPressed: _isLoading ? null : _pasteBackup,
+          icon: const Icon(Icons.content_paste_rounded),
+          label: const Text('Panodaki eski yedeği kullan'),
+        ),
+        SizedBox(
+          height: 1,
+          child: Opacity(
+            opacity: 0,
             child: TextField(
               key: const Key('backup-text-field'),
               controller: _textController,
-              readOnly: readOnly,
-              showCursor: !readOnly,
-              maxLines: null,
-              expands: true,
-              textAlignVertical: TextAlignVertical.top,
-              onChanged: (_) => setState(() {}),
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-              decoration: InputDecoration(
-                hintText: readOnly
-                    ? 'Yedek oluşturduğunuzda veri burada görünür.'
-                    : 'Daha önce kopyaladığınız yedek metnini buraya '
-                        'yapıştırın.',
-                contentPadding: const EdgeInsets.all(14),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                filled: true,
-                fillColor: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerLowest,
-              ),
             ),
           ),
+        ),
+        if (_preview != null) ...[
           const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.privacy_tip_outlined,
-                size: 18,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Yedek metni personel bilgileri içerir. Yalnızca güvenilir '
-                  'yerlerde saklayın ve paylaşın.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          _BackupPreviewCard(preview: _preview!),
           const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: FilledButton.icon(
-              key: Key(
-                readOnly ? 'backup-create' : 'backup-restore',
-              ),
-              onPressed: _isLoading
-                  ? null
-                  : readOnly
-                      ? _exportBackup
-                      : _importBackup,
-              icon: Icon(
-                readOnly ? Icons.file_download_outlined : Icons.restore_rounded,
-              ),
-              label: Text(
-                readOnly ? 'Yedeği oluştur' : 'Yedeği geri yükle',
-              ),
+          FilledButton.icon(
+            key: const Key('backup-restore'),
+            onPressed: _isLoading ? null : _importBackup,
+            icon: const Icon(Icons.restore_rounded),
+            label: const Text('Yedeği geri yükle'),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _BackupPreviewCard extends StatelessWidget {
+  const _BackupPreviewCard({required this.preview});
+
+  final AppBackupPreview preview;
+
+  @override
+  Widget build(BuildContext context) {
+    final date = preview.exportedAt.millisecondsSinceEpoch == 0
+        ? 'Eski yedek'
+        : DateFormat('dd.MM.yyyy HH:mm').format(preview.exportedAt.toLocal());
+    return _InfoCard(
+      icon: Icons.fact_check_outlined,
+      title: preview.legacy ? 'Eski personel yedeği' : 'Doğrulanmış tam yedek',
+      text: '$date • ${preview.personnelCount} personel • '
+          '${preview.activityCount} faaliyet • '
+          '${preview.assignmentCount} görev kaydı • '
+          '${preview.temgundrapDocumentCount} TEMGÜNDRAP',
+    );
+  }
+}
+
+class _InfoCard extends StatelessWidget {
+  const _InfoCard(
+      {required this.icon, required this.title, required this.text});
+
+  final IconData icon;
+  final String title;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: colors.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                Text(text),
+              ],
             ),
           ),
         ],
@@ -428,26 +540,18 @@ class _NoticeCard extends StatelessWidget {
       _BackupNoticeType.warning => (Icons.warning_amber_rounded, Colors.orange),
       _BackupNoticeType.error => (Icons.error_outline, colors.error),
     };
-
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: .1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withValues(alpha: .3)),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 20),
+          Icon(icon, color: color),
           const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              notice.message,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
+          Expanded(child: Text(notice.message)),
         ],
       ),
     );
