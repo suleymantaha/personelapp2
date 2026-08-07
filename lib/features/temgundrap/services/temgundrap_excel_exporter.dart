@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:personelapp2/core/utils/export_file_name_helper.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/services/temgundrap_pdf_exporter.dart';
@@ -136,7 +137,14 @@ class TemgundrapExcelExporter {
 
   static Future<void> share(TemgundrapDocument document) async {
     final directory = await getTemporaryDirectory();
-    final file = File('${directory.path}/TEMGUNDRAP_${document.id}.xlsx');
+    final dateStr =
+        '${document.date.year}-${document.date.month.toString().padLeft(2, '0')}-${document.date.day.toString().padLeft(2, '0')}';
+    final fileName = formatExportFileName(
+      title: 'TEMGÜNDRAP_${document.unitTitle}',
+      date: dateStr,
+      extension: 'xlsx',
+    );
+    final file = File('${directory.path}/$fileName');
     await file.writeAsBytes(build(document), flush: true);
     await SharePlus.instance.share(
       ShareParams(

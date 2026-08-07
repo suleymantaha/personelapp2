@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:personelapp2/core/utils/export_file_name_helper.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:printing/printing.dart';
@@ -175,7 +176,14 @@ class TemgundrapPdfExporter {
   static Future<void> shareDocument(TemgundrapDocument document) async {
     final bytes = await (await build(document)).save();
     final directory = await getTemporaryDirectory();
-    final file = File('${directory.path}/TEMGUNDRAP_${document.id}.pdf');
+    final dateStr =
+        '${document.date.year}-${document.date.month.toString().padLeft(2, '0')}-${document.date.day.toString().padLeft(2, '0')}';
+    final fileName = formatExportFileName(
+      title: 'TEMGÜNDRAP_${document.unitTitle}',
+      date: dateStr,
+      extension: 'pdf',
+    );
+    final file = File('${directory.path}/$fileName');
     await file.writeAsBytes(bytes);
     await SharePlus.instance.share(
       ShareParams(
