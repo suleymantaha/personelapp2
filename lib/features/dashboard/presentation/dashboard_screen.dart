@@ -7,6 +7,9 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
+import 'package:personelapp2/features/dashboard/presentation/models/dashboard_action_item.dart';
+import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_action_tone.dart';
+import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_archive_action.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_grid_layout.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_menu_card.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_settings.dart';
@@ -19,6 +22,64 @@ class DashboardScreen extends ConsumerWidget {
     final session = ref.watch(userSessionProvider);
     final isAdmin = session?.isAdmin ?? false;
     final pendingAsync = ref.watch(pendingAssignmentsProvider);
+
+    final gridActions = <DashboardActionItem>[
+      DashboardActionItem(
+        icon: Icons.edit_calendar,
+        title: 'Faaliyet Çizelgesi',
+        subtitle: 'Günlük görev gir',
+        tone: DashboardActionTone.primary,
+        onTap: () => context.push('/activity-form'),
+      ),
+      DashboardActionItem(
+        icon: Icons.grid_on,
+        title: 'Aylık Matris',
+        subtitle: 'Excel / Dağıtım',
+        tone: DashboardActionTone.neutral,
+        onTap: () => context.push('/monthly-matrix'),
+      ),
+      DashboardActionItem(
+        icon: Icons.table_chart_outlined,
+        title: 'TEMGÜNDRAP',
+        subtitle: 'Çizelge oluştur ve yönet',
+        tone: DashboardActionTone.neutral,
+        onTap: () => context.push('/temgundrap'),
+      ),
+      DashboardActionItem(
+        icon: Icons.people_alt,
+        title: 'Personel & Tim',
+        subtitle: isAdmin ? 'Kayıt ve Yetki' : 'Kadro Durumu',
+        tone: DashboardActionTone.personnel,
+        onTap: () => context.push('/personnel-management'),
+      ),
+      if (isAdmin) ...[
+        DashboardActionItem(
+          icon: Icons.paste_rounded,
+          title: 'Metinden Toplu Aktar',
+          subtitle: 'WhatsApp / Liste Yükle',
+          tone: DashboardActionTone.import,
+          onTap: () async {
+            final db = ref.read(databaseProvider);
+            final activityRepo = ref.read(activityRepositoryProvider);
+            await showDialog<bool>(
+              context: context,
+              builder: (ctx) => BulkImportDialog(
+                database: db,
+                activityRepository: activityRepo,
+              ),
+            );
+            ref.invalidate(activityRepositoryProvider);
+          },
+        ),
+        DashboardActionItem(
+          icon: Icons.assignment_turned_in,
+          title: 'Bekleyen Onaylar',
+          subtitle: 'Çakışma denetimi',
+          tone: DashboardActionTone.pending,
+          onTap: () => context.push('/pending-approvals'),
+        ),
+      ],
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -37,148 +98,108 @@ class DashboardScreen extends ConsumerWidget {
         ],
       ),
       body: ResponsiveCenter(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Pending Approvals Warning Banner (Admin Only)
-            if (isAdmin)
-              pendingAsync.when(
-                data: (pendingList) {
-                  if (pendingList.isEmpty) return const SizedBox.shrink();
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: Card(
-                      color: context.rejectedBgColor,
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                          color: context.rejectedBorderColor,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        leading: Icon(
-                          Icons.warning_amber_rounded,
-                          color: context.rejectedColor,
-                          size: 32,
-                        ),
-                        title: Text(
-                          '${pendingList.length} Görevlendirmede Çakışma / Rapor Var!',
-                          style: TextStyle(
-                            color: context.rejectedColor,
-                            fontWeight: FontWeight.bold,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final gridLayout = DashboardGridLayout.calculate(constraints);
+
+            return CustomScrollView(
+              slivers: [
+                if (isAdmin)
+                  SliverToBoxAdapter(
+                    child: pendingAsync.when(
+                      data: (pendingList) {
+                        if (pendingList.isEmpty) return const SizedBox.shrink();
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: Card(
+                            color: context.rejectedBgColor,
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                color: context.rejectedBorderColor,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ListTile(
+                              leading: Icon(
+                                Icons.warning_amber_rounded,
+                                color: context.rejectedColor,
+                                size: 32,
+                              ),
+                              title: Text(
+                                '${pendingList.length} Görevlendirmede Çakışma / Rapor Var!',
+                                style: TextStyle(
+                                  color: context.rejectedColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Text(
+                                'Onaylamak veya reddetmek için dokunun.',
+                                style: TextStyle(color: context.textPrimary),
+                              ),
+                              trailing: Icon(
+                                Icons.arrow_forward_ios,
+                                size: 16,
+                                color: context.rejectedColor,
+                              ),
+                              onTap: () => context.push('/pending-approvals'),
+                            ),
                           ),
-                        ),
-                        subtitle: Text(
-                          'Onaylamak veya reddetmek için dokunun.',
-                          style: TextStyle(color: context.textPrimary),
-                        ),
-                        trailing: Icon(
-                          Icons.arrow_forward_ios,
-                          size: 16,
-                          color: context.rejectedColor,
-                        ),
-                        onTap: () => context.push('/pending-approvals'),
-                      ),
+                        );
+                      },
+                      loading: () => const SizedBox.shrink(),
+                      error: (err, st) => const SizedBox.shrink(),
                     ),
-                  );
-                },
-                loading: () => const SizedBox.shrink(),
-                error: (err, st) => const SizedBox.shrink(),
-              ),
-
-            const Text(
-              'İşlemler',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-
-            // Navigation Grid Cards
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final itemCount = isAdmin ? 7 : 5;
-                  final gridLayout = DashboardGridLayout.calculate(
-                    constraints,
-                    itemCount,
-                  );
-
-                  return GridView.count(
+                  ),
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      'İşlemler',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: gridLayout.columnCount,
-                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisExtent: gridLayout.mainAxisExtent,
                     crossAxisSpacing: AppSpacing.cardGap,
                     mainAxisSpacing: AppSpacing.cardGap,
-                    childAspectRatio: gridLayout.cardAspectRatio,
-                    children: <Widget>[
-                      DashboardMenuCard(
-                        icon: Icons.edit_calendar,
-                        title: 'Faaliyet Çizelgesi',
-                        subtitle: 'Günlük görev gir',
-                        color: context.accentOrOlive,
-                        onTap: () => context.push('/activity-form'),
-                      ),
-                      DashboardMenuCard(
-                        icon: Icons.grid_on,
-                        title: 'Aylık Matris',
-                        subtitle: 'Excel / Dağıtım',
-                        color: context.accentOrOlive,
-                        onTap: () => context.push('/monthly-matrix'),
-                      ),
-                      DashboardMenuCard(
-                        icon: Icons.table_chart_outlined,
-                        title: 'TEMGÜNDRAP',
-                        subtitle: 'Çizelge oluştur ve yönet',
-                        color: context.accentOrOlive,
-                        onTap: () => context.push('/temgundrap'),
-                      ),
-                      DashboardMenuCard(
-                        icon: Icons.people_alt,
-                        title: 'Personel & Tim',
-                        subtitle: isAdmin ? 'Kayıt ve Yetki' : 'Kadro Durumu',
-                        color: context.blueGreyColor,
-                        onTap: () => context.push('/personnel-management'),
-                      ),
-                      if (isAdmin) ...[
-                        DashboardMenuCard(
-                          icon: Icons.paste_rounded,
-                          title: 'Metinden Toplu Aktar',
-                          subtitle: 'WhatsApp / Liste Yükle',
-                          color: Colors.blue.shade700,
-                          onTap: () async {
-                            final db = ref.read(databaseProvider);
-                            final activityRepo = ref.read(
-                              activityRepositoryProvider,
-                            );
-                            await showDialog<bool>(
-                              context: context,
-                              builder: (ctx) => BulkImportDialog(
-                                database: db,
-                                activityRepository: activityRepo,
-                              ),
-                            );
-                            ref.invalidate(activityRepositoryProvider);
-                          },
-                        ),
-                        DashboardMenuCard(
-                          icon: Icons.assignment_turned_in,
-                          title: 'Bekleyen Onaylar',
-                          subtitle: 'Çakışma denetimi',
-                          color: context.pendingColor,
-                          onTap: () => context.push('/pending-approvals'),
-                        ),
-                      ],
-                      DashboardMenuCard(
-                        icon: Icons.inventory_2,
-                        title: 'Faaliyet Arşivi',
-                        subtitle: 'Arama ve İnceleme',
-                        color: context.brownColor,
-                        onTap: () => context.push('/activity-archive'),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final action = gridActions[index];
+                      return DashboardMenuCard(
+                        key: ValueKey('dashboard-action-${action.title}'),
+                        icon: action.icon,
+                        title: action.title,
+                        subtitle: action.subtitle,
+                        tone: action.tone,
+                        onTap: action.onTap,
+                      );
+                    },
+                    childCount: gridActions.length,
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: AppSpacing.cardGap),
+                ),
+                SliverToBoxAdapter(
+                  child: DashboardArchiveAction(
+                    key: const ValueKey('dashboard-archive-action'),
+                    icon: Icons.inventory_2_outlined,
+                    title: 'Faaliyet Arşivi',
+                    subtitle: 'Arama ve İnceleme',
+                    onTap: () => context.push('/activity-archive'),
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: AppSpacing.md),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -192,12 +213,12 @@ Widget temgundrapDashboardCardPreview() {
       body: Center(
         child: SizedBox(
           width: 180,
-          height: 150,
+          height: 184,
           child: DashboardMenuCard(
             icon: Icons.table_chart_outlined,
             title: 'TEMGÜNDRAP',
             subtitle: 'Çizelge oluştur ve yönet',
-            color: Colors.green.shade800,
+            tone: DashboardActionTone.neutral,
             onTap: _previewNoop,
           ),
         ),
