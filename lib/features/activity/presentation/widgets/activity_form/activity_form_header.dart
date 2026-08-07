@@ -66,62 +66,76 @@ class ActivityFormHeader extends StatelessWidget {
   Future<void> _showActivityPicker(BuildContext context) async {
     await showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       showDragHandle: true,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Faaliyet Seç',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 12),
-              ...templates.map((template) {
-                final isOther = template == 'Diğer';
-                final selected = activityNameController.text.trim() == template;
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? context.accentSubtleBg
-                          : context.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      isOther ? Icons.edit_rounded : Icons.shield_outlined,
-                      color: context.accentOrOlive,
-                    ),
+      builder: (sheetContext) {
+        final maxHeight = MediaQuery.sizeOf(sheetContext).height * .78;
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxHeight),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Faaliyet Seç',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView(
+                    key: const Key('activity-template-list'),
+                    shrinkWrap: true,
+                    children: templates.map((template) {
+                      final isOther = template == 'Diğer';
+                      final selected = activityNameController.text.trim() == template;
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? sheetContext.accentSubtleBg
+                                : sheetContext.colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(
+                            isOther ? Icons.edit_rounded : Icons.shield_outlined,
+                            color: sheetContext.accentOrOlive,
+                          ),
+                        ),
+                        title: Text(
+                          template,
+                          style: TextStyle(
+                            fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                          ),
+                        ),
+                        trailing: selected
+                            ? Icon(
+                                Icons.check_circle_rounded,
+                                color: sheetContext.accentOrOlive,
+                              )
+                            : const Icon(Icons.chevron_right_rounded),
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                          if (isOther) {
+                            _showCustomActivityDialog(context);
+                          } else {
+                            onTemplateSelected(template);
+                          }
+                        },
+                      );
+                    }).toList(),
                   ),
-                  title: Text(
-                    template,
-                    style: TextStyle(
-                      fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                    ),
-                  ),
-                  trailing: selected
-                      ? Icon(Icons.check_circle_rounded, color: context.accentOrOlive)
-                      : const Icon(Icons.chevron_right_rounded),
-                  onTap: () {
-                    Navigator.pop(context);
-                    if (isOther) {
-                      _showCustomActivityDialog(context);
-                    } else {
-                      onTemplateSelected(template);
-                    }
-                  },
-                );
-              }),
-            ],
+                ),
+              ],
+            ),
           ),
         );
       },
