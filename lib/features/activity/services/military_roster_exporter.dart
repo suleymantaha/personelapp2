@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
+import 'package:personelapp2/core/utils/export_file_name_helper.dart';
 import 'package:personelapp2/core/utils/official_roster_title.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/services/exporter/excel_html_generator.dart';
@@ -175,11 +176,12 @@ class MilitaryRosterExporter {
     );
 
     final dir = await getTemporaryDirectory();
-    final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-    final exportId = DateTime.now().millisecondsSinceEpoch;
-    final file = File(
-      '${dir.path}/${sanitizedTitle}_Listesi_${tarih}_$exportId.xlsx',
+    final fileName = formatExportFileName(
+      title: faaliyetAdi,
+      date: tarih,
+      extension: 'xlsx',
     );
+    final file = File('${dir.path}/$fileName');
     await file.writeAsBytes(bytes);
 
     await SharePlus.instance.share(
@@ -202,8 +204,11 @@ class MilitaryRosterExporter {
       rows: rows,
     );
 
-    final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-    final fileName = '${sanitizedTitle}_Listesi_$tarih.xlsx';
+    final fileName = formatExportFileName(
+      title: faaliyetAdi,
+      date: tarih,
+      extension: 'xlsx',
+    );
 
     Directory targetDir;
     try {
@@ -254,10 +259,12 @@ class MilitaryRosterExporter {
     );
 
     final dir = await getTemporaryDirectory();
-    final exportId = DateTime.now().millisecondsSinceEpoch;
-    final file = File(
-      '${dir.path}/Gunluk_Tum_Faaliyetler_${dateStr}_$exportId.xlsx',
+    final fileName = formatExportFileName(
+      title: title,
+      date: dateStr,
+      extension: 'xlsx',
     );
+    final file = File('${dir.path}/$fileName');
     await file.writeAsBytes(bytes);
 
     await SharePlus.instance.share(

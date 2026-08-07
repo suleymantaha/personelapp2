@@ -1,6 +1,6 @@
 part of 'pdf_roster_exporter.dart';
 
-const _rowsPerPdfTable = 22;
+const _rowsPerPdfTable = 32;
 
 String _normalizeGroupLabel(String value) => value
     .trim()

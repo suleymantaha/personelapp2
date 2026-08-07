@@ -14,11 +14,12 @@ Future<void> pdfShareRoster({
   );
 
   final dir = await getTemporaryDirectory();
-  final sanitizedTitle = faaliyetAdi.replaceAll(RegExp(r'[^\w\.-]'), '_');
-  final exportId = DateTime.now().millisecondsSinceEpoch;
-  final file = File(
-    '${dir.path}/${sanitizedTitle}_Listesi_${tarih}_$exportId.pdf',
+  final fileName = formatExportFileName(
+    title: faaliyetAdi,
+    date: tarih,
+    extension: 'pdf',
   );
+  final file = File('${dir.path}/$fileName');
   await file.writeAsBytes(await pdf.save());
 
   await SharePlus.instance.share(
