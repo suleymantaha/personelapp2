@@ -1,14 +1,19 @@
+import 'package:drift/drift.dart' hide isNull;
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:drift/drift.dart' hide isNull;
-import 'package:drift/native.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/presentation/activity_form_screen.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('tr_TR');
+  });
+
   const personnel = [
     PersonelTableData(
       id: 1,
@@ -54,6 +59,14 @@ void main() {
     );
   }
 
+  Future<void> chooseActivity(WidgetTester tester, String activity) async {
+    await tester.tap(find.byKey(const Key('activity-name-field')));
+    await tester.pumpAndSettle();
+    expect(find.text('Faaliyet Seç'), findsOneWidget);
+    await tester.tap(find.text(activity).last);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('modern form stays usable on a narrow phone', (tester) async {
     tester.view.physicalSize = const Size(320, 800);
     tester.view.devicePixelRatio = 1;
@@ -66,17 +79,13 @@ void main() {
     expect(find.text('Faaliyet Çizelgesi'), findsOneWidget);
     expect(find.byTooltip('Toplu metin yapıştır'), findsOneWidget);
     expect(find.byKey(const Key('activity-date-row')), findsOneWidget);
+    expect(find.byKey(const Key('activity-name-field')), findsOneWidget);
     expect(find.byKey(const Key('save-activity-button')), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    await tester.ensureVisible(find.text('Heybet'));
-    await tester.pump();
-    await tester.tap(find.text('Heybet'));
-    await tester.pump();
-    final nameField = tester.widget<TextField>(
-      find.byKey(const Key('activity-name-field')),
-    );
-    expect(nameField.controller?.text, 'Heybet');
+    await chooseActivity(tester, 'Heybet');
+    expect(find.text('Heybet'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('personnel search filters visible units', (tester) async {
@@ -141,8 +150,7 @@ void main() {
       ),
     );
     await tester.pump();
-    await tester.tap(find.text('Heybet'));
-    await tester.pump();
+    await chooseActivity(tester, 'Heybet');
     await tester.tap(find.byKey(const ValueKey('batch-duty-button-K.H')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('batch-duty-HEYBET')));

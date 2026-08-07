@@ -1,0 +1,64 @@
+name: Android APK
+
+on:
+  push:
+    branches:
+      - feature/activity-form-modern-ui
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Calculate Android build number
+        id: version
+        shell: bash
+        run: |
+          BUILD_NUMBER=$((1000 + GITHUB_RUN_NUMBER))
+          echo "build_number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "Android versionCode: $BUILD_NUMBER"
+
+      - name: Build release APK
+        run: >-
+          flutter build apk --release
+          --build-name=1.0.1
+          --build-number=${{ steps.version.outputs.build_number }}
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: personelapp2-1.0.1-build-${{ steps.version.outputs.build_number }}
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
