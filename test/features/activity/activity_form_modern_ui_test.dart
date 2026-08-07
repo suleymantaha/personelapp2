@@ -63,7 +63,10 @@ void main() {
     await tester.tap(find.byKey(const Key('activity-name-field')));
     await tester.pumpAndSettle();
     expect(find.text('Faaliyet Seç'), findsOneWidget);
-    await tester.tap(find.text(activity).last);
+    final activityFinder = find.text(activity).last;
+    await tester.ensureVisible(activityFinder);
+    await tester.pumpAndSettle();
+    await tester.tap(activityFinder);
     await tester.pumpAndSettle();
   }
 
@@ -74,7 +77,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(buildSubject());
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Faaliyet Çizelgesi'), findsOneWidget);
     expect(find.byTooltip('Toplu metin yapıştır'), findsOneWidget);
@@ -90,7 +93,7 @@ void main() {
 
   testWidgets('personnel search filters visible units', (tester) async {
     await tester.pumpWidget(buildSubject());
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('K.H'), findsOneWidget);
     expect(find.text('2-B Timi'), findsOneWidget);
@@ -99,7 +102,7 @@ void main() {
       find.byKey(const Key('personnel-search-field')),
       'Mehmet',
     );
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('K.H'), findsNothing);
     expect(find.text('2-B Timi'), findsOneWidget);
@@ -107,6 +110,11 @@ void main() {
 
   testWidgets('save opens preview before writing activity data',
       (tester) async {
+    tester.view.physicalSize = const Size(412, 915);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);
     await database.into(database.timTable).insert(
@@ -149,12 +157,21 @@ void main() {
         ),
       ),
     );
-    await tester.pump();
+    await tester.pumpAndSettle();
     await chooseActivity(tester, 'Heybet');
-    await tester.tap(find.byKey(const ValueKey('batch-duty-button-K.H')));
+
+    final batchButton = find.byKey(const ValueKey('batch-duty-button-K.H'));
+    await tester.ensureVisible(batchButton);
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('batch-duty-HEYBET')));
+    await tester.tap(batchButton);
     await tester.pumpAndSettle();
+
+    final heybetDuty = find.byKey(const ValueKey('batch-duty-HEYBET'));
+    await tester.ensureVisible(heybetDuty);
+    await tester.pumpAndSettle();
+    await tester.tap(heybetDuty);
+    await tester.pumpAndSettle();
+
     await tester.tap(find.byKey(const Key('save-activity-button')));
     await tester.pumpAndSettle();
 
