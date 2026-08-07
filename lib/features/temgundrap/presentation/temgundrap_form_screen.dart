@@ -4,8 +4,13 @@ import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_operation_editor_dialog.dart';
 
 class TemgundrapFormScreen extends StatefulWidget {
-  const TemgundrapFormScreen({super.key, this.initialDocument});
+  const TemgundrapFormScreen({
+    super.key,
+    this.initialDocument,
+    this.initialDate,
+  });
   final TemgundrapDocument? initialDocument;
+  final DateTime? initialDate;
   @override
   State<TemgundrapFormScreen> createState() => _TemgundrapFormScreenState();
 }
@@ -26,7 +31,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
   void initState() {
     super.initState();
     final initial = widget.initialDocument;
-    _date = initial?.date ?? DateTime.now();
+    _date = initial?.date ?? widget.initialDate ?? DateTime.now();
     _unitTitle = TextEditingController(
         text: initial?.unitTitle ?? 'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI');
     _approverName = TextEditingController(text: initial?.approverName ?? '');

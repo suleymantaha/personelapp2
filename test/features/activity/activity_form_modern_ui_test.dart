@@ -70,6 +70,16 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> chooseCommonDuty(WidgetTester tester, String duty) async {
+    await tester.tap(find.byKey(const Key('common-duty-field')));
+    await tester.pumpAndSettle();
+    final dutyFinder = find.byKey(ValueKey('common-duty-$duty'));
+    await tester.ensureVisible(dutyFinder);
+    await tester.pumpAndSettle();
+    await tester.tap(dutyFinder);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('modern form stays usable on a narrow phone', (tester) async {
     tester.view.physicalSize = const Size(320, 800);
     tester.view.devicePixelRatio = 1;
@@ -81,12 +91,23 @@ void main() {
 
     expect(find.text('Faaliyet Çizelgesi'), findsOneWidget);
     expect(find.byTooltip('Toplu metin yapıştır'), findsOneWidget);
-    expect(find.byKey(const Key('activity-date-row')), findsOneWidget);
-    expect(find.byKey(const Key('activity-name-field')), findsOneWidget);
-    expect(find.byKey(const Key('save-activity-button')), findsOneWidget);
+    expect(find.byKey(const Key('personnel-selection-step')), findsOneWidget);
+    expect(find.byKey(const Key('activity-date-row')), findsNothing);
+    expect(find.byKey(const Key('continue-to-details-button')), findsOneWidget);
     expect(tester.takeException(), isNull);
 
+    await tester.tap(find.byKey(const ValueKey('squad-select-K.H')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('continue-to-details-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('activity-date-row')), findsOneWidget);
+    expect(find.byKey(const Key('activity-name-field')), findsOneWidget);
+    expect(find.byKey(const Key('common-duty-field')), findsOneWidget);
+    expect(find.byKey(const Key('save-activity-button')), findsOneWidget);
+
     await chooseActivity(tester, 'Heybet');
+    await chooseCommonDuty(tester, 'HEYBET');
     expect(find.text('Heybet'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -158,19 +179,13 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('squad-select-K.H')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('continue-to-details-button')));
+    await tester.pumpAndSettle();
     await chooseActivity(tester, 'Heybet');
-
-    final batchButton = find.byKey(const ValueKey('batch-duty-button-K.H'));
-    await tester.ensureVisible(batchButton);
-    await tester.pumpAndSettle();
-    await tester.tap(batchButton);
-    await tester.pumpAndSettle();
-
-    final heybetDuty = find.byKey(const ValueKey('batch-duty-HEYBET'));
-    await tester.ensureVisible(heybetDuty);
-    await tester.pumpAndSettle();
-    await tester.tap(heybetDuty);
-    await tester.pumpAndSettle();
+    await chooseCommonDuty(tester, 'HEYBET');
 
     await tester.tap(find.byKey(const Key('save-activity-button')));
     await tester.pumpAndSettle();

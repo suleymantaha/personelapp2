@@ -36,18 +36,36 @@ GoRouter createAppRouter({UserSessionState? session}) {
       return null;
     },
     routes: [
-      GoRoute(path: loginRoute, builder: (context, state) => const LoginScreen()),
-      GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
-      GoRoute(path: '/activity-form', builder: (context, state) => const ActivityFormScreen()),
-      GoRoute(path: '/pending-approvals', builder: (context, state) => const PendingApprovalsScreen()),
-      GoRoute(path: '/personnel-management', builder: (context, state) => const PersonnelManagementScreen()),
-      GoRoute(path: '/monthly-matrix', builder: (context, state) => const MonthlyMatrixScreen()),
-      GoRoute(path: '/activity-archive', builder: (context, state) => const ActivityArchiveScreen()),
-      GoRoute(path: '/temgundrap', builder: (context, state) => const TemgundrapScreen()),
+      GoRoute(
+          path: loginRoute, builder: (context, state) => const LoginScreen()),
+      GoRoute(
+          path: '/dashboard',
+          builder: (context, state) => const DashboardScreen()),
+      GoRoute(
+          path: '/activity-form',
+          builder: (context, state) => const ActivityFormScreen()),
+      GoRoute(
+          path: '/pending-approvals',
+          builder: (context, state) => const PendingApprovalsScreen()),
+      GoRoute(
+          path: '/personnel-management',
+          builder: (context, state) => const PersonnelManagementScreen()),
+      GoRoute(
+          path: '/monthly-matrix',
+          builder: (context, state) => const MonthlyMatrixScreen()),
+      GoRoute(
+          path: '/activity-archive',
+          builder: (context, state) => const ActivityArchiveScreen()),
+      GoRoute(
+          path: '/temgundrap',
+          builder: (context, state) => const TemgundrapScreen()),
       GoRoute(
         path: '/temgundrap/form',
         builder: (context, state) => TemgundrapFormScreen(
           initialDocument: state.extra as TemgundrapDocument?,
+          initialDate: DateTime.tryParse(
+            state.uri.queryParameters['date'] ?? '',
+          ),
         ),
       ),
       GoRoute(

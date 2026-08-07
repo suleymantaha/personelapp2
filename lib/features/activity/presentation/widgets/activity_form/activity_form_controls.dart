@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 
-enum PersonnelFilter { all, selected, units }
+enum PersonnelFilter { all, selected, unassigned, unsquadded }
 
 class ActivityFormControls extends StatelessWidget {
   const ActivityFormControls({
@@ -11,6 +11,7 @@ class ActivityFormControls extends StatelessWidget {
     required this.onSearchCleared,
     required this.currentFilter,
     required this.onFilterChanged,
+    required this.showUnsquaddedFilter,
     super.key,
   });
 
@@ -20,72 +21,21 @@ class ActivityFormControls extends StatelessWidget {
   final VoidCallback onSearchCleared;
   final PersonnelFilter currentFilter;
   final ValueChanged<PersonnelFilter> onFilterChanged;
+  final bool showUnsquaddedFilter;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: context.accentSubtleBg,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: context.accentOrOlive,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.groups_rounded, color: Colors.white),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$selectedCount personel seçildi',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    Text(
-                      selectedCount == 0
-                          ? 'Görevlendirme için personel seçin'
-                          : 'Seçilenleri filtreleyerek kontrol edebilirsiniz',
-                      style: context.textStyleSecondary.copyWith(fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              if (selectedCount > 0)
-                TextButton.icon(
-                  onPressed: () => onFilterChanged(PersonnelFilter.selected),
-                  icon: const Icon(Icons.fact_check_outlined, size: 18),
-                  label: const Text('Seçilenler'),
-                ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'Görevlendirilecek Birlikler',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 12),
         TextField(
           key: const Key('personnel-search-field'),
           controller: searchController,
           onChanged: onSearchChanged,
+          textInputAction: TextInputAction.search,
           decoration: InputDecoration(
             hintText: 'Personel veya birlik ara...',
-            prefixIcon: const Icon(Icons.search_rounded, size: 28),
+            prefixIcon: const Icon(Icons.search_rounded),
             suffixIcon: searchController.text.isEmpty
                 ? null
                 : IconButton(
@@ -95,7 +45,7 @@ class ActivityFormControls extends StatelessWidget {
                   ),
             filled: true,
             fillColor: context.colorScheme.surface,
-            contentPadding: const EdgeInsets.symmetric(vertical: 18),
+            contentPadding: const EdgeInsets.symmetric(vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(18),
               borderSide: BorderSide(color: context.cardBorderColor),
@@ -130,11 +80,20 @@ class ActivityFormControls extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               _FilterChip(
-                label: 'Sadece Birlikler',
-                icon: Icons.apartment_rounded,
-                selected: currentFilter == PersonnelFilter.units,
-                onTap: () => onFilterChanged(PersonnelFilter.units),
+                label: 'Atanmayanlar',
+                icon: Icons.radio_button_unchecked_rounded,
+                selected: currentFilter == PersonnelFilter.unassigned,
+                onTap: () => onFilterChanged(PersonnelFilter.unassigned),
               ),
+              if (showUnsquaddedFilter) ...[
+                const SizedBox(width: 8),
+                _FilterChip(
+                  label: 'Timsiz',
+                  icon: Icons.person_off_outlined,
+                  selected: currentFilter == PersonnelFilter.unsquadded,
+                  onTap: () => onFilterChanged(PersonnelFilter.unsquadded),
+                ),
+              ],
             ],
           ),
         ),
@@ -163,7 +122,7 @@ class _FilterChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
         decoration: BoxDecoration(
           color: selected ? context.accentOrOlive : context.accentSubtleBg,
           borderRadius: BorderRadius.circular(999),
@@ -172,14 +131,15 @@ class _FilterChip extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 19,
-              color: selected ? Colors.white : context.accentOrOlive,
+              size: 18,
+              color: selected ? context.onAccentOrOlive : context.accentOrOlive,
             ),
             const SizedBox(width: 7),
             Text(
               label,
               style: TextStyle(
-                color: selected ? Colors.white : context.accentOrOlive,
+                color:
+                    selected ? context.onAccentOrOlive : context.accentOrOlive,
                 fontWeight: FontWeight.w700,
               ),
             ),

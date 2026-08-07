@@ -2,8 +2,8 @@ part of 'activity_form_screen.dart';
 
 extension _ActivityFormActions on _ActivityFormScreenState {
   Future<void> _submitActivity() async {
-    final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
-    final name = _activityNameController.text.trim();
+    final dateStr = DateFormat('yyyy-MM-dd').format(_draft.selectedDate);
+    final name = _draft.activityName.trim();
     final userSession = ref.read(userSessionProvider);
     if (userSession == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -17,10 +17,10 @@ extension _ActivityFormActions on _ActivityFormScreenState {
       return;
     }
 
-    final payload = _assignments.entries.where((e) => e.value.isNotEmpty).map((
+    final payload = _draft.resolvedDuties.entries.map((
       e,
     ) {
-      final note = _notes[e.key]?.trim();
+      final note = _draft.notes[e.key]?.trim();
       return PersonnelAssignmentInput(
         personnelId: e.key,
         duty: e.value,
@@ -49,7 +49,7 @@ extension _ActivityFormActions on _ActivityFormScreenState {
         MaterialPageRoute(
           builder: (_) => ActivityAssignmentPreviewScreen(
             activityName: name,
-            date: _selectedDate,
+            date: _draft.selectedDate,
             preview: preview,
             requiresAdminApproval: !userSession.isAdmin,
             onConfirm: () => _persistActivity(
@@ -61,7 +61,10 @@ extension _ActivityFormActions on _ActivityFormScreenState {
           ),
         ),
       );
-      if (saved == true && mounted) Navigator.of(context).pop();
+      if (saved == true && mounted) {
+        _updateState(() => _allowPop = true);
+        Navigator.of(context).pop();
+      }
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -141,12 +144,12 @@ extension _ActivityFormActions on _ActivityFormScreenState {
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate,
+      initialDate: _draft.selectedDate,
       firstDate: DateTime(2025),
       lastDate: DateTime(2030),
     );
     if (picked != null && mounted) {
-      _updateState(() => _selectedDate = picked);
+      _updateState(() => _draft.setDate(picked));
     }
   }
 

@@ -35,6 +35,11 @@ const defaultTemgundrapVehicleCatalog = <String, List<String>>{
   'DOBLO': [],
   'RANGER': [],
   'AMAROK': [],
+  'KOBRA': [],
+  'KİRPİ': [],
+  'KAMYON': [],
+  'HILUX': [],
+  'TOURNUE': [],
   'MİNİBÜS': [],
   'OTOMOBİL': [],
 };
