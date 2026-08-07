@@ -1,10 +1,9 @@
-name: Android Release Build
+name: Android Release
 
 on:
   push:
     branches:
       - main
-      - agent/temgundrap-module
     tags:
       - 'v*'
   workflow_dispatch:
@@ -12,29 +11,31 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: android-release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    name: Build Release APK
+    name: Test and build signed APK
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v5
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
-          cache: 'gradle'
+          cache: gradle
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: stable
           cache: true
 
       - name: Show tool versions
@@ -42,26 +43,52 @@ jobs:
           flutter --version
           dart --version
 
-      - name: Get dependencies
+      - name: Install dependencies
         run: flutter pub get
 
       - name: Analyze
-        run: flutter analyze --no-fatal-infos
+        run: flutter analyze
 
       - name: Run tests
-        run: flutter test
+        run: flutter test --reporter expanded
 
-      - name: Configure release signing
+      - name: Calculate app version
+        id: version
+        shell: bash
+        run: |
+          VERSION_LINE=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          VERSION_NAME=${VERSION_LINE%%+*}
+          VERSION_CODE=$((10000 + GITHUB_RUN_NUMBER))
+          echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "versionName=$VERSION_NAME"
+          echo "versionCode=$VERSION_CODE"
+
+      - name: Validate signing secrets
+        shell: bash
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          test -n "$KEYSTORE_BASE64"
-          test -n "$KEYSTORE_PASSWORD"
-          test -n "$KEY_ALIAS"
-          test -n "$KEY_PASSWORD"
+          missing=0
+          for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub Actions signing secret: $name"
+              missing=1
+            fi
+          done
+          test "$missing" -eq 0
+
+      - name: Configure release signing
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
           {
             printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
@@ -70,40 +97,32 @@ jobs:
             printf 'storeFile=upload-keystore.jks\n'
           } > android/key.properties
 
-      - name: Build Release APK
-        run: flutter build apk --release --split-per-abi
+      - name: Build signed release APK
+        run: >-
+          flutter build apk --release
+          --build-name=${{ steps.version.outputs.name }}
+          --build-number=${{ steps.version.outputs.code }}
 
-      - name: Build Release App Bundle
-        run: flutter build appbundle --release
-
-      - name: Extract version
-        id: version
+      - name: Rename APK
+        shell: bash
         run: |
-          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "VERSION_NAME=$(echo $VERSION | cut -d'+' -f1)" >> $GITHUB_OUTPUT
-          echo "VERSION_CODE=$(echo $VERSION | cut -d'+' -f2)" >> $GITHUB_OUTPUT
+          cp build/app/outputs/flutter-apk/app-release.apk \
+            build/app/outputs/flutter-apk/personelapp2-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.apk
 
-      - name: Upload APK artifacts
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk-${{ steps.version.outputs.VERSION_NAME }}-${{ steps.version.outputs.VERSION_CODE }}
-          path: |
-            build/app/outputs/flutter-apk/*.apk
-            build/app/outputs/bundle/release/app-release.aab
-          retention-days: 30
+          name: personelapp2-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}
+          path: build/app/outputs/flutter-apk/personelapp2-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.apk
+          if-no-files-found: error
+          retention-days: 7
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release for tag
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
           generate_release_notes: true
-          files: |
-            build/app/outputs/flutter-apk/*.apk
-            build/app/outputs/bundle/release/app-release.aab
+          files: build/app/outputs/flutter-apk/personelapp2-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
