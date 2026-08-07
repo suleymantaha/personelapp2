@@ -13,7 +13,7 @@ class DashboardGridLayout {
     final columns = constraints.maxWidth >= 720 ? 3 : 2;
     return DashboardGridLayout._(
       columnCount: columns,
-      mainAxisExtent: columns == 3 ? 168 : 184,
+      mainAxisExtent: columns == 3 ? 176 : 184,
     );
   }
 }

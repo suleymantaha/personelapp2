@@ -37,7 +37,7 @@ class DashboardMenuCard extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -60,7 +60,7 @@ class DashboardMenuCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.rowGap),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle,
                     maxLines: 2,
