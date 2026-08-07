@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
+import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_action_tone.dart';
 
 class DashboardMenuCard extends StatelessWidget {
   const DashboardMenuCard({
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.color,
+    required this.tone,
     required this.onTap,
     super.key,
   });
@@ -15,67 +16,66 @@ class DashboardMenuCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final Color color;
+  final DashboardActionTone tone;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxHeight < 145;
-        final hideSubtitle = constraints.maxHeight < 125;
+    final palette = tone.resolve(context);
 
-        return InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          child: Card(
-            margin: EdgeInsets.zero,
-            color: color.withValues(alpha: context.isDarkMode ? 0.18 : 0.1),
-            shape: RoundedRectangleBorder(
-              side: BorderSide(
-                color: color.withValues(
-                  alpha: context.isDarkMode ? 0.4 : 0.3,
-                ),
-              ),
-              borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-            ),
+    return Semantics(
+      button: true,
+      label: '$title, $subtitle',
+      child: ExcludeSemantics(
+        child: Material(
+          color: palette.surface,
+          shape: RoundedRectangleBorder(
+            side: BorderSide(color: palette.border),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
             child: Padding(
-              padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.md),
+              padding: const EdgeInsets.all(AppSpacing.md),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(icon, size: compact ? 24 : 28, color: color),
-                  SizedBox(height: compact ? AppSpacing.xs : AppSpacing.rowGap),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: palette.iconSurface,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      child: Icon(icon, size: 28, color: palette.content),
+                    ),
+                  ),
+                  const Spacer(),
                   Text(
                     title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: color,
-                      fontSize: compact ? 13 : null,
                     ),
                   ),
-                  if (!hideSubtitle) ...[
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      subtitle,
-                      maxLines: compact ? 1 : 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: compact ? 10 : 11,
-                        color: context.textSecondary,
-                      ),
+                  const SizedBox(height: AppSpacing.rowGap),
+                  Text(
+                    subtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.textSecondary,
                     ),
-                  ],
+                  ),
                 ],
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
