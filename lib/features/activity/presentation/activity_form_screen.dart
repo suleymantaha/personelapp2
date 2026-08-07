@@ -44,9 +44,7 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
     'Diğer',
   ];
 
-  // Maps personelId to selected DutyType
   final Map<int, String> _assignments = {};
-  // Maps personelId to custom notes
   final Map<int, String> _notes = {};
 
   @override
@@ -153,7 +151,6 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
               const SizedBox(height: 10),
               personnelAsync.when(
                 data: (rawPersonnelList) {
-                  // If Commander, strictly filter by their squad
                   final personnelList = (!isAdmin && session?.timId != null)
                       ? rawPersonnelList
                           .where((p) => p.timId == session?.timId)
@@ -283,7 +280,6 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                     );
                   }
 
-                  // If not admin (Team Commander), render a flat list (their own team sorted by rank weight)
                   personnelList.sort(
                     (a, b) => getRankWeight(
                       a.rutbe,
@@ -372,54 +368,67 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
         minimum: const EdgeInsets.fromLTRB(16, 10, 16, 10),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final isCompact = constraints.maxWidth < 360;
+            // The long desktop/tablet CTA needs more horizontal room than a
+            // typical phone provides once SafeArea padding is applied.
+            final isCompact = constraints.maxWidth < 440;
+
+            if (isCompact) {
+              return SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: FilledButton.icon(
+                  key: const Key('save-activity-button'),
+                  onPressed: _submitActivity,
+                  icon: const Icon(Icons.check_rounded),
+                  label: Text(
+                    selectedCount == 0
+                        ? 'Kaydet'
+                        : 'Kaydet ($selectedCount personel)',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              );
+            }
+
             return Row(
               children: [
-                if (!isCompact)
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '$selectedCount personel',
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          selectedCount == 0
-                              ? 'Henüz görevlendirme yok'
-                              : 'Görevlendirmeye hazır',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style:
-                              context.textStyleSecondary.copyWith(fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                if (!isCompact) const SizedBox(width: 12),
-                if (isCompact)
-                  Expanded(
-                    child: SizedBox(
-                      height: 48,
-                      child: FilledButton.icon(
-                        key: const Key('save-activity-button'),
-                        onPressed: _submitActivity,
-                        icon: const Icon(Icons.check_rounded),
-                        label: const Text('Kaydet'),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$selectedCount personel',
+                        style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
-                    ),
-                  )
-                else
-                  SizedBox(
+                      Text(
+                        selectedCount == 0
+                            ? 'Henüz görevlendirme yok'
+                            : 'Görevlendirmeye hazır',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.textStyleSecondary.copyWith(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: SizedBox(
                     height: 48,
                     child: FilledButton.icon(
                       key: const Key('save-activity-button'),
                       onPressed: _submitActivity,
                       icon: const Icon(Icons.check_rounded),
-                      label: const Text('Görevlendirmeyi Kaydet'),
+                      label: const Text(
+                        'Görevlendirmeyi Kaydet',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
+                ),
               ],
             );
           },
