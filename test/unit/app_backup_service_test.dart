@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -196,6 +197,19 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('successfully inspects and restores user backup Nizam_Yedek_2026-08-07_16-48.nizam.json', () async {
+      final file = File('Nizam_Yedek_2026-08-07_16-48.nizam.json');
+      expect(file.existsSync(), isTrue);
+
+      final contents = file.readAsStringSync();
+      final preview = await service.inspectBackupJson(contents);
+      expect(preview.legacy, isFalse);
+      expect(preview.personnelCount, greaterThan(0));
+
+      final result = await service.restoreBackupJson(contents);
+      expect(result.importedPersonnel, equals(preview.personnelCount));
     });
   });
 }
