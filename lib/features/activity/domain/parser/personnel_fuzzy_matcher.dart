@@ -37,9 +37,16 @@ class PersonnelFuzzyMatcher {
         final matchedTeamIds = matchedPersonnelList
             .where((p) => p.isMatched && p.matchedTimId != null)
             .map((p) => p.matchedTimId!)
-            .toSet();
-        if (matchedTeamIds.length == 1) {
-          final inferredName = teamNames[matchedTeamIds.first];
+            .toList();
+        if (matchedTeamIds.isNotEmpty) {
+          final counts = <int, int>{};
+          for (final id in matchedTeamIds) {
+            counts[id] = (counts[id] ?? 0) + 1;
+          }
+          final mostFrequentTeamId = counts.entries
+              .reduce((a, b) => a.value >= b.value ? a : b)
+              .key;
+          final inferredName = teamNames[mostFrequentTeamId];
           if (inferredName != null && inferredName.isNotEmpty) {
             updatedTimName = inferredName;
           }

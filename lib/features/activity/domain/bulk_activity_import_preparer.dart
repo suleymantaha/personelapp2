@@ -107,6 +107,7 @@ class BulkActivityImportPreparer {
             personnelId: item.person.matchedPersonnelId!,
             duty: item.block.parsedActivityType,
             note: note,
+            teamId: item.person.matchedTimId,
           ),
         );
       }

@@ -3,11 +3,13 @@ class PersonnelAssignmentInput {
     required this.personnelId,
     required this.duty,
     this.note,
+    this.teamId,
   });
 
   final int personnelId;
   final String duty;
   final String? note;
+  final int? teamId;
 }
 
 class ActivityCreateRequest {
