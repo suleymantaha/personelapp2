@@ -44,9 +44,6 @@ class PersonnelFuzzyMatcher {
           if (inferredName != null && inferredName.isNotEmpty) {
             updatedTimName = inferredName;
           }
-        } else if (matchedTeamIds.length > 1) {
-          // Blokta farklı timlerden personeller varsa yanlış tahmin yapma: Karma Görev
-          updatedTimName = 'Karma Görev';
         }
       }
 
