@@ -90,6 +90,7 @@ class BulkImportPreviewSection extends StatelessWidget {
     }
     final visibleBlocks = blocks.asMap().entries.where((entry) {
       return !previewFilterIsProblems ||
+          problemLocations.any((loc) => loc.blockIndex == entry.key) ||
           problemPersonnelByBlock.containsKey(entry.key);
     }).toList(growable: false);
     final personnelCount = blocks.fold<int>(

@@ -87,6 +87,7 @@ BulkParseResult _parseBulkText(
       personnelList: List<ParsedPersonnelItem>.unmodifiable(personnel),
     ));
     personnel.clear();
+    currentDate = null;
     nextIndex = 1;
   }
 
@@ -226,9 +227,9 @@ BulkParseResult _parseBulkText(
             BulkDeclaredTotal(
               lineNumber: lineNumber,
               expectedCount: expected,
-              date: currentDate,
-              teamName: currentTeam,
-              activityType: currentActivity,
+              date: currentDate!,
+              teamName: currentTeam!,
+              activityType: currentActivity!,
             ),
           );
         }
