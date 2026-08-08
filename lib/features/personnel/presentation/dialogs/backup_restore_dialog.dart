@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/app_backup_service.dart';
 import 'package:personelapp2/core/services/backup_file_gateway.dart';
+import 'package:personelapp2/core/services/session_storage.dart';
 
 Future<bool> showBackupRestoreSurface({
   required BuildContext context,
@@ -30,7 +33,7 @@ Future<bool> showBackupRestoreSurface({
       false;
 }
 
-class BackupRestoreDialog extends StatefulWidget {
+class BackupRestoreDialog extends ConsumerStatefulWidget {
   const BackupRestoreDialog({
     required this.database,
     this.isBottomSheet = false,
@@ -45,10 +48,10 @@ class BackupRestoreDialog extends StatefulWidget {
   final BackupFileGateway? fileGateway;
 
   @override
-  State<BackupRestoreDialog> createState() => _BackupRestoreDialogState();
+  ConsumerState<BackupRestoreDialog> createState() => _BackupRestoreDialogState();
 }
 
-class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
+class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
   late final AppBackupService _service =
       widget.backupService ?? AppBackupService(widget.database);
   late final BackupFileGateway _fileGateway =
@@ -155,6 +158,16 @@ class _BackupRestoreDialogState extends State<BackupRestoreDialog> {
         _notice = null;
       });
       final result = await _service.restoreBackupJson(input);
+      final updatedSession =
+          await SessionStorage.loadValidatedSession(widget.database);
+      if (mounted) {
+        ref.read(userSessionProvider.notifier).state = updatedSession;
+        ref.invalidate(allPersonnelProvider);
+        ref.invalidate(allSquadsProvider);
+        ref.invalidate(allCommandersProvider);
+        ref.invalidate(filteredActivitiesProvider);
+        ref.invalidate(pendingAssignmentsProvider);
+      }
       if (!mounted) return;
       setState(() {
         _didImport = true;

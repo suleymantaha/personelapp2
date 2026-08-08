@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/services/app_backup_service.dart';
@@ -29,15 +30,17 @@ void main() {
         addTearDown(database.close);
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => FilledButton(
-                  onPressed: () => showBackupRestoreSurface(
-                    context: context,
-                    database: database,
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                body: Builder(
+                  builder: (context) => FilledButton(
+                    onPressed: () => showBackupRestoreSurface(
+                      context: context,
+                      database: database,
+                    ),
+                    child: const Text('Yedeklemeyi aç'),
                   ),
-                  child: const Text('Yedeklemeyi aç'),
                 ),
               ),
             ),
@@ -163,11 +166,13 @@ Future<void> _pumpDialog(
   BackupFileGateway gateway,
 ) async {
   await tester.pumpWidget(
-    MaterialApp(
-      home: Scaffold(
-        body: BackupRestoreDialog(
-          database: database,
-          fileGateway: gateway,
+    ProviderScope(
+      child: MaterialApp(
+        home: Scaffold(
+          body: BackupRestoreDialog(
+            database: database,
+            fileGateway: gateway,
+          ),
         ),
       ),
     ),

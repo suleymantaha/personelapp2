@@ -44,7 +44,7 @@ class _PersonnelManagementScreenState
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(userSessionProvider);
-    final isAdmin = session?.isAdmin ?? false;
+    final isAdmin = session?.isAdmin ?? true;
 
     final personnelAsync = ref.watch(allPersonnelProvider);
     final squadsAsync = ref.watch(allSquadsProvider);
@@ -82,12 +82,12 @@ class _PersonnelManagementScreenState
                   // Filter by squad & commander permissions & search query
                   final personnelList = rawPersonnelList.where((p) {
                     // If Commander, restrict to commander's squad
-                    if (!isAdmin) {
-                      if (session?.timId == null) {
+                    if (session != null && !session.isAdmin) {
+                      if (session.timId == null) {
                         return false;
                       }
 
-                      if (p.timId != session?.timId) {
+                      if (p.timId != session.timId) {
                         return false;
                       }
                     }
