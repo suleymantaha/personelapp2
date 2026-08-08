@@ -1,6 +1,9 @@
-name: Android Release Workflow
+name: Android Release
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -17,7 +20,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build & Package Android APK
+    name: Test and build signed APK
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -38,6 +41,11 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Show tool versions
+        run: |
+          flutter --version
+          dart --version
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -45,7 +53,19 @@ jobs:
         run: flutter analyze
 
       - name: Run tests
-        run: flutter test
+        run: flutter test --reporter expanded
+
+      - name: Calculate app version
+        id: version
+        shell: bash
+        run: |
+          VERSION_LINE=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          VERSION_NAME=${VERSION_LINE%%+*}
+          VERSION_CODE=$((10000 + GITHUB_RUN_NUMBER))
+          echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "versionName=$VERSION_NAME"
+          echo "versionCode=$VERSION_CODE"
 
       - name: Configure release signing (if secrets provided)
         shell: bash
@@ -56,7 +76,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
-            echo "Keystore secret found, configuring signing..."
+            echo "Keystore secrets found, configuring signing properties..."
             printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
             {
               printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
@@ -65,17 +85,26 @@ jobs:
               printf 'storeFile=upload-keystore.jks\n'
             } > android/key.properties
           else
-            echo "No keystore secret found, building standard release APK."
+            echo "No keystore secrets found, building unsigned release APK."
           fi
 
       - name: Build Release APK
-        run: flutter build apk --release
+        run: >-
+          flutter build apk --release
+          --build-name=${{ steps.version.outputs.name }}
+          --build-number=${{ steps.version.outputs.code }}
+
+      - name: Rename APK
+        shell: bash
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk \
+            build/app/outputs/flutter-apk/personelapp2-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nizam-app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: personelapp2-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}
+          path: build/app/outputs/flutter-apk/personelapp2-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.apk
           if-no-files-found: error
           retention-days: 7
 
@@ -85,6 +114,6 @@ jobs:
         with:
           name: Release ${{ github.ref_name }}
           generate_release_notes: true
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: build/app/outputs/flutter-apk/personelapp2-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
