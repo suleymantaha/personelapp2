@@ -299,9 +299,11 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
                         BulkImportStepper(
                           currentStep: _currentStep,
                           hasBlocks: _parsedBlocks.isNotEmpty,
+                          canProceedToSave: _canProceedToSave,
                           onStepTapped: (int step) {
                             if (step <= _currentStep ||
-                                (step == 1 && _parsedBlocks.isNotEmpty)) {
+                                (step == 1 && _parsedBlocks.isNotEmpty) ||
+                                (step == 2 && _canProceedToSave)) {
                               setState(() => _currentStep = step);
                             }
                           },
@@ -360,6 +362,19 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
         ],
       ),
     );
+  }
+
+  bool get _canProceedToSave {
+    if (_parsedBlocks.isEmpty) return false;
+    final problemLocs = _getProblemLocations();
+    final hasCritical = problemLocs.any((loc) => loc.isCritical);
+    final hasUnresolvedPersonnel = _unresolvedPersonnelCount > 0;
+    final hasEmptyBlocks = _parsedBlocks.any((b) => b.personnelList.isEmpty);
+    final hasBlockingParseIssues = _parseIssues.any((i) => i.isBlocking);
+    return !hasCritical &&
+        !hasUnresolvedPersonnel &&
+        !hasEmptyBlocks &&
+        !hasBlockingParseIssues;
   }
 
   bool get _hasReviewableSuggestions => _parsedBlocks
