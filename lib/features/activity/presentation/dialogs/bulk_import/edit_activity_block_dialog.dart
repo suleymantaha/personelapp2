@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/widgets/modern_action_menu.dart';
+import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
 class EditActivityBlockDialog extends StatefulWidget {
@@ -30,16 +33,59 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
   late final TextEditingController _activityController;
   late final TextEditingController _timeController;
   late DateTime _selectedDate;
+  late String _selectedDuty;
+
+  static const List<String> _quickDuties = [
+    DutyOrLeaveType.heybet,
+    DutyOrLeaveType.hazirKita,
+    DutyOrLeaveType.guluskur,
+    DutyOrLeaveType.gorevli,
+    DutyOrLeaveType.heybetKomutani,
+  ];
+
+  static const List<String> _standardDuties = [
+    DutyOrLeaveType.heybet,
+    DutyOrLeaveType.hazirKita,
+    DutyOrLeaveType.guluskur,
+    DutyOrLeaveType.gorevli,
+    DutyOrLeaveType.heybetKomutani,
+    DutyOrLeaveType.nobSb,
+    DutyOrLeaveType.mebsNob,
+    DutyOrLeaveType.garajNob,
+    DutyOrLeaveType.ttzaNob,
+    DutyOrLeaveType.kuleNob,
+    DutyOrLeaveType.nobetci,
+    DutyOrLeaveType.diger,
+  ];
+
+  late final List<String> _dropdownOptions;
 
   @override
   void initState() {
     super.initState();
-    _activityController =
-        TextEditingController(text: widget.block.parsedActivityType);
+    final initialActivity = widget.block.parsedActivityType.trim();
+    _activityController = TextEditingController(text: initialActivity);
     _timeController =
         TextEditingController(text: widget.block.parsedTimeRange);
     _selectedDate =
         DateTime.tryParse(widget.block.parsedDate) ?? DateTime.now();
+
+    final options = <String>[..._standardDuties];
+    if (initialActivity.isNotEmpty &&
+        !options.contains(initialActivity) &&
+        initialActivity != DutyOrLeaveType.diger) {
+      options.insert(0, initialActivity);
+    }
+    _dropdownOptions = options;
+
+    if (options.contains(initialActivity)) {
+      _selectedDuty = initialActivity;
+    } else if (initialActivity.isEmpty) {
+      _selectedDuty = DutyOrLeaveType.heybet;
+      _activityController.text = DutyOrLeaveType.heybet;
+    } else {
+      _selectedDuty = DutyOrLeaveType.diger;
+    }
   }
 
   @override
@@ -47,6 +93,17 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
     _activityController.dispose();
     _timeController.dispose();
     super.dispose();
+  }
+
+  void _selectDuty(String duty) {
+    setState(() {
+      _selectedDuty = duty;
+      if (duty == DutyOrLeaveType.diger) {
+        // Keep existing text or clear for custom entry
+      } else {
+        _activityController.text = duty;
+      }
+    });
   }
 
   @override
@@ -62,31 +119,128 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Faaliyet kartını düzenle',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Icon(Icons.edit_note_rounded, color: context.accentOrOlive, size: 24),
+              const SizedBox(width: 8),
+              const Text(
+                'Faaliyet kartını düzenle',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
+
+          // Hızlı Seçim Çipleri (Quick Select Chips)
+          Text(
+            'Hızlı Görev Seçimi',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: context.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _quickDuties.map((duty) {
+                final isSelected = _activityController.text.trim() == duty;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: ChoiceChip(
+                    label: Text(
+                      duty,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Colors.white : context.textPrimary,
+                      ),
+                    ),
+                    selected: isSelected,
+                    selectedColor: context.accentOrOlive,
+                    backgroundColor: Theme.of(context).cardColor,
+                    onSelected: (selected) {
+                      if (selected) _selectDuty(duty);
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // Görev / Faaliyet Türü Dropdown
+          DropdownButtonFormField<String>(
+            value: _dropdownOptions.contains(_selectedDuty)
+                ? _selectedDuty
+                : DutyOrLeaveType.diger,
+            isExpanded: true,
+            menuMaxHeight: modernDropdownMenuMaxHeight(context),
+            borderRadius: modernDropdownBorderRadius,
+            dropdownColor: modernDropdownColor(context),
+            decoration: InputDecoration(
+              labelText: 'Görev / Faaliyet Türü Seçin',
+              prefixIcon: const Icon(Icons.list_alt_rounded),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+            items: _dropdownOptions.map((d) {
+              final label =
+                  d == DutyOrLeaveType.diger ? 'DİĞER (Elle Yaz...)' : d;
+              return DropdownMenuItem(
+                value: d,
+                child: Text(label),
+              );
+            }).toList(),
+            onChanged: (val) {
+              if (val != null) _selectDuty(val);
+            },
+          ),
+          const SizedBox(height: 12),
+
+          // Görev / Faaliyet Adı TextField
           TextField(
             key: const Key('bulk-edit-activity'),
             controller: _activityController,
-            decoration: const InputDecoration(
-              labelText: 'Görev / faaliyet adı',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: 'Görev / Faaliyet Adı (Elle Düzenle)',
+              prefixIcon: const Icon(Icons.edit_rounded),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
           ),
           const SizedBox(height: 12),
+
           TextField(
             key: const Key('bulk-edit-time'),
             controller: _timeController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Saat aralığı (isteğe bağlı)',
               hintText: '08:00 - 19:30',
-              border: OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.schedule_rounded),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
           ),
           const SizedBox(height: 12),
+
           OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             onPressed: () async {
               final picked = await showDatePicker(
                 context: context,
@@ -103,11 +257,19 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
               '${_selectedDate.day.toString().padLeft(2, '0')}.'
               '${_selectedDate.month.toString().padLeft(2, '0')}.'
               '${_selectedDate.year}',
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
           const SizedBox(height: 16),
-          FilledButton(
+
+          FilledButton.icon(
             key: const Key('bulk-edit-save'),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             onPressed: () {
               final activity = _activityController.text.trim();
               if (activity.isEmpty) return;
@@ -125,7 +287,8 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
                 ),
               );
             },
-            child: const Text('DEĞİŞİKLİKLERİ UYGULA'),
+            icon: const Icon(Icons.check_rounded),
+            label: const Text('DEĞİŞİKLİKLERİ UYGULA'),
           ),
         ],
       ),
