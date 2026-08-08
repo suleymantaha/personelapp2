@@ -41,7 +41,7 @@ class BulkImportStepper extends StatelessWidget {
             Flexible(
               child: GestureDetector(
                 onTap: () {
-                  if (i <= currentStep || (i == 1 && hasBlocks)) {
+                  if (i <= currentStep || hasBlocks) {
                     onStepTapped(i);
                   }
                 },

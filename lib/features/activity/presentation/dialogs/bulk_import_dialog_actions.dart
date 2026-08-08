@@ -40,10 +40,42 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
   }
 
   Future<void> _saveAllToFaaliyet() async {
-    if (_parsedBlocks.isEmpty ||
-        _parseIssues.any((issue) => issue.isBlocking) ||
-        _unresolvedPersonnelCount > 0 ||
-        _parsedBlocks.any((block) => block.personnelList.isEmpty)) {
+    if (_parsedBlocks.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Kaydedilecek kart bulunamadı.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    if (_unresolvedPersonnelCount > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '$_unresolvedPersonnelCount personel eşleşmedi. Lütfen tüm personelleri seçin veya listeden kaldırın.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (_parsedBlocks.any((block) => block.personnelList.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Personeli bulunmayan boş kartlar var. Lütfen kartları düzenleyin veya silin.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (_parseIssues.any((issue) => issue.isBlocking)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lütfen önce çözülmemiş kart sorunlarını (tarih, tim veya görev türü) tamamlayın.'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 

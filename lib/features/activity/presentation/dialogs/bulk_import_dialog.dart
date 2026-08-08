@@ -171,6 +171,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
         _parsedBlocks.any((b) => b.parsedActivityType.trim().isEmpty);
     final hasUnmatchedPerson =
         _parsedBlocks.any((b) => b.personnelList.any((p) => !p.isMatched));
+    final hasEmptyBlock =
+        _parsedBlocks.any((b) => b.personnelList.isEmpty);
 
     mutableIssues.removeWhere((issue) {
       switch (issue.code) {
@@ -184,9 +186,16 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
         case 'empty_input':
           return _parsedBlocks.isNotEmpty;
         case 'unmatched_personnel':
+        case 'invalid_personnel':
           return !hasUnmatchedPerson;
+        case 'invalid_time':
+          return true;
         default:
-          return false;
+          return !hasMissingDate &&
+              !hasMissingTeam &&
+              !hasMissingActivity &&
+              !hasUnmatchedPerson &&
+              !hasEmptyBlock;
       }
     });
 
