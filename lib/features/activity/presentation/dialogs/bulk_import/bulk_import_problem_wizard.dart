@@ -67,8 +67,9 @@ class BulkImportProblemWizard {
             blockIndex: blockEntry.key,
             personIndex: null,
             sourceLineNumber: null,
-            description: 'Kart #${blockEntry.key + 1}: Takım/tim bilgisi tanınamadı.',
-            isCritical: true,
+            description:
+                'Kart #${blockEntry.key + 1}: Takım adı belirtilmedi (Personelin kayıtlı timi kullanılacak).',
+            isCritical: false,
           ),
         );
         addedKeys.add(key);

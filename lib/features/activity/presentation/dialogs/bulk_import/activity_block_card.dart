@@ -204,6 +204,26 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
+                              ] else ...[
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    'Varsayılan Tim',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                      color: Colors.amber.shade800,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
                               ],
                               Expanded(
                                 child: Text(
