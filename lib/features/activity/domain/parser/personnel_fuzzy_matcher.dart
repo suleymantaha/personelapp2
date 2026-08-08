@@ -37,19 +37,16 @@ class PersonnelFuzzyMatcher {
         final matchedTeamIds = matchedPersonnelList
             .where((p) => p.isMatched && p.matchedTimId != null)
             .map((p) => p.matchedTimId!)
-            .toList();
-        if (matchedTeamIds.isNotEmpty) {
-          final counts = <int, int>{};
-          for (final id in matchedTeamIds) {
-            counts[id] = (counts[id] ?? 0) + 1;
-          }
-          final mostFrequentTeamId = counts.entries
-              .reduce((a, b) => a.value >= b.value ? a : b)
-              .key;
-          final inferredName = teamNames[mostFrequentTeamId];
+            .toSet();
+        if (matchedTeamIds.length == 1) {
+          // Tüm personeller %100 aynı timden geliyorsa tim adını çıkar
+          final inferredName = teamNames[matchedTeamIds.first];
           if (inferredName != null && inferredName.isNotEmpty) {
             updatedTimName = inferredName;
           }
+        } else if (matchedTeamIds.length > 1) {
+          // Blokta farklı timlerden personeller varsa yanlış tahmin yapma: Karma Görev
+          updatedTimName = 'Karma Görev';
         }
       }
 
