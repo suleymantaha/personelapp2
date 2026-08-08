@@ -212,7 +212,11 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
   Future<void> _editBlock(int blockIndex) async {
     final block = _parsedBlocks[blockIndex];
-    final updated = await EditActivityBlockDialog.show(context, block);
+    final updated = await EditActivityBlockDialog.show(
+      context,
+      block,
+      availableSquads: _allSquads,
+    );
     if (updated != null && mounted && blockIndex < _parsedBlocks.length) {
       _updateState(() => _parsedBlocks[blockIndex] = updated);
     }

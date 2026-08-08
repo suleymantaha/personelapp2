@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
@@ -7,20 +8,26 @@ import 'package:personelapp2/features/activity/domain/models/parsed_activity_blo
 class EditActivityBlockDialog extends StatefulWidget {
   const EditActivityBlockDialog({
     required this.block,
+    this.availableSquads = const [],
     super.key,
   });
 
   final ParsedActivityBlock block;
+  final List<TimTableData> availableSquads;
 
   static Future<ParsedActivityBlock?> show(
     BuildContext context,
-    ParsedActivityBlock block,
-  ) {
+    ParsedActivityBlock block, {
+    List<TimTableData> availableSquads = const [],
+  }) {
     return showModalBottomSheet<ParsedActivityBlock>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (sheetContext) => EditActivityBlockDialog(block: block),
+      builder: (sheetContext) => EditActivityBlockDialog(
+        block: block,
+        availableSquads: availableSquads,
+      ),
     );
   }
 
@@ -61,12 +68,19 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
 
   late final List<String> _dropdownOptions;
 
+  static const String _defaultTeamOption = 'Varsayılan / Personel Timi';
+  static const String _customTeamOption = 'DİĞER (Elle Yaz...)';
+
+  late String _selectedTeamOption;
+  late final List<String> _teamDropdownOptions;
+
   @override
   void initState() {
     super.initState();
     final initialActivity = widget.block.parsedActivityType.trim();
+    final initialTeam = widget.block.parsedTimName.trim();
     _activityController = TextEditingController(text: initialActivity);
-    _teamController = TextEditingController(text: widget.block.parsedTimName);
+    _teamController = TextEditingController(text: initialTeam);
     _timeController = TextEditingController(text: widget.block.parsedTimeRange);
     _selectedDate =
         DateTime.tryParse(widget.block.parsedDate) ?? DateTime.now();
@@ -87,6 +101,27 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
     } else {
       _selectedDuty = DutyOrLeaveType.diger;
     }
+
+    final teamOpts = <String>[_defaultTeamOption];
+    for (final squad in widget.availableSquads) {
+      final name = squad.timAdi.trim();
+      if (name.isNotEmpty && !teamOpts.contains(name)) {
+        teamOpts.add(name);
+      }
+    }
+    if (initialTeam.isNotEmpty && !teamOpts.contains(initialTeam)) {
+      teamOpts.add(initialTeam);
+    }
+    teamOpts.add(_customTeamOption);
+    _teamDropdownOptions = teamOpts;
+
+    if (initialTeam.isEmpty) {
+      _selectedTeamOption = _defaultTeamOption;
+    } else if (teamOpts.contains(initialTeam)) {
+      _selectedTeamOption = initialTeam;
+    } else {
+      _selectedTeamOption = _customTeamOption;
+    }
   }
 
   @override
@@ -95,6 +130,17 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
     _teamController.dispose();
     _timeController.dispose();
     super.dispose();
+  }
+
+  void _selectTeam(String option) {
+    setState(() {
+      _selectedTeamOption = option;
+      if (option == _defaultTeamOption) {
+        _teamController.text = '';
+      } else if (option != _customTeamOption) {
+        _teamController.text = option;
+      }
+    });
   }
 
   void _selectDuty(String duty) {
@@ -222,13 +268,44 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
           ),
           const SizedBox(height: 12),
 
+          // Takım / Tim Seçin Dropdown
+          DropdownButtonFormField<String>(
+            key: const Key('bulk-edit-team-dropdown'),
+            value: _teamDropdownOptions.contains(_selectedTeamOption)
+                ? _selectedTeamOption
+                : _customTeamOption,
+            isExpanded: true,
+            menuMaxHeight: modernDropdownMenuMaxHeight(context),
+            borderRadius: modernDropdownBorderRadius,
+            dropdownColor: modernDropdownColor(context),
+            decoration: InputDecoration(
+              labelText: 'Takım / Tim Seçin',
+              prefixIcon: const Icon(Icons.groups_rounded),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+            items: _teamDropdownOptions.map((t) {
+              return DropdownMenuItem(
+                value: t,
+                child: Text(t),
+              );
+            }).toList(),
+            onChanged: (val) {
+              if (val != null) _selectTeam(val);
+            },
+          ),
+          const SizedBox(height: 12),
+
           // Takım / Tim Adı TextField
           TextField(
             key: const Key('bulk-edit-team'),
             controller: _teamController,
             decoration: InputDecoration(
-              labelText: 'Takım / Tim Adı (Örn: 6-B Timi)',
-              prefixIcon: const Icon(Icons.groups_rounded),
+              labelText: 'Takım / Tim Adı (Elle Düzenle)',
+              prefixIcon: const Icon(Icons.edit_note_rounded),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
