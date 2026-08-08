@@ -63,12 +63,11 @@ class AppBackupService {
           if (prefs.containsKey(key)) key: prefs.get(key),
       },
     };
-    final payloadJson = jsonEncode(payload);
     final envelope = <String, Object?>{
       'format': format,
       'version': backupVersion,
       'exportedAt': DateTime.now().toUtc().toIso8601String(),
-      'checksum': sha256.convert(utf8.encode(payloadJson)).toString(),
+      'checksum': _computeCanonicalChecksum(payload),
       'payload': payload,
     };
     return const JsonEncoder.withIndent('  ').convert(envelope);
@@ -132,9 +131,11 @@ class AppBackupService {
     }
     final payload = _object(decoded['payload'], 'payload');
     final expectedChecksum = _string(decoded['checksum'], 'checksum');
-    final actualChecksum =
+    final canonicalChecksum = _computeCanonicalChecksum(payload);
+    final legacyChecksum =
         sha256.convert(utf8.encode(jsonEncode(payload))).toString();
-    if (expectedChecksum != actualChecksum) {
+    if (expectedChecksum != canonicalChecksum &&
+        expectedChecksum != legacyChecksum) {
       throw const FormatException(
         'Yedek dosyasının bütünlük kontrolü başarısız. Dosya bozulmuş olabilir.',
       );
@@ -335,7 +336,8 @@ class AppBackupService {
     }
   }
 
-  Map<String, Object?> _decode(String input) {
+  Map<String, Object?> _decode(String rawInput) {
+    final input = _sanitizeInput(rawInput);
     if (utf8.encode(input).length > maxBackupBytes) {
       throw const FormatException('Yedek dosyası izin verilen boyutu aşıyor.');
     }
@@ -347,6 +349,51 @@ class AppBackupService {
     } on Object {
       throw const FormatException('Yedek dosyası geçerli JSON içermiyor.');
     }
+  }
+
+  static String _sanitizeInput(String rawInput) {
+    var cleaned = rawInput.trim();
+    if (cleaned.startsWith('\uFEFF')) {
+      cleaned = cleaned.substring(1).trim();
+    }
+    if (cleaned.startsWith('```')) {
+      final lines = cleaned.split('\n');
+      if (lines.length >= 2 &&
+          lines.first.startsWith('```') &&
+          lines.last.trim() == '```') {
+        cleaned = lines.sublist(1, lines.length - 1).join('\n').trim();
+      }
+    }
+    if (cleaned.startsWith('"') && cleaned.endsWith('"') && cleaned.length > 2) {
+      try {
+        final unescaped = jsonDecode(cleaned);
+        if (unescaped is String) {
+          cleaned = unescaped.trim();
+        }
+      } catch (_) {}
+    }
+    return cleaned;
+  }
+
+  static Object? _canonicalize(Object? object) {
+    if (object is Map) {
+      final sortedKeys = object.keys.map((k) => k.toString()).toList()..sort();
+      final sortedMap = <String, Object?>{};
+      for (final key in sortedKeys) {
+        sortedMap[key] = _canonicalize(object[key]);
+      }
+      return sortedMap;
+    } else if (object is List) {
+      return object.map((e) => _canonicalize(e)).toList();
+    } else {
+      return object;
+    }
+  }
+
+  static String _computeCanonicalChecksum(Map<String, Object?> payload) {
+    final canonical = _canonicalize(payload);
+    final jsonStr = jsonEncode(canonical);
+    return sha256.convert(utf8.encode(jsonStr)).toString();
   }
 
   Map<String, Object?> _object(Object? value, String field) {

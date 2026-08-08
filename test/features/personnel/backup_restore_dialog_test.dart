@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -122,6 +124,36 @@ void main() {
 
     expect(await database.select(database.personelTable).get(), hasLength(1));
     expect(find.textContaining('eski yedekten aktarıldı'), findsOneWidget);
+  });
+
+  testWidgets('validates formatted backup file with reordered keys picked from gateway',
+      (tester) async {
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+    final service = AppBackupService(database);
+    final exported = await service.exportBackupJson();
+
+    // Pretty-print and reorder payload
+    final Map<String, dynamic> decoded =
+        jsonDecode(exported) as Map<String, dynamic>;
+    final rawPayload = decoded['payload'] as Map<String, dynamic>;
+    decoded['payload'] = <String, dynamic>{
+      'preferences': rawPayload['preferences'],
+      'tables': rawPayload['tables'],
+      'databaseSchemaVersion': rawPayload['databaseSchemaVersion'],
+    };
+    final prettyJson = const JsonEncoder.withIndent('   ').convert(decoded);
+
+    final gateway = _FakeBackupFileGateway(openedContents: prettyJson);
+    await _pumpDialog(tester, database, gateway);
+
+    await tester.tap(find.text('Geri yükle').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('backup-pick-file')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Doğrulanmış tam yedek'), findsOneWidget);
+    expect(find.textContaining('bütünlük kontrolü başarısız'), findsNothing);
   });
 }
 
