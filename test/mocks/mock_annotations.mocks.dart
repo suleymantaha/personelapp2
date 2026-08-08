@@ -3,20 +3,12 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i6;
+import 'dart:async' as _i3;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:personelapp2/core/navigation/navigation_service.dart' as _i8;
-import 'package:personelapp2/core/network/api_client.dart' as _i3;
-import 'package:personelapp2/core/storage/local_storage_service.dart' as _i7;
-import 'package:personelapp2/features/debt/data/debt_repository.dart' as _i4;
-import 'package:personelapp2/features/debt/domain/debt_models.dart' as _i2;
-import 'package:personelapp2/features/debt/services/offline_sync_service.dart'
-    as _i5;
-import 'package:personelapp2/features/shopping/data/shopping_repository.dart'
-    as _i9;
-import 'package:personelapp2/features/shopping/domain/shopping_models.dart'
-    as _i10;
+import 'package:personelapp2/core/navigation/navigation_service.dart' as _i5;
+import 'package:personelapp2/core/network/api_client.dart' as _i2;
+import 'package:personelapp2/core/storage/local_storage_service.dart' as _i4;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -33,53 +25,12 @@ import 'package:personelapp2/features/shopping/domain/shopping_models.dart'
 // ignore_for_file: subtype_of_sealed_class
 // ignore_for_file: invalid_use_of_internal_member
 
-class _FakeDebtItem_0 extends _i1.SmartFake implements _i2.DebtItem {
-  _FakeDebtItem_0(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _FakeApiClient_1 extends _i1.SmartFake implements _i3.ApiClient {
-  _FakeApiClient_1(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _FakeDebtRepository_2 extends _i1.SmartFake
-    implements _i4.DebtRepository {
-  _FakeDebtRepository_2(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _FakeSyncResult_3 extends _i1.SmartFake implements _i5.SyncResult {
-  _FakeSyncResult_3(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
 /// A class which mocks [ApiClient].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockApiClient extends _i1.Mock implements _i3.ApiClient {
+class MockApiClient extends _i1.Mock implements _i2.ApiClient {
   @override
-  _i6.Future<Map<String, dynamic>> get(
+  _i3.Future<Map<String, dynamic>> get(
     String? path, {
     Map<String, String>? headers,
   }) =>
@@ -90,13 +41,13 @@ class MockApiClient extends _i1.Mock implements _i3.ApiClient {
           {#headers: headers},
         ),
         returnValue:
-            _i6.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+            _i3.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
         returnValueForMissingStub:
-            _i6.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
-      ) as _i6.Future<Map<String, dynamic>>);
+            _i3.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i3.Future<Map<String, dynamic>>);
 
   @override
-  _i6.Future<Map<String, dynamic>> post(
+  _i3.Future<Map<String, dynamic>> post(
     String? path, {
     required Map<String, dynamic>? body,
     Map<String, String>? headers,
@@ -111,13 +62,13 @@ class MockApiClient extends _i1.Mock implements _i3.ApiClient {
           },
         ),
         returnValue:
-            _i6.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+            _i3.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
         returnValueForMissingStub:
-            _i6.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
-      ) as _i6.Future<Map<String, dynamic>>);
+            _i3.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i3.Future<Map<String, dynamic>>);
 
   @override
-  _i6.Future<Map<String, dynamic>> put(
+  _i3.Future<Map<String, dynamic>> put(
     String? path, {
     required Map<String, dynamic>? body,
     Map<String, String>? headers,
@@ -132,13 +83,13 @@ class MockApiClient extends _i1.Mock implements _i3.ApiClient {
           },
         ),
         returnValue:
-            _i6.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+            _i3.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
         returnValueForMissingStub:
-            _i6.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
-      ) as _i6.Future<Map<String, dynamic>>);
+            _i3.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i3.Future<Map<String, dynamic>>);
 
   @override
-  _i6.Future<bool> delete(
+  _i3.Future<bool> delete(
     String? path, {
     Map<String, String>? headers,
   }) =>
@@ -148,28 +99,28 @@ class MockApiClient extends _i1.Mock implements _i3.ApiClient {
           [path],
           {#headers: headers},
         ),
-        returnValue: _i6.Future<bool>.value(false),
-        returnValueForMissingStub: _i6.Future<bool>.value(false),
-      ) as _i6.Future<bool>);
+        returnValue: _i3.Future<bool>.value(false),
+        returnValueForMissingStub: _i3.Future<bool>.value(false),
+      ) as _i3.Future<bool>);
 
   @override
-  _i6.Future<bool> isNetworkConnected() => (super.noSuchMethod(
+  _i3.Future<bool> isNetworkConnected() => (super.noSuchMethod(
         Invocation.method(
           #isNetworkConnected,
           [],
         ),
-        returnValue: _i6.Future<bool>.value(false),
-        returnValueForMissingStub: _i6.Future<bool>.value(false),
-      ) as _i6.Future<bool>);
+        returnValue: _i3.Future<bool>.value(false),
+        returnValueForMissingStub: _i3.Future<bool>.value(false),
+      ) as _i3.Future<bool>);
 }
 
 /// A class which mocks [LocalStorageService].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockLocalStorageService extends _i1.Mock
-    implements _i7.LocalStorageService {
+    implements _i4.LocalStorageService {
   @override
-  _i6.Future<void> saveString(
+  _i3.Future<void> saveString(
     String? key,
     String? value,
   ) =>
@@ -181,22 +132,22 @@ class MockLocalStorageService extends _i1.Mock
             value,
           ],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 
   @override
-  _i6.Future<String?> getString(String? key) => (super.noSuchMethod(
+  _i3.Future<String?> getString(String? key) => (super.noSuchMethod(
         Invocation.method(
           #getString,
           [key],
         ),
-        returnValue: _i6.Future<String?>.value(),
-        returnValueForMissingStub: _i6.Future<String?>.value(),
-      ) as _i6.Future<String?>);
+        returnValue: _i3.Future<String?>.value(),
+        returnValueForMissingStub: _i3.Future<String?>.value(),
+      ) as _i3.Future<String?>);
 
   @override
-  _i6.Future<void> saveJson(
+  _i3.Future<void> saveJson(
     String? key,
     Map<String, dynamic>? data,
   ) =>
@@ -208,22 +159,22 @@ class MockLocalStorageService extends _i1.Mock
             data,
           ],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 
   @override
-  _i6.Future<Map<String, dynamic>?> getJson(String? key) => (super.noSuchMethod(
+  _i3.Future<Map<String, dynamic>?> getJson(String? key) => (super.noSuchMethod(
         Invocation.method(
           #getJson,
           [key],
         ),
-        returnValue: _i6.Future<Map<String, dynamic>?>.value(),
-        returnValueForMissingStub: _i6.Future<Map<String, dynamic>?>.value(),
-      ) as _i6.Future<Map<String, dynamic>?>);
+        returnValue: _i3.Future<Map<String, dynamic>?>.value(),
+        returnValueForMissingStub: _i3.Future<Map<String, dynamic>?>.value(),
+      ) as _i3.Future<Map<String, dynamic>?>);
 
   @override
-  _i6.Future<void> saveList(
+  _i3.Future<void> saveList(
     String? key,
     List<Map<String, dynamic>>? list,
   ) =>
@@ -235,48 +186,48 @@ class MockLocalStorageService extends _i1.Mock
             list,
           ],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 
   @override
-  _i6.Future<List<Map<String, dynamic>>> getList(String? key) =>
+  _i3.Future<List<Map<String, dynamic>>> getList(String? key) =>
       (super.noSuchMethod(
         Invocation.method(
           #getList,
           [key],
         ),
-        returnValue: _i6.Future<List<Map<String, dynamic>>>.value(
+        returnValue: _i3.Future<List<Map<String, dynamic>>>.value(
             <Map<String, dynamic>>[]),
-        returnValueForMissingStub: _i6.Future<List<Map<String, dynamic>>>.value(
+        returnValueForMissingStub: _i3.Future<List<Map<String, dynamic>>>.value(
             <Map<String, dynamic>>[]),
-      ) as _i6.Future<List<Map<String, dynamic>>>);
+      ) as _i3.Future<List<Map<String, dynamic>>>);
 
   @override
-  _i6.Future<void> remove(String? key) => (super.noSuchMethod(
+  _i3.Future<void> remove(String? key) => (super.noSuchMethod(
         Invocation.method(
           #remove,
           [key],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 
   @override
-  _i6.Future<void> clear() => (super.noSuchMethod(
+  _i3.Future<void> clear() => (super.noSuchMethod(
         Invocation.method(
           #clear,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 }
 
 /// A class which mocks [NavigationService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockNavigationService extends _i1.Mock implements _i8.NavigationService {
+class MockNavigationService extends _i1.Mock implements _i5.NavigationService {
   @override
   void navigateTo(
     String? routeName, {
@@ -299,265 +250,4 @@ class MockNavigationService extends _i1.Mock implements _i8.NavigationService {
         ),
         returnValueForMissingStub: null,
       );
-}
-
-/// A class which mocks [ShoppingRepository].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockShoppingRepository extends _i1.Mock
-    implements _i9.ShoppingRepository {
-  @override
-  _i6.Future<List<_i10.ShoppingProduct>> getProducts() => (super.noSuchMethod(
-        Invocation.method(
-          #getProducts,
-          [],
-        ),
-        returnValue: _i6.Future<List<_i10.ShoppingProduct>>.value(
-            <_i10.ShoppingProduct>[]),
-        returnValueForMissingStub: _i6.Future<List<_i10.ShoppingProduct>>.value(
-            <_i10.ShoppingProduct>[]),
-      ) as _i6.Future<List<_i10.ShoppingProduct>>);
-
-  @override
-  _i6.Future<List<_i10.CartItem>> loadCart() => (super.noSuchMethod(
-        Invocation.method(
-          #loadCart,
-          [],
-        ),
-        returnValue: _i6.Future<List<_i10.CartItem>>.value(<_i10.CartItem>[]),
-        returnValueForMissingStub:
-            _i6.Future<List<_i10.CartItem>>.value(<_i10.CartItem>[]),
-      ) as _i6.Future<List<_i10.CartItem>>);
-
-  @override
-  _i6.Future<void> saveCart(List<_i10.CartItem>? cart) => (super.noSuchMethod(
-        Invocation.method(
-          #saveCart,
-          [cart],
-        ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
-
-  @override
-  _i6.Future<bool> checkout(List<_i10.CartItem>? cart) => (super.noSuchMethod(
-        Invocation.method(
-          #checkout,
-          [cart],
-        ),
-        returnValue: _i6.Future<bool>.value(false),
-        returnValueForMissingStub: _i6.Future<bool>.value(false),
-      ) as _i6.Future<bool>);
-}
-
-/// A class which mocks [DebtRepository].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockDebtRepository extends _i1.Mock implements _i4.DebtRepository {
-  @override
-  _i6.Future<List<_i2.DebtItem>> getDebts() => (super.noSuchMethod(
-        Invocation.method(
-          #getDebts,
-          [],
-        ),
-        returnValue: _i6.Future<List<_i2.DebtItem>>.value(<_i2.DebtItem>[]),
-        returnValueForMissingStub:
-            _i6.Future<List<_i2.DebtItem>>.value(<_i2.DebtItem>[]),
-      ) as _i6.Future<List<_i2.DebtItem>>);
-
-  @override
-  _i6.Future<_i2.DebtItem> createDebt(
-    String? debtorName,
-    double? amount,
-    int? installmentCount,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #createDebt,
-          [
-            debtorName,
-            amount,
-            installmentCount,
-          ],
-        ),
-        returnValue: _i6.Future<_i2.DebtItem>.value(_FakeDebtItem_0(
-          this,
-          Invocation.method(
-            #createDebt,
-            [
-              debtorName,
-              amount,
-              installmentCount,
-            ],
-          ),
-        )),
-        returnValueForMissingStub:
-            _i6.Future<_i2.DebtItem>.value(_FakeDebtItem_0(
-          this,
-          Invocation.method(
-            #createDebt,
-            [
-              debtorName,
-              amount,
-              installmentCount,
-            ],
-          ),
-        )),
-      ) as _i6.Future<_i2.DebtItem>);
-
-  @override
-  _i6.Future<_i2.DebtItem> payInstallment(
-    String? debtId,
-    int? installmentNumber,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #payInstallment,
-          [
-            debtId,
-            installmentNumber,
-          ],
-        ),
-        returnValue: _i6.Future<_i2.DebtItem>.value(_FakeDebtItem_0(
-          this,
-          Invocation.method(
-            #payInstallment,
-            [
-              debtId,
-              installmentNumber,
-            ],
-          ),
-        )),
-        returnValueForMissingStub:
-            _i6.Future<_i2.DebtItem>.value(_FakeDebtItem_0(
-          this,
-          Invocation.method(
-            #payInstallment,
-            [
-              debtId,
-              installmentNumber,
-            ],
-          ),
-        )),
-      ) as _i6.Future<_i2.DebtItem>);
-
-  @override
-  _i6.Future<_i2.DebtItem> payAmount(
-    String? debtId,
-    double? amount,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #payAmount,
-          [
-            debtId,
-            amount,
-          ],
-        ),
-        returnValue: _i6.Future<_i2.DebtItem>.value(_FakeDebtItem_0(
-          this,
-          Invocation.method(
-            #payAmount,
-            [
-              debtId,
-              amount,
-            ],
-          ),
-        )),
-        returnValueForMissingStub:
-            _i6.Future<_i2.DebtItem>.value(_FakeDebtItem_0(
-          this,
-          Invocation.method(
-            #payAmount,
-            [
-              debtId,
-              amount,
-            ],
-          ),
-        )),
-      ) as _i6.Future<_i2.DebtItem>);
-
-  @override
-  _i6.Future<void> saveLocalDebts(List<_i2.DebtItem>? debts) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #saveLocalDebts,
-          [debts],
-        ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
-
-  @override
-  _i6.Future<List<_i2.DebtItem>> loadLocalDebts() => (super.noSuchMethod(
-        Invocation.method(
-          #loadLocalDebts,
-          [],
-        ),
-        returnValue: _i6.Future<List<_i2.DebtItem>>.value(<_i2.DebtItem>[]),
-        returnValueForMissingStub:
-            _i6.Future<List<_i2.DebtItem>>.value(<_i2.DebtItem>[]),
-      ) as _i6.Future<List<_i2.DebtItem>>);
-}
-
-/// A class which mocks [OfflineSyncService].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockOfflineSyncService extends _i1.Mock
-    implements _i5.OfflineSyncService {
-  @override
-  _i3.ApiClient get apiClient => (super.noSuchMethod(
-        Invocation.getter(#apiClient),
-        returnValue: _FakeApiClient_1(
-          this,
-          Invocation.getter(#apiClient),
-        ),
-        returnValueForMissingStub: _FakeApiClient_1(
-          this,
-          Invocation.getter(#apiClient),
-        ),
-      ) as _i3.ApiClient);
-
-  @override
-  _i4.DebtRepository get debtRepository => (super.noSuchMethod(
-        Invocation.getter(#debtRepository),
-        returnValue: _FakeDebtRepository_2(
-          this,
-          Invocation.getter(#debtRepository),
-        ),
-        returnValueForMissingStub: _FakeDebtRepository_2(
-          this,
-          Invocation.getter(#debtRepository),
-        ),
-      ) as _i4.DebtRepository);
-
-  @override
-  bool get isSyncing => (super.noSuchMethod(
-        Invocation.getter(#isSyncing),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      ) as bool);
-
-  @override
-  _i6.Future<_i5.SyncResult> synchronizePendingItems() => (super.noSuchMethod(
-        Invocation.method(
-          #synchronizePendingItems,
-          [],
-        ),
-        returnValue: _i6.Future<_i5.SyncResult>.value(_FakeSyncResult_3(
-          this,
-          Invocation.method(
-            #synchronizePendingItems,
-            [],
-          ),
-        )),
-        returnValueForMissingStub:
-            _i6.Future<_i5.SyncResult>.value(_FakeSyncResult_3(
-          this,
-          Invocation.method(
-            #synchronizePendingItems,
-            [],
-          ),
-        )),
-      ) as _i6.Future<_i5.SyncResult>);
 }
