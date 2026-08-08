@@ -148,8 +148,12 @@ BulkParseResult _parseBulkText(
           );
         } else {
           if (currentDate != parsedDate) {
-            flushBlock();
-            currentDate = parsedDate;
+            if (currentDate == null && personnel.isNotEmpty) {
+              currentDate = parsedDate;
+            } else {
+              flushBlock();
+              currentDate = parsedDate;
+            }
           }
         }
         continue;
@@ -160,8 +164,12 @@ BulkParseResult _parseBulkText(
       // then continue parsing only the meaningful remainder as personnel.
       if (dateMatch != null) {
         if (currentDate != dateMatch) {
-          flushBlock();
-          currentDate = dateMatch;
+          if (currentDate == null && personnel.isNotEmpty) {
+            currentDate = dateMatch;
+          } else {
+            flushBlock();
+            currentDate = dateMatch;
+          }
         }
         line = _removeDateAndDayWords(line);
         if (line.isEmpty) continue;

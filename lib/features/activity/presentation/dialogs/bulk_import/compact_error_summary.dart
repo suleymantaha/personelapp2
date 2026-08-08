@@ -36,8 +36,9 @@ class CompactErrorSummary extends StatelessWidget {
     final warningLocs = problemLocations.where((l) => !l.isCritical).toList();
 
     final blockingIssues = parseIssues.where((i) => i.isBlocking).toList();
-    final criticalCount = blockingIssues.length +
-        (problemLocations.isNotEmpty ? criticalLocs.length : problemCount);
+    final criticalCount = problemLocations.isNotEmpty
+        ? criticalLocs.length
+        : (blockingIssues.length + problemCount);
     final reviewWarningCount = problemLocations.isNotEmpty
         ? warningLocs.length
         : warningCount;

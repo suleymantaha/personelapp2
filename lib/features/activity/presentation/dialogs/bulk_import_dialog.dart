@@ -146,7 +146,45 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     super.dispose();
   }
 
-  void _updateState(VoidCallback callback) => setState(callback);
+  void _updateState(VoidCallback callback) {
+    setState(() {
+      callback();
+      _syncParseIssuesWithBlocks();
+    });
+  }
+
+  void _syncParseIssuesWithBlocks() {
+    if (_parsedBlocks.isEmpty) return;
+    final mutableIssues = List<BulkParseIssue>.from(_parseIssues);
+    final hasMissingDate =
+        _parsedBlocks.any((b) => b.parsedDate.trim().isEmpty);
+    final hasMissingTeam =
+        _parsedBlocks.any((b) => b.parsedTimName.trim().isEmpty);
+    final hasMissingActivity =
+        _parsedBlocks.any((b) => b.parsedActivityType.trim().isEmpty);
+    final hasUnmatchedPerson =
+        _parsedBlocks.any((b) => b.personnelList.any((p) => !p.isMatched));
+
+    mutableIssues.removeWhere((issue) {
+      switch (issue.code) {
+        case 'missing_date':
+        case 'invalid_date':
+          return !hasMissingDate;
+        case 'unknown_team':
+          return !hasMissingTeam;
+        case 'unknown_activity':
+          return !hasMissingActivity;
+        case 'empty_input':
+          return _parsedBlocks.isNotEmpty;
+        case 'unmatched_personnel':
+          return !hasUnmatchedPerson;
+        default:
+          return false;
+      }
+    });
+
+    _parseIssues = mutableIssues;
+  }
 
   void _setPreviewFilter(_BulkPreviewFilter filter) {
     setState(() {

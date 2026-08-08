@@ -52,6 +52,9 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
 
   bool get _hasBlockProblems {
     if (widget.block.personnelList.isEmpty) return true;
+    if (widget.block.parsedDate.trim().isEmpty) return true;
+    if (widget.block.parsedTimName.trim().isEmpty) return true;
+    if (widget.block.parsedActivityType.trim().isEmpty) return true;
     for (var i = 0; i < widget.block.personnelList.length; i++) {
       final p = widget.block.personnelList[i];
       final isDup = widget.duplicates.containsKey('${widget.blockIdx}:$i');

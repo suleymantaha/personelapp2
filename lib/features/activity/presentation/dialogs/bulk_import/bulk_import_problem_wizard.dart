@@ -28,16 +28,61 @@ class BulkImportProblemWizard {
     // Priority 1: Critical empty blocks (0 personnel)
     for (final blockEntry in blocks.asMap().entries) {
       if (blockEntry.value.personnelList.isEmpty) {
+        final title = blockEntry.value.parsedActivityType.trim().isEmpty
+            ? 'Kart #${blockEntry.key + 1}'
+            : blockEntry.value.parsedActivityType;
         locs.add(
           ProblemLocation(
             blockIndex: blockEntry.key,
             personIndex: null,
             sourceLineNumber: null,
-            description: '${blockEntry.value.parsedActivityType} kartında personel bulunamadı.',
+            description: '$title kartında personel bulunamadı.',
             isCritical: true,
           ),
         );
         addedKeys.add('${blockEntry.key}:null');
+      }
+    }
+
+    // Priority 2: Critical block metadata errors (missing date, missing team, missing activity type)
+    for (final blockEntry in blocks.asMap().entries) {
+      final block = blockEntry.value;
+      final key = '${blockEntry.key}:meta';
+      if (addedKeys.contains(key)) continue;
+
+      if (block.parsedDate.trim().isEmpty) {
+        locs.add(
+          ProblemLocation(
+            blockIndex: blockEntry.key,
+            personIndex: null,
+            sourceLineNumber: null,
+            description: 'Kart #${blockEntry.key + 1}: Geçerli bir tarih bulunamadı.',
+            isCritical: true,
+          ),
+        );
+        addedKeys.add(key);
+      } else if (block.parsedTimName.trim().isEmpty) {
+        locs.add(
+          ProblemLocation(
+            blockIndex: blockEntry.key,
+            personIndex: null,
+            sourceLineNumber: null,
+            description: 'Kart #${blockEntry.key + 1}: Takım/tim bilgisi tanınamadı.',
+            isCritical: true,
+          ),
+        );
+        addedKeys.add(key);
+      } else if (block.parsedActivityType.trim().isEmpty) {
+        locs.add(
+          ProblemLocation(
+            blockIndex: blockEntry.key,
+            personIndex: null,
+            sourceLineNumber: null,
+            description: 'Kart #${blockEntry.key + 1}: Görev türü tanınamadı.',
+            isCritical: true,
+          ),
+        );
+        addedKeys.add(key);
       }
     }
 

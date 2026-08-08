@@ -20,7 +20,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       _updateState(() {
         _cardKeys.clear();
         _parsedBlocks = deduplicated.blocks;
-        _parseIssues = parseResult.issues;
+        _parseIssues = List<BulkParseIssue>.from(parseResult.issues);
         _deduplicatedPersonnelCount = deduplicated.removedCount;
         _previewFilter = _BulkPreviewFilter.all;
         _parseIssuesExpanded = _parseIssues.any((issue) => issue.isBlocking);

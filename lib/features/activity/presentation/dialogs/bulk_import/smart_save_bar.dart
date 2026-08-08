@@ -99,8 +99,9 @@ class SmartSaveBar extends StatelessWidget {
     final warningLocs = problemLocs.where((l) => !l.isCritical).toList();
 
     final blockingIssues = issues.where((i) => i.isBlocking).toList();
-    final criticalCount = blockingIssues.length +
-        (problemLocs.isNotEmpty ? criticalLocs.length : problemCount);
+    final criticalCount = problemLocs.isNotEmpty
+        ? criticalLocs.length
+        : (blockingIssues.length + problemCount);
     final reviewWarningCount = problemLocs.isNotEmpty ? warningLocs.length : 0;
 
     final hasCritical = isBlocked || criticalCount > 0;

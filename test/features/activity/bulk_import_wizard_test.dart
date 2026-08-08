@@ -149,4 +149,41 @@ void main() {
     // bulk-wizard-next görünmeli (wizard aktif)
     expect(find.byKey(const Key('bulk-wizard-next')), findsOneWidget);
   });
+
+  testWidgets('İsimler tarihten önce gelse dahi tarih bloğa atanır ve engelleme oluşmaz', (tester) async {
+    tester.view.physicalSize = const Size(1000, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: BulkImportDialog(
+              database: database,
+              activityRepository: ActivityRepository(database),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byType(TextField).first,
+      '''
+6/B Heybet Listesi
+Ali DENEME
+Veli SAĞLAM
+03 AĞUSTOS 2026
+''',
+    );
+    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.pumpAndSettle();
+
+    // Tarih 2026-08-03 atanmış olmalı ve Kaydedilemiyor engelleyici mesajı çıkmamalı
+    expect(find.text('Kaydedilemiyor'), findsNothing);
+    expect(find.byKey(const Key('bulk-import-save-button')), findsOneWidget);
+  });
 }
