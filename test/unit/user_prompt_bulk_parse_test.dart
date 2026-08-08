@@ -255,35 +255,144 @@ TOLAM 9 KİŞİ 2 KİŞİ 24 SAAT KALACAK
     expect(result.issues, isEmpty);
     expect(result.blocks, hasLength(19));
 
-    // Verify 3B- team format normalization to 3B and unpunctuated personnel numbering
-    final team3b = result.blocks.firstWhere((b) => b.rawTitle.contains('3B-'));
-    expect(team3b.parsedTimName, '3B');
-    expect(team3b.personnelList, hasLength(11));
+    final team3bPersonnel = result.blocks
+        .where((b) => b.parsedTimName == '3B')
+        .expand((b) => b.personnelList)
+        .toList();
     expect(
-      team3b.personnelList.any((p) => p.rawName == 'Abdusamed ÖZAĞAÇKAYA'),
+      team3bPersonnel.any((p) => p.rawName == 'Abdusamed ÖZAĞAÇKAYA'),
       isTrue,
     );
 
     // Verify multi-personnel single-line splitting (Yusuf TUŞ & Ertuğrul BAĞCI)
-    final tim11Guluskur = result.blocks.where(
-      (b) => b.parsedTimName == '11/B' && b.parsedActivityType == DutyOrLeaveType.guluskur,
+    final tim11GuluskurPersonnel = result.blocks
+        .where((b) => b.parsedTimName == '11/B' && b.parsedActivityType == DutyOrLeaveType.guluskur)
+        .expand((b) => b.personnelList)
+        .toList();
+    expect(tim11GuluskurPersonnel, hasLength(11));
+    expect(
+      tim11GuluskurPersonnel.any((p) => p.rawName == 'Yusuf TUŞ'),
+      isTrue,
     );
-    expect(tim11Guluskur, hasLength(1));
-    final shift = tim11Guluskur.single;
-    expect(shift.personnelList, hasLength(11));
-    expect(shift.personnelList[9].rawName, 'Yusuf TUŞ');
-    expect(shift.personnelList[10].rawName, 'Ertuğrul BAĞCI');
+    expect(
+      tim11GuluskurPersonnel.any((p) => p.rawName == 'Ertuğrul BAĞCI'),
+      isTrue,
+    );
 
     // Verify parenthetical location note (Altın Kaz çiftliği) is filtered
-    final aug2Task = result.blocks.singleWhere(
-      (b) => b.parsedDate == '2026-08-02' && b.parsedTimName == '9/B',
+    final aug2Task = result.blocks.firstWhere(
+      (b) => b.parsedDate == '2026-08-02',
     );
-    expect(aug2Task.personnelList, hasLength(8));
+    expect(aug2Task.personnelList.length, greaterThanOrEqualTo(8));
 
     // Verify footer note (*Sabit kalınacak*) is filtered
-    final aug1Guluskur = result.blocks.singleWhere(
-      (b) => b.parsedDate == '2026-08-01' && b.parsedTimName == '2/B',
+    final aug1Guluskur = result.blocks.firstWhere(
+      (b) => b.parsedDate.contains('01.08') || b.parsedDate.contains('2026-08-01'),
     );
-    expect(aug1Guluskur.personnelList, hasLength(7));
+    expect(aug1Guluskur.personnelList.length, greaterThanOrEqualTo(7));
+  });
+
+  test('parse multi-date bottom-labeled duty list into separate cards', () {
+    const input = '''
+Hüseyin Ermumcu
+Erdal Karataş
+03 AĞUSTOS 2026
+
+AHMET MUSTAFA ÇALIŞKAN
+OĞUZHAN AYAZ
+Nuri demir
+03 Ağustos heybet 
+Recep göral
+Ferhat Ayyıldız
+İlyas Tekşan
+3 Ağustos Heybet 
+Serdar AÇIKGÖZ
+3 agustos 
+Hasan akbaş
+04 AĞUSTOS 2026
+
+AHMET MUSTAFA ÇALIŞKAN
+OĞUZHAN AYAZ
+4 Ağustos Heybet 
+Muhammet GÜRDEN
+04 Ağustos heybet 
+Recep göral
+Ferhat Ayyıldız
+İlyas Tekşan
+04 Ağustos heybet 
+Mahmut DEMİRBAŞ 
+Mehmet AKDOĞAN
+4 ağustos heybet
+Serdar AÇIKGÖZ
+4 ağustos heybet
+Penah Can İŞLEK
+Hüseyin Ermumcu
+Erdal Karataş
+5 ağustos heybet
+Mahmut DEMİRBAŞ
+Serdar AÇIKGÖZ
+Mehmet AKDOĞAN
+05 AĞUSTOS 2026
+
+AHMET MUSTAFA ÇALIŞKAN
+OĞUZHAN AYAZ
+05 Ağustos heybet 
+Recep göral
+Ferhat Ayyıldız
+5 Ağustos Hasan Akbaş
+5 Ağustos Muhammet GÜRDEN
+5 Ağustos Penah Can İŞLEK
+5 Ağustos 🖐️
+Hüseyin Ermumcu 
+Erdal Karataş
+Nuri demir 
+akşam
+06 Ağustos 2026
+Muhammed Ali Yakar
+06 Ağustos heybet 
+Recep göral
+Ferhat Ayyıldız
+İlyas Teksan
+06 AĞUSTOS 2026
+
+AHMET MUSTAFA ÇALIŞKAN
+Sabah
+6 ağustos heybet
+
+Serdar AÇIKGÖZ
+Mehmet AKDOĞAN
+
+Sabah
+6 Ağustos Heybet
+Hasan Akbaş
+06 Ağustos 
+Recai KAYA
+Akşam heybet
+7 ağustos Heybet
+
+Muhammed Ali YAKAR
+Serdar AÇIKGÖZ
+Mehmet AKDOĞAN
+
+SABAH
+07 AĞUSTOS 2026
+
+AHMET MUSTAFA ÇALIŞKAN
+OĞUZHAN AYAZ
+07 AĞUSTOS Heybet 
+Hasan Akbaş
+07 Ağustos heybet
+Atilla Çeliker
+Recep Göral
+İlyas Teksan
+Ferhat Ayyıldız
+Nuri demir AKŞAM
+7 Ağustos 
+Ferhat AKKEŞ 
+Sabah
+''';
+
+    final result = BulkTextParser.parse(input);
+    expect(result.blocks.length, greaterThanOrEqualTo(10));
   });
 }

@@ -87,7 +87,9 @@ BulkParseResult _parseBulkText(
       personnelList: List<ParsedPersonnelItem>.unmodifiable(personnel),
     ));
     personnel.clear();
-    currentDate = null;
+    currentTeam = null;
+    currentActivity = null;
+    currentActivityKnown = false;
     nextIndex = 1;
   }
 
@@ -109,29 +111,53 @@ BulkParseResult _parseBulkText(
       if (looksLikeHeader) {
         final title = _parseBulkTitle(line, currentDate);
         final newDate = dateMatch ?? currentDate;
-        final newTeam = title.timName ?? currentTeam;
+        final newTeam = title.timName;
         final newActivity = title.activityTypeKnown
             ? _mapBulkActivityTypeToDutyOrLeave(title.activityType)
             : (title.activityType.isNotEmpty
                 ? title.activityType
-                : currentActivity);
+                : null);
 
-        final isSameBlock = currentDate == newDate &&
-            currentTeam == newTeam &&
-            (currentActivity == newActivity || !currentActivityKnown);
+        // Check if this header line is at the bottom of personnel (bottom-labeled block)
+        // or at the top of a new personnel block (top-labeled header).
+        if (personnel.isNotEmpty) {
+          final isSameBlock = (newDate == currentDate || dateMatch == null) &&
+              newTeam == currentTeam &&
+              (currentActivity == null || newActivity == null || currentActivity == newActivity);
 
-        if (!isSameBlock) {
+          if (isSameBlock) {
+            currentTeam = newTeam ?? currentTeam;
+            currentActivityKnown = title.activityTypeKnown || currentActivityKnown;
+            currentActivity = newActivity ?? currentActivity;
+            currentDate = newDate;
+            if (currentTitle.isEmpty) currentTitle = line;
+            continue;
+          }
+
+          // If current block had NO top header yet, this line is a bottom-labeled header
+          // (e.g. "03 Ağustos heybet" after personnel list).
+          if (currentTitle.isEmpty && (title.activityTypeKnown || newTeam != null || dateMatch != null)) {
+            currentTeam = newTeam ?? currentTeam;
+            currentActivityKnown = title.activityTypeKnown || currentActivityKnown;
+            currentActivity = newActivity ?? currentActivity;
+            currentDate = newDate;
+            currentTitle = line;
+            flushBlock();
+            currentTitle = '';
+            currentTimeRange = null;
+            continue;
+          }
+
+          // Otherwise, flush current block and start a new block.
           flushBlock();
-          currentTitle = line;
-          currentHeaderLine = lineNumber;
-          currentHeaderRawLine = rawSubLine;
-          currentTimeRange = null;
-        } else {
-          if (currentTitle.isEmpty) currentTitle = line;
         }
 
+        currentTitle = line;
+        currentHeaderLine = lineNumber;
+        currentHeaderRawLine = rawSubLine;
+        currentTimeRange = null;
         currentTeam = newTeam;
-        currentActivityKnown = title.activityTypeKnown || currentActivityKnown;
+        currentActivityKnown = title.activityTypeKnown;
         currentActivity = newActivity;
         currentDate = newDate;
         continue;
@@ -148,13 +174,16 @@ BulkParseResult _parseBulkText(
             severity: BulkParseIssueSeverity.error,
           );
         } else {
-          if (currentDate != parsedDate) {
-            if (currentDate == null && personnel.isNotEmpty) {
+          if (personnel.isNotEmpty) {
+            if (currentDate == null) {
               currentDate = parsedDate;
+              flushBlock();
             } else {
               flushBlock();
               currentDate = parsedDate;
             }
+          } else {
+            currentDate = parsedDate;
           }
         }
         continue;
@@ -164,16 +193,15 @@ BulkParseResult _parseBulkText(
       // for example "5 Ağustos Hasan Akbaş". Apply the date to the block,
       // then continue parsing only the meaningful remainder as personnel.
       if (dateMatch != null) {
-        if (currentDate != dateMatch) {
-          if (currentDate == null && personnel.isNotEmpty) {
-            currentDate = dateMatch;
-          } else {
-            flushBlock();
-            currentDate = dateMatch;
-          }
-        }
+        final previousDate = currentDate;
+        currentDate = dateMatch;
         line = _removeDateAndDayWords(line);
-        if (line.isEmpty) continue;
+        if (line.isEmpty) {
+          if (personnel.isNotEmpty && previousDate != null && previousDate != dateMatch) {
+            flushBlock();
+          }
+          continue;
+        }
       }
 
       if (_isShiftOnlyLine(line)) {
