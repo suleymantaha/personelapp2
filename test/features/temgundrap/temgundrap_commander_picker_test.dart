@@ -27,9 +27,13 @@ void main() {
       onChanged: (value) => selected = value,
     ))));
     await tester.tap(find.byKey(const Key('commander-picker')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
     await tester.tap(find.text('J.UZM.ÇVŞ. S. TAHA BİRİNCİ').last);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
     final phoneField = tester.widget<TextFormField>(
       find.byKey(const Key('commander-phone')),
     );
@@ -62,11 +66,17 @@ void main() {
       ),
     ));
     await tester.tap(find.byKey(const Key('commander-picker')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
     await tester.tap(find.text('J.Ütğm. MEHMET CEYLAN').last);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
     await tester.tap(find.byKey(const Key('pick-commander-contact')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
     expect(selected?.phone, '532 111 22 33');
     expect(learnedId, 9);
     expect(learnedPhone, '532 111 22 33');

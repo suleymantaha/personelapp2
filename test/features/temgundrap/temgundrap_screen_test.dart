@@ -37,11 +37,16 @@ void main() {
     addTearDown(router.dispose);
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
     await tester.tap(find.text('YENİ ÇİZELGE'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
     await tester.tap(find.byKey(const Key('close-form-as-changed')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(tester.takeException(), isNull);
     expect(find.text('Bu güne ait taslak çizelge yok'), findsOneWidget);
@@ -76,18 +81,26 @@ void main() {
     addTearDown(router.dispose);
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
     expect(
         find.byKey(const Key('temgundrap-document-draft-1')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('temgundrap-actions-draft-1')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
     await tester.tap(find.text('Arşivle'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
     expect(find.byKey(const Key('temgundrap-document-draft-1')), findsNothing);
 
     await tester.tap(find.byKey(const Key('temgundrap-archive-tab')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
     expect(
         find.byKey(const Key('temgundrap-document-draft-1')), findsOneWidget);
     expect(find.text('ARŞİVDE'), findsOneWidget);
