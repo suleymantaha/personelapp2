@@ -73,6 +73,7 @@ class SessionStorage {
     final modeName = prefs.getString(_keyThemeMode);
     if (modeName == 'dark') return ThemeMode.dark;
     if (modeName == 'light') return ThemeMode.light;
+    if (modeName == 'system') return ThemeMode.system;
     return ThemeMode.light;
   }
 }
