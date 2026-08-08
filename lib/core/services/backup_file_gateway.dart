@@ -21,9 +21,6 @@ class DeviceBackupFileGateway implements BackupFileGateway {
     extensions: <String>['nizam', 'json'],
     mimeTypes: <String>['application/json'],
   );
-  static const XTypeGroup _androidBackupType = XTypeGroup(
-    label: 'Nizam yedek dosyası',
-  );
 
   @override
   Future<bool> saveBackup(String contents, {Rect? shareOrigin}) async {
@@ -74,11 +71,11 @@ class DeviceBackupFileGateway implements BackupFileGateway {
 
   @override
   Future<String?> openBackup() async {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      return await _androidFiles.invokeMethod<String>('openBackup');
+    }
     final file = await openFile(
-      acceptedTypeGroups:
-          !kIsWeb && defaultTargetPlatform == TargetPlatform.android
-              ? const <XTypeGroup>[_androidBackupType]
-              : const <XTypeGroup>[_backupType],
+      acceptedTypeGroups: const <XTypeGroup>[_backupType],
       confirmButtonText: 'Yedeği seç',
     );
     return file?.readAsString();
