@@ -66,10 +66,8 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
     super.initState();
     final initialActivity = widget.block.parsedActivityType.trim();
     _activityController = TextEditingController(text: initialActivity);
-    _teamController =
-        TextEditingController(text: widget.block.parsedTimName);
-    _timeController =
-        TextEditingController(text: widget.block.parsedTimeRange);
+    _teamController = TextEditingController(text: widget.block.parsedTimName);
+    _timeController = TextEditingController(text: widget.block.parsedTimeRange);
     _selectedDate =
         DateTime.tryParse(widget.block.parsedDate) ?? DateTime.now();
 
@@ -125,7 +123,8 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
         children: [
           Row(
             children: [
-              Icon(Icons.edit_note_rounded, color: context.accentOrOlive, size: 24),
+              Icon(Icons.edit_note_rounded,
+                  color: context.accentOrOlive, size: 24),
               const SizedBox(width: 8),
               const Text(
                 'Faaliyet kartını düzenle',
@@ -157,7 +156,8 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
                       duty,
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
                         color: isSelected ? Colors.white : context.textPrimary,
                       ),
                     ),
@@ -176,7 +176,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
 
           // Görev / Faaliyet Türü Dropdown
           DropdownButtonFormField<String>(
-            value: _dropdownOptions.contains(_selectedDuty)
+            initialValue: _dropdownOptions.contains(_selectedDuty)
                 ? _selectedDuty
                 : DutyOrLeaveType.diger,
             isExpanded: true,

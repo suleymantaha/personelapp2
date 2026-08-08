@@ -114,20 +114,21 @@ BulkParseResult _parseBulkText(
         final newTeam = title.timName;
         final newActivity = title.activityTypeKnown
             ? _mapBulkActivityTypeToDutyOrLeave(title.activityType)
-            : (title.activityType.isNotEmpty
-                ? title.activityType
-                : null);
+            : (title.activityType.isNotEmpty ? title.activityType : null);
 
         // Check if this header line is at the bottom of personnel (bottom-labeled block)
         // or at the top of a new personnel block (top-labeled header).
         if (personnel.isNotEmpty) {
           final isSameBlock = (newDate == currentDate || dateMatch == null) &&
               newTeam == currentTeam &&
-              (currentActivity == null || newActivity == null || currentActivity == newActivity);
+              (currentActivity == null ||
+                  newActivity == null ||
+                  currentActivity == newActivity);
 
           if (isSameBlock) {
             currentTeam = newTeam ?? currentTeam;
-            currentActivityKnown = title.activityTypeKnown || currentActivityKnown;
+            currentActivityKnown =
+                title.activityTypeKnown || currentActivityKnown;
             currentActivity = newActivity ?? currentActivity;
             currentDate = newDate;
             if (currentTitle.isEmpty) currentTitle = line;
@@ -136,9 +137,13 @@ BulkParseResult _parseBulkText(
 
           // If current block had NO top header yet, this line is a bottom-labeled header
           // (e.g. "03 Ağustos heybet" after personnel list).
-          if (currentTitle.isEmpty && (title.activityTypeKnown || newTeam != null || dateMatch != null)) {
+          if (currentTitle.isEmpty &&
+              (title.activityTypeKnown ||
+                  newTeam != null ||
+                  dateMatch != null)) {
             currentTeam = newTeam ?? currentTeam;
-            currentActivityKnown = title.activityTypeKnown || currentActivityKnown;
+            currentActivityKnown =
+                title.activityTypeKnown || currentActivityKnown;
             currentActivity = newActivity ?? currentActivity;
             currentDate = newDate;
             currentTitle = line;
@@ -197,7 +202,9 @@ BulkParseResult _parseBulkText(
         currentDate = dateMatch;
         line = _removeDateAndDayWords(line);
         if (line.isEmpty) {
-          if (personnel.isNotEmpty && previousDate != null && previousDate != dateMatch) {
+          if (personnel.isNotEmpty &&
+              previousDate != null &&
+              previousDate != dateMatch) {
             flushBlock();
           }
           continue;
@@ -255,7 +262,7 @@ BulkParseResult _parseBulkText(
             BulkDeclaredTotal(
               lineNumber: lineNumber,
               expectedCount: expected,
-              date: currentDate!,
+              date: currentDate,
               teamName: currentTeam!,
               activityType: currentActivity!,
             ),
