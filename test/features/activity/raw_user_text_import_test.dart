@@ -121,16 +121,22 @@ Sabah
       }
       for (var i = 0; i < result.blocks.length; i++) {
         final b = result.blocks[i];
-        print(
+        if (kDebugMode) {
+          print(
           'Block ${i + 1}: Date="${b.parsedDate}", Duty="${b.parsedActivityType}", PersonnelCount=${b.personnelList.length}',
         );
+        }
         for (final p in b.personnelList) {
-          print('   - Person: ${p.rawName}');
+          if (kDebugMode) {
+            print('   - Person: ${p.rawName}');
+          }
         }
       }
 
       for (final issue in result.issues) {
-        print('Issue L${issue.lineNumber}: [${issue.code}] ${issue.message}');
+        if (kDebugMode) {
+          print('Issue L${issue.lineNumber}: [${issue.code}] ${issue.message}');
+        }
       }
     });
   });
