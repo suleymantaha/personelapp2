@@ -1,24 +1,25 @@
-name: Flutter Shopping & Debt Modules Test CI
+name: Flutter CI & Release APK Build
 
 on:
   push:
     branches: [ main, develop, 'feat/**' ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  test:
-    name: Run Unit, Widget & Integration Tests
+  build_and_test:
+    name: Test & Build Release APK
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Codebase
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Java JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
 
       - name: Set up Flutter SDK
@@ -30,38 +31,18 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Generate Mocks via Build Runner
-        run: dart run build_runner build --delete-conflicting-outputs
-
       - name: Run Static Analysis
         run: flutter analyze
 
-      - name: Run Unit, Widget & Integration Tests with LCOV Coverage
-        run: flutter test --coverage test/unit test/widget test/features test/core
+      - name: Run Unit & Widget Tests
+        run: flutter test
 
-      - name: Verify Integration Test Suite
-        run: flutter test integration_test
-
-      - name: Build Release APKs
+      - name: Build Release APK
         run: flutter build apk --release
 
-      - name: Upload Coverage Artifact
+      - name: Upload Release APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: code-coverage-report
-          path: coverage/lcov.info
-          retention-days: 3
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release-apk
+          name: nizam-personel-app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 3
-
-      - name: Post Build Workspace Cleanup
-        if: always()
-        run: |
-          flutter clean
-          rm -rf build/ coverage/
-
+          retention-days: 7

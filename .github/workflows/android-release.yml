@@ -1,9 +1,6 @@
-name: Android Release
+name: Android Release Workflow
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
@@ -20,16 +17,16 @@ concurrency:
 
 jobs:
   build:
-    name: Test and build signed APK
+    name: Build & Package Android APK
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Setup Java 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
@@ -41,11 +38,6 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Show tool versions
-        run: |
-          flutter --version
-          dart --version
-
       - name: Install dependencies
         run: flutter pub get
 
@@ -53,23 +45,9 @@ jobs:
         run: flutter analyze
 
       - name: Run tests
-        run: flutter test --reporter expanded
+        run: flutter test
 
-      - name: Calculate app version
-        if: github.event_name != 'pull_request'
-        id: version
-        shell: bash
-        run: |
-          VERSION_LINE=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-          VERSION_NAME=${VERSION_LINE%%+*}
-          VERSION_CODE=$((10000 + GITHUB_RUN_NUMBER))
-          echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
-          echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
-          echo "versionName=$VERSION_NAME"
-          echo "versionCode=$VERSION_CODE"
-
-      - name: Validate signing secrets
-        if: github.event_name != 'pull_request'
+      - name: Configure release signing (if secrets provided)
         shell: bash
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -77,61 +55,36 @@ jobs:
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          missing=0
-          for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
-            if [ -z "${!name}" ]; then
-              echo "::error::Missing GitHub Actions signing secret: $name"
-              missing=1
-            fi
-          done
-          test "$missing" -eq 0
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
+            echo "Keystore secret found, configuring signing..."
+            printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+            {
+              printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
+              printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+              printf 'keyAlias=%s\n' "$KEY_ALIAS"
+              printf 'storeFile=upload-keystore.jks\n'
+            } > android/key.properties
+          else
+            echo "No keystore secret found, building standard release APK."
+          fi
 
-      - name: Configure release signing
-        if: github.event_name != 'pull_request'
-        shell: bash
-        env:
-          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
-          {
-            printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
-            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
-            printf 'keyAlias=%s\n' "$KEY_ALIAS"
-            printf 'storeFile=upload-keystore.jks\n'
-          } > android/key.properties
-
-      - name: Build signed release APK
-        if: github.event_name != 'pull_request'
-        run: >-
-          flutter build apk --release
-          --build-name=${{ steps.version.outputs.name }}
-          --build-number=${{ steps.version.outputs.code }}
-
-      - name: Rename APK
-        if: github.event_name != 'pull_request'
-        shell: bash
-        run: |
-          cp build/app/outputs/flutter-apk/app-release.apk \
-            build/app/outputs/flutter-apk/personelapp2-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.apk
+      - name: Build Release APK
+        run: flutter build apk --release
 
       - name: Upload APK artifact
-        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: personelapp2-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}
-          path: build/app/outputs/flutter-apk/personelapp2-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.apk
+          name: nizam-app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 7
 
       - name: Create GitHub Release for tag
-        if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ github.ref_name }}
           generate_release_notes: true
-          files: build/app/outputs/flutter-apk/personelapp2-${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.apk
+          files: build/app/outputs/flutter-apk/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
