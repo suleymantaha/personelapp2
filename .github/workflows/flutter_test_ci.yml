@@ -51,9 +51,18 @@ jobs:
         with:
           name: code-coverage-report
           path: coverage/lcov.info
+          retention-days: 3
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 3
+
+      - name: Post Build Workspace Cleanup
+        if: always()
+        run: |
+          flutter clean
+          rm -rf build/ coverage/
+
