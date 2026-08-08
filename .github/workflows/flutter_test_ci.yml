@@ -37,8 +37,8 @@ jobs:
       - name: Run Static Analysis
         run: flutter analyze
 
-      - name: Run Unit & Widget Tests with LCOV Coverage
-        run: flutter test --coverage test/unit test/widget
+      - name: Run Unit, Widget & Integration Tests with LCOV Coverage
+        run: flutter test --coverage test/unit test/widget test/features test/core
 
       - name: Verify Integration Test Suite
         run: flutter test integration_test
