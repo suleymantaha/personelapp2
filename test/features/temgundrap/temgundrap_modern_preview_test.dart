@@ -56,14 +56,21 @@ void main() {
         ),
       ),
     );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
     expect(find.byKey(const Key('preview-operation-0')), findsOneWidget);
     expect(find.text('ELAZIĞ İL MERKEZ'), findsOneWidget);
     expect(find.text('YAZDIR'), findsOneWidget);
     expect(find.text('PDF PAYLAŞ'), findsOneWidget);
     expect(find.text('EXCEL'), findsOneWidget);
     await tester.tap(find.byKey(const Key('preview-print')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('preview-share')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('preview-excel')));
+    await tester.pump();
+
     expect(printCount, 1);
     expect(shareCount, 1);
     expect(excelCount, 1);
