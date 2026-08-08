@@ -161,45 +161,82 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }
 
   void _syncParseIssuesWithBlocks() {
-    if (_parsedBlocks.isEmpty) return;
-    final mutableIssues = List<BulkParseIssue>.from(_parseIssues);
-    final hasMissingDate =
-        _parsedBlocks.any((b) => b.parsedDate.trim().isEmpty);
-    final hasMissingTeam =
-        _parsedBlocks.any((b) => b.parsedTimName.trim().isEmpty);
-    final hasMissingActivity =
-        _parsedBlocks.any((b) => b.parsedActivityType.trim().isEmpty);
-    final hasUnmatchedPerson =
-        _parsedBlocks.any((b) => b.personnelList.any((p) => !p.isMatched));
-    final hasEmptyBlock =
-        _parsedBlocks.any((b) => b.personnelList.isEmpty);
+    if (_parsedBlocks.isEmpty) {
+      _parseIssues = [];
+      return;
+    }
 
-    mutableIssues.removeWhere((issue) {
-      switch (issue.code) {
-        case 'missing_date':
-        case 'invalid_date':
-          return !hasMissingDate;
-        case 'unknown_team':
-          return !hasMissingTeam;
-        case 'unknown_activity':
-          return !hasMissingActivity;
-        case 'empty_input':
-          return _parsedBlocks.isNotEmpty;
-        case 'unmatched_personnel':
-        case 'invalid_personnel':
-          return !hasUnmatchedPerson;
-        case 'invalid_time':
-          return true;
-        default:
-          return !hasMissingDate &&
-              !hasMissingTeam &&
-              !hasMissingActivity &&
-              !hasUnmatchedPerson &&
-              !hasEmptyBlock;
+    final newIssues = <BulkParseIssue>[];
+
+    for (var i = 0; i < _parsedBlocks.length; i++) {
+      final block = _parsedBlocks[i];
+      final blockNum = i + 1;
+
+      if (block.personnelList.isEmpty) {
+        newIssues.add(
+          BulkParseIssue(
+            lineNumber: i + 1,
+            rawLine: block.rawTitle,
+            code: 'empty_block',
+            message: 'Kart #$blockNum: Personel bulunamadı.',
+            severity: BulkParseIssueSeverity.error,
+          ),
+        );
       }
-    });
 
-    _parseIssues = mutableIssues;
+      if (block.parsedDate.trim().isEmpty) {
+        newIssues.add(
+          BulkParseIssue(
+            lineNumber: i + 1,
+            rawLine: block.rawTitle,
+            code: 'missing_date',
+            message: 'Kart #$blockNum: Bu personel grubu için geçerli bir tarih bulunamadı.',
+            severity: BulkParseIssueSeverity.error,
+          ),
+        );
+      }
+
+      if (block.parsedTimName.trim().isEmpty) {
+        newIssues.add(
+          BulkParseIssue(
+            lineNumber: i + 1,
+            rawLine: block.rawTitle,
+            code: 'unknown_team',
+            message: 'Kart #$blockNum: Takım/tim adı belirtilmedi.',
+            severity: BulkParseIssueSeverity.warning,
+          ),
+        );
+      }
+
+      if (block.parsedActivityType.trim().isEmpty) {
+        newIssues.add(
+          BulkParseIssue(
+            lineNumber: i + 1,
+            rawLine: block.rawTitle,
+            code: 'unknown_activity',
+            message: 'Kart #$blockNum: Görev türü tanınamadı.',
+            severity: BulkParseIssueSeverity.warning,
+          ),
+        );
+      }
+
+      for (var pIdx = 0; pIdx < block.personnelList.length; pIdx++) {
+        final p = block.personnelList[pIdx];
+        if (!p.isMatched) {
+          newIssues.add(
+            BulkParseIssue(
+              lineNumber: p.sourceLineNumber ?? (i + 1),
+              rawLine: '${p.rawRank} ${p.rawName}',
+              code: 'unmatched_personnel',
+              message: '${p.rawRank} ${p.rawName} için personel seçimi yapılmadı.',
+              severity: BulkParseIssueSeverity.error,
+            ),
+          );
+        }
+      }
+    }
+
+    _parseIssues = newIssues;
   }
 
   void _setPreviewFilter(_BulkPreviewFilter filter) {
