@@ -9,6 +9,7 @@ class DashboardArchiveAction extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.height,
     super.key,
   });
 
@@ -16,6 +17,7 @@ class DashboardArchiveAction extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class DashboardArchiveAction extends StatelessWidget {
       label: '$title, $subtitle',
       child: ExcludeSemantics(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 88),
+          constraints: BoxConstraints(minHeight: height ?? 56),
           child: Material(
             color: palette.surface,
             shape: RoundedRectangleBorder(
@@ -39,7 +41,7 @@ class DashboardArchiveAction extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.md,
-                  vertical: AppSpacing.md,
+                  vertical: AppSpacing.sm + 2,
                 ),
                 child: Row(
                   children: [
@@ -50,7 +52,7 @@ class DashboardArchiveAction extends StatelessWidget {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.sm),
-                        child: Icon(icon, size: 28, color: palette.content),
+                        child: Icon(icon, size: 24, color: palette.content),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -67,13 +69,13 @@ class DashboardArchiveAction extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
                           Text(
                             subtitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11.5,
                               color: context.textSecondary,
                             ),
                           ),

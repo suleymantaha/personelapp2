@@ -24,16 +24,20 @@ void main() {
       expect(layout.mainAxisExtent, greaterThanOrEqualTo(168));
     });
 
-    test('ignores available height so page can scroll', () {
+    test('dynamically adjusts mainAxisExtent based on available height to auto fit phone screens', () {
       final short = DashboardGridLayout.calculate(
-        const BoxConstraints.tightFor(width: 390, height: 320),
+        const BoxConstraints.tightFor(width: 390, height: 550),
+        itemCount: 6,
       );
       final tall = DashboardGridLayout.calculate(
-        const BoxConstraints.tightFor(width: 390, height: 1200),
+        const BoxConstraints.tightFor(width: 390, height: 850),
+        itemCount: 6,
       );
 
       expect(short.columnCount, tall.columnCount);
-      expect(short.mainAxisExtent, tall.mainAxisExtent);
+      expect(short.mainAxisExtent, lessThan(tall.mainAxisExtent));
+      expect(short.mainAxisExtent, greaterThanOrEqualTo(102.0));
+      expect(tall.mainAxisExtent, lessThanOrEqualTo(184.0));
     });
   });
 }

@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
-import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 import 'package:personelapp2/features/dashboard/presentation/models/dashboard_action_item.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_action_tone.dart';
@@ -97,12 +96,22 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: ResponsiveCenter(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final gridLayout = DashboardGridLayout.calculate(constraints);
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final pendingList = pendingAsync.asData?.value ?? [];
+          final hasWarningBanner = isAdmin && pendingList.isNotEmpty;
 
-            return CustomScrollView(
+          final gridLayout = DashboardGridLayout.calculate(
+            constraints,
+            itemCount: gridActions.length,
+            hasArchive: true,
+            hasWarningBanner: hasWarningBanner,
+          );
+
+          return ResponsiveCenter(
+            padding: gridLayout.padding,
+            child: CustomScrollView(
+              physics: const ClampingScrollPhysics(),
               slivers: [
                 if (isAdmin)
                   SliverToBoxAdapter(
@@ -110,7 +119,7 @@ class DashboardScreen extends ConsumerWidget {
                       data: (pendingList) {
                         if (pendingList.isEmpty) return const SizedBox.shrink();
                         return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
+                          margin: EdgeInsets.only(bottom: gridLayout.gap),
                           child: Card(
                             color: context.rejectedBgColor,
                             shape: RoundedRectangleBorder(
@@ -123,22 +132,26 @@ class DashboardScreen extends ConsumerWidget {
                               leading: Icon(
                                 Icons.warning_amber_rounded,
                                 color: context.rejectedColor,
-                                size: 32,
+                                size: 28,
                               ),
                               title: Text(
                                 '${pendingList.length} Görevlendirmede Çakışma / Rapor Var!',
                                 style: TextStyle(
                                   color: context.rejectedColor,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 13.5,
                                 ),
                               ),
                               subtitle: Text(
                                 'Onaylamak veya reddetmek için dokunun.',
-                                style: TextStyle(color: context.textPrimary),
+                                style: TextStyle(
+                                  color: context.textPrimary,
+                                  fontSize: 11.5,
+                                ),
                               ),
                               trailing: Icon(
                                 Icons.arrow_forward_ios,
-                                size: 16,
+                                size: 14,
                                 color: context.rejectedColor,
                               ),
                               onTap: () => context.push('/pending-approvals'),
@@ -150,13 +163,15 @@ class DashboardScreen extends ConsumerWidget {
                       error: (err, st) => const SizedBox.shrink(),
                     ),
                   ),
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: 12),
+                    padding: EdgeInsets.only(bottom: gridLayout.gap * 0.8),
                     child: Text(
                       'İşlemler',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: gridLayout.gap < 10 ? 16 : 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -164,8 +179,8 @@ class DashboardScreen extends ConsumerWidget {
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: gridLayout.columnCount,
                     mainAxisExtent: gridLayout.mainAxisExtent,
-                    crossAxisSpacing: AppSpacing.cardGap,
-                    mainAxisSpacing: AppSpacing.cardGap,
+                    crossAxisSpacing: gridLayout.gap,
+                    mainAxisSpacing: gridLayout.gap,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -182,8 +197,8 @@ class DashboardScreen extends ConsumerWidget {
                     childCount: gridActions.length,
                   ),
                 ),
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: AppSpacing.cardGap),
+                SliverToBoxAdapter(
+                  child: SizedBox(height: gridLayout.gap),
                 ),
                 SliverToBoxAdapter(
                   child: DashboardArchiveAction(
@@ -191,16 +206,14 @@ class DashboardScreen extends ConsumerWidget {
                     icon: Icons.inventory_2_outlined,
                     title: 'Faaliyet Arşivi',
                     subtitle: 'Arama ve İnceleme',
+                    height: gridLayout.archiveHeight,
                     onTap: () => context.push('/activity-archive'),
                   ),
                 ),
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: AppSpacing.md),
-                ),
               ],
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
