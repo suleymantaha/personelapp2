@@ -24,6 +24,12 @@ void main() {
     return ProviderScope(
       overrides: [
         databaseProvider.overrideWithValue(db),
+        allPersonnelProvider.overrideWith(
+          (ref) => Stream.value(const <PersonelTableData>[]),
+        ),
+        allSquadsProvider.overrideWith(
+          (ref) => Stream.value(const <TimTableData>[]),
+        ),
       ],
       child: MaterialApp(
         home: Scaffold(

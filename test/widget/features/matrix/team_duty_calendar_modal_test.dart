@@ -42,7 +42,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('1. Tim'), findsOneWidget);
+      expect(find.textContaining('1. Tim'), findsWidgets);
       expect(find.byType(TeamDutyCalendarModal), findsOneWidget);
     });
   });

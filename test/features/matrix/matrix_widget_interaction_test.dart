@@ -2,27 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/native.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/matrix/presentation/monthly_matrix_screen.dart';
 
 void main() {
+  setUpAll(() => initializeDateFormatting('tr_TR'));
+
   late AppDatabase db;
+  late ProviderContainer container;
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
     await db.ensureSeeded();
+    container = ProviderContainer(
+      overrides: [
+        databaseProvider.overrideWithValue(db),
+      ],
+    );
   });
 
   tearDown(() async {
+    container.dispose();
     await db.close();
   });
 
   Widget createTestWidget() {
-    return ProviderScope(
-      overrides: [
-        databaseProvider.overrideWithValue(db),
-      ],
+    return UncontrolledProviderScope(
+      container: container,
       child: const MaterialApp(
         home: MonthlyMatrixScreen(),
       ),
@@ -31,6 +39,11 @@ void main() {
 
   group('Monthly Matrix Widget Data Exchange & Interaction Tests', () {
     testWidgets('renders monthly matrix screen with calendar grid and squad controls', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(500, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
@@ -38,6 +51,11 @@ void main() {
     });
 
     testWidgets('month navigation updates matrix grid state', (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(500, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 

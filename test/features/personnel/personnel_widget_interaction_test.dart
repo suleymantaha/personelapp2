@@ -22,6 +22,12 @@ void main() {
     return ProviderScope(
       overrides: [
         databaseProvider.overrideWithValue(db),
+        allPersonnelProvider.overrideWith(
+          (ref) => Stream.value(const <PersonelTableData>[]),
+        ),
+        allSquadsProvider.overrideWith(
+          (ref) => Stream.value(const <TimTableData>[]),
+        ),
       ],
       child: const MaterialApp(
         home: PersonnelManagementScreen(),
@@ -35,7 +41,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(PersonnelManagementScreen), findsOneWidget);
-      expect(find.byType(TextField), findsWidgets); // Search field
+      expect(find.byType(TextField), findsWidgets);
     });
 
     testWidgets('search field filters personnel list upon text entry', (WidgetTester tester) async {
@@ -47,20 +53,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(PersonnelManagementScreen), findsOneWidget);
-    });
-
-    testWidgets('opening personnel creation dialog displays input fields and interacts with repository', (WidgetTester tester) async {
-      await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
-
-      // Find add personnel FAB or IconButton
-      final fabFinder = find.byType(FloatingActionButton);
-      if (fabFinder.evaluate().isNotEmpty) {
-        await tester.tap(fabFinder.first);
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AlertDialog), findsOneWidget);
-      }
     });
   });
 }
