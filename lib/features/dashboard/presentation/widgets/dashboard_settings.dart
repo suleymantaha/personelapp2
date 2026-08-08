@@ -99,10 +99,9 @@ class DashboardSettings {
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
         builder: (ctx) {
-          return StatefulBuilder(
-            builder: (ctx, setSheetState) {
+          return Consumer(
+            builder: (ctx, ref, _) {
               final themeMode = ref.watch(themeModeProvider);
-              final isDarkMode = themeMode == ThemeMode.dark;
 
               return SafeArea(
                 child: ResponsiveCenter(
@@ -139,22 +138,67 @@ class DashboardSettings {
                           ),
                         ),
                         const Divider(),
-                        SwitchListTile(
-                          secondary: Icon(
-                            isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                            color: context.accentOrOlive,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0,
                           ),
-                          title: const Text('Koyu Mod (Dark Theme)'),
-                          subtitle: Text(isDarkMode ? 'Aktif' : 'Pasif'),
-                          value: isDarkMode,
-                          onChanged: (value) async {
-                            final newMode =
-                                value ? ThemeMode.dark : ThemeMode.light;
-                            ref.read(themeModeProvider.notifier).state =
-                                newMode;
-                            await SessionStorage.saveThemeMode(newMode);
-                            setSheetState(() {});
-                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    themeMode == ThemeMode.dark
+                                        ? Icons.dark_mode
+                                        : (themeMode == ThemeMode.light
+                                            ? Icons.light_mode
+                                            : Icons.brightness_auto),
+                                    color: context.accentOrOlive,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Uygulama Teması',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: context.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: double.infinity,
+                                child: SegmentedButton<ThemeMode>(
+                                  segments: const [
+                                    ButtonSegment<ThemeMode>(
+                                      value: ThemeMode.light,
+                                      label: Text('Açık'),
+                                      icon: Icon(Icons.light_mode_outlined),
+                                    ),
+                                    ButtonSegment<ThemeMode>(
+                                      value: ThemeMode.dark,
+                                      label: Text('Koyu'),
+                                      icon: Icon(Icons.dark_mode_outlined),
+                                    ),
+                                    ButtonSegment<ThemeMode>(
+                                      value: ThemeMode.system,
+                                      label: Text('Sistem'),
+                                      icon: Icon(Icons.brightness_auto),
+                                    ),
+                                  ],
+                                  selected: {themeMode},
+                                  onSelectionChanged:
+                                      (Set<ThemeMode> selection) async {
+                                    final newMode = selection.first;
+                                    ref.read(themeModeProvider.notifier).state =
+                                        newMode;
+                                    await SessionStorage.saveThemeMode(newMode);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         ListTile(
                           leading: Icon(

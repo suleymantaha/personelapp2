@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -75,5 +76,20 @@ void main() {
 
     expect(session, isNull);
     expect(preferences.getString('session_username'), isNull);
+  });
+
+  test('saves and loads theme mode preferences correctly', () async {
+    SharedPreferences.setMockInitialValues({});
+
+    expect(await SessionStorage.loadThemeMode(), ThemeMode.light);
+
+    await SessionStorage.saveThemeMode(ThemeMode.dark);
+    expect(await SessionStorage.loadThemeMode(), ThemeMode.dark);
+
+    await SessionStorage.saveThemeMode(ThemeMode.system);
+    expect(await SessionStorage.loadThemeMode(), ThemeMode.system);
+
+    await SessionStorage.saveThemeMode(ThemeMode.light);
+    expect(await SessionStorage.loadThemeMode(), ThemeMode.light);
   });
 }

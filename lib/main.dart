@@ -3,15 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:personelapp2/core/navigation/app_router.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('tr_TR');
 
+  final savedThemeMode = await SessionStorage.loadThemeMode();
+
   runApp(
-    const ProviderScope(
-      child: PersonelApp(),
+    ProviderScope(
+      overrides: [
+        themeModeProvider.overrideWith((ref) => savedThemeMode),
+      ],
+      child: const PersonelApp(),
     ),
   );
 }
