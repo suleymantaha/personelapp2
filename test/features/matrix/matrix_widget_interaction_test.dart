@@ -59,10 +59,11 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      final iconBtnFinder = find.byType(IconButton);
-      if (iconBtnFinder.evaluate().isNotEmpty) {
-        await tester.tap(iconBtnFinder.first);
-        await tester.pumpAndSettle();
+      final navButton = find.byIcon(Icons.chevron_right);
+      if (navButton.evaluate().isNotEmpty) {
+        await tester.tap(navButton.first);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 200));
       }
 
       expect(find.byType(MonthlyMatrixScreen), findsOneWidget);
