@@ -43,8 +43,17 @@ jobs:
       - name: Verify Integration Test Suite
         run: flutter test integration_test
 
+      - name: Build Release APKs
+        run: flutter build apk --release
+
       - name: Upload Coverage Artifact
         uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
           path: coverage/lcov.info
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
