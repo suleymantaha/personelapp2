@@ -271,7 +271,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
           // Takım / Tim Seçin Dropdown
           DropdownButtonFormField<String>(
             key: const Key('bulk-edit-team-dropdown'),
-            value: _teamDropdownOptions.contains(_selectedTeamOption)
+            initialValue: _teamDropdownOptions.contains(_selectedTeamOption)
                 ? _selectedTeamOption
                 : _customTeamOption,
             isExpanded: true,
