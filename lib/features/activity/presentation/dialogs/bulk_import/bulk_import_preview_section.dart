@@ -16,6 +16,7 @@ class BulkImportPreviewSection extends StatelessWidget {
     required this.duplicates,
     required this.allSquads,
     required this.cardKeys,
+    required this.personKeys,
     required this.scrollController,
     required this.isMobile,
     required this.previewFilterIsProblems,
@@ -47,6 +48,7 @@ class BulkImportPreviewSection extends StatelessWidget {
   final Map<String, List<String>> duplicates;
   final List<TimTableData> allSquads;
   final Map<int, GlobalKey> cardKeys;
+  final Map<String, GlobalKey> personKeys;
   final ScrollController scrollController;
   final bool isMobile;
   final bool previewFilterIsProblems;
@@ -241,6 +243,7 @@ class BulkImportPreviewSection extends StatelessWidget {
                             originalBlockIndex,
                             () => GlobalKey(),
                           ),
+                          personKeys: personKeys,
                           block: block,
                           blockIdx: originalBlockIndex,
                           duplicates: duplicates,

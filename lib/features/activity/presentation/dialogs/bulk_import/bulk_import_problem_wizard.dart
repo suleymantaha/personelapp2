@@ -166,14 +166,32 @@ class BulkImportProblemWizard {
 
   static void scrollToProblemLocation({
     required int blockIndex,
+    int? personIndex,
     required ScrollController scrollController,
     required Map<int, GlobalKey> cardKeys,
+    Map<String, GlobalKey>? personKeys,
     required List<ParsedActivityBlock> blocks,
     required Map<String, List<String>> duplicates,
     required bool filterIsProblems,
   }) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!scrollController.hasClients) return;
+
+      // If personIndex is specified and its context is already available, scroll directly to the person row
+      if (personIndex != null && personKeys != null) {
+        final personKey = personKeys['$blockIndex:$personIndex'];
+        if (personKey?.currentContext != null) {
+          Scrollable.ensureVisible(
+            personKey!.currentContext!,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            alignment: 0.3,
+          );
+          return;
+        }
+      }
+
+      // Otherwise scroll to the card top header first
       final targetKey = cardKeys[blockIndex];
       if (targetKey?.currentContext != null) {
         Scrollable.ensureVisible(
@@ -182,6 +200,21 @@ class BulkImportProblemWizard {
           curve: Curves.easeInOut,
           alignment: 0.15,
         );
+
+        // After card scrolls into view and lays out expanded children, scroll to person row if present
+        if (personIndex != null && personKeys != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final personKey = personKeys['$blockIndex:$personIndex'];
+            if (personKey?.currentContext != null) {
+              Scrollable.ensureVisible(
+                personKey!.currentContext!,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                alignment: 0.3,
+              );
+            }
+          });
+        }
       }
     });
   }

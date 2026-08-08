@@ -19,6 +19,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
       _updateState(() {
         _cardKeys.clear();
+        _personKeys.clear();
         _parsedBlocks = deduplicated.blocks;
         _parseIssues = List<BulkParseIssue>.from(parseResult.issues);
         _deduplicatedPersonnelCount = deduplicated.removedCount;
@@ -171,6 +172,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         _parseIssuesExpanded = false;
         _deduplicatedPersonnelCount = 0;
         _cardKeys.clear();
+        _personKeys.clear();
         _currentStep = 0;
       });
     }

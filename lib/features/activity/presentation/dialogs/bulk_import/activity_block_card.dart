@@ -20,6 +20,7 @@ class ActivityBlockCard extends StatefulWidget {
     this.onConfirmPersonnelSuggestion,
     this.onAddNewPersonnel,
     this.cardKey,
+    this.personKeys,
     this.visiblePersonnelIndexes,
     this.isExpanded,
     this.onToggleExpand,
@@ -39,6 +40,7 @@ class ActivityBlockCard extends StatefulWidget {
       onConfirmPersonnelSuggestion;
   final void Function(int blockIdx, int personIdx)? onAddNewPersonnel;
   final Key? cardKey;
+  final Map<String, GlobalKey>? personKeys;
   final List<int>? visiblePersonnelIndexes;
   final bool? isExpanded;
   final VoidCallback? onToggleExpand;
@@ -458,10 +460,14 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                           final duplicateWith =
                               widget.duplicates['${widget.blockIdx}:$pIdx'];
                           final personKey = '${widget.blockIdx}:$pIdx';
-                          final isFocused =
-                              widget.focusedPersonKey == personKey;
+                          final isFocused = widget.focusedPersonKey == personKey;
+                          final itemKey = widget.personKeys?.putIfAbsent(
+                                personKey,
+                                () => GlobalKey(),
+                              ) ??
+                              Key('bulk-person-${widget.blockIdx}-$pIdx');
                           return PersonnelMatchCard(
-                            key: Key('bulk-person-${widget.blockIdx}-$pIdx'),
+                            key: itemKey,
                             item: item,
                             teamName: widget.allSquads
                                     .where(

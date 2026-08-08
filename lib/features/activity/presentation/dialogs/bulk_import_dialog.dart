@@ -60,6 +60,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   int _activeIssueFocusIndex = -1;
   String? _focusedPersonKey;
   final _cardKeys = <int, GlobalKey>{};
+  final _personKeys = <String, GlobalKey>{};
 
   List<ProblemLocation> _getProblemLocations() {
     return BulkImportProblemWizard.getProblemLocations(
@@ -78,6 +79,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       });
       return;
     }
+    final target = locs[_activeIssueFocusIndex < 0
+        ? 0
+        : (_activeIssueFocusIndex + 1) % locs.length];
     setState(() {
       _previewFilter = _BulkPreviewFilter.problems;
       _parseIssuesExpanded = true;
@@ -86,12 +90,11 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       } else {
         _activeIssueFocusIndex = (_activeIssueFocusIndex + 1) % locs.length;
       }
-      final target = locs[_activeIssueFocusIndex];
       _focusedPersonKey = target.personIndex != null
           ? '${target.blockIndex}:${target.personIndex}'
           : '${target.blockIndex}:empty';
     });
-    _scrollToProblemLocation(locs[_activeIssueFocusIndex].blockIndex);
+    _scrollToProblemLocation(target.blockIndex, target.personIndex);
   }
 
   void _focusPreviousProblem() {
@@ -104,6 +107,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       });
       return;
     }
+    final target = locs[_activeIssueFocusIndex < 0
+        ? locs.length - 1
+        : (_activeIssueFocusIndex - 1 + locs.length) % locs.length];
     setState(() {
       _previewFilter = _BulkPreviewFilter.problems;
       _parseIssuesExpanded = true;
@@ -113,19 +119,20 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
         _activeIssueFocusIndex =
             (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
       }
-      final target = locs[_activeIssueFocusIndex];
       _focusedPersonKey = target.personIndex != null
           ? '${target.blockIndex}:${target.personIndex}'
           : '${target.blockIndex}:empty';
     });
-    _scrollToProblemLocation(locs[_activeIssueFocusIndex].blockIndex);
+    _scrollToProblemLocation(target.blockIndex, target.personIndex);
   }
 
-  void _scrollToProblemLocation(int blockIndex) {
+  void _scrollToProblemLocation(int blockIndex, [int? personIndex]) {
     BulkImportProblemWizard.scrollToProblemLocation(
       blockIndex: blockIndex,
+      personIndex: personIndex,
       scrollController: _previewScrollController,
       cardKeys: _cardKeys,
+      personKeys: _personKeys,
       blocks: _parsedBlocks,
       duplicates: _duplicateAssignments(),
       filterIsProblems: _previewFilter == _BulkPreviewFilter.problems,
@@ -189,6 +196,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   void _setPreviewFilter(_BulkPreviewFilter filter) {
     setState(() {
       _cardKeys.clear();
+      _personKeys.clear();
       _previewFilter = filter;
       if (filter == _BulkPreviewFilter.problems &&
           _parseIssues.any((issue) => issue.isBlocking)) {
@@ -382,6 +390,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       duplicates: duplicates,
       allSquads: _allSquads,
       cardKeys: _cardKeys,
+      personKeys: _personKeys,
       scrollController: _previewScrollController,
       isMobile: isMobile,
       previewFilterIsProblems: _previewFilter == _BulkPreviewFilter.problems,
