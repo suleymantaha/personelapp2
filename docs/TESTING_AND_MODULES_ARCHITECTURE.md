@@ -1,10 +1,23 @@
-# PersonelApp2 - Widget Etkileşim ve Veri Akış Test Mimarisi
+# PersonelApp2 - Widget Etkileşim, Responsive & Veri Akış Test Mimarisi
 
-Bu doküman, uygulamadaki gerçek modüller (`personnel`, `matrix`, `temgundrap`, `dashboard`, `auth`, `activity`) arasındaki widget-widget etkileşimi, state paylaşımı ve veri akış test mimarisini açıklamaktadır.
+Bu doküman, uygulamadaki gerçek modüller (`personnel`, `matrix`, `temgundrap`, `dashboard`, `auth`, `activity`) arasındaki widget etkileşimi, responsive ekran davranışı (layout overflow) ve state paylaşım test mimarisini açıklamaktadır.
 
 ---
 
-## 🧪 Gerçek Modüller Arası Etkileşim Testleri (Widget Data Flow Suite)
+## 🧪 1. Responsive & Taşma (Layout Overflow) Test Mimarısı
+
+[test/widget/responsive/responsive_layout_overflow_test.dart](file:///c:/Users/baba/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart) ve [test/widget/responsive/responsive_viewports_test.dart](file:///c:/Users/baba/personelapp2/test/widget/responsive/responsive_viewports_test.dart) üzerinden test edilir:
+
+- **Mobil Dikey (Mobile Portrait - 360x800)**: Küçük ekran tasarımı ve taşma kontrolü.
+- **Mobil Yatay (Mobile Landscape - 800x360)**: Yatay mod ekran kırılmaları ve RenderFlex kontrolleri.
+- **Tablet Dikey (Tablet Portrait - 768x1024)**: Tablet kırılım noktası (`AppBreakpoints.tablet`) ve çoklu kolon geçişleri.
+- **Masaüstü / Geniş Ekran (Desktop - 1440x900)**: Geniş görünüm kontrolü.
+- **Büyük Font Erişilebilirlik Testi (1.5x Text Scaling)**: Büyük yazı boyutlarında diyalogların ve formların sığma kontrolü.
+- **Sıfır Taşma Garantisi**: `tester.takeException() == null` doğrulaması ile sıfır ekran taşması (0 RenderFlex overflow).
+
+---
+
+## 🧪 2. Gerçek Modüller Arası Etkileşim Testleri (Widget Data Flow Suite)
 
 Uygulamanın ana bileşenlerinin birbiriyle veri değiş tokuşunu ve arayüz etkileşimini doğrulayan test yapılandırması:
 
