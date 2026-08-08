@@ -199,16 +199,18 @@ void main() {
       );
     });
 
-    test('successfully inspects and restores user backup Nizam_Yedek_2026-08-07_16-48.nizam.json', () async {
+    test('successfully inspects and restores user backup Nizam_Yedek_2026-08-07_16-48.nizam.json from clipboard paste', () async {
       final file = File('Nizam_Yedek_2026-08-07_16-48.nizam.json');
       expect(file.existsSync(), isTrue);
 
       final contents = file.readAsStringSync();
-      final preview = await service.inspectBackupJson(contents);
+      // Test with clipboard-like text additions (BOM, code fences, trailing space)
+      final pastedText = '```json\n$contents\n```';
+      final preview = await service.inspectBackupJson(pastedText);
       expect(preview.legacy, isFalse);
       expect(preview.personnelCount, greaterThan(0));
 
-      final result = await service.restoreBackupJson(contents);
+      final result = await service.restoreBackupJson(pastedText);
       expect(result.importedPersonnel, equals(preview.personnelCount));
     });
   });

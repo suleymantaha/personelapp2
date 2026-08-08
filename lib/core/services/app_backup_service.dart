@@ -67,7 +67,7 @@ class AppBackupService {
       'format': format,
       'version': backupVersion,
       'exportedAt': DateTime.now().toUtc().toIso8601String(),
-      'checksum': _computeCanonicalChecksum(payload),
+      'checksum': computeCanonicalChecksum(payload),
       'payload': payload,
     };
     return const JsonEncoder.withIndent('  ').convert(envelope);
@@ -131,7 +131,7 @@ class AppBackupService {
     }
     final payload = _object(decoded['payload'], 'payload');
     final expectedChecksum = _string(decoded['checksum'], 'checksum');
-    final canonicalChecksum = _computeCanonicalChecksum(payload);
+    final canonicalChecksum = computeCanonicalChecksum(payload);
     final legacyChecksum =
         sha256.convert(utf8.encode(jsonEncode(payload))).toString();
     if (expectedChecksum != canonicalChecksum &&
@@ -390,10 +390,14 @@ class AppBackupService {
     }
   }
 
-  static String _computeCanonicalChecksum(Map<String, Object?> payload) {
+  static String computeCanonicalChecksum(Map<String, Object?> payload) {
     final canonical = _canonicalize(payload);
     final jsonStr = jsonEncode(canonical);
     return sha256.convert(utf8.encode(jsonStr)).toString();
+  }
+
+  static String computeLegacyChecksum(Map<String, Object?> payload) {
+    return sha256.convert(utf8.encode(jsonEncode(payload))).toString();
   }
 
   Map<String, Object?> _object(Object? value, String field) {
