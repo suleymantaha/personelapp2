@@ -87,11 +87,8 @@ void main() {
     await tester.tap(find.text('Geri yükle').first);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('backup-pick-file')));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
-    expect(find.text('Doğrulanmış tam yedek'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('backup-restore')));
-    await tester.pumpAndSettle();
     expect(find.text('Mevcut veriler değiştirilsin mi?'), findsOneWidget);
     await tester.tap(find.byKey(const Key('backup-confirm-restore')));
     await tester.pumpAndSettle();
@@ -122,8 +119,6 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('backup-paste')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('backup-restore')));
-    await tester.pumpAndSettle();
 
     expect(await database.select(database.personelTable).get(), hasLength(1));
     expect(find.textContaining('eski yedekten aktarıldı'), findsOneWidget);
@@ -153,10 +148,12 @@ void main() {
     await tester.tap(find.text('Geri yükle').first);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('backup-pick-file')));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
-    expect(find.text('Doğrulanmış tam yedek'), findsOneWidget);
-    expect(find.textContaining('bütünlük kontrolü başarısız'), findsNothing);
+    expect(find.text('Mevcut veriler değiştirilsin mi?'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('backup-confirm-restore')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Geri yükleme tamamlandı:'), findsOneWidget);
   });
 }
 

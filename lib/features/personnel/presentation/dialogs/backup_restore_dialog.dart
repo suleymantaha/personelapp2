@@ -119,6 +119,7 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
       final contents = await _fileGateway.openBackup();
       if (contents == null || !mounted) return;
       await _loadBackupText(contents);
+      await _importBackup();
     } on FormatException catch (error) {
       if (mounted) _showError(error.message);
     } on Object catch (error, stackTrace) {
@@ -241,6 +242,7 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
     setState(() => _isLoading = true);
     try {
       await _loadBackupText(text);
+      await _importBackup();
     } on FormatException catch (error) {
       if (mounted) _showError(error.message);
     } on Object catch (error, stackTrace) {
