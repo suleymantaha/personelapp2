@@ -32,7 +32,26 @@ class PersonnelFuzzyMatcher {
         matchedPersonnelList.add(matchedItem);
       }
 
-      matchedBlocks.add(block.copyWith(personnelList: matchedPersonnelList));
+      var updatedTimName = block.parsedTimName;
+      if (updatedTimName.trim().isEmpty) {
+        final matchedTeamIds = matchedPersonnelList
+            .where((p) => p.isMatched && p.matchedTimId != null)
+            .map((p) => p.matchedTimId!)
+            .toSet();
+        if (matchedTeamIds.length == 1) {
+          final inferredName = teamNames[matchedTeamIds.first];
+          if (inferredName != null && inferredName.isNotEmpty) {
+            updatedTimName = inferredName;
+          }
+        }
+      }
+
+      matchedBlocks.add(
+        block.copyWith(
+          parsedTimName: updatedTimName,
+          personnelList: matchedPersonnelList,
+        ),
+      );
     }
 
     return matchedBlocks;

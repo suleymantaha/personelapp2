@@ -31,6 +31,7 @@ class EditActivityBlockDialog extends StatefulWidget {
 
 class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
   late final TextEditingController _activityController;
+  late final TextEditingController _teamController;
   late final TextEditingController _timeController;
   late DateTime _selectedDate;
   late String _selectedDuty;
@@ -65,6 +66,8 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
     super.initState();
     final initialActivity = widget.block.parsedActivityType.trim();
     _activityController = TextEditingController(text: initialActivity);
+    _teamController =
+        TextEditingController(text: widget.block.parsedTimName);
     _timeController =
         TextEditingController(text: widget.block.parsedTimeRange);
     _selectedDate =
@@ -91,6 +94,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
   @override
   void dispose() {
     _activityController.dispose();
+    _teamController.dispose();
     _timeController.dispose();
     super.dispose();
   }
@@ -218,6 +222,22 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
           ),
           const SizedBox(height: 12),
 
+          // Takım / Tim Adı TextField
+          TextField(
+            key: const Key('bulk-edit-team'),
+            controller: _teamController,
+            decoration: InputDecoration(
+              labelText: 'Takım / Tim Adı (Örn: 6-B Timi)',
+              prefixIcon: const Icon(Icons.groups_rounded),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 12),
+
           TextField(
             key: const Key('bulk-edit-time'),
             controller: _timeController,
@@ -273,12 +293,13 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
             onPressed: () {
               final activity = _activityController.text.trim();
               if (activity.isEmpty) return;
+              final team = _teamController.text.trim();
               final time = _timeController.text.trim();
               Navigator.pop(
                 context,
                 ParsedActivityBlock(
                   rawTitle: widget.block.rawTitle,
-                  parsedTimName: widget.block.parsedTimName,
+                  parsedTimName: team,
                   parsedActivityType: activity,
                   parsedDate:
                       '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}',
