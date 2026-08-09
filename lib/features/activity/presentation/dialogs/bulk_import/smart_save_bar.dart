@@ -105,10 +105,7 @@ class SmartSaveBar extends StatelessWidget {
     final reviewWarningCount = problemLocs.isNotEmpty ? warningLocs.length : 0;
 
     final hasCritical = isBlocked || criticalCount > 0;
-    final canSave = blocks.isNotEmpty &&
-        !isSaving &&
-        !hasCritical &&
-        !hasUnresolvedProblems;
+    final canSave = blocks.isNotEmpty && !hasCritical && !hasUnresolvedProblems;
 
     final displayTotal = problemLocs.isNotEmpty
         ? problemLocs.length
@@ -143,7 +140,7 @@ class SmartSaveBar extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (canSave) ...[
+          if (canSave || isSaving) ...[
             AnimatedScale(
               scale: isSaving ? 0.96 : 1.0,
               duration: const Duration(milliseconds: 200),
@@ -179,12 +176,13 @@ class SmartSaveBar extends StatelessWidget {
                 ),
               ),
             ),
-            if (reviewWarningCount > 0) ...[
+            if (!isSaving && reviewWarningCount > 0) ...[
               const SizedBox(height: 6),
               OutlinedButton.icon(
                 key: const Key('bulk-wizard-next'),
                 onPressed: onGotoProblem,
-                icon: Icon(Icons.info_outline_rounded, size: 16, color: wizardButtonColor),
+                icon: Icon(Icons.info_outline_rounded,
+                    size: 16, color: wizardButtonColor),
                 label: Text(
                   wizardButtonText,
                   style: TextStyle(
@@ -194,7 +192,8 @@ class SmartSaveBar extends StatelessWidget {
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: wizardButtonColor.withValues(alpha: 0.5)),
+                  side: BorderSide(
+                      color: wizardButtonColor.withValues(alpha: 0.5)),
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -217,7 +216,8 @@ class SmartSaveBar extends StatelessWidget {
                     ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: wizardButtonColor,
-                      side: BorderSide(color: wizardButtonColor.withValues(alpha: 0.4)),
+                      side: BorderSide(
+                          color: wizardButtonColor.withValues(alpha: 0.4)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -268,7 +268,8 @@ class SmartSaveBar extends StatelessWidget {
               ),
               child: Text(
                 'Kaydedilemiyor ($displayTotal Hata / İnceleme)',
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                style:
+                    const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ),
           ],
