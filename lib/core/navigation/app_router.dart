@@ -20,18 +20,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 GoRouter createAppRouter({UserSessionState? session}) {
   const loginRoute = '/login';
+  const dashboardRoute = '/dashboard';
   const adminOnlyRoutes = <String>{'/pending-approvals'};
 
   return GoRouter(
-    initialLocation: loginRoute,
+    initialLocation: session != null ? dashboardRoute : loginRoute,
     redirect: (context, state) {
       final location = state.matchedLocation;
       final hasSession = session != null;
 
       if (!hasSession && location != loginRoute) return loginRoute;
-      if (hasSession && location == loginRoute) return '/dashboard';
+      if (hasSession && location == loginRoute) return dashboardRoute;
       if (adminOnlyRoutes.contains(location) && session?.isAdmin != true) {
-        return '/dashboard';
+        return dashboardRoute;
       }
       return null;
     },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/navigation/app_router.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
@@ -10,12 +11,19 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('tr_TR');
 
+  final database = AppDatabase();
+  await database.ensureSeeded();
+
   final savedThemeMode = await SessionStorage.loadThemeMode();
+  final initialSession = await SessionStorage.loadValidatedSession(database);
 
   runApp(
     ProviderScope(
       overrides: [
+        databaseProvider.overrideWithValue(database),
         themeModeProvider.overrideWith((ref) => savedThemeMode),
+        if (initialSession != null)
+          userSessionProvider.overrideWith((ref) => initialSession),
       ],
       child: const PersonelApp(),
     ),
