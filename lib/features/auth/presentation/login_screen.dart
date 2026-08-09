@@ -8,6 +8,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/password_hasher.dart';
+import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -164,68 +165,70 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: outerPadding,
-          child: ResponsiveCenter(
-            maxWidth: 440,
-            padding: EdgeInsets.zero,
-            child: Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-              ),
-              child: Padding(
-                padding: cardPadding,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.security,
-                      size: 64,
-                      color: context.accentOrOlive,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Nizam',
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: context.accentOrOlive,
-                              ),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      'Görev Yönetimi',
-                      style: context.textStyleSecondary,
-                    ),
-                    const SizedBox(height: 32),
-                    TextField(
-                      controller: _usernameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Kullanıcı Adı',
-                        prefixIcon: Icon(Icons.person),
+      body: TurkishFlagWatermarkBackground(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: outerPadding,
+            child: ResponsiveCenter(
+              maxWidth: 440,
+              padding: EdgeInsets.zero,
+              child: Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+                ),
+                child: Padding(
+                  padding: cardPadding,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.security,
+                        size: 64,
+                        color: context.accentOrOlive,
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Şifre',
-                        prefixIcon: Icon(Icons.lock),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Nizam',
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: context.accentOrOlive,
+                                ),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: _handleLogin,
-                        child: const Text('GİRİŞ YAP'),
+                      Text(
+                        'Görev Yönetimi',
+                        style: context.textStyleSecondary,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 32),
+                      TextField(
+                        controller: _usernameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Kullanıcı Adı',
+                          prefixIcon: Icon(Icons.person),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Şifre',
+                          prefixIcon: Icon(Icons.lock),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: _handleLogin,
+                          child: const Text('GİRİŞ YAP'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

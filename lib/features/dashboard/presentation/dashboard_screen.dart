@@ -12,6 +12,7 @@ import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_a
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_grid_layout.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_menu_card.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_settings.dart';
+import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -96,126 +97,128 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final pendingList = pendingAsync.asData?.value ?? [];
-          final hasWarningBanner = isAdmin && pendingList.isNotEmpty;
+      body: TurkishFlagWatermarkBackground(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final pendingList = pendingAsync.asData?.value ?? [];
+            final hasWarningBanner = isAdmin && pendingList.isNotEmpty;
 
-          final gridLayout = DashboardGridLayout.calculate(
-            constraints,
-            itemCount: gridActions.length,
-            hasArchive: true,
-            hasWarningBanner: hasWarningBanner,
-          );
+            final gridLayout = DashboardGridLayout.calculate(
+              constraints,
+              itemCount: gridActions.length,
+              hasArchive: true,
+              hasWarningBanner: hasWarningBanner,
+            );
 
-          return ResponsiveCenter(
-            padding: gridLayout.padding,
-            child: CustomScrollView(
-              physics: const ClampingScrollPhysics(),
-              slivers: [
-                if (isAdmin)
-                  SliverToBoxAdapter(
-                    child: pendingAsync.when(
-                      data: (pendingList) {
-                        if (pendingList.isEmpty) return const SizedBox.shrink();
-                        return Container(
-                          margin: EdgeInsets.only(bottom: gridLayout.gap),
-                          child: Card(
-                            color: context.rejectedBgColor,
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                color: context.rejectedBorderColor,
+            return ResponsiveCenter(
+              padding: gridLayout.padding,
+              child: CustomScrollView(
+                physics: const ClampingScrollPhysics(),
+                slivers: [
+                  if (isAdmin)
+                    SliverToBoxAdapter(
+                      child: pendingAsync.when(
+                        data: (pendingList) {
+                          if (pendingList.isEmpty) return const SizedBox.shrink();
+                          return Container(
+                            margin: EdgeInsets.only(bottom: gridLayout.gap),
+                            child: Card(
+                              color: context.rejectedBgColor,
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(
+                                  color: context.rejectedBorderColor,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.warning_amber_rounded,
-                                color: context.rejectedColor,
-                                size: 28,
-                              ),
-                              title: Text(
-                                '${pendingList.length} Görevlendirmede Çakışma / Rapor Var!',
-                                style: TextStyle(
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.warning_amber_rounded,
                                   color: context.rejectedColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13.5,
+                                  size: 28,
                                 ),
-                              ),
-                              subtitle: Text(
-                                'Onaylamak veya reddetmek için dokunun.',
-                                style: TextStyle(
-                                  color: context.textPrimary,
-                                  fontSize: 11.5,
+                                title: Text(
+                                  '${pendingList.length} Görevlendirmede Çakışma / Rapor Var!',
+                                  style: TextStyle(
+                                    color: context.rejectedColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13.5,
+                                  ),
                                 ),
+                                subtitle: Text(
+                                  'Onaylamak veya reddetmek için dokunun.',
+                                  style: TextStyle(
+                                    color: context.textPrimary,
+                                    fontSize: 11.5,
+                                  ),
+                                ),
+                                trailing: Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 14,
+                                  color: context.rejectedColor,
+                                ),
+                                onTap: () => context.push('/pending-approvals'),
                               ),
-                              trailing: Icon(
-                                Icons.arrow_forward_ios,
-                                size: 14,
-                                color: context.rejectedColor,
-                              ),
-                              onTap: () => context.push('/pending-approvals'),
                             ),
-                          ),
-                        );
-                      },
-                      loading: () => const SizedBox.shrink(),
-                      error: (err, st) => const SizedBox.shrink(),
+                          );
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (err, st) => const SizedBox.shrink(),
+                      ),
                     ),
-                  ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: gridLayout.gap * 0.8),
-                    child: Text(
-                      'İşlemler',
-                      style: TextStyle(
-                        fontSize: gridLayout.gap < 10 ? 16 : 18,
-                        fontWeight: FontWeight.bold,
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: gridLayout.gap * 0.8),
+                      child: Text(
+                        'İşlemler',
+                        style: TextStyle(
+                          fontSize: gridLayout.gap < 10 ? 16 : 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                SliverGrid(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: gridLayout.columnCount,
-                    mainAxisExtent: gridLayout.mainAxisExtent,
-                    crossAxisSpacing: gridLayout.gap,
-                    mainAxisSpacing: gridLayout.gap,
+                  SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: gridLayout.columnCount,
+                      mainAxisExtent: gridLayout.mainAxisExtent,
+                      crossAxisSpacing: gridLayout.gap,
+                      mainAxisSpacing: gridLayout.gap,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final action = gridActions[index];
+                        return DashboardMenuCard(
+                          key: ValueKey('dashboard-action-${action.title}'),
+                          icon: action.icon,
+                          title: action.title,
+                          subtitle: action.subtitle,
+                          tone: action.tone,
+                          animationIndex: index,
+                          onTap: action.onTap,
+                        );
+                      },
+                      childCount: gridActions.length,
+                    ),
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final action = gridActions[index];
-                      return DashboardMenuCard(
-                        key: ValueKey('dashboard-action-${action.title}'),
-                        icon: action.icon,
-                        title: action.title,
-                        subtitle: action.subtitle,
-                        tone: action.tone,
-                        animationIndex: index,
-                        onTap: action.onTap,
-                      );
-                    },
-                    childCount: gridActions.length,
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: gridLayout.gap),
                   ),
-                ),
-                SliverToBoxAdapter(
-                  child: SizedBox(height: gridLayout.gap),
-                ),
-                SliverToBoxAdapter(
-                  child: DashboardArchiveAction(
-                    key: const ValueKey('dashboard-archive-action'),
-                    icon: Icons.inventory_2_outlined,
-                    title: 'Faaliyet Arşivi',
-                    subtitle: 'Arama ve İnceleme',
-                    height: gridLayout.archiveHeight,
-                    animationIndex: gridActions.length,
-                    onTap: () => context.push('/activity-archive'),
+                  SliverToBoxAdapter(
+                    child: DashboardArchiveAction(
+                      key: const ValueKey('dashboard-archive-action'),
+                      icon: Icons.inventory_2_outlined,
+                      title: 'Faaliyet Arşivi',
+                      subtitle: 'Arama ve İnceleme',
+                      height: gridLayout.archiveHeight,
+                      animationIndex: gridActions.length,
+                      onTap: () => context.push('/activity-archive'),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        },
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
