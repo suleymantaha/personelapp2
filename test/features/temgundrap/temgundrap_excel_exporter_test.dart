@@ -47,4 +47,27 @@ void main() {
     expect(value('D4'), contains('(1) TRANSİT'));
     expect(value('K4'), 'ELLE GİRİLECEK');
   });
+
+  test('onaylayan bilgisi verilince imza hücresi satırlarını ekler', () {
+    final document = TemgundrapDocument(
+      id: 'excel-sig',
+      date: DateTime(2026, 8, 6),
+      unitTitle: 'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI',
+      approverName: 'İhsan DAĞLI',
+      approverRank: 'J.Ütğm.',
+      approverDuty: 'Tb. K. V.',
+      operations: const [],
+      isDraft: false,
+      updatedAt: DateTime(2026, 8, 6),
+    );
+    final workbook =
+        Excel.decodeBytes(TemgundrapExcelExporter.build(document));
+    final sheet = workbook['TEMGÜNDRAP'];
+    String value(String address) =>
+        sheet.cell(CellIndex.indexByString(address)).value?.toString() ?? '';
+    expect(value('I6'), '(İMZALI)');
+    expect(value('I7'), 'İhsan DAĞLI');
+    expect(value('I8'), 'J.Ütğm.');
+    expect(value('I9'), 'Tb. K. V.');
+  });
 }

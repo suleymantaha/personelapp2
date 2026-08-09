@@ -162,6 +162,52 @@ class TemgundrapPdfExporter {
               }),
             ],
           ),
+          if (document.approverName.isNotEmpty ||
+              document.approverRank.isNotEmpty ||
+              document.approverDuty.isNotEmpty) ...[
+            pw.SizedBox(height: 16),
+            pw.Align(
+              alignment: pw.Alignment.topRight,
+              child: pw.Container(
+                width: 180,
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Text(
+                      '(İMZALI)',
+                      textAlign: pw.TextAlign.center,
+                      style: pw.TextStyle(
+                        fontSize: 8,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 3),
+                    if (document.approverName.isNotEmpty)
+                      pw.Text(
+                        document.approverName,
+                        textAlign: pw.TextAlign.center,
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    if (document.approverRank.isNotEmpty)
+                      pw.Text(
+                        document.approverRank,
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                    if (document.approverDuty.isNotEmpty)
+                      pw.Text(
+                        document.approverDuty,
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -32,13 +32,27 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
     super.initState();
     final initial = widget.initialDocument;
     _date = initial?.date ?? widget.initialDate ?? DateTime.now();
-    _unitTitle = TextEditingController(
-        text: initial?.unitTitle ?? 'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI');
+    _unitTitle = TextEditingController(text: initial?.unitTitle ?? '');
     _approverName = TextEditingController(text: initial?.approverName ?? '');
     _approverRank = TextEditingController(text: initial?.approverRank ?? '');
     _approverDuty = TextEditingController(text: initial?.approverDuty ?? '');
     _operations = [...?initial?.operations];
     _isDraft = initial?.isDraft ?? true;
+
+    if (initial == null) {
+      _loadDefaults();
+    }
+  }
+
+  Future<void> _loadDefaults() async {
+    final defaults = await _repository.getApproverDefaults();
+    if (!mounted) return;
+    setState(() {
+      if (_unitTitle.text.isEmpty) _unitTitle.text = defaults.unitTitle;
+      if (_approverName.text.isEmpty) _approverName.text = defaults.name;
+      if (_approverRank.text.isEmpty) _approverRank.text = defaults.rank;
+      if (_approverDuty.text.isEmpty) _approverDuty.text = defaults.duty;
+    });
   }
 
   @override
@@ -121,6 +135,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                   controller: _unitTitle,
                   decoration: const InputDecoration(
                       labelText: 'Birlik başlığı',
+                      hintText: 'Örn: KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI',
                       prefixIcon: Icon(Icons.account_balance)),
                   validator: _required,
                 ),
@@ -189,16 +204,19 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                 const SizedBox(height: 12),
                 TextFormField(
                     controller: _approverName,
-                    decoration:
-                        const InputDecoration(labelText: 'Onaylayan ad soyad')),
+                    decoration: const InputDecoration(
+                        labelText: 'Onaylayan ad soyad',
+                        hintText: 'Örn: İhsan DAĞLI')),
                 const SizedBox(height: 12),
                 TextFormField(
                     controller: _approverRank,
-                    decoration: const InputDecoration(labelText: 'Rütbe')),
+                    decoration: const InputDecoration(
+                        labelText: 'Rütbe', hintText: 'Örn: J.Ütğm.')),
                 const SizedBox(height: 12),
                 TextFormField(
                     controller: _approverDuty,
-                    decoration: const InputDecoration(labelText: 'Görevi')),
+                    decoration: const InputDecoration(
+                        labelText: 'Görevi', hintText: 'Örn: Tb. K. V.')),
                 SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Taslak olarak kaydet'),

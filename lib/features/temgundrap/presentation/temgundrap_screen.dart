@@ -157,132 +157,139 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _section == _TemgundrapSection.daily
-                ? 'Günlük TEMGÜNDRAP'
-                : 'TEMGÜNDRAP Arşivi',
-          ),
-          actions: [
-            IconButton(
-              key: const Key('temgundrap-date-picker'),
-              tooltip: 'Tarih seç',
-              onPressed: _pickDate,
-              icon: const Icon(Icons.calendar_month_outlined),
-            ),
-          ],
-        ),
-        floatingActionButton: _section == _TemgundrapSection.daily
-            ? FloatingActionButton.extended(
-                key: const Key('new-temgundrap-document'),
-                onPressed: _openForm,
-                icon: const Icon(Icons.add_rounded),
-                label: const Text('Yeni Çizelge'),
-              )
-            : null,
-        body: FutureBuilder<List<TemgundrapDocument>>(
-          future: _documents,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return _MessageState(
-                icon: Icons.cloud_off_outlined,
-                title: 'Kayıtlar yüklenemedi',
-                message: '${snapshot.error}',
-                action: FilledButton.icon(
-                  onPressed: () => setState(_reload),
-                  icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('TEKRAR DENE'),
-                ),
-              );
-            }
+  @override
+  Widget build(BuildContext context) => FutureBuilder<List<TemgundrapDocument>>(
+        future: _documents,
+        builder: (context, snapshot) {
+          final documents = snapshot.data ?? const [];
+          final visible = documents.where((document) {
+            final hasSameDate = DateUtils.isSameDay(
+              document.date,
+              _selectedDate,
+            );
+            final hasMatchingState = _section == _TemgundrapSection.daily
+                ? document.isDraft
+                : !document.isDraft;
+            return hasSameDate && hasMatchingState;
+          }).toList()
+            ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
-            final documents = snapshot.data ?? const [];
-            final visible = documents.where((document) {
-              final hasSameDate = DateUtils.isSameDay(
-                document.date,
-                _selectedDate,
-              );
-              final hasMatchingState = _section == _TemgundrapSection.daily
-                  ? document.isDraft
-                  : !document.isDraft;
-              return hasSameDate && hasMatchingState;
-            }).toList()
-              ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-            final draftCount =
-                documents.where((document) => document.isDraft).length;
-            final archiveCount = documents.length - draftCount;
+          final draftCount =
+              documents.where((document) => document.isDraft).length;
+          final archiveCount = documents.length - draftCount;
 
-            return Column(
-              children: [
-                _SectionSwitcher(
-                  section: _section,
-                  draftCount: draftCount,
-                  archiveCount: archiveCount,
-                  onChanged: (section) => setState(() => _section = section),
-                ),
-                _DateNavigator(
-                  date: _selectedDate,
-                  onPrevious: () => _changeDay(-1),
-                  onNext: () => _changeDay(1),
-                  onPick: _pickDate,
-                  onToday: DateUtils.isSameDay(_selectedDate, DateTime.now())
-                      ? null
-                      : () => setState(
-                            () => _selectedDate =
-                                DateUtils.dateOnly(DateTime.now()),
-                          ),
-                ),
-                Expanded(
-                  child: visible.isEmpty
-                      ? _EmptySection(
-                          section: _section,
-                          date: _selectedDate,
-                          onCreate: _openForm,
-                          onPickDate: _pickDate,
-                        )
-                      : RefreshIndicator(
-                          onRefresh: _refresh,
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final wide = constraints.maxWidth >= 700;
-                              return GridView.builder(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                padding: EdgeInsets.fromLTRB(
-                                  wide ? 24 : 12,
-                                  8,
-                                  wide ? 24 : 12,
-                                  104,
-                                ),
-                                gridDelegate:
-                                    SliverGridDelegateWithMaxCrossAxisExtent(
-                                  maxCrossAxisExtent: 520,
-                                  mainAxisExtent: wide ? 178 : 152,
-                                  crossAxisSpacing: 14,
-                                  mainAxisSpacing: 14,
-                                ),
-                                itemCount: visible.length,
-                                itemBuilder: (context, index) => _DocumentCard(
-                                  document: visible[index],
-                                  onOpen: () => context.push(
-                                    '/temgundrap/preview',
-                                    extra: visible[index],
-                                  ),
-                                  onActions: () =>
-                                      _showDocumentActions(visible[index]),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _section == _TemgundrapSection.daily
+                    ? 'Günlük TEMGÜNDRAP'
+                    : 'TEMGÜNDRAP Arşivi',
+              ),
+              actions: [
+                IconButton(
+                  key: const Key('temgundrap-date-picker'),
+                  tooltip: 'Tarih seç',
+                  onPressed: _pickDate,
+                  icon: const Icon(Icons.calendar_month_outlined),
                 ),
               ],
-            );
-          },
-        ),
+            ),
+            floatingActionButton:
+                (_section == _TemgundrapSection.daily && visible.isNotEmpty)
+                    ? FloatingActionButton.extended(
+                        key: const Key('new-temgundrap-document-fab'),
+                        onPressed: _openForm,
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text('Yeni Çizelge'),
+                      )
+                    : null,
+            body: () {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return _MessageState(
+                  icon: Icons.cloud_off_outlined,
+                  title: 'Kayıtlar yüklenemedi',
+                  message: '${snapshot.error}',
+                  action: FilledButton.icon(
+                    onPressed: () => setState(_reload),
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('TEKRAR DENE'),
+                  ),
+                );
+              }
+
+              return Column(
+                children: [
+                  _SectionSwitcher(
+                    section: _section,
+                    draftCount: draftCount,
+                    archiveCount: archiveCount,
+                    onChanged: (section) => setState(() => _section = section),
+                  ),
+                  _DateNavigator(
+                    date: _selectedDate,
+                    onPrevious: () => _changeDay(-1),
+                    onNext: () => _changeDay(1),
+                    onPick: _pickDate,
+                    onToday: DateUtils.isSameDay(_selectedDate, DateTime.now())
+                        ? null
+                        : () => setState(
+                              () => _selectedDate =
+                                  DateUtils.dateOnly(DateTime.now()),
+                            ),
+                  ),
+                  Expanded(
+                    child: visible.isEmpty
+                        ? _EmptySection(
+                            section: _section,
+                            date: _selectedDate,
+                            onCreate: _openForm,
+                            onPickDate: _pickDate,
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _refresh,
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final wide = constraints.maxWidth >= 700;
+                                return GridView.builder(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  padding: EdgeInsets.fromLTRB(
+                                    wide ? 24 : 12,
+                                    8,
+                                    wide ? 24 : 12,
+                                    104,
+                                  ),
+                                  gridDelegate:
+                                      SliverGridDelegateWithMaxCrossAxisExtent(
+                                    maxCrossAxisExtent: 520,
+                                    mainAxisExtent: wide ? 178 : 152,
+                                    crossAxisSpacing: 14,
+                                    mainAxisSpacing: 14,
+                                  ),
+                                  itemCount: visible.length,
+                                  itemBuilder: (context, index) =>
+                                      _DocumentCard(
+                                    document: visible[index],
+                                    onOpen: () => context.push(
+                                      '/temgundrap/preview',
+                                      extra: visible[index],
+                                    ),
+                                    onActions: () => _showDocumentActions(
+                                        visible[index]),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                  ),
+                ],
+              );
+            }(),
+          );
+        },
       );
 }
 

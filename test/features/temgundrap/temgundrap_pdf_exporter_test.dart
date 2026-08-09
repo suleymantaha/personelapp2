@@ -58,4 +58,21 @@ void main() {
       'PLANLANAN OPERASYON TAKİP ÇİZELGESİ',
     );
   });
+
+  test('onaylayan bilgisi verilince imza bloğu ile PDF üretir', () async {
+    final document = TemgundrapDocument(
+      id: '2',
+      date: DateTime(2026, 8, 8),
+      unitTitle: 'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI',
+      approverName: 'İhsan DAĞLI',
+      approverRank: 'J.Ütğm.',
+      approverDuty: 'Tb. K. V.',
+      isDraft: false,
+      updatedAt: DateTime(2026, 8, 8),
+      operations: const [],
+    );
+    final bytes = await (await TemgundrapPdfExporter.build(document)).save();
+    expect(bytes, isNotEmpty);
+    expect(String.fromCharCodes(bytes.take(4)), '%PDF');
+  });
 }

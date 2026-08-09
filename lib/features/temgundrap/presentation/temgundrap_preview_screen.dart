@@ -106,12 +106,87 @@ class TemgundrapPreviewScreen extends StatelessWidget {
                         separatorBuilder: (_, __) => const SizedBox(height: 16),
                       ),
               ),
+              if (document.approverName.isNotEmpty ||
+                  document.approverRank.isNotEmpty ||
+                  document.approverDuty.isNotEmpty)
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(
+                    wide ? 32 : 16,
+                    12,
+                    wide ? 32 : 16,
+                    32,
+                  ),
+                  sliver: SliverToBoxAdapter(
+                    child: _ApproverCard(document: document),
+                  ),
+                ),
             ],
           );
         },
       ),
     );
   }
+}
+
+class _ApproverCard extends StatelessWidget {
+  const _ApproverCard({required this.document});
+  final TemgundrapDocument document;
+
+  @override
+  Widget build(BuildContext context) => Align(
+        alignment: Alignment.centerRight,
+        child: Container(
+          width: 220,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: context.colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: context.cardBorderColor),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text(
+                '(İMZALI)',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 4),
+              if (document.approverName.isNotEmpty)
+                Text(
+                  document.approverName,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
+                ),
+              if (document.approverRank.isNotEmpty)
+                Text(
+                  document.approverRank,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+              if (document.approverDuty.isNotEmpty)
+                Text(
+                  document.approverDuty,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
 }
 
 class _DocumentHeader extends StatelessWidget {

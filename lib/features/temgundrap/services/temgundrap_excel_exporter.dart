@@ -112,6 +112,46 @@ class TemgundrapExcelExporter {
       sheet.setRowHeight(row, 88);
     }
 
+    final lastOpRow = 3 + document.operations.length;
+    var sigRow = lastOpRow + 2;
+
+    if (document.approverName.isNotEmpty ||
+        document.approverRank.isNotEmpty ||
+        document.approverDuty.isNotEmpty) {
+      final sigStyleBold = CellStyle(
+        bold: true,
+        fontFamily: getFontFamily(FontFamily.Arial),
+        fontSize: 10,
+        horizontalAlign: HorizontalAlign.Center,
+        verticalAlign: VerticalAlign.Center,
+      );
+      final sigStyleNormal = CellStyle(
+        bold: false,
+        fontFamily: getFontFamily(FontFamily.Arial),
+        fontSize: 10,
+        horizontalAlign: HorizontalAlign.Center,
+        verticalAlign: VerticalAlign.Center,
+      );
+
+      void setSigLine(String text, CellStyle cellStyle) {
+        set(8, sigRow, text, cellStyle);
+        merge(8, sigRow, 10, sigRow);
+        sheet.setRowHeight(sigRow, 20);
+        sigRow++;
+      }
+
+      setSigLine('(İMZALI)', sigStyleBold);
+      if (document.approverName.isNotEmpty) {
+        setSigLine(document.approverName, sigStyleBold);
+      }
+      if (document.approverRank.isNotEmpty) {
+        setSigLine(document.approverRank, sigStyleNormal);
+      }
+      if (document.approverDuty.isNotEmpty) {
+        setSigLine(document.approverDuty, sigStyleNormal);
+      }
+    }
+
     const widths = [
       6.5,
       22.0,
