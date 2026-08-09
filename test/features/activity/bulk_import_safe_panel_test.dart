@@ -139,5 +139,54 @@ void main() {
         expect(saved, isTrue);
       },
     );
+
+    testWidgets(
+      'shows a saving state instead of a blocked state while save is in progress',
+      (tester) async {
+        final blocks = [
+          ParsedActivityBlock(
+            rawTitle: '9/B Gorev Listesi',
+            parsedTimName: '9/B',
+            parsedActivityType: 'GOREV',
+            parsedDate: '2026-07-30',
+            personnelList: [
+              ParsedPersonnelItem(
+                rawIndex: 1,
+                rawRank: 'J.Asb.Cvs.',
+                rawName: 'Ahmet TINAS',
+                matchedPersonnelId: 10,
+                matchedAdSoyad: 'Ahmet TINAS',
+                matchedRutbe: 'J.Asb.Cvs.',
+                matchedTimId: 6,
+                matchConfidence: 1,
+              ),
+            ],
+          ),
+        ];
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SmartSaveBar(
+                problemCount: 0,
+                problemLocs: const [],
+                activeIssueFocusIndex: -1,
+                onGotoProblem: () {},
+                onGotoPrevious: () {},
+                onSave: () {},
+                isSaving: true,
+                blocks: blocks,
+                issues: const <BulkParseIssue>[],
+                hasUnresolvedProblems: false,
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text('Kaydediliyor...'), findsOneWidget);
+        expect(find.textContaining('Kaydedilemiyor'), findsNothing);
+        expect(find.textContaining('(1/0)'), findsNothing);
+      },
+    );
   });
 }
