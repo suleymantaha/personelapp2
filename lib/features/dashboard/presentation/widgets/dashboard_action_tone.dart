@@ -41,20 +41,20 @@ extension DashboardActionTonePalette on DashboardActionTone {
 
     final (Color startColor, Color endColor) = switch (this) {
       DashboardActionTone.primary => dark
-          ? (const Color(0xFF1E2E23), const Color(0xFF0F1812))
-          : (const Color(0xFFF2FAF4), const Color(0xFFE4F2E7)),
+          ? (const Color(0xFF142419), const Color(0xFF09120C))
+          : (const Color(0xFFF0F7F2), const Color(0xFFE2EFE5)),
       DashboardActionTone.neutral => dark
-          ? (const Color(0xFF222623), const Color(0xFF121513))
-          : (const Color(0xFFF7F8F6), const Color(0xFFEAEDE8)),
+          ? (const Color(0xFF181C19), const Color(0xFF0C0F0D))
+          : (const Color(0xFFF5F7F5), const Color(0xFFE7EAE7)),
       DashboardActionTone.personnel => dark
-          ? (const Color(0xFF192530), const Color(0xFF0E161E))
-          : (const Color(0xFFF1F6FB), const Color(0xFFE2EDF7)),
+          ? (const Color(0xFF12202C), const Color(0xFF091119))
+          : (const Color(0xFFEFF5FA), const Color(0xFFDFECF6)),
       DashboardActionTone.import => dark
-          ? (const Color(0xFF172636), const Color(0xFF0D1622))
-          : (const Color(0xFFF0F6FF), const Color(0xFFE0ECFD)),
+          ? (const Color(0xFF102133), const Color(0xFF08121D))
+          : (const Color(0xFFEEF5FF), const Color(0xFFDCEDFF)),
       DashboardActionTone.pending => dark
-          ? (const Color(0xFF2A2315), const Color(0xFF18130B))
-          : (const Color(0xFFFFFDF2), const Color(0xFFFFF7DB)),
+          ? (const Color(0xFF261F10), const Color(0xFF140F06))
+          : (const Color(0xFFFFFDF0), const Color(0xFFFFF6D4)),
     };
 
     final surfaceGradient = LinearGradient(
@@ -67,21 +67,21 @@ extension DashboardActionTonePalette on DashboardActionTone {
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
+        accent.withValues(alpha: dark ? 0.75 : 0.65),
+        accent.withValues(alpha: dark ? 0.35 : 0.30),
         dark
-            ? Colors.white.withValues(alpha: 0.45)
-            : Colors.white.withValues(alpha: 0.90),
-        accent.withValues(alpha: dark ? 0.55 : 0.45),
-        accent.withValues(alpha: dark ? 0.20 : 0.25),
+            ? Colors.white.withValues(alpha: 0.25)
+            : accent.withValues(alpha: 0.15),
       ],
-      stops: const [0.0, 0.45, 1.0],
+      stops: const [0.0, 0.5, 1.0],
     );
 
     final iconGradient = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
-        accent.withValues(alpha: dark ? 0.35 : 0.22),
-        accent.withValues(alpha: dark ? 0.15 : 0.08),
+        accent.withValues(alpha: dark ? 0.38 : 0.24),
+        accent.withValues(alpha: dark ? 0.18 : 0.10),
       ],
     );
 
