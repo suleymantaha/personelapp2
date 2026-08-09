@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_operation_editor_dialog.dart';
+import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 class TemgundrapFormScreen extends StatefulWidget {
   const TemgundrapFormScreen({
@@ -124,7 +125,8 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
             title: Text(widget.initialDocument == null
                 ? 'Yeni TEMGÜNDRAP'
                 : 'Çizelgeyi Düzenle')),
-        body: Form(
+        body: TurkishFlagWatermarkBackground(
+          child: Form(
             key: _formKey,
             child: Center(
                 child: ConstrainedBox(
@@ -237,6 +239,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                 ),
               ]),
             ))),
+        ),
       );
 
   String? _required(String? value) =>

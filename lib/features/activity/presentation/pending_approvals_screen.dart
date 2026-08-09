@@ -5,6 +5,7 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
+import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
 class PendingApprovalsScreen extends ConsumerWidget {
@@ -32,7 +33,8 @@ class PendingApprovalsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Bekleyen Görev Onayları'),
       ),
-      body: pendingAsync.when(
+      body: TurkishFlagWatermarkBackground(
+        child: pendingAsync.when(
         data: (pendingList) {
           if (pendingList.isEmpty) {
             return Center(
@@ -202,6 +204,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, st) => Center(child: Text('Hata: $err')),
       ),
+    ),
     );
   }
 }

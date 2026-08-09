@@ -7,6 +7,7 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/collapsible_squad_card.dart';
+import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 class ActivityAssignmentPreviewScreen extends StatefulWidget {
   const ActivityAssignmentPreviewScreen({
@@ -122,7 +123,8 @@ class _ActivityAssignmentPreviewScreenState
           ),
         ),
       ),
-      body: ResponsiveCenter(
+      body: TurkishFlagWatermarkBackground(
+        child: ResponsiveCenter(
         maxWidth: AppSpacing.readableContentWidth,
         padding: const EdgeInsets.all(AppSpacing.pagePadding),
         child: ListView(
@@ -193,6 +195,7 @@ class _ActivityAssignmentPreviewScreenState
           ],
         ),
       ),
+    ),
     );
   }
 

@@ -12,6 +12,7 @@ import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 import 'package:personelapp2/features/matrix/domain/matrix_personnel_order.dart';
 import 'package:personelapp2/features/matrix/presentation/widgets/team_duty_calendar_modal.dart';
 import 'package:personelapp2/features/matrix/services/excel_xml_generator.dart';
+import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 part 'monthly_matrix_actions.dart';
 part 'monthly_matrix_app_bar.dart';
@@ -118,17 +119,19 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
 
     if (MediaQuery.sizeOf(context).width < 680) {
       return Scaffold(
-        body: NestedScrollView(
-          floatHeaderSlivers: true,
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            _buildMobileMatrixAppBar(
-              context: context,
-              totalPersonnelCount: availablePersonnel.length,
-              visiblePersonnelCount: visiblePersonnelCount,
-              onExport: onExport,
-            ),
-          ],
-          body: body,
+        body: TurkishFlagWatermarkBackground(
+          child: NestedScrollView(
+            floatHeaderSlivers: true,
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              _buildMobileMatrixAppBar(
+                context: context,
+                totalPersonnelCount: availablePersonnel.length,
+                visiblePersonnelCount: visiblePersonnelCount,
+                onExport: onExport,
+              ),
+            ],
+            body: body,
+          ),
         ),
       );
     }
@@ -140,7 +143,9 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
         visiblePersonnelCount: visiblePersonnelCount,
         onExport: onExport,
       ),
-      body: body,
+      body: TurkishFlagWatermarkBackground(
+        child: body,
+      ),
     );
   }
 }

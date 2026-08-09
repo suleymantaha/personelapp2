@@ -5,6 +5,7 @@ import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.da
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/services/temgundrap_excel_exporter.dart';
 import 'package:personelapp2/features/temgundrap/services/temgundrap_pdf_exporter.dart';
+import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 class TemgundrapPreviewScreen extends StatelessWidget {
   const TemgundrapPreviewScreen({
@@ -53,7 +54,8 @@ class TemgundrapPreviewScreen extends StatelessWidget {
         onShare: _share,
         onExcel: _shareExcel,
       ),
-      body: LayoutBuilder(
+      body: TurkishFlagWatermarkBackground(
+        child: LayoutBuilder(
         builder: (context, constraints) {
           final wide = constraints.maxWidth >= 760;
           return CustomScrollView(
@@ -124,6 +126,7 @@ class TemgundrapPreviewScreen extends StatelessWidget {
           );
         },
       ),
+    ),
     );
   }
 }
