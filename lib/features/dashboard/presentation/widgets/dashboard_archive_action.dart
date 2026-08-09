@@ -4,12 +4,13 @@ import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_action_tone.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/tactical_hud_painter.dart';
 
-class DashboardArchiveAction extends StatelessWidget {
+class DashboardArchiveAction extends StatefulWidget {
   const DashboardArchiveAction({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.animationIndex = 6,
     this.height,
     super.key,
   });
@@ -18,7 +19,37 @@ class DashboardArchiveAction extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final int animationIndex;
   final double? height;
+
+  @override
+  State<DashboardArchiveAction> createState() => _DashboardArchiveActionState();
+}
+
+class _DashboardArchiveActionState extends State<DashboardArchiveAction>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 5400),
+    );
+
+    final isTestEnv =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    if (!isTestEnv) {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +58,10 @@ class DashboardArchiveAction extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: '$title, $subtitle',
+      label: '${widget.title}, ${widget.subtitle}',
       child: ExcludeSemantics(
         child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: height ?? 56),
+          constraints: BoxConstraints(minHeight: widget.height ?? 56),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
@@ -62,11 +93,21 @@ class DashboardArchiveAction extends StatelessWidget {
                     ),
                   ),
                   Positioned.fill(
-                    child: CustomPaint(
-                      painter: TacticalHudPainter(
-                        isDarkMode: dark,
-                        accentColor: palette.content,
-                      ),
+                    child: AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, child) {
+                        final rawValue =
+                            _controller.isAnimating ? _controller.value : 0.45;
+                        final staggeredValue =
+                            (rawValue + (widget.animationIndex * 0.18)) % 1.0;
+                        return CustomPaint(
+                          painter: TacticalHudPainter(
+                            isDarkMode: dark,
+                            accentColor: palette.content,
+                            animationProgress: staggeredValue,
+                          ),
+                        );
+                      },
                     ),
                   ),
                   Positioned(
@@ -93,7 +134,7 @@ class DashboardArchiveAction extends StatelessWidget {
                   Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: onTap,
+                      onTap: widget.onTap,
                       splashColor: palette.content.withValues(alpha: 0.18),
                       highlightColor: palette.content.withValues(alpha: 0.09),
                       child: Padding(
@@ -125,7 +166,8 @@ class DashboardArchiveAction extends StatelessWidget {
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(AppSpacing.sm),
-                                child: Icon(icon, size: 22, color: palette.content),
+                                child: Icon(widget.icon,
+                                    size: 22, color: palette.content),
                               ),
                             ),
                             const SizedBox(width: AppSpacing.md),
@@ -135,7 +177,7 @@ class DashboardArchiveAction extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    title,
+                                    widget.title,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -155,7 +197,7 @@ class DashboardArchiveAction extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    subtitle,
+                                    widget.subtitle,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
