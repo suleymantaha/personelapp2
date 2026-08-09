@@ -16,7 +16,7 @@ class MatchStatusIndicator extends StatelessWidget {
           Icons.verified_rounded,
         ),
       ParsedPersonnelItem(teamMismatch: true) => (
-          'Tim onayı gerekli',
+          'Tim disi gorev',
           Colors.orange.shade800,
           Icons.account_tree_outlined,
         ),

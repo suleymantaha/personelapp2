@@ -15,11 +15,13 @@ class PersonnelMatchCard extends StatelessWidget {
     this.onAddNewPerson,
     this.duplicateAssignments,
     this.isFocused = false,
+    this.registeredTeamName,
     super.key,
   });
 
   final ParsedPersonnelItem item;
   final String teamName;
+  final String? registeredTeamName;
   final List<String>? duplicateAssignments;
   final bool isFocused;
   final VoidCallback onSelect;
@@ -311,7 +313,7 @@ class PersonnelMatchCard extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      'Tim uyuşmazlığı (Onayla)',
+                                      'Tim disi gorev (Kabul et)',
                                       key: const Key(
                                           'bulk-team-mismatch-warning'),
                                       style: TextStyle(
@@ -375,15 +377,35 @@ class PersonnelMatchCard extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 6),
                                 Expanded(
-                                  child: Text(
-                                    teamName,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.fade,
-                                    style: TextStyle(
-                                      color: context.textPrimary,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (registeredTeamName
+                                              ?.trim()
+                                              .isNotEmpty ==
+                                          true)
+                                        Text(
+                                          'Kayitli tim: ${registeredTeamName!.trim()}',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: context.textSecondary,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      Text(
+                                        'Liste timi: $teamName',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: context.textPrimary,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(width: 8),

@@ -479,7 +479,16 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                           final duplicateWith =
                               widget.duplicates['${widget.blockIdx}:$pIdx'];
                           final personKey = '${widget.blockIdx}:$pIdx';
-                          final isFocused = widget.focusedPersonKey == personKey;
+                          final isFocused =
+                              widget.focusedPersonKey == personKey;
+                          final registeredTeamName = widget.allSquads
+                              .where((team) => team.id == item.matchedTimId)
+                              .map((team) => team.timAdi)
+                              .firstOrNull;
+                          final listTeamName =
+                              widget.block.parsedTimName.trim().isNotEmpty
+                                  ? widget.block.parsedTimName
+                                  : registeredTeamName ?? '';
                           final itemKey = widget.personKeys?.putIfAbsent(
                                 personKey,
                                 () => GlobalKey(),
@@ -488,12 +497,8 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                           return PersonnelMatchCard(
                             key: itemKey,
                             item: item,
-                            teamName: widget.allSquads
-                                    .where(
-                                        (team) => team.id == item.matchedTimId)
-                                    .map((team) => team.timAdi)
-                                    .firstOrNull ??
-                                widget.block.parsedTimName,
+                            teamName: listTeamName,
+                            registeredTeamName: registeredTeamName,
                             duplicateAssignments: duplicateWith,
                             isFocused: isFocused,
                             onSelect: () =>
