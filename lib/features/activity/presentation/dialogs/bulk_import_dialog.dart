@@ -20,6 +20,7 @@ import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/learned_aliases_dialog.dart';
 import 'package:personelapp2/features/activity/services/bulk_import_preferences.dart';
+import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 export 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/smart_save_bar.dart'
     show BulkImportSaveButton;
@@ -323,7 +324,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
                   bottom: isMobile,
                   child: ColoredBox(
                     color: Theme.of(context).scaffoldBackgroundColor,
-                    child: Column(
+                    child: TurkishFlagWatermarkBackground(
+                      child: Column(
                       children: [
                         BulkImportHeaderBanner(
                           isKeyboardVisible: isKeyboardVisible,
@@ -354,6 +356,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
                     ),
                   ),
                 ),
+              ),
               ),
             ),
           ),

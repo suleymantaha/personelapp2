@@ -4,6 +4,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
+import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 enum _TemgundrapSection { daily, archive }
 
@@ -203,7 +204,8 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
                         label: const Text('Yeni Çizelge'),
                       )
                     : null,
-            body: () {
+            body: TurkishFlagWatermarkBackground(
+              child: () {
               if (snapshot.connectionState != ConnectionState.done) {
                 return const Center(child: CircularProgressIndicator());
               }
@@ -288,6 +290,7 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
                 ],
               );
             }(),
+          ),
           );
         },
       );

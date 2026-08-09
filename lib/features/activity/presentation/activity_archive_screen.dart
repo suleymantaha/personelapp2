@@ -17,6 +17,7 @@ import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
+import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 part 'activity_archive_actions.dart';
 
@@ -194,7 +195,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
             ),
         ],
       ),
-      body: ResponsiveCenter(
+      body: TurkishFlagWatermarkBackground(
+        child: ResponsiveCenter(
         maxWidth: AppSpacing.readableContentWidth,
         padding: EdgeInsets.zero,
         child: Column(
@@ -336,6 +338,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }

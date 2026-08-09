@@ -41,11 +41,11 @@ class _TurkishFlagBackgroundPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final emblemScale = math.min(size.width, size.height) * 0.32;
-    final flagX = size.width * 0.52;
-    final flagY = size.height * 0.42;
+    final emblemScale = math.min(size.width, size.height) * 0.36;
+    final flagX = size.width * 0.46;
+    final flagY = size.height * 0.44;
 
-    final baseAlpha = isDarkMode ? 0.055 : 0.038;
+    final baseAlpha = isDarkMode ? 0.095 : 0.065;
     final alpha = (baseAlpha * opacityMultiplier).clamp(0.0, 1.0);
 
     final flagPaint = Paint()
@@ -54,8 +54,8 @@ class _TurkishFlagBackgroundPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final flagGlowPaint = Paint()
-      ..color = const Color(0xFFE53935).withValues(alpha: alpha * 0.6)
-      ..maskFilter = MaskFilter.blur(BlurStyle.normal, emblemScale * 0.5);
+      ..color = const Color(0xFFE53935).withValues(alpha: alpha * 0.8)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, emblemScale * 0.4);
 
     // Large Crescent (Büyük Hilal)
     final crescentOuter = Path()
