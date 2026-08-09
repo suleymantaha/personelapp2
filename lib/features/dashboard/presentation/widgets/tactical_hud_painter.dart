@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 class TacticalHudPainter extends CustomPainter {
@@ -51,15 +52,53 @@ class TacticalHudPainter extends CustomPainter {
       ..lineTo(size.width - bracketOffset, size.height - bracketOffset - bracketLength);
     canvas.drawPath(bottomRight, bracketPaint);
 
-    // 5. Tactical Crosshair Reticle in Top-Right
-    final reticlePaint = Paint()
-      ..color = accentColor.withValues(alpha: isDarkMode ? 0.35 : 0.20)
-      ..strokeWidth = 1.0;
+    // 5. Türk Bayrağı İkonografisi (Hilal & Yıldız Emblem Watermark)
+    final flagPaint = Paint()
+      ..color = isDarkMode
+          ? const Color(0xFFE53935).withValues(alpha: 0.32)
+          : const Color(0xFFD32F2F).withValues(alpha: 0.25)
+      ..style = PaintingStyle.fill;
 
-    final reticleX = size.width - 20.0;
-    final reticleY = 14.0;
-    canvas.drawLine(Offset(reticleX - 3, reticleY), Offset(reticleX + 3, reticleY), reticlePaint);
-    canvas.drawLine(Offset(reticleX, reticleY - 3), Offset(reticleX, reticleY + 3), reticlePaint);
+    final flagGlowPaint = Paint()
+      ..color = const Color(0xFFE53935).withValues(alpha: isDarkMode ? 0.20 : 0.12)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0);
+
+    final flagX = size.width - 28.0;
+    final flagY = 17.0;
+
+    // Crescent (Hilal)
+    final crescentOuter = Path()
+      ..addOval(Rect.fromCircle(center: Offset(flagX, flagY), radius: 7.5));
+    final crescentInner = Path()
+      ..addOval(Rect.fromCircle(center: Offset(flagX + 2.0, flagY), radius: 6.0));
+    final crescentPath = Path.combine(
+      PathOperation.difference,
+      crescentOuter,
+      crescentInner,
+    );
+
+    // 5-Pointed Star (Yıldız)
+    final starCenter = Offset(flagX + 9.0, flagY - 0.5);
+    final starPath = Path();
+    const points = 5;
+    for (int i = 0; i < points * 2; i++) {
+      final radius = i.isEven ? 3.0 : 1.2;
+      final angle = (i * math.pi / points) - (math.pi / 2);
+      final x = starCenter.dx + radius * math.cos(angle);
+      final y = starCenter.dy + radius * math.sin(angle);
+      if (i == 0) {
+        starPath.moveTo(x, y);
+      } else {
+        starPath.lineTo(x, y);
+      }
+    }
+    starPath.close();
+
+    // Draw Glow & Flag Emblem
+    canvas.drawPath(crescentPath, flagGlowPaint);
+    canvas.drawPath(starPath, flagGlowPaint);
+    canvas.drawPath(crescentPath, flagPaint);
+    canvas.drawPath(starPath, flagPaint);
 
     // 6. Moving Tracer Bullet / Laser Beam Effect (Kayan Mermi İzi Efekti)
     if (animationProgress != null) {
