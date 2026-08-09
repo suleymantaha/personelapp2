@@ -15,6 +15,7 @@ import 'package:personelapp2/features/activity/presentation/widgets/activity_for
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_form_controls.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_personnel_selection_step.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/existing_activity_dialog.dart';
+import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 part 'activity_form_actions.dart';
 
@@ -131,46 +132,48 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
           isAdmin: isAdmin,
           selectedPersonnel: selectedPersonnel,
         ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 0.0;
-            return Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: AppSpacing.readableContentWidth,
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: constraints.maxHeight,
-                  child: Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: horizontalPadding),
-                    child: personnelAsync.when(
-                      data: (rawPersonnel) => squadsAsync.when(
-                        data: (squads) => _buildLoadedBody(
-                          session: session,
-                          isAdmin: isAdmin,
-                          rawPersonnel: rawPersonnel,
-                          squads: squads,
+        body: TurkishFlagWatermarkBackground(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 0.0;
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppSpacing.readableContentWidth,
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: constraints.maxHeight,
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: personnelAsync.when(
+                        data: (rawPersonnel) => squadsAsync.when(
+                          data: (squads) => _buildLoadedBody(
+                            session: session,
+                            isAdmin: isAdmin,
+                            rawPersonnel: rawPersonnel,
+                            squads: squads,
+                          ),
+                          loading: () => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                          error: (error, _) => _ErrorState(
+                            message: 'Tim verileri alınamadı: $error',
+                          ),
                         ),
-                        loading: () => const Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
                         error: (error, _) => _ErrorState(
-                          message: 'Tim verileri alınamadı: $error',
+                          message: 'Personel yüklenemedi: $error',
                         ),
-                      ),
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (error, _) => _ErrorState(
-                        message: 'Personel yüklenemedi: $error',
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

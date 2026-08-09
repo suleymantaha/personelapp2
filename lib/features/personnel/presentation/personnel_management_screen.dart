@@ -13,6 +13,7 @@ import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_mat
 import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/bulk_personnel_import_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/widgets/personnel_form_dialog.dart';
+import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 part 'personnel_management_actions.dart';
 part 'squad_management_actions.dart';
@@ -61,7 +62,8 @@ class _PersonnelManagementScreenState
               label: const Text('Personel Ekle'),
             )
           : null,
-      body: SingleChildScrollView(
+      body: TurkishFlagWatermarkBackground(
+        child: SingleChildScrollView(
         child: ResponsiveCenter(
           maxWidth: AppSpacing.readableContentWidth,
           child: Column(
@@ -409,6 +411,7 @@ class _PersonnelManagementScreenState
                 error: (err, st) => Center(child: Text('Hata: $err')),
               ),
             ],
+          ),
           ),
         ),
       ),
