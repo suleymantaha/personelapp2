@@ -63,7 +63,8 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     if (_parsedBlocks.any((block) => block.personnelList.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Personeli bulunmayan boş kartlar var. Lütfen kartları düzenleyin veya silin.'),
+          content: Text(
+              'Personeli bulunmayan boş kartlar var. Lütfen kartları düzenleyin veya silin.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -72,19 +73,29 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     if (_parseIssues.any((issue) => issue.isBlocking)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Lütfen önce çözülmemiş kart sorunlarını (tarih, tim veya görev türü) tamamlayın.'),
+          content: Text(
+              'Lütfen önce çözülmemiş kart sorunlarını (tarih, tim veya görev türü) tamamlayın.'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
-    _updateState(() {
-      _isSaving = true;
-    });
-
     try {
       final actor = ref.read(userSessionProvider);
+      final confirmed = await BulkImportSaveHandler.confirmSavePreflight(
+        context: context,
+        database: widget.database,
+        actor: actor,
+        blocks: _parsedBlocks,
+        squads: _allSquads,
+      );
+      if (!confirmed || !mounted) return;
+
+      _updateState(() {
+        _isSaving = true;
+      });
+
       await BulkImportSaveHandler.saveAllToFaaliyet(
         context: context,
         database: widget.database,
@@ -95,6 +106,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         keepAuditText: _keepAuditText,
         rawText: _textController.text,
         deduplicatedPersonnelCount: _deduplicatedPersonnelCount,
+        skipPreflight: true,
       );
     } on Object catch (e) {
       if (mounted) {

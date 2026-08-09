@@ -72,6 +72,66 @@ class BulkImportSaveHandler {
     return (blocks: result, removedCount: removedCount);
   }
 
+  static Future<bool> confirmSavePreflight({
+    required BuildContext context,
+    required AppDatabase database,
+    required UserSessionState? actor,
+    required List<ParsedActivityBlock> blocks,
+    required List<TimTableData> squads,
+    BulkImportPreparation? preparation,
+  }) async {
+    final prepared = preparation ?? BulkActivityImportPreparer.prepare(blocks);
+    if (prepared.duplicates.isNotEmpty) {
+      await showDuplicatePersonnelDialog(
+        context: context,
+        duplicates: prepared.duplicates,
+        squads: squads,
+      );
+      return false;
+    }
+
+    if (actor == null) {
+      throw StateError('Oturum doğrulanamadı.');
+    }
+
+    final learningService = BulkImportLearningService(database);
+    final fingerprint = BulkImportLearningService.fingerprint(blocks);
+    final existingImport = await learningService.findImport(fingerprint);
+    if (existingImport == null) return true;
+
+    final activeCount = await learningService.countActiveAssignments(blocks);
+    if (activeCount == 0) {
+      await learningService.deleteImportRecord(fingerprint);
+      return true;
+    }
+
+    if (!context.mounted) return false;
+    final userChoice = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Bu Liste Daha Önce Aktarıldı'),
+        content: Text(
+          '${existingImport.tarihler} tarihli bu içerik '
+          '${existingImport.kayitTarihi} tarihinde '
+          '${existingImport.aktaranKullanici} tarafından kaydedilmiş.\n\n'
+          'Veritabanında bu listeye ait $activeCount personel kaydı aktif duruyor. '
+          'Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('İPTAL'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('EKSİKLERİ TAMAMLA / YENİDEN AKTAR'),
+          ),
+        ],
+      ),
+    );
+    return userChoice == true;
+  }
+
   static Future<bool?> saveAllToFaaliyet({
     required BuildContext context,
     required AppDatabase database,
@@ -82,64 +142,38 @@ class BulkImportSaveHandler {
     required bool keepAuditText,
     required String rawText,
     required int deduplicatedPersonnelCount,
+    bool skipPreflight = false,
   }) async {
     final preparation = BulkActivityImportPreparer.prepare(blocks);
-    if (preparation.duplicates.isNotEmpty) {
-      await showDuplicatePersonnelDialog(
+    if (!skipPreflight) {
+      final confirmed = await confirmSavePreflight(
         context: context,
-        duplicates: preparation.duplicates,
+        database: database,
+        actor: actor,
+        blocks: blocks,
         squads: squads,
+        preparation: preparation,
       );
-      return null;
+      if (!confirmed) return null;
     }
 
     if (actor == null) {
       throw StateError('Oturum doğrulanamadı.');
     }
+
     final learningService = BulkImportLearningService(database);
     final fingerprint = BulkImportLearningService.fingerprint(blocks);
-    final existingImport = await learningService.findImport(fingerprint);
-    if (existingImport != null) {
-      final activeCount =
-          await learningService.countActiveAssignments(blocks);
-      if (activeCount == 0) {
-        await learningService.deleteImportRecord(fingerprint);
-      } else {
-        if (!context.mounted) return null;
-        final userChoice = await showDialog<bool>(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('Bu Liste Daha Önce Aktarıldı'),
-            content: Text(
-              '${existingImport.tarihler} tarihli bu içerik '
-              '${existingImport.kayitTarihi} tarihinde '
-              '${existingImport.aktaranKullanici} tarafından kaydedilmiş.\n\n'
-              'Veritabanında bu listeye ait $activeCount personel kaydı aktif duruyor. '
-              'Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('İPTAL'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('EKSİKLERİ TAMAMLA / YENİDEN AKTAR'),
-              ),
-            ],
-          ),
-        );
-        if (userChoice != true) return null;
-      }
-    }
     final result = await activityRepository.createActivitiesWithAssignments(
       preparation.requests,
       actor: actor,
     );
 
-    final aliasPairs = blocks.expand((b) => b.personnelList).where(
-      (p) => p.matchedPersonnelId != null && p.rawName.trim().isNotEmpty,
-    ).map((p) => (rawName: p.rawName, personnelId: p.matchedPersonnelId!));
+    final aliasPairs = blocks
+        .expand((b) => b.personnelList)
+        .where(
+          (p) => p.matchedPersonnelId != null && p.rawName.trim().isNotEmpty,
+        )
+        .map((p) => (rawName: p.rawName, personnelId: p.matchedPersonnelId!));
     await learningService.rememberAliases(aliasPairs);
 
     await learningService.recordImport(
