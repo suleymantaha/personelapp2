@@ -6,49 +6,49 @@ class DutyAbbreviationMapper {
     'GÜLÜŞKÜR': {
       'code': 'Gş',
       'lightBg': Color(0xFFE3F2FD),
-      'darkBg': Color(0xFF0D47A1),
+      'darkBg': Color(0xFF15283B),
       'lightText': Color(0xFF1565C0),
       'darkText': Color(0xFF90CAF9),
     },
     'HAZIR KITA': {
       'code': 'H.K',
       'lightBg': Color(0xFFFFF3E0),
-      'darkBg': Color(0xFFE65100),
+      'darkBg': Color(0xFF3E2723),
       'lightText': Color(0xFFE65100),
-      'darkText': Color(0xFFFFCC80),
+      'darkText': Color(0xFFFFB74D),
     },
     'NÖBET': {
       'code': 'Nbt',
       'lightBg': Color(0xFFFFEBEE),
-      'darkBg': Color(0xFFB71C1C),
+      'darkBg': Color(0xFF3E1C1C),
       'lightText': Color(0xFFC62828),
       'darkText': Color(0xFFEF9A9A),
     },
     'İZİNLİ': {
       'code': 'İzn',
-      'lightBg': Color(0xFFF5F5F5),
-      'darkBg': Color(0xFF424242),
-      'lightText': Color(0xFF616161),
-      'darkText': Color(0xFFE0E0E0),
+      'lightBg': Color(0xFFECEFF1),
+      'darkBg': Color(0xFF263238),
+      'lightText': Color(0xFF37474F),
+      'darkText': Color(0xFFECEFF1),
     },
     'İSTİRAHATLİ': {
       'code': 'İst',
       'lightBg': Color(0xFFE8F5E9),
-      'darkBg': Color(0xFF1B5E20),
+      'darkBg': Color(0xFF1B3820),
       'lightText': Color(0xFF2E7D32),
       'darkText': Color(0xFFA5D6A7),
     },
     'RAPORLU': {
       'code': 'Rpr',
       'lightBg': Color(0xFFFFF8E1),
-      'darkBg': Color(0xFFF57F17),
-      'lightText': Color(0xFFF57F17),
-      'darkText': Color(0xFFFFE082),
+      'darkBg': Color(0xFF3E3215),
+      'lightText': Color(0xFFE65100),
+      'darkText': Color(0xFFFFD54F),
     },
     'SEVK': {
       'code': 'Svk',
       'lightBg': Color(0xFFEDE7F6),
-      'darkBg': Color(0xFF4A148C),
+      'darkBg': Color(0xFF2C1A3E),
       'lightText': Color(0xFF6A1B9A),
       'darkText': Color(0xFFCE93D8),
     },
@@ -73,7 +73,7 @@ class DutyAbbreviationMapper {
           ? _dutyConfig[upper]!['darkBg'] as Color
           : _dutyConfig[upper]!['lightBg'] as Color;
     }
-    return isDark ? Colors.blueGrey.shade800 : Colors.blueGrey.shade100;
+    return isDark ? const Color(0xFF263238) : const Color(0xFFECEFF1);
   }
 
   /// Görev etiketinin metin rengini getirir.
@@ -84,6 +84,7 @@ class DutyAbbreviationMapper {
           ? _dutyConfig[upper]!['darkText'] as Color
           : _dutyConfig[upper]!['lightText'] as Color;
     }
-    return isDark ? Colors.white70 : Colors.blueGrey.shade900;
+    return isDark ? const Color(0xFFECEFF1) : const Color(0xFF37474F);
   }
 }
+

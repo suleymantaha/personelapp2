@@ -25,6 +25,11 @@ class BulkImportStepper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final steps = ['Yapıştır', 'Önizleme', 'Kaydet'];
+    final accentColor = context.accentOrOlive;
+    final approvedColor = context.approvedColor;
+    final disabledLineColor = context.cardBorderColor;
+    final disabledTextColor = context.textMuted;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -40,9 +45,7 @@ class BulkImportStepper extends StatelessWidget {
               Expanded(
                 child: Container(
                   height: 2,
-                  color: i <= currentStep
-                      ? const Color(0xFF556B3F)
-                      : Colors.grey.shade300,
+                  color: i <= currentStep ? accentColor : disabledLineColor,
                 ),
               ),
               const SizedBox(width: 8),
@@ -70,15 +73,15 @@ class BulkImportStepper extends StatelessWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: i < currentStep
-                                  ? const Color(0xFF556B3F)
+                                  ? accentColor
                                   : i == currentStep
-                                      ? const Color(0xFF556B3F)
+                                      ? accentColor
                                       : (i == 2 && canProceedToSave)
-                                          ? const Color(0xFF16A34A).withAlpha(40)
-                                          : Colors.grey.shade300,
+                                          ? approvedColor.withAlpha(40)
+                                          : disabledLineColor,
                               border: i == 2 && canProceedToSave && currentStep < 2
                                   ? Border.all(
-                                      color: const Color(0xFF16A34A), width: 1.5)
+                                      color: approvedColor, width: 1.5)
                                   : null,
                             ),
                             child: Center(
@@ -89,10 +92,10 @@ class BulkImportStepper extends StatelessWidget {
                                       '${i + 1}',
                                       style: TextStyle(
                                         color: i == currentStep
-                                            ? Colors.white
+                                            ? context.customColors.onAccentOrOlive
                                             : i == 2 && canProceedToSave
-                                                ? const Color(0xFF16A34A)
-                                                : Colors.grey.shade600,
+                                                ? approvedColor
+                                                : disabledTextColor,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13,
                                       ),
@@ -105,8 +108,8 @@ class BulkImportStepper extends StatelessWidget {
                               top: -2,
                               child: Container(
                                 padding: const EdgeInsets.all(2),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF6B7280),
+                                decoration: BoxDecoration(
+                                  color: disabledTextColor,
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -128,10 +131,10 @@ class BulkImportStepper extends StatelessWidget {
                               ? FontWeight.bold
                               : FontWeight.normal,
                           color: i == currentStep
-                              ? const Color(0xFF556B3F)
+                              ? accentColor
                               : i == 2 && canProceedToSave
-                                  ? const Color(0xFF16A34A)
-                                  : Colors.grey.shade600,
+                                  ? approvedColor
+                                  : disabledTextColor,
                         ),
                       ),
                     ],

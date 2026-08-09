@@ -382,8 +382,8 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                         widget.visiblePersonnelIndexes == null
                             ? '${widget.block.personnelList.length} personel'
                             : '$problemCount sorun / ${widget.block.personnelList.length} p.',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.customColors.onAccentOrOlive,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
@@ -397,7 +397,7 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                       effectiveIsExpanded
                           ? Icons.keyboard_arrow_up_rounded
                           : Icons.keyboard_arrow_down_rounded,
-                      color: Colors.grey.shade600,
+                      color: context.textSecondary,
                       size: 22,
                     ),
 

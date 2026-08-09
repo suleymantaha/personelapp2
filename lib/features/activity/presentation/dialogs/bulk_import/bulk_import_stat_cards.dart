@@ -27,23 +27,23 @@ class BulkImportStatCard extends StatelessWidget {
           children: [
             Text(
               '$number',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF556B3F),
+                color: context.accentOrOlive,
               ),
             ),
             const SizedBox(height: 2),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, size: 13, color: Colors.grey.shade600),
+                Icon(icon, size: 13, color: context.textSecondary),
                 const SizedBox(width: 4),
                 Text(
                   label,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.grey.shade600,
+                    color: context.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -102,17 +102,18 @@ class _StatChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: const Color(0xFF556B3F)),
+        Icon(icon, size: 14, color: context.accentOrOlive),
         const SizedBox(width: 5),
         Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF556B3F),
+            color: context.accentOrOlive,
           ),
         ),
       ],
     );
   }
 }
+

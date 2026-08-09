@@ -199,7 +199,7 @@ class PersonnelMatchCard extends StatelessWidget {
                                         '📍 Satır ${item.sourceLineNumber}',
                                     ].join(' • '),
                                     style: TextStyle(
-                                      color: Colors.grey.shade600,
+                                      color: context.textSecondary,
                                       fontSize: 11,
                                     ),
                                   ),
@@ -371,7 +371,7 @@ class PersonnelMatchCard extends StatelessWidget {
                                 Icon(
                                   Icons.groups_outlined,
                                   size: 16,
-                                  color: Colors.grey.shade700,
+                                  color: context.textSecondary,
                                 ),
                                 const SizedBox(width: 6),
                                 Expanded(
@@ -380,7 +380,7 @@ class PersonnelMatchCard extends StatelessWidget {
                                     maxLines: 2,
                                     overflow: TextOverflow.fade,
                                     style: TextStyle(
-                                      color: Colors.grey.shade800,
+                                      color: context.textPrimary,
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                     ),

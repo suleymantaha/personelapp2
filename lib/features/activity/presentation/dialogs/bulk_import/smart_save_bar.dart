@@ -121,12 +121,12 @@ class SmartSaveBar extends StatelessWidget {
     String wizardButtonText;
 
     if (hasCritical) {
-      wizardButtonColor = const Color(0xFFD32F2F);
+      wizardButtonColor = context.rejectedColor;
       wizardButtonText = activeIssueFocusIndex < 0
           ? 'Soruna Git ($displayIndex/$displayTotal)'
           : 'Sonraki Sorun ($displayIndex/$displayTotal)';
     } else {
-      wizardButtonColor = Colors.orange.shade800;
+      wizardButtonColor = context.pendingColor;
       wizardButtonText = activeIssueFocusIndex < 0
           ? 'İncelemeye Git ($displayIndex/$displayTotal)'
           : 'Sonraki İnceleme ($displayIndex/$displayTotal)';
