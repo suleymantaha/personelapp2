@@ -191,6 +191,7 @@ class DashboardScreen extends ConsumerWidget {
                         title: action.title,
                         subtitle: action.subtitle,
                         tone: action.tone,
+                        animationIndex: index,
                         onTap: action.onTap,
                       );
                     },
@@ -207,6 +208,7 @@ class DashboardScreen extends ConsumerWidget {
                     title: 'Faaliyet Arşivi',
                     subtitle: 'Arama ve İnceleme',
                     height: gridLayout.archiveHeight,
+                    animationIndex: gridActions.length,
                     onTap: () => context.push('/activity-archive'),
                   ),
                 ),

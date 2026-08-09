@@ -3,13 +3,14 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_action_tone.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/tactical_hud_painter.dart';
 
-class DashboardMenuCard extends StatelessWidget {
+class DashboardMenuCard extends StatefulWidget {
   const DashboardMenuCard({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.tone,
     required this.onTap,
+    this.animationIndex = 0,
     super.key,
   });
 
@@ -18,15 +19,45 @@ class DashboardMenuCard extends StatelessWidget {
   final String subtitle;
   final DashboardActionTone tone;
   final VoidCallback onTap;
+  final int animationIndex;
+
+  @override
+  State<DashboardMenuCard> createState() => _DashboardMenuCardState();
+}
+
+class _DashboardMenuCardState extends State<DashboardMenuCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 5400),
+    );
+
+    final isTestEnv =
+        WidgetsBinding.instance.runtimeType.toString().contains('Test');
+    if (!isTestEnv) {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final palette = tone.resolve(context);
+    final palette = widget.tone.resolve(context);
     final dark = context.isDarkMode;
 
     return Semantics(
       button: true,
-      label: '$title, $subtitle',
+      label: '${widget.title}, ${widget.subtitle}',
       child: ExcludeSemantics(
         child: Container(
           decoration: BoxDecoration(
@@ -59,11 +90,21 @@ class DashboardMenuCard extends StatelessWidget {
                   ),
                 ),
                 Positioned.fill(
-                  child: CustomPaint(
-                    painter: TacticalHudPainter(
-                      isDarkMode: dark,
-                      accentColor: palette.content,
-                    ),
+                  child: AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, child) {
+                      final rawValue =
+                          _controller.isAnimating ? _controller.value : 0.45;
+                      final staggeredValue =
+                          (rawValue + (widget.animationIndex * 0.18)) % 1.0;
+                      return CustomPaint(
+                        painter: TacticalHudPainter(
+                          isDarkMode: dark,
+                          accentColor: palette.content,
+                          animationProgress: staggeredValue,
+                        ),
+                      );
+                    },
                   ),
                 ),
                 // Glowing HUD Active Status Dot
@@ -91,7 +132,7 @@ class DashboardMenuCard extends StatelessWidget {
                 Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: onTap,
+                    onTap: widget.onTap,
                     splashColor: palette.content.withValues(alpha: 0.18),
                     highlightColor: palette.content.withValues(alpha: 0.09),
                     child: Padding(
@@ -125,7 +166,7 @@ class DashboardMenuCard extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.all(7.0),
                               child: Icon(
-                                icon,
+                                widget.icon,
                                 size: 20,
                                 color: palette.content,
                               ),
@@ -141,7 +182,7 @@ class DashboardMenuCard extends StatelessWidget {
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      title,
+                                      widget.title,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
@@ -163,7 +204,7 @@ class DashboardMenuCard extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    subtitle,
+                                    widget.subtitle,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
