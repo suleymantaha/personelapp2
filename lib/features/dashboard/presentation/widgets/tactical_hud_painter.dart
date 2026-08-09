@@ -52,37 +52,41 @@ class TacticalHudPainter extends CustomPainter {
       ..lineTo(size.width - bracketOffset, size.height - bracketOffset - bracketLength);
     canvas.drawPath(bottomRight, bracketPaint);
 
-    // 5. Türk Bayrağı İkonografisi (Hilal & Yıldız Emblem Watermark)
+    // 5. Türk Bayrağı İkonografisi (Büyük Merkez Filigran / Large Centered Emblem Watermark)
+    final emblemScale = math.min(size.width, size.height) * 0.28;
+    final flagX = size.width * 0.52;
+    final flagY = size.height * 0.48;
+
     final flagPaint = Paint()
       ..color = isDarkMode
-          ? const Color(0xFFE53935).withValues(alpha: 0.32)
-          : const Color(0xFFD32F2F).withValues(alpha: 0.25)
+          ? const Color(0xFFE53935).withValues(alpha: 0.14)
+          : const Color(0xFFD32F2F).withValues(alpha: 0.09)
       ..style = PaintingStyle.fill;
 
     final flagGlowPaint = Paint()
-      ..color = const Color(0xFFE53935).withValues(alpha: isDarkMode ? 0.20 : 0.12)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0);
+      ..color = const Color(0xFFE53935).withValues(alpha: isDarkMode ? 0.09 : 0.05)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, emblemScale * 0.45);
 
-    final flagX = size.width - 28.0;
-    final flagY = 17.0;
-
-    // Crescent (Hilal)
+    // Large Crescent (Büyük Hilal)
     final crescentOuter = Path()
-      ..addOval(Rect.fromCircle(center: Offset(flagX, flagY), radius: 7.5));
+      ..addOval(Rect.fromCircle(center: Offset(flagX - emblemScale * 0.25, flagY), radius: emblemScale));
     final crescentInner = Path()
-      ..addOval(Rect.fromCircle(center: Offset(flagX + 2.0, flagY), radius: 6.0));
+      ..addOval(Rect.fromCircle(center: Offset(flagX - emblemScale * 0.25 + emblemScale * 0.28, flagY), radius: emblemScale * 0.79));
     final crescentPath = Path.combine(
       PathOperation.difference,
       crescentOuter,
       crescentInner,
     );
 
-    // 5-Pointed Star (Yıldız)
-    final starCenter = Offset(flagX + 9.0, flagY - 0.5);
+    // Large 5-Pointed Star (Büyük 5 Köşeli Yıldız)
+    final starCenter = Offset(flagX - emblemScale * 0.25 + emblemScale * 1.18, flagY - emblemScale * 0.06);
     final starPath = Path();
     const points = 5;
+    final starRadius = emblemScale * 0.42;
+    final starInnerRadius = starRadius * 0.38;
+
     for (int i = 0; i < points * 2; i++) {
-      final radius = i.isEven ? 3.0 : 1.2;
+      final radius = i.isEven ? starRadius : starInnerRadius;
       final angle = (i * math.pi / points) - (math.pi / 2);
       final x = starCenter.dx + radius * math.cos(angle);
       final y = starCenter.dy + radius * math.sin(angle);
@@ -94,7 +98,7 @@ class TacticalHudPainter extends CustomPainter {
     }
     starPath.close();
 
-    // Draw Glow & Flag Emblem
+    // Draw Glow & Centered Flag Watermark
     canvas.drawPath(crescentPath, flagGlowPaint);
     canvas.drawPath(starPath, flagGlowPaint);
     canvas.drawPath(crescentPath, flagPaint);
