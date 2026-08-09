@@ -2,29 +2,78 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 
-class TurkishFlagWatermarkBackground extends StatelessWidget {
+class TurkishFlagWatermarkBackground extends StatefulWidget {
   const TurkishFlagWatermarkBackground({
     required this.child,
     this.opacityMultiplier = 1.0,
+    this.enableBreathing = true,
     super.key,
   });
 
   final Widget child;
   final double opacityMultiplier;
+  final bool enableBreathing;
+
+  @override
+  State<TurkishFlagWatermarkBackground> createState() =>
+      _TurkishFlagWatermarkBackgroundState();
+}
+
+class _TurkishFlagWatermarkBackgroundState
+    extends State<TurkishFlagWatermarkBackground>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _pulseAnimation;
+
+  bool get _isTestEnvironment {
+    final binding = WidgetsBinding.instance.runtimeType.toString();
+    return binding.contains('Test') || binding.contains('Automated');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    );
+    _pulseAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    if (widget.enableBreathing && !_isTestEnvironment) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         Positioned.fill(
-          child: CustomPaint(
-            painter: _TurkishFlagBackgroundPainter(
-              isDarkMode: context.isDarkMode,
-              opacityMultiplier: opacityMultiplier,
-            ),
+          child: AnimatedBuilder(
+            animation: _pulseAnimation,
+            builder: (context, _) {
+              final pulseFactor = (widget.enableBreathing && !_isTestEnvironment)
+                  ? 0.75 + (_pulseAnimation.value * 0.50)
+                  : 1.0;
+              return CustomPaint(
+                painter: _TurkishFlagBackgroundPainter(
+                  isDarkMode: context.isDarkMode,
+                  opacityMultiplier: widget.opacityMultiplier * pulseFactor,
+                ),
+              );
+            },
           ),
         ),
-        child,
+        widget.child,
       ],
     );
   }
