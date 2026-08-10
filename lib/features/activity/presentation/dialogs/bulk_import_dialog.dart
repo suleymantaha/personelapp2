@@ -86,6 +86,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
         ? 0
         : (_activeIssueFocusIndex + 1) % locs.length];
     setState(() {
+      _cardKeys.clear();
+      _personKeys.clear();
       _previewFilter = _BulkPreviewFilter.problems;
       _parseIssuesExpanded = true;
       if (_activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length) {
@@ -114,6 +116,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
         ? locs.length - 1
         : (_activeIssueFocusIndex - 1 + locs.length) % locs.length];
     setState(() {
+      _cardKeys.clear();
+      _personKeys.clear();
       _previewFilter = _BulkPreviewFilter.problems;
       _parseIssuesExpanded = true;
       if (_activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length) {

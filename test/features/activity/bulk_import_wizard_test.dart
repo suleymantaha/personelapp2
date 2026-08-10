@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,19 +13,31 @@ void main() {
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
     final teamId = await database.into(database.timTable).insert(
-      TimTableCompanion.insert(timAdi: '6-B Timi', olusturmaTarihi: '2026-01-01'),
-    );
+          TimTableCompanion.insert(
+              timAdi: '6-B Timi', olusturmaTarihi: '2026-01-01'),
+        );
     await database.batch((batch) {
       batch.insertAll(database.personelTable, [
-        PersonelTableCompanion.insert(adSoyad: 'Ali DENEME', rutbe: 'J.Uzm.Çvş.', birlik: '6/B', timId: Value(teamId), kayitTarihi: '2026-01-01'),
-        PersonelTableCompanion.insert(adSoyad: 'Veli SAĞLAM', rutbe: 'J.Uzm.Çvş.', birlik: '6/B', timId: Value(teamId), kayitTarihi: '2026-01-01'),
+        PersonelTableCompanion.insert(
+            adSoyad: 'Ali DENEME',
+            rutbe: 'J.Uzm.Çvş.',
+            birlik: '6/B',
+            timId: Value(teamId),
+            kayitTarihi: '2026-01-01'),
+        PersonelTableCompanion.insert(
+            adSoyad: 'Veli SAĞLAM',
+            rutbe: 'J.Uzm.Çvş.',
+            birlik: '6/B',
+            timId: Value(teamId),
+            kayitTarihi: '2026-01-01'),
       ]);
     });
   });
 
   tearDown(() => database.close());
 
-  testWidgets('"Soruna Git" butonu sorunlu personel olduğunda görünür', (tester) async {
+  testWidgets('"Soruna Git" butonu sorunlu personel olduğunda görünür',
+      (tester) async {
     tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -60,7 +72,8 @@ void main() {
     expect(find.byKey(const Key('bulk-goto-problem')), findsOneWidget);
   });
 
-  testWidgets('Wizard "Sonraki Sorun" butonu odaklanan kartı değiştirir', (tester) async {
+  testWidgets('Wizard "Sonraki Sorun" butonu odaklanan kartı değiştirir',
+      (tester) async {
     tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -108,7 +121,63 @@ void main() {
     expect(find.byKey(const Key('bulk-wizard-next')), findsOneWidget);
   });
 
-  testWidgets('Kompakt hata özetine tıklayınca wizard başlatılır', (tester) async {
+  testWidgets('sorun takibi son sorundan sonra ilk personele geri odaklanir',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: BulkImportDialog(
+              database: database,
+              activityRepository: ActivityRepository(database),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byType(TextField).first,
+      '''
+6/B Heybet Listesi
+25.07.2026
+1- J.Uzm.Cvs. Mehmet KAYIP
+6/B Devriye Listesi
+25.07.2026
+1- J.Uzm.Cvs. Ahmet YOK
+''',
+    );
+    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('bulk-goto-problem')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('1 / 2'), findsWidgets);
+    expect(find.byKey(const Key('bulk-focused-person-badge')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('bulk-wizard-next')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('2 / 2'), findsWidgets);
+    expect(find.byKey(const Key('bulk-focused-person-badge')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('bulk-wizard-next')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('1 / 2'), findsWidgets);
+    expect(find.byKey(const Key('bulk-focused-person-badge')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Kompakt hata özetine tıklayınca wizard başlatılır',
+      (tester) async {
     tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -150,7 +219,9 @@ void main() {
     expect(find.byKey(const Key('bulk-wizard-next')), findsOneWidget);
   });
 
-  testWidgets('İsimler tarihten önce gelse dahi tarih bloğa atanır ve engelleme oluşmaz', (tester) async {
+  testWidgets(
+      'İsimler tarihten önce gelse dahi tarih bloğa atanır ve engelleme oluşmaz',
+      (tester) async {
     tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);

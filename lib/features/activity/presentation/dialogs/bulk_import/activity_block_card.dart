@@ -87,11 +87,11 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
   }
 
   bool get _effectiveIsExpanded {
-    if (_userManualExpanded != null) {
-      return _userManualExpanded!;
-    }
     if (widget.focusedPersonKey != null) {
       return widget.focusedPersonKey!.startsWith('${widget.blockIdx}:');
+    }
+    if (_userManualExpanded != null) {
+      return _userManualExpanded!;
     }
     if (widget.isExpanded != null) {
       return widget.isExpanded!;
@@ -256,6 +256,11 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                                   icon: Icons.schedule_rounded,
                                   text: widget.block.parsedTimeRange!,
                                 ),
+                              _PersonnelCountPill(
+                                text: widget.visiblePersonnelIndexes == null
+                                    ? '${widget.block.personnelList.length} personel'
+                                    : '$problemCount sorun / ${widget.block.personnelList.length} p.',
+                              ),
                               if (isBlockFocused)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
@@ -269,32 +274,35 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                                         : Colors.amber.shade900,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        (unmatchedCount > 0 ||
-                                                widget.block.personnelList
-                                                    .isEmpty)
-                                            ? Icons.push_pin_rounded
-                                            : Icons.search_rounded,
-                                        size: 11,
-                                        color: Colors.white,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        (unmatchedCount > 0 ||
-                                                widget.block.personnelList
-                                                    .isEmpty)
-                                            ? 'ODAKLANILAN HATA'
-                                            : 'İNCELENEN KART',
-                                        style: const TextStyle(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          (unmatchedCount > 0 ||
+                                                  widget.block.personnelList
+                                                      .isEmpty)
+                                              ? Icons.push_pin_rounded
+                                              : Icons.search_rounded,
+                                          size: 11,
                                           color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          (unmatchedCount > 0 ||
+                                                  widget.block.personnelList
+                                                      .isEmpty)
+                                              ? 'ODAKLANILAN HATA'
+                                              : 'İNCELENEN KART',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               if (widget.block.personnelList.isEmpty)
@@ -366,30 +374,6 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-
-                    // Ekran görüntünüzdeki koyu haki oval pill rozeti (Personel sayısı)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.accentOrOlive,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        widget.visiblePersonnelIndexes == null
-                            ? '${widget.block.personnelList.length} personel'
-                            : '$problemCount sorun / ${widget.block.personnelList.length} p.',
-                        style: TextStyle(
-                          color: context.customColors.onAccentOrOlive,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
                     const SizedBox(width: 4),
 
                     // Genişletme / Daraltma Oku (Expand Chevron)
@@ -521,6 +505,31 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PersonnelCountPill extends StatelessWidget {
+  const _PersonnelCountPill({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: context.accentOrOlive,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: context.customColors.onAccentOrOlive,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

@@ -9,6 +9,7 @@ import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/smart_save_bar.dart';
 
 part 'bulk_import_preview_correctness_panel.dart';
+part 'bulk_import_preview_state.dart';
 part 'bulk_import_preview_filter_search.dart';
 part 'bulk_import_preview_active_issue_card.dart';
 
@@ -99,49 +100,24 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
 
   @override
   Widget build(BuildContext context) {
-    final problemPersonnelByBlock = <int, List<int>>{};
-    for (final blockEntry in widget.blocks.asMap().entries) {
-      final problemIndexes = <int>[];
-      for (final personEntry
-          in blockEntry.value.personnelList.asMap().entries) {
-        if (_personHasProblem(blockEntry.key, personEntry.key)) {
-          problemIndexes.add(personEntry.key);
-        }
-      }
-      if (problemIndexes.isNotEmpty ||
-          _blockHasProblem(blockEntry.key, blockEntry.value)) {
-        problemPersonnelByBlock[blockEntry.key] = problemIndexes;
-      }
-    }
-
-    final query = _searchController.text.trim().toLowerCase();
-    final visibleBlocks = widget.blocks.asMap().entries.where((entry) {
-      final hasProblems = problemPersonnelByBlock.containsKey(entry.key);
-      final matchesFilter = widget.previewFilterIsProblems
-          ? hasProblems
-          : widget.previewFilterIsReady
-              ? !hasProblems
-              : true;
-      return matchesFilter && _matchesQuery(entry.value, query);
-    }).toList(growable: false);
-
-    final personnelCount = widget.blocks.fold<int>(
-      0,
-      (count, block) => count + block.personnelList.length,
+    final problemState = _buildPreviewProblemState(
+      blocks: widget.blocks,
+      problemLocations: widget.problemLocations,
+      duplicates: widget.duplicates,
     );
-    final totalDays = widget.blocks.map((b) => b.parsedDate).toSet().length;
-    final criticalCount =
-        widget.problemLocations.where((loc) => loc.isCritical).length;
-    final reviewCount =
-        widget.problemLocations.where((loc) => !loc.isCritical).length;
-    final blockingParseIssueCount =
-        widget.issues.where((issue) => issue.isBlocking).length;
-    final totalActionCount = widget.problemLocations.isNotEmpty
-        ? widget.problemLocations.length
-        : widget.issues.length;
-    final hasBlocking = criticalCount > 0 || blockingParseIssueCount > 0;
-    final displayCriticalCount =
-        criticalCount > 0 ? criticalCount : blockingParseIssueCount;
+    final query = _searchController.text.trim().toLowerCase();
+    final visibleBlocks = _filterVisiblePreviewBlocks(
+      blocks: widget.blocks,
+      problemPersonnelByBlock: problemState.personnelByBlock,
+      previewFilterIsProblems: widget.previewFilterIsProblems,
+      previewFilterIsReady: widget.previewFilterIsReady,
+      query: query,
+    );
+    final metrics = _buildPreviewMetrics(
+      blocks: widget.blocks,
+      issues: widget.issues,
+      problemLocations: widget.problemLocations,
+    );
 
     return Padding(
       padding: EdgeInsets.all(widget.isMobile ? 16 : 0),
@@ -159,12 +135,12 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                       if (widget.blocks.isNotEmpty) ...[
                         _CorrectnessPanel(
                           cardCount: widget.blocks.length,
-                          personnelCount: personnelCount,
-                          dayCount: totalDays,
-                          criticalCount: displayCriticalCount,
-                          reviewCount: reviewCount,
-                          actionCount: totalActionCount,
-                          hasBlocking: hasBlocking,
+                          personnelCount: metrics.personnelCount,
+                          dayCount: metrics.dayCount,
+                          criticalCount: metrics.displayCriticalCount,
+                          reviewCount: metrics.reviewCount,
+                          actionCount: metrics.actionCount,
+                          hasBlocking: metrics.hasBlocking,
                           compact: !widget.isMobile,
                           onClearAll: widget.onClearAll,
                           onStartWizard: widget.onStartWizard,
@@ -178,10 +154,9 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                               : widget.previewFilterIsReady
                                   ? _PreviewFilter.ready
                                   : _PreviewFilter.all,
-                          problemCount: totalActionCount,
+                          problemCount: metrics.actionCount,
                           allCount: widget.blocks.length,
-                          readyCount: widget.blocks.length -
-                              problemPersonnelByBlock.length,
+                          readyCount: problemState.readyBlockCount,
                           controller: _searchController,
                           onChanged: (_) => setState(() {}),
                           onProblems: widget.onShowProblems,
@@ -266,7 +241,7 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                                 ?.startsWith('$originalBlockIndex:') ??
                             false;
                         final hasBlockProblems =
-                            problemPersonnelByBlock.containsKey(
+                            problemState.personnelByBlock.containsKey(
                           originalBlockIndex,
                         );
                         return ActivityBlockCard(
@@ -287,7 +262,8 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                                   hasBlockProblems),
                           visiblePersonnelIndexes:
                               widget.previewFilterIsProblems
-                                  ? problemPersonnelByBlock[originalBlockIndex]
+                                  ? problemState
+                                      .personnelByBlock[originalBlockIndex]
                                   : null,
                           onEditBlock: widget.onEditBlock,
                           onRemoveBlock: widget.onRemoveBlock,
@@ -306,7 +282,7 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
           ),
           const SizedBox(height: 10),
           SmartSaveBar(
-            problemCount: totalActionCount,
+            problemCount: metrics.actionCount,
             problemLocs: widget.problemLocations,
             activeIssueFocusIndex: widget.activeIssueFocusIndex,
             onGotoProblem: widget.onFocusNext,
@@ -322,42 +298,5 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
         ],
       ),
     );
-  }
-
-  bool _blockHasProblem(int blockIndex, ParsedActivityBlock block) {
-    return widget.problemLocations.any((loc) => loc.blockIndex == blockIndex) ||
-        block.personnelList.isEmpty ||
-        block.parsedDate.trim().isEmpty ||
-        block.parsedActivityType.trim().isEmpty;
-  }
-
-  bool _personHasProblem(int blockIndex, int personIndex) {
-    final person = widget.blocks[blockIndex].personnelList[personIndex];
-    return !person.isMatched ||
-        person.hasWarning ||
-        widget.duplicates.containsKey('$blockIndex:$personIndex') ||
-        widget.problemLocations.any(
-          (loc) =>
-              loc.blockIndex == blockIndex && loc.personIndex == personIndex,
-        );
-  }
-
-  bool _matchesQuery(ParsedActivityBlock block, String query) {
-    if (query.isEmpty) return true;
-    final haystack = StringBuffer()
-      ..write(' ${block.rawTitle}')
-      ..write(' ${block.parsedTimName}')
-      ..write(' ${block.parsedActivityType}')
-      ..write(' ${block.parsedDate}')
-      ..write(' ${block.parsedTimeRange ?? ''}');
-    for (final person in block.personnelList) {
-      haystack
-        ..write(' ${person.rawRank}')
-        ..write(' ${person.rawName}')
-        ..write(' ${person.matchedRutbe ?? ''}')
-        ..write(' ${person.matchedAdSoyad ?? ''}')
-        ..write(' satır ${person.sourceLineNumber ?? ''}');
-    }
-    return haystack.toString().toLowerCase().contains(query);
   }
 }
