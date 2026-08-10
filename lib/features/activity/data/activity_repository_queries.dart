@@ -368,9 +368,20 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
       var alreadyAssignedCount = 0;
 
       for (final request in requests) {
-        final existingActivity = await (db.select(db.gunlukFaaliyetTable)
+        final sameDayActivities = await (db.select(db.gunlukFaaliyetTable)
               ..where((tbl) => tbl.tarih.equals(request.tarih)))
-            .getSingleOrNull();
+            .get();
+        final normalizedRequestName =
+            _normalizeActivityName(request.faaliyetAdi);
+        final matchingActivities = sameDayActivities
+            .where(
+              (activity) =>
+                  _normalizeActivityName(activity.faaliyetAdi) ==
+                  normalizedRequestName,
+            )
+            .toList();
+        final existingActivity =
+            matchingActivities.isEmpty ? null : matchingActivities.first;
 
         if (existingActivity != null) {
           ids.add(existingActivity.id);
