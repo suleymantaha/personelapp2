@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/services/device_contact_picker.dart';
@@ -82,9 +83,7 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
 
   Future<void> _pickFromContacts() async {
     if (_selected == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Önce operasyon komutanını seçin.')),
-      );
+      AppNotifications.warning('Önce operasyon komutanını seçin.');
       return;
     }
     setState(() => _pickingContact = true);
@@ -120,10 +119,8 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
       if (rawPhone == null || !mounted) return;
       final phone = TemgundrapFormatters.phone(rawPhone);
       if (!TemgundrapFormatters.isValidTurkishMobile(phone)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Seçilen kişide geçerli cep telefonu bulunamadı.'),
-          ),
+        AppNotifications.warning(
+          'Seçilen kişide geçerli cep telefonu bulunamadı.',
         );
         return;
       }
@@ -131,9 +128,7 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
       _emit();
       await _rememberPhone(phone);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Telefon personelle eşleştirildi.')),
-        );
+        AppNotifications.success('Telefon personelle eşleştirildi.');
       }
     } finally {
       if (mounted) setState(() => _pickingContact = false);

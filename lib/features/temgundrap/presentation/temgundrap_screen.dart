@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
@@ -72,14 +73,10 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
     );
     if (!mounted) return;
     setState(_reload);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          archived
-              ? 'Çizelge arşive taşındı.'
-              : 'Çizelge yeniden taslağa alındı.',
-        ),
-      ),
+    AppNotifications.info(
+      archived
+          ? 'Çizelge arşive taşındı.'
+          : 'Çizelge yeniden taslağa alındı.',
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -185,9 +186,7 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
               }
             } on AssignmentConflictException catch (error) {
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(error.message)),
-                );
+                AppNotifications.error(error.message);
               }
             }
           },

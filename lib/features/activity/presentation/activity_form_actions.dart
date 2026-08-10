@@ -6,9 +6,7 @@ extension _ActivityFormActions on _ActivityFormScreenState {
     final name = _draft.activityName.trim();
     final userSession = ref.read(userSessionProvider);
     if (userSession == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Oturum doğrulanamadı.')),
-      );
+      AppNotifications.error('Oturum doğrulanamadı.');
       return;
     }
 
@@ -29,10 +27,8 @@ extension _ActivityFormActions on _ActivityFormScreenState {
     }).toList();
 
     if (payload.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lütfen en az bir personel için görev seçiniz.'),
-        ),
+      AppNotifications.warning(
+        'Lütfen en az bir personel için görev seçiniz.',
       );
       return;
     }
@@ -67,12 +63,7 @@ extension _ActivityFormActions on _ActivityFormScreenState {
       }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Önizleme hazırlanamadı: $error'),
-          backgroundColor: context.rejectedColor,
-        ),
-      );
+      AppNotifications.error('Önizleme hazırlanamadı: $error');
     }
   }
 
@@ -129,12 +120,9 @@ extension _ActivityFormActions on _ActivityFormScreenState {
           : isCommander
               ? 'Faaliyet Kaydedildi! Admin onayına gönderildi.'
               : 'Faaliyet Çizelgesi Kaydedildi & Çakışma Denetimi Yapıldı!';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(msg),
-          backgroundColor:
-              isCommander ? context.pendingColor : context.approvedColor,
-        ),
+      AppNotifications.approvalResult(
+        msg,
+        pendingApproval: isCommander,
       );
       return true;
     }

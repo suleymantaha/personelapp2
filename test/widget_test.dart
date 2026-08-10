@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/widgets.dart';
 import 'package:personelapp2/main.dart';
 
 void main() {
@@ -10,5 +11,12 @@ void main() {
       ),
     );
     expect(find.byType(PersonelApp), findsOneWidget);
+  });
+
+  testWidgets('PersonelApp installs the global notification host',
+      (tester) async {
+    await tester.pumpWidget(const ProviderScope(child: PersonelApp()));
+
+    expect(find.byKey(const Key('app-notification-host')), findsOneWidget);
   });
 }

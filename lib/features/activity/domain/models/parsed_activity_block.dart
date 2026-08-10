@@ -1,6 +1,8 @@
 class ParsedPersonnelItem {
   // 1.0: exact, 0.7-0.9: fuzzy, 0.0: none
 
+  static int _nextStableOrder = 0;
+
   ParsedPersonnelItem({
     required this.rawIndex,
     required this.rawRank,
@@ -13,7 +15,8 @@ class ParsedPersonnelItem {
     this.teamMismatch = false,
     this.reviewConfirmed = false,
     this.sourceLineNumber,
-  });
+    int? stableOrder,
+  }) : stableOrder = stableOrder ?? _nextStableOrder++;
   final int rawIndex;
   final String rawRank;
   final String rawName;
@@ -25,12 +28,12 @@ class ParsedPersonnelItem {
   final bool teamMismatch;
   final bool reviewConfirmed;
   final int? sourceLineNumber;
+  final int stableOrder;
 
   bool get isMatched => matchedPersonnelId != null;
   bool get needsReview =>
       !isMatched || (matchConfidence < 1.0 && !reviewConfirmed);
-  bool get hasWarning =>
-      needsReview || (teamMismatch && !reviewConfirmed);
+  bool get hasWarning => needsReview || (teamMismatch && !reviewConfirmed);
 
   ParsedPersonnelItem copyWith({
     int? rawIndex,
@@ -57,11 +60,14 @@ class ParsedPersonnelItem {
       teamMismatch: teamMismatch ?? this.teamMismatch,
       reviewConfirmed: reviewConfirmed ?? this.reviewConfirmed,
       sourceLineNumber: sourceLineNumber ?? this.sourceLineNumber,
+      stableOrder: stableOrder,
     );
   }
 }
 
 class ParsedActivityBlock {
+  static int _nextStableOrder = 0;
+
   ParsedActivityBlock({
     required this.rawTitle,
     required this.parsedTimName,
@@ -69,7 +75,10 @@ class ParsedActivityBlock {
     required this.parsedDate,
     required this.personnelList,
     this.parsedTimeRange,
-  });
+    Object? identity,
+    int? stableOrder,
+  })  : identity = identity ?? Object(),
+        stableOrder = stableOrder ?? _nextStableOrder++;
   final String rawTitle;
   final String parsedTimName; // e.g. "6/B"
   final String
@@ -77,6 +86,8 @@ class ParsedActivityBlock {
   final String parsedDate; // YYYY-AA-DD
   final String? parsedTimeRange; // e.g. "08:00 - 19:30"
   final List<ParsedPersonnelItem> personnelList;
+  final Object identity;
+  final int stableOrder;
 
   ParsedActivityBlock copyWith({
     String? rawTitle,
@@ -93,6 +104,8 @@ class ParsedActivityBlock {
       parsedDate: parsedDate ?? this.parsedDate,
       parsedTimeRange: parsedTimeRange ?? this.parsedTimeRange,
       personnelList: personnelList ?? this.personnelList,
+      identity: identity,
+      stableOrder: stableOrder,
     );
   }
 }

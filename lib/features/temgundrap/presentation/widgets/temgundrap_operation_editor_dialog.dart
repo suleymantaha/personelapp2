@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/personnel/data/personnel_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
@@ -63,8 +64,7 @@ class _TemgundrapOperationEditorDialogState
     _draft.description = _descriptionController.text;
     final error = _draft.validate();
     if (error != null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error)));
+      AppNotifications.warning(error);
       return;
     }
     Navigator.pop(
@@ -169,8 +169,7 @@ class _TemgundrapOperationEditorDialogState
                 vehicles: _draft.vehicles,
                 onAdd: (vehicle) {
                   if (!_draft.addVehicle(vehicle)) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('Bu plaka zaten eklendi.')));
+                    AppNotifications.info('Bu plaka zaten eklendi.');
                   }
                 },
                 onRemove: _draft.removeVehicle,

@@ -48,12 +48,8 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
           onExportSelected: (selectedAssignments) async {
             final selectedRows = buildRosterRows(selectedAssignments);
             if (selectedRows.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Seçilen timlerde yazdırılabilir personel bulunamadı.',
-                  ),
-                ),
+              AppNotifications.info(
+                'Seçilen timlerde yazdırılabilir personel bulunamadı.',
               );
               return;
             }
@@ -153,12 +149,8 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                         actor: session!,
                       );
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          '$deleted personel faaliyetten çıkarıldı.',
-                        ),
-                      ),
+                    AppNotifications.info(
+                      '$deleted personel faaliyetten çıkarıldı.',
                     );
                   }
                 },
@@ -295,13 +287,9 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                 );
                                 if (context.mounted &&
                                     result.blockedCount > 0) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Onaylanamadı: '
-                                        '${result.conflictDescriptions.join(', ')}',
-                                      ),
-                                    ),
+                                  AppNotifications.error(
+                                    'Onaylanamadı: '
+                                    '${result.conflictDescriptions.join(', ')}',
                                   );
                                 }
                               },
@@ -361,17 +349,11 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                   ),
                                 );
                                 if (updated == true && context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        isAdmin
-                                            ? 'Görev güncellendi.'
-                                            : 'Görev değişikliği kaydedildi, Admin onayına gönderildi.',
-                                      ),
-                                      backgroundColor: isAdmin
-                                          ? context.approvedColor
-                                          : context.pendingColor,
-                                    ),
+                                  AppNotifications.approvalResult(
+                                    isAdmin
+                                        ? 'Görev güncellendi.'
+                                        : 'Görev değişikliği kaydedildi, Admin onayına gönderildi.',
+                                    pendingApproval: !isAdmin,
                                   );
                                 }
                               case _AssignmentAction.transfer:
@@ -419,12 +401,8 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                     actor: session!,
                                   );
                                   if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          '$displayName faaliyetten çıkarıldı.',
-                                        ),
-                                      ),
+                                    AppNotifications.info(
+                                      '$displayName faaliyetten çıkarıldı.',
                                     );
                                   }
                                 }

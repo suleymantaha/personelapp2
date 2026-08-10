@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personelapp2/core/notifications/app_notification_host.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/presentation/temgundrap_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +21,9 @@ void main() {
       routes: [
         GoRoute(
           path: '/temgundrap',
-          builder: (_, __) => const TemgundrapScreen(),
+          builder: (_, __) => const AppNotificationHost(
+            child: TemgundrapScreen(),
+          ),
         ),
         GoRoute(
           path: '/temgundrap/form',
@@ -74,7 +77,9 @@ void main() {
       routes: [
         GoRoute(
           path: '/temgundrap',
-          builder: (_, __) => const TemgundrapScreen(),
+          builder: (_, __) => const AppNotificationHost(
+            child: TemgundrapScreen(),
+          ),
         ),
       ],
     );
@@ -96,6 +101,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byKey(const Key('temgundrap-document-draft-1')), findsNothing);
+    expect(find.text('Çizelge arşive taşındı.'), findsOneWidget);
+    await tester.tap(find.byTooltip('Bildirimi kapat'));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('temgundrap-archive-tab')));
     await tester.pump();

@@ -33,6 +33,7 @@ migrate_working_dir/
 /build/
 /coverage/
 scratch/
+.worktrees/
 
 # Symbolication related
 app.*.symbols

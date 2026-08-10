@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
@@ -68,16 +69,12 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
   Future<void> _onSave() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen ad soyad giriniz.')),
-      );
+      AppNotifications.warning('Lütfen ad soyad giriniz.');
       return;
     }
 
     if (_selectedRank == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen rütbe seçiniz.')),
-      );
+      AppNotifications.warning('Lütfen rütbe seçiniz.');
       return;
     }
 

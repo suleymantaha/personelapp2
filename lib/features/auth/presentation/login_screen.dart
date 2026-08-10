@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -136,18 +137,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await _loginUserSession(user);
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Geçersiz kullanıcı adı veya parola!'),
-            ),
-          );
+          AppNotifications.error('Geçersiz kullanıcı adı veya parola!');
         }
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Geçersiz kullanıcı adı veya parola!')),
-        );
+        AppNotifications.error('Geçersiz kullanıcı adı veya parola!');
       }
     }
   }

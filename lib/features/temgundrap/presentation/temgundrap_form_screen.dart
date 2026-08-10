@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_operation_editor_dialog.dart';
@@ -99,8 +100,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_operations.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('En az bir operasyon ekleyin.')));
+      AppNotifications.warning('En az bir operasyon ekleyin.');
       return;
     }
     setState(() => _saving = true);

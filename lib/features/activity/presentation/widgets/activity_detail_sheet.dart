@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
@@ -182,14 +183,10 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                         existingPersonnelIds: existingPersonnelIds,
                       );
                       if (result != null && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '${result.addedCount} personel eklendi, '
-                              '${result.alreadyAssignedCount} mevcut, '
-                              '${result.conflictSkippedCount} çakışma nedeniyle atlandı.',
-                            ),
-                          ),
+                        AppNotifications.success(
+                          '${result.addedCount} personel eklendi, '
+                          '${result.alreadyAssignedCount} mevcut, '
+                          '${result.conflictSkippedCount} çakışma nedeniyle atlandı.',
                         );
                       }
                       return;
@@ -204,17 +201,11 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       ),
                     );
                     if (added == true && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            isAdmin
-                                ? 'Personel faaliyete eklendi.'
-                                : 'Personel eklendi, Admin onayına gönderildi.',
-                          ),
-                          backgroundColor: isAdmin
-                              ? context.approvedColor
-                              : context.pendingColor,
-                        ),
+                      AppNotifications.approvalResult(
+                        isAdmin
+                            ? 'Personel faaliyete eklendi.'
+                            : 'Personel eklendi, Admin onayına gönderildi.',
+                        pendingApproval: !isAdmin,
                       );
                     }
                   },

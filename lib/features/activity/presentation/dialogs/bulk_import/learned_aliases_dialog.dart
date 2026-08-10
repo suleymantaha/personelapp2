@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -81,11 +82,9 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
       await _learningService.deleteAlias(item.id);
       await _loadData();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('\'${item.gorunenTakmaAd}\' hafızadan silindi.'),
-            duration: const Duration(seconds: 2),
-          ),
+        AppNotifications.info(
+          '\'${item.gorunenTakmaAd}\' hafızadan silindi.',
+          duration: const Duration(seconds: 2),
         );
       }
     }

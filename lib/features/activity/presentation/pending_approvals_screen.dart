@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -179,13 +180,9 @@ class PendingApprovalsScreen extends ConsumerWidget {
                                 );
                                 if (context.mounted &&
                                     result.blockedCount > 0) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Onaylanamadı: '
-                                        '${result.conflictDescriptions.join(', ')}',
-                                      ),
-                                    ),
+                                  AppNotifications.error(
+                                    'Onaylanamadı: '
+                                    '${result.conflictDescriptions.join(', ')}',
                                   );
                                 }
                               },

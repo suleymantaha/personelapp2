@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
@@ -220,16 +221,10 @@ class BulkImportSaveHandler {
       );
       if (!context.mounted) return null;
       Navigator.pop(context, true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${blocks.length} blok → ${preparation.requests.length} '
-            'günlük faaliyet, ${result.addedAssignmentCount} personel '
-            'başarıyla eklendi.',
-          ),
-          backgroundColor: Colors.green.shade700,
-          behavior: SnackBarBehavior.floating,
-        ),
+      AppNotifications.success(
+        '${blocks.length} blok → ${preparation.requests.length} '
+        'günlük faaliyet, ${result.addedAssignmentCount} personel '
+        'başarıyla eklendi.',
       );
       return true;
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
@@ -40,20 +41,16 @@ class ActivityCard extends ConsumerWidget {
     );
     if (!context.mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          result.blockedCount == 0
-              ? '${result.approvedCount} atama onaylandı.'
-              : '${result.approvedCount} onaylandı, '
-                  '${result.blockedCount} çakışma nedeniyle beklemede kaldı: '
-                  '${result.conflictDescriptions.join(', ')}',
-        ),
-        backgroundColor: result.blockedCount == 0
-            ? context.approvedColor
-            : context.pendingColor,
-      ),
-    );
+    final message = result.blockedCount == 0
+        ? '${result.approvedCount} atama onaylandı.'
+        : '${result.approvedCount} onaylandı, '
+            '${result.blockedCount} çakışma nedeniyle beklemede kaldı: '
+            '${result.conflictDescriptions.join(', ')}';
+    if (result.blockedCount == 0) {
+      AppNotifications.success(message);
+    } else {
+      AppNotifications.warning(message);
+    }
   }
 
   Future<void> _deleteActivity(
@@ -233,17 +230,11 @@ class ActivityCard extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (preview.status == ActivityDateChangeStatus.unchanged) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Faaliyet zaten seçilen tarihte.')),
-      );
+      AppNotifications.info('Faaliyet zaten seçilen tarihte.');
       return;
     }
     if (!preview.canChange) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tarih değişikliği hazırlanamadı.'),
-        ),
-      );
+      AppNotifications.error('Tarih değişikliği hazırlanamadı.');
       return;
     }
 
@@ -294,12 +285,7 @@ class ActivityCard extends ConsumerWidget {
       );
     } on AssignmentConflictException catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error.message),
-            backgroundColor: context.rejectedColor,
-          ),
-        );
+        AppNotifications.error(error.message);
       }
       return;
     }
@@ -309,25 +295,15 @@ class ActivityCard extends ConsumerWidget {
       final pendingMessage = result.pendingAssignmentCount > 0
           ? ' ${result.pendingAssignmentCount} personel yeniden onay bekliyor.'
           : '';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${result.assignmentCount} personel '
-            '${DateFormat('dd.MM.yyyy').format(picked)} tarihine taşındı.'
-            '$pendingMessage',
-          ),
-          backgroundColor: context.approvedColor,
-        ),
+      AppNotifications.success(
+        '${result.assignmentCount} personel '
+        '${DateFormat('dd.MM.yyyy').format(picked)} tarihine taşındı.'
+        '$pendingMessage',
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
-          'Tarih değiştirilemedi. Hedef tarih yeniden kontrol edilmelidir.',
-        ),
-        backgroundColor: context.rejectedColor,
-      ),
+    AppNotifications.error(
+      'Tarih değiştirilemedi. Hedef tarih yeniden kontrol edilmelidir.',
     );
   }
 

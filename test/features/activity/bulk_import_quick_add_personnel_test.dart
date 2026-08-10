@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/notifications/app_notification_host.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 
@@ -32,10 +33,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
-          home: Scaffold(
-            body: BulkImportDialog(
-              database: database,
-              activityRepository: ActivityRepository(database),
+          home: AppNotificationHost(
+            child: Scaffold(
+              body: BulkImportDialog(
+                database: database,
+                activityRepository: ActivityRepository(database),
+            ),
             ),
           ),
         ),
@@ -71,5 +74,11 @@ void main() {
     // Kart üzerinde eşleştiği görünmeli
     expect(find.byKey(const Key('bulk-person-add-new')), findsNothing);
     expect(find.textContaining('Hakan KAYA'), findsWidgets);
+    expect(
+      find.textContaining('eklendi ve eşleştirildi.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.byTooltip('Bildirimi kapat'));
+    await tester.pumpAndSettle();
   });
 }

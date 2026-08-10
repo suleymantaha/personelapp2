@@ -2,6 +2,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/notifications/app_notification_host.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/learned_aliases_dialog.dart';
 
@@ -34,11 +35,13 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => ElevatedButton(
-              onPressed: () => LearnedAliasesDialog.show(context, database),
+        home: AppNotificationHost(
+          child: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () => LearnedAliasesDialog.show(context, database),
               child: const Text('Open Dialog'),
+            ),
             ),
           ),
         ),
@@ -77,6 +80,19 @@ void main() {
         find.text(
             'Henüz öğrenilmiş bir takma ad bulunmuyor.\nToplu aktarımlarda onayladığınız eşleşmeler otomatik hafızaya alınır.'),
         findsOneWidget);
+
+    await tester.tap(find.text('KAPAT'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('\'Hüseyin ORUCTUTAN\' hafızadan silindi.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.byTooltip('Bildirimi kapat'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('\'Hüseyin ORUCTUTAN\' hafızadan silindi.'),
+      findsNothing,
+    );
   });
 
   for (final size in const [

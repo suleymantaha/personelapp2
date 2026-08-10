@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:personelapp2/core/notifications/app_notification_host.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_commander_picker.dart';
 import 'package:personelapp2/features/temgundrap/services/device_contact_picker.dart';
@@ -47,10 +48,11 @@ void main() {
     int? learnedId;
     String? learnedPhone;
     await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: TemgundrapCommanderPicker(
-          options: const [
-            TemgundrapCommanderOption(
+      home: AppNotificationHost(
+        child: Scaffold(
+          body: TemgundrapCommanderPicker(
+            options: const [
+              TemgundrapCommanderOption(
               id: 9,
               name: 'MEHMET CEYLAN',
               rank: 'J.Ütğm.',
@@ -61,7 +63,8 @@ void main() {
           onPhoneLearned: (id, phone) async {
             learnedId = id;
             learnedPhone = phone;
-          },
+            },
+          ),
         ),
       ),
     ));
@@ -80,5 +83,8 @@ void main() {
     expect(selected?.phone, '532 111 22 33');
     expect(learnedId, 9);
     expect(learnedPhone, '532 111 22 33');
+    expect(find.text('Telefon personelle eşleştirildi.'), findsOneWidget);
+    await tester.tap(find.byTooltip('Bildirimi kapat'));
+    await tester.pumpAndSettle();
   });
 }

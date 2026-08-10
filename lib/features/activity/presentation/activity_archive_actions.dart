@@ -176,9 +176,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     List<PersonelTableData> personnelList,
   ) async {
     if (activities.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dışa aktarılacak faaliyet bulunamadı.')),
-      );
+      AppNotifications.info('Dışa aktarılacak faaliyet bulunamadı.');
       return;
     }
     final dateTitle = _buildExportDateTitle(activities);
@@ -200,9 +198,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     List<PersonelTableData> personnelList,
   ) async {
     if (activities.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dışa aktarılacak faaliyet bulunamadı.')),
-      );
+      AppNotifications.info('Dışa aktarılacak faaliyet bulunamadı.');
       return;
     }
     final rows = await _buildRosterRowsForMasterExport(
@@ -229,9 +225,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     List<PersonelTableData> personnelList,
   ) async {
     if (activities.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dışa aktarılacak faaliyet bulunamadı.')),
-      );
+      AppNotifications.info('Dışa aktarılacak faaliyet bulunamadı.');
       return;
     }
     final rows = await _buildRosterRowsForMasterExport(
@@ -275,9 +269,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     required String subtitle,
   }) async {
     if (activities.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dışa aktarılacak faaliyet bulunamadı.')),
-      );
+      AppNotifications.info('Dışa aktarılacak faaliyet bulunamadı.');
       return;
     }
 

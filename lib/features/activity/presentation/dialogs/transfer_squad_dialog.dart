@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
@@ -298,10 +299,6 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
               : () async {
                   setState(() => _isTransferring = true);
                   final navigator = Navigator.of(context);
-                  final messenger = ScaffoldMessenger.of(context);
-                  final approvedColor = context.approvedColor;
-                  final pendingColor = context.pendingColor;
-                  final rejectedColor = context.rejectedColor;
                   try {
                     if (session == null) {
                       throw StateError('Oturum bilgisi bulunamadı.');
@@ -329,34 +326,19 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
                           ? ' (${result.skippedCount} personel zaten hedef '
                               'faaliyette olduğu için atlandı)'
                           : '';
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${widget.squadName}: ${result.movedCount} '
-                            'personel başarıyla taşındı.$skippedNote',
-                          ),
-                          backgroundColor: approvedColor,
-                        ),
+                      AppNotifications.success(
+                        '${widget.squadName}: ${result.movedCount} '
+                        'personel başarıyla taşındı.$skippedNote',
                       );
                     } else if (result.skippedCount > 0) {
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Tüm personel zaten hedef faaliyette mevcut, '
-                            'taşıma yapılmadı.',
-                          ),
-                          backgroundColor: pendingColor,
-                        ),
+                      AppNotifications.info(
+                        'Tüm personel zaten hedef faaliyette mevcut, '
+                        'taşıma yapılmadı.',
                       );
                     }
                   } catch (e) {
                     if (!mounted) return;
-                    messenger.showSnackBar(
-                      SnackBar(
-                        content: Text('Taşıma hatası: $e'),
-                        backgroundColor: rejectedColor,
-                      ),
-                    );
+                    AppNotifications.error('Taşıma hatası: $e');
                     navigator.pop(false);
                   } finally {
                     if (mounted) setState(() => _isTransferring = false);

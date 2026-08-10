@@ -55,13 +55,9 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
 
     final result = await showBulkPersonnelImportDialog(context);
     if (!mounted || result == null) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${result.addedCount} personel eklendi, '
-          '${result.skippedCount} mükerrer kayıt atlandı.',
-        ),
-      ),
+    AppNotifications.success(
+      '${result.addedCount} personel eklendi, '
+      '${result.skippedCount} mükerrer kayıt atlandı.',
     );
   }
 
@@ -165,12 +161,8 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                     onPressed: () async {
                       final u = userCtrl.text.trim();
                       if (u.isEmpty || selectedSquadId == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Lütfen kullanıcı adı ve tim seçiniz.',
-                            ),
-                          ),
+                        AppNotifications.warning(
+                          'Lütfen kullanıcı adı ve tim seçiniz.',
                         );
                         return;
                       }
@@ -184,13 +176,8 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
 
                       if (ctx.mounted) {
                         Navigator.of(ctx).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '${p.adSoyad} Tim Komutanı olarak yetkilendirildi!',
-                            ),
-                            backgroundColor: context.approvedColor,
-                          ),
+                        AppNotifications.success(
+                          '${p.adSoyad} Tim Komutanı olarak yetkilendirildi!',
                         );
                       }
                     },

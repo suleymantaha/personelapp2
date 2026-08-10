@@ -41,42 +41,24 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
   Future<void> _saveAllToFaaliyet() async {
     if (_parsedBlocks.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Kaydedilecek kart bulunamadı.'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      AppNotifications.warning('Kaydedilecek kart bulunamadı.');
       return;
     }
     if (_unresolvedPersonnelCount > 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '$_unresolvedPersonnelCount personel eşleşmedi. Lütfen tüm personelleri seçin veya listeden kaldırın.',
-          ),
-          backgroundColor: Colors.red,
-        ),
+      AppNotifications.error(
+        '$_unresolvedPersonnelCount personel eşleşmedi. Lütfen tüm personelleri seçin veya listeden kaldırın.',
       );
       return;
     }
     if (_parsedBlocks.any((block) => block.personnelList.isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'Personeli bulunmayan boş kartlar var. Lütfen kartları düzenleyin veya silin.'),
-          backgroundColor: Colors.red,
-        ),
+      AppNotifications.error(
+        'Personeli bulunmayan boş kartlar var. Lütfen kartları düzenleyin veya silin.',
       );
       return;
     }
     if (_parseIssues.any((issue) => issue.isBlocking)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'Lütfen önce çözülmemiş kart sorunlarını (tarih, tim veya görev türü) tamamlayın.'),
-          backgroundColor: Colors.red,
-        ),
+      AppNotifications.error(
+        'Lütfen önce çözülmemiş kart sorunlarını (tarih, tim veya görev türü) tamamlayın.',
       );
       return;
     }
@@ -110,12 +92,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       );
     } on Object catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Hata oluştu: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppNotifications.error('Hata oluştu: $e');
       }
     } finally {
       if (mounted) {
@@ -143,49 +120,63 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     _updateState(() {
       _parsedBlocks[blockIndex] = block.copyWith(personnelList: updated);
     });
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${removed.rawRank} ${removed.rawName} kaldırıldı.'),
-        action: SnackBarAction(
-          label: 'GERİ AL',
-          onPressed: () {
-            if (!mounted || blockIndex >= _parsedBlocks.length) return;
-            _updateState(() {
-              final current = _parsedBlocks[blockIndex];
-              final restored =
-                  List<ParsedPersonnelItem>.from(current.personnelList);
-              restored.insert(personIndex.clamp(0, restored.length), removed);
-              _parsedBlocks[blockIndex] =
-                  current.copyWith(personnelList: restored);
-            });
-          },
-        ),
-      ),
+    AppNotifications.info(
+      '${removed.rawRank} ${removed.rawName} kaldırıldı.',
+      actionLabel: 'GERİ AL',
+      onAction: () {
+        if (!mounted) return;
+        final currentBlockIndex = _parsedBlocks.indexWhere(
+          (candidate) => identical(candidate.identity, block.identity),
+        );
+        if (currentBlockIndex < 0) return;
+        _updateState(() {
+          final current = _parsedBlocks[currentBlockIndex];
+          final restored =
+              List<ParsedPersonnelItem>.from(current.personnelList);
+          restored.insert(
+            _stableRestoreIndex(
+              restored,
+              removedOrder: removed.stableOrder,
+              orderOf: (item) => item.stableOrder,
+            ),
+            removed,
+          );
+          _parsedBlocks[currentBlockIndex] =
+              current.copyWith(personnelList: restored);
+        });
+      },
     );
   }
 
   void _removeBlock(int blockIndex) {
     final removed = _parsedBlocks[blockIndex];
     _updateState(() => _parsedBlocks.removeAt(blockIndex));
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${removed.parsedActivityType} kartı kaldırıldı.'),
-        action: SnackBarAction(
-          label: 'GERİ AL',
-          onPressed: () {
-            if (!mounted) return;
-            _updateState(
-              () => _parsedBlocks.insert(
-                blockIndex.clamp(0, _parsedBlocks.length),
-                removed,
-              ),
-            );
-          },
-        ),
-      ),
+    AppNotifications.info(
+      '${removed.parsedActivityType} kartı kaldırıldı.',
+      actionLabel: 'GERİ AL',
+      onAction: () {
+        if (!mounted) return;
+        _updateState(() {
+          _parsedBlocks.insert(
+            _stableRestoreIndex(
+              _parsedBlocks,
+              removedOrder: removed.stableOrder,
+              orderOf: (block) => block.stableOrder,
+            ),
+            removed,
+          );
+        });
+      },
     );
+  }
+
+  int _stableRestoreIndex<T>(
+    List<T> items, {
+    required int removedOrder,
+    required int Function(T item) orderOf,
+  }) {
+    final nextIndex = items.indexWhere((item) => orderOf(item) > removedOrder);
+    return nextIndex < 0 ? items.length : nextIndex;
   }
 
   Future<void> _confirmClearAll() async {
@@ -273,11 +264,9 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     }
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tüm önerilen personel eşleşmeleri onaylandı.'),
-          duration: Duration(seconds: 2),
-        ),
+      AppNotifications.success(
+        'Tüm önerilen personel eşleşmeleri onaylandı.',
+        duration: const Duration(seconds: 2),
       );
     }
   }
@@ -348,13 +337,9 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     );
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${item.rawRank} ${item.rawName} veritabanına ($timName) eklendi ve eşleştirildi.',
-          ),
-          duration: const Duration(seconds: 3),
-        ),
+      AppNotifications.success(
+        '${item.rawRank} ${item.rawName} veritabanına ($timName) eklendi ve eşleştirildi.',
+        duration: const Duration(seconds: 3),
       );
     }
   }

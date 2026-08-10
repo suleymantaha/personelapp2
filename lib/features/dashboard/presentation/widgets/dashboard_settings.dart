@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -63,13 +64,8 @@ class DashboardSettings {
                     );
                     if (ctx.mounted) {
                       Navigator.of(ctx).pop();
-                      ScaffoldMessenger.of(ctx).showSnackBar(
-                        SnackBar(
-                          content: const Text(
-                            'Şifreniz başarıyla güncellendi!',
-                          ),
-                          backgroundColor: context.approvedColor,
-                        ),
+                      AppNotifications.success(
+                        'Şifreniz başarıyla güncellendi!',
                       );
                     }
                   }
@@ -256,13 +252,8 @@ class DashboardSettings {
                               final count =
                                   await repo.seedTestPersonnelPerSquad();
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '$count adet test personeli başarıyla eklendi!',
-                                    ),
-                                    backgroundColor: context.approvedColor,
-                                  ),
+                                AppNotifications.success(
+                                  '$count adet test personeli başarıyla eklendi!',
                                 );
                               }
                             },
@@ -313,13 +304,8 @@ class DashboardSettings {
                                 );
                                 await repo.deleteAllPersonnel();
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Text(
-                                        'Tüm personel verileri temizlendi!',
-                                      ),
-                                      backgroundColor: context.approvedColor,
-                                    ),
+                                  AppNotifications.info(
+                                    'Tüm personel verileri temizlendi!',
                                   );
                                 }
                               }
