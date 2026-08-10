@@ -132,4 +132,60 @@ void main() {
     expect(resultBlock, isNotNull);
     expect(resultBlock!.parsedTimName, '6-B Timi');
   });
+
+  testWidgets(
+      'EditActivityBlockDialog does not auto-fill missing date or duty',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final block = ParsedActivityBlock(
+      rawTitle: 'Eksik Kart',
+      parsedTimName: '',
+      parsedActivityType: '',
+      parsedDate: '',
+      personnelList: [],
+    );
+
+    ParsedActivityBlock? resultBlock;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () async {
+                  resultBlock =
+                      await EditActivityBlockDialog.show(context, block);
+                },
+                child: const Text('Open Dialog'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open Dialog'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tarih seç'), findsOneWidget);
+    expect(find.text('HEYBET'), findsOneWidget);
+    expect(find.text('Görev / Faaliyet Adı (Elle Düzenle)'), findsOneWidget);
+
+    final saveButton =
+        tester.widget<FilledButton>(find.byKey(const Key('bulk-edit-save')));
+    expect(saveButton.onPressed, isNull);
+
+    await tester.tap(find.text('HEYBET'));
+    await tester.pumpAndSettle();
+
+    final stillDisabled =
+        tester.widget<FilledButton>(find.byKey(const Key('bulk-edit-save')));
+    expect(stillDisabled.onPressed, isNull);
+    expect(resultBlock, isNull);
+  });
 }

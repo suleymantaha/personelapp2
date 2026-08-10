@@ -6,7 +6,7 @@ void main() {
   ParsedPersonnelItem person(int id, String name, {int? teamId}) {
     return ParsedPersonnelItem(
       rawIndex: id,
-      rawRank: 'J.Ütğm.',
+      rawRank: 'J.Utgm.',
       rawName: name,
       matchedPersonnelId: id,
       matchedAdSoyad: name,
@@ -30,7 +30,7 @@ void main() {
     );
   }
 
-  test('creates one daily activity while preserving duties without shifts', () {
+  test('creates one activity card per duty for the same day', () {
     final result = BulkActivityImportPreparer.prepare([
       block(
         date: '2026-07-28',
@@ -40,42 +40,42 @@ void main() {
       ),
       block(
         date: '2026-07-28',
-        duty: 'GÜLÜŞKÜR',
+        duty: 'GULUSKUR',
         time: '19:30 - 09:00',
         person: person(2, 'Veli', teamId: 8),
       ),
     ]);
 
     expect(result.duplicates, isEmpty);
-    expect(result.requests, hasLength(1));
-    final request = result.requests.single;
-    expect(request.faaliyetAdi, 'Günlük Tüm Faaliyetler');
-    expect(request.tarih, '2026-07-28');
-    expect(request.personnelAssignments, hasLength(2));
-    expect(request.personnelAssignments.first.duty, 'HAZIR KITA');
+    expect(result.requests, hasLength(2));
+    expect(result.requests.map((request) => request.faaliyetAdi), [
+      'HAZIR KITA',
+      'GULUSKUR',
+    ]);
+    expect(result.requests.map((request) => request.tarih).toSet(), {
+      '2026-07-28',
+    });
+    expect(result.requests.first.personnelAssignments, hasLength(1));
+    expect(result.requests.first.personnelAssignments.first.duty, 'HAZIR KITA');
     expect(
-      request.personnelAssignments.first.note,
+      result.requests.first.personnelAssignments.first.note,
       'Görev Türü: HAZIR KITA',
     );
   });
 
-  test('creates one activity per date', () {
+  test('creates one activity card per date and duty', () {
     final result = BulkActivityImportPreparer.prepare([
-      block(
-        date: '2026-07-28',
-        duty: 'GÖREVLİ',
-        person: person(1, 'Ali'),
-      ),
-      block(
-        date: '2026-07-29',
-        duty: 'GÖREVLİ',
-        person: person(2, 'Veli'),
-      ),
+      block(date: '2026-07-28', duty: 'GOREVLI', person: person(1, 'Ali')),
+      block(date: '2026-07-29', duty: 'GOREVLI', person: person(2, 'Veli')),
     ]);
 
     expect(result.requests.map((request) => request.tarih), [
       '2026-07-28',
       '2026-07-29',
+    ]);
+    expect(result.requests.map((request) => request.faaliyetAdi), [
+      'GOREVLI',
+      'GOREVLI',
     ]);
   });
 
@@ -89,7 +89,7 @@ void main() {
       ),
       block(
         date: '2026-07-28',
-        duty: 'GÜLÜŞKÜR',
+        duty: 'GULUSKUR',
         time: '19:30 - 09:00',
         person: person(1, 'Ali', teamId: 7),
       ),
@@ -100,7 +100,7 @@ void main() {
     expect(result.duplicates.single.personnelName, 'Ali');
     expect(result.duplicates.single.assignments, [
       'HAZIR KITA (08:00 - 19:30)',
-      'GÜLÜŞKÜR (19:30 - 09:00)',
+      'GULUSKUR (19:30 - 09:00)',
     ]);
   });
 
@@ -109,13 +109,13 @@ void main() {
     final result = BulkActivityImportPreparer.prepare([
       block(
         date: '2026-07-30',
-        duty: 'GÜLÜŞKÜR',
+        duty: 'GULUSKUR',
         time: '08:00 - 19:30',
         person: repeated,
       ),
       block(
         date: '2026-07-30',
-        duty: 'GÜLÜŞKÜR',
+        duty: 'GULUSKUR',
         time: '19:30 - 06:30',
         person: repeated,
       ),
@@ -123,10 +123,52 @@ void main() {
 
     expect(result.duplicates, isEmpty);
     expect(result.requests, hasLength(1));
+    expect(result.requests.single.faaliyetAdi, 'GULUSKUR');
     expect(result.requests.single.personnelAssignments, hasLength(1));
     expect(
       result.requests.single.personnelAssignments.single.note,
-      'Görev Türü: GÜLÜŞKÜR',
+      'Görev Türü: GULUSKUR',
     );
+  });
+
+  test('draft builds cards from raw text before preparing save requests',
+      () async {
+    final repeated = person(1, 'Ahmet TINAS', teamId: 9);
+    var matcherReceivedParsedBlocks = false;
+
+    final draft = await BulkActivityImportDraft.fromRawText(
+      '''
+2026-07-30
+9/B Guluskur
+1) J.Asb.Cvs. Ahmet TINAS
+''',
+      matchBlocks: (blocks) async {
+        matcherReceivedParsedBlocks = blocks.isNotEmpty;
+        return [
+          block(
+            date: '2026-07-30',
+            duty: 'GULUSKUR',
+            time: '08:00 - 19:30',
+            person: repeated,
+          ),
+          block(
+            date: '2026-07-30',
+            duty: 'GULUSKUR',
+            time: '19:30 - 06:30',
+            person: repeated,
+          ),
+        ];
+      },
+    );
+
+    expect(matcherReceivedParsedBlocks, isTrue);
+    expect(draft.blocks, hasLength(1));
+    expect(draft.deduplicatedPersonnelCount, 1);
+    expect(draft.blocks.first.personnelList, hasLength(1));
+
+    final preparation = draft.toPreparation();
+    expect(preparation.duplicates, isEmpty);
+    expect(preparation.requests, hasLength(1));
+    expect(preparation.requests.single.personnelAssignments, hasLength(1));
   });
 }

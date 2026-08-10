@@ -48,30 +48,8 @@ class BulkImportSaveHandler {
   static ({
     List<ParsedActivityBlock> blocks,
     int removedCount,
-  }) deduplicateSameDuty(List<ParsedActivityBlock> blocks) {
-    final seen = <String>{};
-    var removedCount = 0;
-    final result = <ParsedActivityBlock>[];
-    for (final block in blocks) {
-      final personnel = <ParsedPersonnelItem>[];
-      for (final person in block.personnelList) {
-        final id = person.matchedPersonnelId;
-        if (id == null) {
-          personnel.add(person);
-          continue;
-        }
-        final key = '${block.parsedDate}:'
-            '${block.parsedActivityType.trim().toUpperCase()}:$id';
-        if (seen.add(key)) {
-          personnel.add(person);
-        } else {
-          removedCount++;
-        }
-      }
-      result.add(block.copyWith(personnelList: personnel));
-    }
-    return (blocks: result, removedCount: removedCount);
-  }
+  }) deduplicateSameDuty(List<ParsedActivityBlock> blocks) =>
+      BulkActivityImportPreparer.deduplicateSameDuty(blocks);
 
   static Future<bool> confirmSavePreflight({
     required BuildContext context,

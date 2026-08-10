@@ -10,19 +10,19 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     });
 
     try {
-      final parseResult = BulkTextParser.parse(rawText);
       final fuzzyMatcher = PersonnelFuzzyMatcher(widget.database);
-      final matchedBlocks = await fuzzyMatcher.matchBlocks(parseResult.blocks);
-      final deduplicated =
-          BulkImportSaveHandler.deduplicateSameDuty(matchedBlocks);
+      final draft = await BulkActivityImportDraft.fromRawText(
+        rawText,
+        matchBlocks: fuzzyMatcher.matchBlocks,
+      );
       if (!mounted) return;
 
       _updateState(() {
         _cardKeys.clear();
         _personKeys.clear();
-        _parsedBlocks = deduplicated.blocks;
-        _parseIssues = List<BulkParseIssue>.from(parseResult.issues);
-        _deduplicatedPersonnelCount = deduplicated.removedCount;
+        _parsedBlocks = List<ParsedActivityBlock>.from(draft.blocks);
+        _parseIssues = List<BulkParseIssue>.from(draft.issues);
+        _deduplicatedPersonnelCount = draft.deduplicatedPersonnelCount;
         _previewFilter = _BulkPreviewFilter.all;
         _parseIssuesExpanded = _parseIssues.any((issue) => issue.isBlocking);
         if (_parsedBlocks.isNotEmpty || _parseIssues.isNotEmpty) {

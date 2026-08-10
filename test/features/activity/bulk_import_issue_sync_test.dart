@@ -10,6 +10,13 @@ import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_
 void main() {
   late AppDatabase database;
 
+  Future<void> pickDefaultDate(WidgetTester tester) async {
+    await tester.tap(find.text('Tarih seç'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+  }
+
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
     final teamId = await database.into(database.timTable).insert(
@@ -88,7 +95,8 @@ Veli SAĞLAM
     await tester.tap(find.text('Kartı düzenle'));
     await tester.pumpAndSettle();
 
-    // In EditDialog, tap save (which sets date)
+    // In EditDialog, select a date before saving.
+    await pickDefaultDate(tester);
     await tester.tap(find.byKey(const Key('bulk-edit-save')));
     await tester.pumpAndSettle();
 
@@ -104,6 +112,7 @@ Veli SAĞLAM
     await tester.tap(find.text('Kartı düzenle'));
     await tester.pumpAndSettle();
 
+    await pickDefaultDate(tester);
     await tester.tap(find.byKey(const Key('bulk-edit-save')));
     await tester.pumpAndSettle();
 
