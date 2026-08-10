@@ -40,8 +40,8 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
   late final TextEditingController _activityController;
   late final TextEditingController _teamController;
   late final TextEditingController _timeController;
-  late DateTime _selectedDate;
-  late String _selectedDuty;
+  DateTime? _selectedDate;
+  String? _selectedDuty;
 
   static const List<String> _quickDuties = [
     DutyOrLeaveType.heybet,
@@ -82,8 +82,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
     _activityController = TextEditingController(text: initialActivity);
     _teamController = TextEditingController(text: initialTeam);
     _timeController = TextEditingController(text: widget.block.parsedTimeRange);
-    _selectedDate =
-        DateTime.tryParse(widget.block.parsedDate) ?? DateTime.now();
+    _selectedDate = DateTime.tryParse(widget.block.parsedDate);
 
     final options = <String>[..._standardDuties];
     if (initialActivity.isNotEmpty &&
@@ -96,8 +95,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
     if (options.contains(initialActivity)) {
       _selectedDuty = initialActivity;
     } else if (initialActivity.isEmpty) {
-      _selectedDuty = DutyOrLeaveType.heybet;
-      _activityController.text = DutyOrLeaveType.heybet;
+      _selectedDuty = null;
     } else {
       _selectedDuty = DutyOrLeaveType.diger;
     }
@@ -156,6 +154,10 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedDate = _selectedDate;
+    final canSave =
+        selectedDate != null && _activityController.text.trim().isNotEmpty;
+
     return Padding(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -222,9 +224,11 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
 
           // Görev / Faaliyet Türü Dropdown
           DropdownButtonFormField<String>(
-            initialValue: _dropdownOptions.contains(_selectedDuty)
+            initialValue: _selectedDuty != null &&
+                    _dropdownOptions.contains(_selectedDuty)
                 ? _selectedDuty
-                : DutyOrLeaveType.diger,
+                : null,
+            hint: const Text('Görev seç'),
             isExpanded: true,
             menuMaxHeight: modernDropdownMenuMaxHeight(context),
             borderRadius: modernDropdownBorderRadius,
@@ -256,6 +260,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
           TextField(
             key: const Key('bulk-edit-activity'),
             controller: _activityController,
+            onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
               labelText: 'Görev / Faaliyet Adı (Elle Düzenle)',
               prefixIcon: const Icon(Icons.edit_rounded),
@@ -339,9 +344,10 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
               ),
             ),
             onPressed: () async {
+              final initialDate = _selectedDate ?? DateTime.now();
               final picked = await showDatePicker(
                 context: context,
-                initialDate: _selectedDate,
+                initialDate: initialDate,
                 firstDate: DateTime(2020),
                 lastDate: DateTime(2035),
               );
@@ -351,9 +357,11 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
             },
             icon: const Icon(Icons.calendar_today_rounded),
             label: Text(
-              '${_selectedDate.day.toString().padLeft(2, '0')}.'
-              '${_selectedDate.month.toString().padLeft(2, '0')}.'
-              '${_selectedDate.year}',
+              selectedDate == null
+                  ? 'Tarih seç'
+                  : '${selectedDate.day.toString().padLeft(2, '0')}.'
+                      '${selectedDate.month.toString().padLeft(2, '0')}.'
+                      '${selectedDate.year}',
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
@@ -367,24 +375,26 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            onPressed: () {
-              final activity = _activityController.text.trim();
-              if (activity.isEmpty) return;
-              final team = _teamController.text.trim();
-              final time = _timeController.text.trim();
-              Navigator.pop(
-                context,
-                ParsedActivityBlock(
-                  rawTitle: widget.block.rawTitle,
-                  parsedTimName: team,
-                  parsedActivityType: activity,
-                  parsedDate:
-                      '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}',
-                  parsedTimeRange: time.isEmpty ? null : time,
-                  personnelList: widget.block.personnelList,
-                ),
-              );
-            },
+            onPressed: canSave
+                ? () {
+                    final activity = _activityController.text.trim();
+                    final team = _teamController.text.trim();
+                    final time = _timeController.text.trim();
+                    final date = _selectedDate!;
+                    Navigator.pop(
+                      context,
+                      ParsedActivityBlock(
+                        rawTitle: widget.block.rawTitle,
+                        parsedTimName: team,
+                        parsedActivityType: activity,
+                        parsedDate:
+                            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
+                        parsedTimeRange: time.isEmpty ? null : time,
+                        personnelList: widget.block.personnelList,
+                      ),
+                    );
+                  }
+                : null,
             icon: const Icon(Icons.check_rounded),
             label: const Text('DEĞİŞİKLİKLERİ UYGULA'),
           ),
