@@ -47,7 +47,7 @@ class BulkImportSaveButton extends StatelessWidget {
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
           Text(
-            '${blocks.length} blok → '
+            '${blocks.length} blok -> '
             '${blocks.map((block) => block.parsedDate).toSet().length} günlük faaliyet',
             style: const TextStyle(fontSize: 11),
           ),
@@ -97,16 +97,14 @@ class SmartSaveBar extends StatelessWidget {
     final isBlocked = issues.any((issue) => issue.isBlocking);
     final criticalLocs = problemLocs.where((l) => l.isCritical).toList();
     final warningLocs = problemLocs.where((l) => !l.isCritical).toList();
-
     final blockingIssues = issues.where((i) => i.isBlocking).toList();
+
     final criticalCount = problemLocs.isNotEmpty
         ? criticalLocs.length
         : (blockingIssues.length + problemCount);
     final reviewWarningCount = problemLocs.isNotEmpty ? warningLocs.length : 0;
-
     final hasCritical = isBlocked || criticalCount > 0;
     final canSave = blocks.isNotEmpty && !hasCritical && !hasUnresolvedProblems;
-
     final displayTotal = problemLocs.isNotEmpty
         ? problemLocs.length
         : (criticalCount + reviewWarningCount);
@@ -114,20 +112,8 @@ class SmartSaveBar extends StatelessWidget {
         ? 1
         : (displayTotal > 0 ? (activeIssueFocusIndex % displayTotal) + 1 : 1);
 
-    Color wizardButtonColor;
-    String wizardButtonText;
-
-    if (hasCritical) {
-      wizardButtonColor = context.rejectedColor;
-      wizardButtonText = activeIssueFocusIndex < 0
-          ? 'Soruna Git ($displayIndex/$displayTotal)'
-          : 'Sonraki Sorun ($displayIndex/$displayTotal)';
-    } else {
-      wizardButtonColor = context.pendingColor;
-      wizardButtonText = activeIssueFocusIndex < 0
-          ? 'İncelemeye Git ($displayIndex/$displayTotal)'
-          : 'Sonraki İnceleme ($displayIndex/$displayTotal)';
-    }
+    final wizardButtonColor =
+        hasCritical ? context.rejectedColor : context.pendingColor;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -181,19 +167,20 @@ class SmartSaveBar extends StatelessWidget {
               OutlinedButton.icon(
                 key: const Key('bulk-wizard-next'),
                 onPressed: onGotoProblem,
-                icon: Icon(Icons.info_outline_rounded,
-                    size: 16, color: wizardButtonColor),
-                label: Text(
-                  wizardButtonText,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: wizardButtonColor,
-                  ),
+                icon: Icon(
+                  Icons.info_outline_rounded,
+                  size: 16,
+                  color: wizardButtonColor,
+                ),
+                label: const Text(
+                  'Sonraki inceleme',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                 ),
                 style: OutlinedButton.styleFrom(
+                  foregroundColor: wizardButtonColor,
                   side: BorderSide(
-                      color: wizardButtonColor.withValues(alpha: 0.5)),
+                    color: wizardButtonColor.withValues(alpha: 0.5),
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -204,43 +191,53 @@ class SmartSaveBar extends StatelessWidget {
           ] else ...[
             Row(
               children: [
-                Expanded(
-                  flex: 2,
-                  child: OutlinedButton.icon(
+                SizedBox(
+                  width: 54,
+                  child: OutlinedButton(
                     key: const Key('bulk-wizard-prev'),
                     onPressed: onGotoPrevious,
-                    icon: const Icon(Icons.arrow_back_ios_rounded, size: 14),
-                    label: const Text(
-                      'Önceki',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: wizardButtonColor,
                       side: BorderSide(
-                          color: wizardButtonColor.withValues(alpha: 0.4)),
+                        color: wizardButtonColor.withValues(alpha: 0.4),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child:
+                        const Icon(Icons.keyboard_arrow_up_rounded, size: 22),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 54,
+                  child: Center(
+                    child: Text(
+                      '$displayIndex / $displayTotal',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  flex: 3,
                   child: FilledButton.icon(
                     key: activeIssueFocusIndex < 0
                         ? const Key('bulk-goto-problem')
                         : const Key('bulk-wizard-next'),
                     onPressed: onGotoProblem,
-                    icon: const Icon(Icons.build_circle_outlined, size: 18),
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 18),
                     label: Text(
-                      wizardButtonText,
+                      hasCritical ? 'Sonraki sorunu aç' : 'Sonraki inceleme',
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
                     style: FilledButton.styleFrom(
                       backgroundColor: wizardButtonColor,
@@ -267,9 +264,11 @@ class SmartSaveBar extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Kaydedilemiyor ($displayTotal Hata / İnceleme)',
-                style:
-                    const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                'Kaydetmek için $displayTotal işlem kaldı',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],

@@ -29,7 +29,7 @@ export 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/
 
 part 'bulk_import_dialog_actions.dart';
 
-enum _BulkPreviewFilter { all, problems }
+enum _BulkPreviewFilter { problems, all, ready }
 
 class BulkImportDialog extends ConsumerStatefulWidget {
   const BulkImportDialog({
@@ -193,7 +193,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
             lineNumber: i + 1,
             rawLine: block.rawTitle,
             code: 'missing_date',
-            message: 'Kart #$blockNum: Bu personel grubu için geçerli bir tarih bulunamadı.',
+            message:
+                'Kart #$blockNum: Bu personel grubu için geçerli bir tarih bulunamadı.',
             severity: BulkParseIssueSeverity.error,
           ),
         );
@@ -231,7 +232,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
               lineNumber: p.sourceLineNumber ?? (i + 1),
               rawLine: '${p.rawRank} ${p.rawName}',
               code: 'unmatched_personnel',
-              message: '${p.rawRank} ${p.rawName} için personel seçimi yapılmadı.',
+              message:
+                  '${p.rawRank} ${p.rawName} için personel seçimi yapılmadı.',
               severity: BulkParseIssueSeverity.error,
             ),
           );
@@ -328,37 +330,37 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
                     color: Theme.of(context).scaffoldBackgroundColor,
                     child: TurkishFlagWatermarkBackground(
                       child: Column(
-                      children: [
-                        BulkImportHeaderBanner(
-                          isKeyboardVisible: isKeyboardVisible,
-                          onOpenMemory: () => LearnedAliasesDialog.show(
-                            context,
-                            widget.database,
+                        children: [
+                          BulkImportHeaderBanner(
+                            isKeyboardVisible: isKeyboardVisible,
+                            onOpenMemory: () => LearnedAliasesDialog.show(
+                              context,
+                              widget.database,
+                            ),
+                            onClose: () => Navigator.pop(context),
                           ),
-                          onClose: () => Navigator.pop(context),
-                        ),
-                        BulkImportStepper(
-                          currentStep: _currentStep,
-                          hasBlocks: _parsedBlocks.isNotEmpty,
-                          canProceedToSave: _canProceedToSave,
-                          onStepTapped: (int step) {
-                            if (step <= _currentStep ||
-                                (step == 1 && _parsedBlocks.isNotEmpty) ||
-                                (step == 2 && _canProceedToSave)) {
-                              setState(() => _currentStep = step);
-                            }
-                          },
-                        ),
-                        Expanded(
-                          child: isMobile
-                              ? _buildMobileBody(isKeyboardVisible)
-                              : _buildDesktopBody(isKeyboardVisible),
-                        ),
-                      ],
+                          BulkImportStepper(
+                            currentStep: _currentStep,
+                            hasBlocks: _parsedBlocks.isNotEmpty,
+                            canProceedToSave: _canProceedToSave,
+                            onStepTapped: (int step) {
+                              if (step <= _currentStep ||
+                                  (step == 1 && _parsedBlocks.isNotEmpty) ||
+                                  (step == 2 && _canProceedToSave)) {
+                                setState(() => _currentStep = step);
+                              }
+                            },
+                          ),
+                          Expanded(
+                            child: isMobile
+                                ? _buildMobileBody(isKeyboardVisible)
+                                : _buildDesktopBody(isKeyboardVisible),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
               ),
             ),
           ),
@@ -460,6 +462,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       scrollController: _previewScrollController,
       isMobile: isMobile,
       previewFilterIsProblems: _previewFilter == _BulkPreviewFilter.problems,
+      previewFilterIsReady: _previewFilter == _BulkPreviewFilter.ready,
       parseIssuesExpanded: _parseIssuesExpanded,
       activeIssueFocusIndex: _activeIssueFocusIndex,
       focusedPersonKey: _focusedPersonKey,
@@ -474,6 +477,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       onFocusPrevious: _focusPreviousProblem,
       onFocusNext: _focusNextProblem,
       onShowAll: () => _setPreviewFilter(_BulkPreviewFilter.all),
+      onShowProblems: () => _setPreviewFilter(_BulkPreviewFilter.problems),
+      onShowReady: () => _setPreviewFilter(_BulkPreviewFilter.ready),
       onEditBlock: _editBlock,
       onRemoveBlock: _removeBlock,
       onSelectPersonnel: _selectPersonnel,

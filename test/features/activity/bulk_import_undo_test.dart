@@ -119,6 +119,7 @@ void main() {
     expect(
       tester
           .widgetList<ActivityBlockCard>(find.byType(ActivityBlockCard))
+          .take(2)
           .map((card) => card.block.parsedDate),
       ['2026-07-25', '2026-07-26'],
     );

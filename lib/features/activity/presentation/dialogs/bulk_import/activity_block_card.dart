@@ -136,9 +136,9 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: borderColor,
           width: isBlockFocused ? 2.5 : (hasProblems ? 1.2 : 1.0),
@@ -157,7 +157,7 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
       child: Material(
         key: widget.cardKey,
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -166,12 +166,12 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
               key: Key('bulk-card-header-${widget.blockIdx}'),
               onTap: _toggleExpand,
               borderRadius: BorderRadius.vertical(
-                top: const Radius.circular(16),
-                bottom: Radius.circular(effectiveIsExpanded ? 0 : 16),
+                top: const Radius.circular(12),
+                bottom: Radius.circular(effectiveIsExpanded ? 0 : 12),
               ),
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -230,10 +230,10 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
-                                    letterSpacing: 0.1,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.fade,
+                                  softWrap: true,
                                 ),
                               ),
                             ],
@@ -454,7 +454,7 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
             if (effectiveIsExpanded) ...[
               const Divider(height: 1),
               Padding(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(10),
                 child: widget.block.personnelList.isEmpty
                     ? Container(
                         width: double.infinity,
