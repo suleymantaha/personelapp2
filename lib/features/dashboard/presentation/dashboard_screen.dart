@@ -6,6 +6,8 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
+import 'package:personelapp2/features/activity/services/roster_image_import_service.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/dashboard/presentation/models/dashboard_action_item.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_action_tone.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_archive_action.dart';
@@ -72,11 +74,41 @@ class DashboardScreen extends ConsumerWidget {
           },
         ),
         DashboardActionItem(
-          icon: Icons.assignment_turned_in,
-          title: 'Bekleyen Onaylar',
-          subtitle: 'Çakışma denetimi',
+          icon: Icons.image_search_rounded,
+          title: 'Görselden Toplu Aktar',
+          subtitle: 'OCR ile isim eşleştir',
           tone: DashboardActionTone.pending,
-          onTap: () => context.push('/pending-approvals'),
+          onTap: () async {
+            final service = RosterImageImportService();
+            if (!service.isSupportedPlatform) {
+              AppNotifications.warning(
+                'Görselden aktarım Android ve iOS cihazlarda kullanılabilir.',
+              );
+              return;
+            }
+            try {
+              final result = await service.pickAndExtract();
+              if (result == null || !context.mounted) return;
+
+              final db = ref.read(databaseProvider);
+              final activityRepo = ref.read(activityRepositoryProvider);
+              await showDialog<bool>(
+                context: context,
+                builder: (ctx) => BulkImportDialog(
+                  database: db,
+                  activityRepository: activityRepo,
+                  initialText: result.bulkImportText,
+                ),
+              );
+              ref.invalidate(activityRepositoryProvider);
+            } on RosterImageImportUnsupportedException catch (e) {
+              AppNotifications.warning(e.toString());
+            } on RosterImageImportNoNamesException catch (e) {
+              AppNotifications.warning(e.toString());
+            } on Object catch (e) {
+              AppNotifications.error('Görsel okunamadı: $e');
+            }
+          },
         ),
       ],
     ];
@@ -119,7 +151,9 @@ class DashboardScreen extends ConsumerWidget {
                     SliverToBoxAdapter(
                       child: pendingAsync.when(
                         data: (pendingList) {
-                          if (pendingList.isEmpty) return const SizedBox.shrink();
+                          if (pendingList.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
                           return Container(
                             margin: EdgeInsets.only(bottom: gridLayout.gap),
                             child: Card(

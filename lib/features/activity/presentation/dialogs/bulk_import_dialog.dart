@@ -35,10 +35,12 @@ class BulkImportDialog extends ConsumerStatefulWidget {
   const BulkImportDialog({
     required this.database,
     required this.activityRepository,
+    this.initialText,
     super.key,
   });
   final AppDatabase database;
   final ActivityRepository activityRepository;
+  final String? initialText;
 
   @override
   ConsumerState<BulkImportDialog> createState() => _BulkImportDialogState();
@@ -149,6 +151,13 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   @override
   void initState() {
     super.initState();
+    final initialText = widget.initialText?.trim();
+    if (initialText != null && initialText.isNotEmpty) {
+      _textController.text = initialText;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_processText());
+      });
+    }
     unawaited(_loadPersonnel());
     unawaited(_loadPreferences());
   }

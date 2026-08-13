@@ -42,7 +42,8 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('admin sees six grid actions and a separate archive action', (
+  testWidgets('admin sees OCR import instead of pending approvals grid action',
+      (
     tester,
   ) async {
     await pumpDashboard(
@@ -54,7 +55,8 @@ void main() {
     expect(find.byType(DashboardMenuCard), findsNWidgets(6));
     expect(find.byType(DashboardArchiveAction), findsOneWidget);
     expect(find.text('Metinden Toplu Aktar'), findsOneWidget);
-    expect(find.text('Bekleyen Onaylar'), findsOneWidget);
+    expect(find.text('Görselden Toplu Aktar'), findsOneWidget);
+    expect(find.text('Bekleyen Onaylar'), findsNothing);
   });
 
   testWidgets('non-admin sees four grid actions and a separate archive action',

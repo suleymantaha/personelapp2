@@ -10,7 +10,7 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
-import 'package:personelapp2/features/activity/presentation/dialogs/bulk_add_personnel_to_activity_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/edit_assignment_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_squad_dialog.dart';
@@ -166,7 +166,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                               ),
                               title: const Text('Metinden Toplu Ekle'),
                               subtitle: const Text(
-                                'İsim listesini yapıştırıp eşleştirin',
+                                'Listeyi tam önizleme ve hata kontrolüyle aktar',
                               ),
                               onTap: () =>
                                   Navigator.of(sheetContext).pop('bulk'),
@@ -177,17 +177,19 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                     );
                     if (!context.mounted || action == null) return;
                     if (action == 'bulk') {
-                      final result = await showBulkAddPersonnelToActivityDialog(
-                        context,
-                        activity: activity,
-                        existingPersonnelIds: existingPersonnelIds,
+                      final db = ref.read(databaseProvider);
+                      final activityRepo = ref.read(activityRepositoryProvider);
+                      final result = await showDialog<bool>(
+                        context: context,
+                        builder: (dialogContext) => BulkImportDialog(
+                          database: db,
+                          activityRepository: activityRepo,
+                        ),
                       );
-                      if (result != null && context.mounted) {
-                        AppNotifications.success(
-                          '${result.addedCount} personel eklendi, '
-                          '${result.alreadyAssignedCount} mevcut, '
-                          '${result.conflictSkippedCount} çakışma nedeniyle atlandı.',
-                        );
+                      if (result == true && context.mounted) {
+                        ref.invalidate(activityRepositoryProvider);
+                        ref.invalidate(filteredActivitiesProvider);
+                        ref.invalidate(pendingAssignmentsProvider);
                       }
                       return;
                     }
