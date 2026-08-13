@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -77,7 +76,8 @@ void main() {
   });
 
   group('AppBackupService TDD Unit Tests', () {
-    test('exportBackupJson exports valid full backup structure and sha256', () async {
+    test('exportBackupJson exports valid full backup structure and sha256',
+        () async {
       final jsonStr = await service.exportBackupJson();
       expect(jsonStr, contains('"format": "nizam-full-backup"'));
       expect(jsonStr, contains('"version": 2'));
@@ -90,7 +90,8 @@ void main() {
       expect(preview.legacy, isFalse);
     });
 
-    test('restoring full backup replaces database and preferences accurately', () async {
+    test('restoring full backup replaces database and preferences accurately',
+        () async {
       final exportedJson = await service.exportBackupJson();
 
       // Clear database tables
@@ -113,7 +114,9 @@ void main() {
       expect(personnel.first.adSoyad, equals('Mehmet Yılmaz'));
     });
 
-    test('inspect and restore accept formatted/pretty-printed JSON with reordered keys', () async {
+    test(
+        'inspect and restore accept formatted/pretty-printed JSON with reordered keys',
+        () async {
       final exportedJson = await service.exportBackupJson();
       final Map<String, dynamic> decoded =
           jsonDecode(exportedJson) as Map<String, dynamic>;
@@ -127,7 +130,8 @@ void main() {
       };
       decoded['payload'] = reorderedPayload;
 
-      final reencodedJson = const JsonEncoder.withIndent('    ').convert(decoded);
+      final reencodedJson =
+          const JsonEncoder.withIndent('    ').convert(decoded);
 
       final preview = await service.inspectBackupJson(reencodedJson);
       expect(preview.personnelCount, equals(1));
@@ -136,7 +140,8 @@ void main() {
       expect(result.importedPersonnel, equals(1));
     });
 
-    test('sanitizes input with markdown code fences, BOM, and extra whitespace', () async {
+    test('sanitizes input with markdown code fences, BOM, and extra whitespace',
+        () async {
       final exportedJson = await service.exportBackupJson();
       final wrappedJson = '\uFEFF  ```json\n$exportedJson\n```  ';
 
@@ -175,7 +180,8 @@ void main() {
       expect(result.importedPersonnel, equals(1));
     });
 
-    test('rejects tampered payload where checksum does not match data', () async {
+    test('rejects tampered payload where checksum does not match data',
+        () async {
       final exportedJson = await service.exportBackupJson();
       final Map<String, dynamic> decoded =
           jsonDecode(exportedJson) as Map<String, dynamic>;
@@ -199,11 +205,9 @@ void main() {
       );
     });
 
-    test('successfully inspects and restores user backup Nizam_Yedek_2026-08-07_16-48.nizam.json from clipboard paste', () async {
-      final file = File('Nizam_Yedek_2026-08-07_16-48.nizam.json');
-      if (!file.existsSync()) return;
-
-      final contents = file.readAsStringSync();
+    test('successfully inspects and restores backup JSON from clipboard paste',
+        () async {
+      final contents = await service.exportBackupJson();
       // Test with clipboard-like text additions (BOM, code fences, trailing space)
       final pastedText = '```json\n$contents\n```';
       final preview = await service.inspectBackupJson(pastedText);

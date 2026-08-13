@@ -49,4 +49,5 @@ app.*.map.json
 # IDE / Export files
 .trae/
 *.xls
+*.nizam.json
 
