@@ -27,7 +27,7 @@ class BulkImportPreviewSection extends StatefulWidget {
     required this.previewFilterIsReady,
     required this.parseIssuesExpanded,
     required this.activeIssueFocusIndex,
-    required this.focusedPersonKey,
+    required this.focusedIssue,
     required this.unresolvedPersonnelCount,
     required this.isSaving,
     required this.problemLocations,
@@ -62,7 +62,7 @@ class BulkImportPreviewSection extends StatefulWidget {
   final bool previewFilterIsReady;
   final bool parseIssuesExpanded;
   final int activeIssueFocusIndex;
-  final String? focusedPersonKey;
+  final BulkIssueFocus? focusedIssue;
   final int unresolvedPersonnelCount;
   final bool isSaving;
   final List<ProblemLocation> problemLocations;
@@ -237,13 +237,17 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                         final entry = visibleBlocks[blockIdx];
                         final originalBlockIndex = entry.key;
                         final block = entry.value;
-                        final isFocusedBlock = widget.focusedPersonKey
-                                ?.startsWith('$originalBlockIndex:') ??
-                            false;
+                        final isFocusedBlock =
+                            widget.focusedIssue?.matchesBlock(
+                                  originalBlockIndex,
+                                ) ??
+                                false;
                         final hasBlockProblems =
                             problemState.personnelByBlock.containsKey(
                           originalBlockIndex,
                         );
+                        final problemPersonnelIndexes =
+                            problemState.personnelByBlock[originalBlockIndex];
                         return ActivityBlockCard(
                           cardKey: widget.cardKeys.putIfAbsent(
                             originalBlockIndex,
@@ -254,17 +258,17 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                           blockIdx: originalBlockIndex,
                           duplicates: widget.duplicates,
                           allSquads: widget.allSquads,
-                          focusedPersonKey: widget.focusedPersonKey,
+                          focusedIssue: widget.focusedIssue,
                           isExpanded: isFocusedBlock ||
                               visibleBlocks.length == 1 ||
                               (widget.isMobile &&
                                   blockIdx == 0 &&
                                   hasBlockProblems),
-                          visiblePersonnelIndexes:
-                              widget.previewFilterIsProblems
-                                  ? problemState
-                                      .personnelByBlock[originalBlockIndex]
-                                  : null,
+                          visiblePersonnelIndexes: widget
+                                      .previewFilterIsProblems &&
+                                  problemPersonnelIndexes?.isNotEmpty == true
+                              ? problemPersonnelIndexes
+                              : null,
                           onEditBlock: widget.onEditBlock,
                           onRemoveBlock: widget.onRemoveBlock,
                           onSelectPersonnel: widget.onSelectPersonnel,

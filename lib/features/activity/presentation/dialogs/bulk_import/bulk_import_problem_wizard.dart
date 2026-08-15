@@ -15,6 +15,64 @@ class ProblemLocation {
   final int? sourceLineNumber;
   final String description;
   final bool isCritical;
+
+  BulkIssueFocus toFocus() {
+    final index = personIndex;
+    return index == null
+        ? BulkIssueFocus.card(blockIndex: blockIndex, isCritical: isCritical)
+        : BulkIssueFocus.person(
+            blockIndex: blockIndex,
+            personIndex: index,
+            isCritical: isCritical,
+          );
+  }
+}
+
+enum BulkIssueFocusType { card, person }
+
+class BulkIssueFocus {
+  const BulkIssueFocus._({
+    required this.blockIndex,
+    required this.type,
+    required this.isCritical,
+    this.personIndex,
+  });
+
+  const BulkIssueFocus.card({
+    required int blockIndex,
+    required bool isCritical,
+  }) : this._(
+          blockIndex: blockIndex,
+          type: BulkIssueFocusType.card,
+          isCritical: isCritical,
+        );
+
+  const BulkIssueFocus.person({
+    required int blockIndex,
+    required int personIndex,
+    required bool isCritical,
+  }) : this._(
+          blockIndex: blockIndex,
+          personIndex: personIndex,
+          type: BulkIssueFocusType.person,
+          isCritical: isCritical,
+        );
+
+  final int blockIndex;
+  final int? personIndex;
+  final BulkIssueFocusType type;
+  final bool isCritical;
+
+  bool get isCard => type == BulkIssueFocusType.card;
+  bool get isPerson => type == BulkIssueFocusType.person;
+
+  bool matchesBlock(int index) => blockIndex == index;
+
+  bool matchesPerson(int blockIndex, int personIndex) {
+    return isPerson &&
+        this.blockIndex == blockIndex &&
+        this.personIndex == personIndex;
+  }
 }
 
 class BulkImportProblemWizard {
@@ -56,7 +114,8 @@ class BulkImportProblemWizard {
             blockIndex: blockEntry.key,
             personIndex: null,
             sourceLineNumber: null,
-            description: 'Kart #${blockEntry.key + 1}: Geçerli bir tarih bulunamadı.',
+            description:
+                'Kart #${blockEntry.key + 1}: Geçerli bir tarih bulunamadı.',
             isCritical: true,
           ),
         );
@@ -102,7 +161,8 @@ class BulkImportProblemWizard {
               blockIndex: blockEntry.key,
               personIndex: personEntry.key,
               sourceLineNumber: person.sourceLineNumber,
-              description: '$linePrefix${person.rawRank} ${person.rawName} - Personel seçilmedi.',
+              description:
+                  '$linePrefix${person.rawRank} ${person.rawName} - Personel seçilmedi.',
               isCritical: true,
             ),
           );
@@ -126,7 +186,8 @@ class BulkImportProblemWizard {
               blockIndex: blockEntry.key,
               personIndex: personEntry.key,
               sourceLineNumber: person.sourceLineNumber,
-              description: '$linePrefix${person.rawRank} ${person.rawName} - Çakışan görev ekli.',
+              description:
+                  '$linePrefix${person.rawRank} ${person.rawName} - Çakışan görev ekli.',
               isCritical: true,
             ),
           );
@@ -153,7 +214,8 @@ class BulkImportProblemWizard {
               blockIndex: blockEntry.key,
               personIndex: personEntry.key,
               sourceLineNumber: person.sourceLineNumber,
-              description: '$linePrefix${person.rawRank} ${person.rawName} - $reason',
+              description:
+                  '$linePrefix${person.rawRank} ${person.rawName} - $reason',
               isCritical: false,
             ),
           );

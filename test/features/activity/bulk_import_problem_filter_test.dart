@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_problem_wizard.dart';
 
 void main() {
   late AppDatabase database;
@@ -39,6 +40,39 @@ void main() {
   });
 
   tearDown(() => database.close());
+
+  test('problem locations produce explicit card and personnel focus targets',
+      () {
+    final cardIssue = const ProblemLocation(
+      blockIndex: 2,
+      personIndex: null,
+      description: 'Kart sorunu',
+      isCritical: false,
+    );
+    final personnelIssue = const ProblemLocation(
+      blockIndex: 4,
+      personIndex: 3,
+      description: 'Personel sorunu',
+      isCritical: true,
+    );
+
+    final cardFocus = cardIssue.toFocus();
+    final personnelFocus = personnelIssue.toFocus();
+
+    expect(cardFocus.type, BulkIssueFocusType.card);
+    expect(cardFocus.blockIndex, 2);
+    expect(cardFocus.personIndex, isNull);
+    expect(cardFocus.isCritical, isFalse);
+    expect(cardFocus.matchesBlock(2), isTrue);
+    expect(cardFocus.matchesPerson(2, 0), isFalse);
+
+    expect(personnelFocus.type, BulkIssueFocusType.person);
+    expect(personnelFocus.blockIndex, 4);
+    expect(personnelFocus.personIndex, 3);
+    expect(personnelFocus.isCritical, isTrue);
+    expect(personnelFocus.matchesBlock(4), isTrue);
+    expect(personnelFocus.matchesPerson(4, 3), isTrue);
+  });
 
   testWidgets('stat cards show correct counts after parsing', (tester) async {
     tester.view.physicalSize = const Size(1000, 900);
@@ -220,6 +254,99 @@ void main() {
 
     expect(find.textContaining('GÖREVLİ', skipOffstage: false), findsWidgets);
     expect(find.textContaining('Mehmet BİLİNMEYEN'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      'problems filter keeps personnel visible for card-level review issues',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: BulkImportDialog(
+              database: database,
+              activityRepository: ActivityRepository(database),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byType(TextField).first,
+      '''
+HEYBET
+25.07.2026
+1- J.Uzm.Çvş. Ali DENEME
+''',
+    );
+    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Sorunlar'));
+    await tester.pumpAndSettle();
+
+    expect(
+        find.textContaining('Ali DENEME', skipOffstage: false), findsWidgets);
+    expect(find.textContaining('0 sorun / 1 p.'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('active issue fix does not advance to the next issue',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: BulkImportDialog(
+              database: database,
+              activityRepository: ActivityRepository(database),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byType(TextField).first,
+      '''
+HEYBET
+25.07.2026
+1- J.Uzm.Çvş. Ali DENEME
+6/B Devriye Listesi
+25.07.2026
+1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
+''',
+    );
+    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('bulk-goto-problem')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('1 / 2'), findsWidgets);
+
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, 500));
+    await tester.pumpAndSettle();
+    expect(find.text('Düzelt'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Düzelt'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('1 / 2'), findsWidgets);
+    expect(find.textContaining('2 / 2'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

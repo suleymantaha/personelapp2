@@ -44,18 +44,22 @@ void main() {
 
       expect(locs.length, 2);
       expect(locs[0].isCritical, isTrue);
-      expect(locs[0].description, contains('GÖREVLİ kartında personel bulunamadı'));
+      expect(locs[0].description,
+          contains('GÖREVLİ kartında personel bulunamadı'));
 
       expect(locs[1].isCritical, isFalse);
       expect(locs[1].description, contains('Okan TOPUZ'));
     });
 
-    testWidgets('CompactErrorSummary shows Amber color when only review warnings remain', (tester) async {
+    testWidgets(
+        'CompactErrorSummary shows Amber color when only review warnings remain',
+        (tester) async {
       final locs = [
         const ProblemLocation(
           blockIndex: 0,
           personIndex: 0,
-          description: 'Satır 202: J.Ütğm. Okan TOPUZ - Tim kontrolü gerektiriyor.',
+          description:
+              'Satır 202: J.Ütğm. Okan TOPUZ - Tim kontrolü gerektiriyor.',
           isCritical: false,
         ),
       ];
@@ -82,7 +86,9 @@ void main() {
       expect(find.text('Tüm kontroller tamam'), findsNothing);
     });
 
-    testWidgets('ActivityBlockCard auto-expands and shows focus badge when focused', (tester) async {
+    testWidgets(
+        'ActivityBlockCard auto-expands and shows focus badge when focused',
+        (tester) async {
       final block = ParsedActivityBlock(
         rawTitle: 'DEVRİYE',
         parsedActivityType: 'DEVRİYE',
@@ -111,8 +117,13 @@ void main() {
                 blockIdx: 0,
                 duplicates: const {},
                 allSquads: const [],
-                focusedPersonKey: '0:0',
-                isExpanded: false, // Explicitly passed false, should be overridden by focus
+                focusedIssue: const BulkIssueFocus.person(
+                  blockIndex: 0,
+                  personIndex: 0,
+                  isCritical: false,
+                ),
+                isExpanded:
+                    false, // Explicitly passed false, should be overridden by focus
                 onEditBlock: (_) {},
                 onRemoveBlock: (_) {},
                 onSelectPersonnel: (_, __) {},

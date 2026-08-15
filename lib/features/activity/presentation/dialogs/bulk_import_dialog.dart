@@ -65,7 +65,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   final ScrollController _previewScrollController = ScrollController();
   int _currentStep = 0; // 0: paste, 1: preview, 2: confirm
   int _activeIssueFocusIndex = -1;
-  String? _focusedPersonKey;
+  BulkIssueFocus? _focusedIssue;
   final _cardKeys = <int, GlobalKey>{};
   final _personKeys = <String, GlobalKey>{};
 
@@ -76,34 +76,49 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     );
   }
 
-  void _focusNextProblem() {
-    final locs = _getProblemLocations();
-    if (locs.isEmpty) {
-      setState(() {
-        _activeIssueFocusIndex = -1;
-        _focusedPersonKey = null;
-        _parseIssuesExpanded = true;
-      });
-      return;
-    }
-    final target = locs[_activeIssueFocusIndex < 0
-        ? 0
-        : (_activeIssueFocusIndex + 1) % locs.length];
+  void _focusProblemAtIndex(List<ProblemLocation> locs, int index) {
+    final target = locs[index];
     setState(() {
       _cardKeys.clear();
       _personKeys.clear();
       _previewFilter = _BulkPreviewFilter.problems;
       _parseIssuesExpanded = true;
-      if (_activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length) {
-        _activeIssueFocusIndex = 0;
-      } else {
-        _activeIssueFocusIndex = (_activeIssueFocusIndex + 1) % locs.length;
-      }
-      _focusedPersonKey = target.personIndex != null
-          ? '${target.blockIndex}:${target.personIndex}'
-          : '${target.blockIndex}:empty';
+      _activeIssueFocusIndex = index;
+      _focusedIssue = target.toFocus();
     });
     _scrollToProblemLocation(target.blockIndex, target.personIndex);
+  }
+
+  void _focusCurrentProblem() {
+    final locs = _getProblemLocations();
+    if (locs.isEmpty) {
+      setState(() {
+        _activeIssueFocusIndex = -1;
+        _focusedIssue = null;
+        _parseIssuesExpanded = true;
+      });
+      return;
+    }
+    final index =
+        _activeIssueFocusIndex < 0 ? 0 : _activeIssueFocusIndex % locs.length;
+    _focusProblemAtIndex(locs, index);
+  }
+
+  void _focusNextProblem() {
+    final locs = _getProblemLocations();
+    if (locs.isEmpty) {
+      setState(() {
+        _activeIssueFocusIndex = -1;
+        _focusedIssue = null;
+        _parseIssuesExpanded = true;
+      });
+      return;
+    }
+    final index =
+        _activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length
+            ? 0
+            : (_activeIssueFocusIndex + 1) % locs.length;
+    _focusProblemAtIndex(locs, index);
   }
 
   void _focusPreviousProblem() {
@@ -111,30 +126,16 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     if (locs.isEmpty) {
       setState(() {
         _activeIssueFocusIndex = -1;
-        _focusedPersonKey = null;
+        _focusedIssue = null;
         _parseIssuesExpanded = true;
       });
       return;
     }
-    final target = locs[_activeIssueFocusIndex < 0
-        ? locs.length - 1
-        : (_activeIssueFocusIndex - 1 + locs.length) % locs.length];
-    setState(() {
-      _cardKeys.clear();
-      _personKeys.clear();
-      _previewFilter = _BulkPreviewFilter.problems;
-      _parseIssuesExpanded = true;
-      if (_activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length) {
-        _activeIssueFocusIndex = locs.length - 1;
-      } else {
-        _activeIssueFocusIndex =
-            (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
-      }
-      _focusedPersonKey = target.personIndex != null
-          ? '${target.blockIndex}:${target.personIndex}'
-          : '${target.blockIndex}:empty';
-    });
-    _scrollToProblemLocation(target.blockIndex, target.personIndex);
+    final index =
+        _activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length
+            ? locs.length - 1
+            : (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
+    _focusProblemAtIndex(locs, index);
   }
 
   void _scrollToProblemLocation(int blockIndex, [int? personIndex]) {
@@ -480,7 +481,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       previewFilterIsReady: _previewFilter == _BulkPreviewFilter.ready,
       parseIssuesExpanded: _parseIssuesExpanded,
       activeIssueFocusIndex: _activeIssueFocusIndex,
-      focusedPersonKey: _focusedPersonKey,
+      focusedIssue: _focusedIssue,
       unresolvedPersonnelCount: _unresolvedPersonnelCount,
       isSaving: _isSaving,
       problemLocations: problemLocs,
@@ -488,7 +489,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       onToggleParseIssues: () => setState(
         () => _parseIssuesExpanded = !_parseIssuesExpanded,
       ),
-      onStartWizard: problemLocs.isEmpty ? null : _focusNextProblem,
+      onStartWizard: problemLocs.isEmpty ? null : _focusCurrentProblem,
       onFocusPrevious: _focusPreviousProblem,
       onFocusNext: _focusNextProblem,
       onShowAll: () => _setPreviewFilter(_BulkPreviewFilter.all),
