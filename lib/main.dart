@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -45,6 +46,13 @@ class PersonelApp extends ConsumerWidget {
       theme: AppTheme.militaryTheme,
       darkTheme: AppTheme.darkMilitaryTheme,
       themeMode: themeMode,
+      locale: const Locale('tr', 'TR'),
+      supportedLocales: const [Locale('tr', 'TR')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       routerConfig: router,
       builder: (context, child) => AppNotificationHost(
         child: child ?? const SizedBox.shrink(),
