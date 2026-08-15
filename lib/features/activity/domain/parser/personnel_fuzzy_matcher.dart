@@ -133,10 +133,16 @@ class PersonnelFuzzyMatcher {
       );
     }
 
-    // 5. Fuzzy Match (Levenshtein/Jaro-Winkler) using fuzzy package
+    // 5. Fuzzy match using the package's distance score (lower is better)
     final fuzzyMatch = _tryFuzzyMatch(rawNameClean, dbList);
     if (fuzzyMatch != null) {
-      return _withMatch(item, fuzzyMatch, 0.75, parsedTeamName, teamNames);
+      return _withMatch(
+        item,
+        fuzzyMatch.personnel,
+        fuzzyMatch.confidence,
+        parsedTeamName,
+        teamNames,
+      );
     }
 
     // 6. Partial Token Overlap Match (at least 2 tokens or surname+name match)
@@ -266,7 +272,7 @@ class PersonnelFuzzyMatcher {
   }
 
   /// Fuzzy matching using Levenshtein distance via fuzzy package
-  PersonelTableData? _tryFuzzyMatch(
+  _FuzzyPersonnelMatch? _tryFuzzyMatch(
     String rawNameClean,
     List<PersonelTableData> dbList,
   ) {
@@ -283,104 +289,29 @@ class PersonnelFuzzyMatcher {
 
     final results = fuzzy.search(rawNameClean);
 
-    if (results.isNotEmpty) {
-      final bestMatch = results.first;
-      if (bestMatch.score >= 0.6) {
-        // Find the personnel with this sanitized name
-        try {
-          return dbList.firstWhere(
-            (p) => _sanitizeString(p.adSoyad) == bestMatch.item,
-          );
-        } catch (_) {
-          return null;
-        }
-      }
+    if (results.isEmpty) return null;
+
+    final bestMatch = results.first;
+    const maximumDistance = 0.35;
+    if (bestMatch.score > maximumDistance) return null;
+
+    const minimumDistanceGap = 0.1;
+    if (results.length > 1 &&
+        results[1].score - bestMatch.score < minimumDistanceGap) {
+      return null;
     }
 
-    // Fallback: Jaro-Winkler for short names (better for initials)
-    if (rawNameClean.length <= 20) {
-      return _tryJaroWinklerMatch(rawNameClean, dbList);
+    try {
+      final personnel = dbList.firstWhere(
+        (p) => _sanitizeString(p.adSoyad) == bestMatch.item,
+      );
+      return _FuzzyPersonnelMatch(
+        personnel,
+        (1 - bestMatch.score).clamp(0.0, 1.0),
+      );
+    } catch (_) {
+      return null;
     }
-
-    return null;
-  }
-
-  PersonelTableData? _tryJaroWinklerMatch(
-    String rawNameClean,
-    List<PersonelTableData> dbList,
-  ) {
-    double bestScore = 0.0;
-    PersonelTableData? bestMatch;
-
-    for (final p in dbList) {
-      final dbNameClean = _sanitizeString(p.adSoyad);
-      final score = _jaroWinklerDistance(rawNameClean, dbNameClean);
-      if (score > bestScore && score >= 0.75) {
-        // Higher threshold for Jaro-Winkler
-        bestScore = score;
-        bestMatch = p;
-      }
-    }
-
-    return bestMatch;
-  }
-
-  /// Jaro-Winkler distance implementation (better for short strings with common prefixes)
-  double _jaroWinklerDistance(String s1, String s2) {
-    if (s1 == s2) return 1.0;
-    if (s1.isEmpty || s2.isEmpty) return 0.0;
-
-    // Jaro distance
-    final matchDistance =
-        (s1.length > s2.length ? s1.length : s2.length) ~/ 2 - 1;
-    if (matchDistance < 0) return 0.0;
-
-    final s1Matches = List<bool>.filled(s1.length, false);
-    final s2Matches = List<bool>.filled(s2.length, false);
-
-    int matches = 0;
-    int transpositions = 0;
-
-    for (int i = 0; i < s1.length; i++) {
-      final start = (i - matchDistance).clamp(0, s2.length - 1);
-      final end = (i + matchDistance + 1).clamp(0, s2.length);
-
-      for (int j = start; j < end; j++) {
-        if (!s2Matches[j] && s1[i] == s2[j]) {
-          s1Matches[i] = true;
-          s2Matches[j] = true;
-          matches++;
-          break;
-        }
-      }
-    }
-
-    if (matches == 0) return 0.0;
-
-    int k = 0;
-    for (int i = 0; i < s1.length; i++) {
-      if (s1Matches[i]) {
-        while (!s2Matches[k]) {
-          k++;
-        }
-        if (s1[i] != s2[k]) transpositions++;
-        k++;
-      }
-    }
-
-    final jaro = (matches / s1.length +
-            matches / s2.length +
-            (matches - transpositions / 2) / matches) /
-        3;
-
-    // Winkler adjustment
-    int prefixLength = 0;
-    final minLen = s1.length < s2.length ? s1.length : s2.length;
-    for (int i = 0; i < minLen && i < 4; i++) {
-      if (s1[i] == s2[i]) prefixLength++;
-    }
-
-    return jaro + (0.1 * prefixLength * (1 - jaro));
   }
 
   static String _sanitizeString(String input) =>
@@ -398,4 +329,11 @@ class PersonnelFuzzyMatcher {
         threshold: threshold,
         maxResults: maxResults,
       );
+}
+
+class _FuzzyPersonnelMatch {
+  const _FuzzyPersonnelMatch(this.personnel, this.confidence);
+
+  final PersonelTableData personnel;
+  final double confidence;
 }

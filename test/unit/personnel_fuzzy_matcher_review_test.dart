@@ -54,7 +54,8 @@ void main() {
     expect(person.needsReview, isFalse);
   });
 
-  test('team mismatch keeps match intact with teamMismatch flag but allows auto save',
+  test(
+      'team mismatch keeps match intact with teamMismatch flag but allows auto save',
       () async {
     final result = await PersonnelFuzzyMatcher(database)
         .matchBlocks([block('9/B', 'Ahmet TINAS')]);
@@ -64,5 +65,34 @@ void main() {
     expect(person.teamMismatch, isTrue);
     expect(person.needsReview, isFalse);
     expect(person.copyWith(reviewConfirmed: true).needsReview, isFalse);
+  });
+
+  test('unrelated two-word OCR text is not suggested as personnel', () async {
+    await database.into(database.personelTable).insert(
+          PersonelTableCompanion.insert(
+            adSoyad: 'Erdal AKBAL',
+            rutbe: 'J.Uzm.Çvş.',
+            birlik: '6/B',
+            kayitTarihi: '2026-01-01',
+          ),
+        );
+
+    final result = await PersonnelFuzzyMatcher(database)
+        .matchBlocks([block('6/B', 'Arial Black')]);
+    final person = result.single.personnelList.single;
+
+    expect(person.isMatched, isFalse);
+    expect(person.matchConfidence, 0);
+  });
+
+  test('minor typo uses the actual fuzzy confidence', () async {
+    final result = await PersonnelFuzzyMatcher(database)
+        .matchBlocks([block('6/B', 'Ahmet TINAZ')]);
+    final person = result.single.personnelList.single;
+
+    expect(person.isMatched, isTrue);
+    expect(person.matchedAdSoyad, 'Ahmet TINAS');
+    expect(person.matchConfidence, greaterThan(0.85));
+    expect(person.matchConfidence, lessThan(1));
   });
 }
