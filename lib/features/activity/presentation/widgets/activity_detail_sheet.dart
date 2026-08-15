@@ -184,6 +184,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                         builder: (dialogContext) => BulkImportDialog(
                           database: db,
                           activityRepository: activityRepo,
+                          targetActivity: activity,
                         ),
                       );
                       if (result == true && context.mounted) {

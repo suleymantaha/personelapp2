@@ -13,14 +13,16 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       final fuzzyMatcher = PersonnelFuzzyMatcher(widget.database);
       final draft = await BulkActivityImportDraft.fromRawText(
         rawText,
+        defaultDate: widget.targetActivity?.tarih,
         matchBlocks: fuzzyMatcher.matchBlocks,
       );
+      final blocks = _applyTargetActivityDefaults(draft.blocks);
       if (!mounted) return;
 
       _updateState(() {
         _cardKeys.clear();
         _personKeys.clear();
-        _parsedBlocks = List<ParsedActivityBlock>.from(draft.blocks);
+        _parsedBlocks = blocks;
         _parseIssues = List<BulkParseIssue>.from(draft.issues);
         _deduplicatedPersonnelCount = draft.deduplicatedPersonnelCount;
         _previewFilter = _BulkPreviewFilter.all;
@@ -37,6 +39,23 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         });
       }
     }
+  }
+
+  List<ParsedActivityBlock> _applyTargetActivityDefaults(
+    List<ParsedActivityBlock> blocks,
+  ) {
+    final target = widget.targetActivity;
+    if (target == null) return List<ParsedActivityBlock>.from(blocks);
+    return [
+      for (final block in blocks)
+        block.copyWith(
+          parsedDate:
+              block.parsedDate.trim().isEmpty ? target.tarih : block.parsedDate,
+          parsedActivityType: block.parsedActivityType.trim().isEmpty
+              ? target.faaliyetAdi
+              : block.parsedActivityType,
+        ),
+    ];
   }
 
   Future<void> _saveAllToFaaliyet() async {
@@ -65,6 +84,10 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
     try {
       final actor = ref.read(userSessionProvider);
+      if (widget.targetActivity != null) {
+        await _saveToTargetActivity(actor);
+        return;
+      }
       final confirmed = await BulkImportSaveHandler.confirmSavePreflight(
         context: context,
         database: widget.database,
@@ -94,6 +117,98 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       if (mounted) {
         AppNotifications.error('Hata oluştu: $e');
       }
+    } finally {
+      if (mounted) {
+        _updateState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _saveToTargetActivity(UserSessionState? actor) async {
+    final target = widget.targetActivity;
+    if (target == null) return;
+    if (actor == null) {
+      throw StateError('Oturum doğrulanamadı.');
+    }
+
+    final assignments = <PersonnelAssignmentInput>[];
+    for (final block in _parsedBlocks) {
+      final duty = block.parsedActivityType.trim().isEmpty
+          ? target.faaliyetAdi
+          : block.parsedActivityType.trim();
+      for (final person in block.personnelList) {
+        final personnelId = person.matchedPersonnelId;
+        if (personnelId == null || duty.isEmpty) continue;
+        assignments.add(
+          PersonnelAssignmentInput(
+            personnelId: personnelId,
+            duty: duty,
+            teamId: person.matchedTimId,
+          ),
+        );
+      }
+    }
+
+    if (assignments.isEmpty) {
+      AppNotifications.warning('Eklenecek personel bulunamadı.');
+      return;
+    }
+
+    _updateState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final result = await widget.activityRepository.addAssignmentsToActivity(
+        activityId: target.id,
+        assignments: assignments,
+        actor: actor,
+      );
+
+      final aliasPairs = _parsedBlocks
+          .expand((block) => block.personnelList)
+          .where(
+            (person) =>
+                person.matchedPersonnelId != null &&
+                person.rawName.trim().isNotEmpty,
+          )
+          .map(
+            (person) => (
+              rawName: person.rawName,
+              personnelId: person.matchedPersonnelId!,
+            ),
+          );
+      await BulkImportLearningService(widget.database)
+          .rememberAliases(aliasPairs);
+
+      if (!mounted) return;
+      final summaryLines = <String>[
+        '${target.faaliyetAdi} faaliyetine ${result.addedCount} personel eklendi.',
+        if (result.alreadyAssignedCount > 0)
+          '${result.alreadyAssignedCount} personel zaten ekliydi.',
+        if (result.conflictSkippedCount > 0)
+          '${result.conflictSkippedCount} çakışan kayıt atlandı.',
+      ];
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Aktarım Tamamlandı'),
+          content: Text(summaryLines.join('\n')),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('TAMAM'),
+            ),
+          ],
+        ),
+      );
+      if (!mounted) return;
+      Navigator.pop(context, true);
+      AppNotifications.success(
+        '${target.faaliyetAdi} faaliyetine ${result.addedCount} personel eklendi.',
+      );
     } finally {
       if (mounted) {
         _updateState(() {

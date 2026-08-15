@@ -36,11 +36,13 @@ class BulkImportDialog extends ConsumerStatefulWidget {
     required this.database,
     required this.activityRepository,
     this.initialText,
+    this.targetActivity,
     super.key,
   });
   final AppDatabase database;
   final ActivityRepository activityRepository;
   final String? initialText;
+  final GunlukFaaliyetTableData? targetActivity;
 
   @override
   ConsumerState<BulkImportDialog> createState() => _BulkImportDialogState();
