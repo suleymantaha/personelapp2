@@ -16,6 +16,7 @@ import 'package:personelapp2/features/activity/presentation/widgets/archive_filt
 import 'package:personelapp2/features/activity/presentation/widgets/archive_header_stats.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
+import 'package:personelapp2/features/activity/services/activity_order_preferences.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
@@ -35,8 +36,118 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
   int? _selectedSquadFilter; // null = Tümü
   final Set<int> _selectedActivityIds = {};
   bool _selectionMode = false;
+  bool _reorderMode = false;
+
+  static const ActivityOrderPreferences _orderPreferences =
+      ActivityOrderPreferences();
+  String? _loadedOrderDate;
+  List<int> _manualOrder = const [];
 
   void _updateState(VoidCallback callback) => setState(callback);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadManualOrder(DateFormat('yyyy-MM-dd').format(_selectedDateFilter));
+  }
+
+  void _changeSelectedDate(DateTime date) {
+    setState(() {
+      _selectedDateFilter = date;
+      _reorderMode = false;
+    });
+    _loadManualOrder(DateFormat('yyyy-MM-dd').format(date));
+  }
+
+  Future<void> _loadManualOrder(String date) async {
+    List<int> order;
+    try {
+      order = await _orderPreferences.loadOrder(date);
+    } on Object {
+      // Saved order is a convenience; fall back to the default sorting when
+      // local storage is unavailable.
+      order = const [];
+    }
+    if (!mounted) return;
+    setState(() {
+      _loadedOrderDate = date;
+      _manualOrder = order;
+    });
+  }
+
+  /// Sorts activities using the manual order saved for [date].
+  ///
+  /// Cards the user has never moved keep their default position at the top,
+  /// so newly added activities stay visible instead of dropping to the end.
+  List<GunlukFaaliyetTableData> _applyManualOrder(
+    List<GunlukFaaliyetTableData> activities,
+    String date,
+  ) {
+    if (_loadedOrderDate != date || _manualOrder.isEmpty) return activities;
+    final positions = <int, int>{
+      for (var i = 0; i < _manualOrder.length; i++) _manualOrder[i]: i,
+    };
+    final ordered = List<GunlukFaaliyetTableData>.from(activities);
+    for (var i = 0; i < ordered.length; i++) {
+      positions.putIfAbsent(ordered[i].id, () => -ordered.length + i);
+    }
+    ordered.sort((a, b) => positions[a.id]!.compareTo(positions[b.id]!));
+    return ordered;
+  }
+
+  Future<void> _handleReorder(
+    List<GunlukFaaliyetTableData> activities,
+    String date,
+    int oldIndex,
+    int newIndex,
+  ) async {
+    final reordered = List<GunlukFaaliyetTableData>.from(activities);
+    final target = newIndex > oldIndex ? newIndex - 1 : newIndex;
+    reordered.insert(target, reordered.removeAt(oldIndex));
+    final ids = reordered.map((activity) => activity.id).toList();
+    setState(() {
+      _loadedOrderDate = date;
+      _manualOrder = ids;
+    });
+    try {
+      await _orderPreferences.saveOrder(date, ids);
+    } on Object {
+      AppNotifications.warning('Sıralama kaydedilemedi.');
+    }
+  }
+
+  Future<void> _resetManualOrder(String date) async {
+    try {
+      await _orderPreferences.clearOrder(date);
+    } on Object {
+      AppNotifications.warning('Sıralama sıfırlanamadı.');
+      return;
+    }
+    if (!mounted) return;
+    setState(() {
+      _loadedOrderDate = date;
+      _manualOrder = const [];
+    });
+    AppNotifications.info('Kart sıralaması varsayılana döndürüldü.');
+  }
+
+  Widget _buildActivityCard(GunlukFaaliyetTableData act) {
+    return ActivityCard(
+      key: ValueKey<int>(act.id),
+      activity: act,
+      selectedSquadId: _selectedSquadFilter,
+      selectionMode: _selectionMode,
+      isSelected: _selectedActivityIds.contains(act.id),
+      onLongPress: _reorderMode ? null : () => _startSelection(act.id),
+      onSelectionToggle: _reorderMode ? null : () => _toggleSelection(act.id),
+      onDateChanged: (newDate) {
+        final parsed = DateTime.tryParse(newDate);
+        if (parsed != null) {
+          _changeSelectedDate(parsed);
+        }
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +180,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
         lastDate: DateTime(2030),
       );
       if (!mounted || picked == null) return;
-      setState(() => _selectedDateFilter = picked);
+      _changeSelectedDate(picked);
     }
 
     return Scaffold(
@@ -125,7 +236,17 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                   case 'select':
                     setState(() => _selectionMode = true);
                   case 'today':
-                    setState(() => _selectedDateFilter = DateTime.now());
+                    _changeSelectedDate(DateTime.now());
+                  case 'reorder':
+                    setState(() {
+                      _reorderMode = !_reorderMode;
+                      if (_reorderMode) {
+                        _selectionMode = false;
+                        _selectedActivityIds.clear();
+                      }
+                    });
+                  case 'reset-order':
+                    await _resetManualOrder(dateFilterStr);
                   case 'audit':
                     await _showConflictAudit();
                   case 'date':
@@ -147,6 +268,29 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                     icon: Icons.checklist_rounded,
                   ),
                 ),
+                ModernPopupMenuItem(
+                  option: ModernActionOption(
+                    value: 'reorder',
+                    title: _reorderMode
+                        ? 'Sıralamayı bitir'
+                        : 'Kartları taşı',
+                    subtitle: _reorderMode
+                        ? 'Sürükleme modundan çık'
+                        : 'Kartları sürükleyerek yeniden sırala',
+                    icon: _reorderMode
+                        ? Icons.check_rounded
+                        : Icons.swap_vert_rounded,
+                  ),
+                ),
+                if (_manualOrder.isNotEmpty)
+                  ModernPopupMenuItem(
+                    option: const ModernActionOption(
+                      value: 'reset-order',
+                      title: 'Sıralamayı sıfırla',
+                      subtitle: 'Varsayılan sıralamaya dön',
+                      icon: Icons.restart_alt_rounded,
+                    ),
+                  ),
                 if (!isSelectedToday)
                   ModernPopupMenuItem(
                     option: const ModernActionOption(
@@ -179,8 +323,16 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
             IconButton(
               icon: const Icon(Icons.today),
               tooltip: 'Bugüne Dön',
-              onPressed: () =>
-                  setState(() => _selectedDateFilter = DateTime.now()),
+              onPressed: () => _changeSelectedDate(DateTime.now()),
+            ),
+          if (!_selectionMode && !context.isMobile)
+            IconButton(
+              key: const Key('activity-reorder-toggle'),
+              icon: Icon(
+                _reorderMode ? Icons.check_rounded : Icons.swap_vert_rounded,
+              ),
+              tooltip: _reorderMode ? 'Sıralamayı Bitir' : 'Kartları Taşı',
+              onPressed: () => setState(() => _reorderMode = !_reorderMode),
             ),
           if (!_selectionMode && !context.isMobile && isAdmin)
             IconButton(
@@ -278,58 +430,87 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                     final dateOrder = b.tarih.compareTo(a.tarih);
                     return dateOrder != 0 ? dateOrder : b.id.compareTo(a.id);
                   });
-                  final grouped = <String, List<GunlukFaaliyetTableData>>{};
-                  for (final activity in filtered) {
-                    grouped.putIfAbsent(activity.tarih, () => []).add(activity);
-                  }
+                  final ordered = _applyManualOrder(filtered, dateFilterStr);
 
-                  final rows = <Object>[];
-                  for (final day in grouped.entries) {
-                    rows
-                      ..add(day)
-                      ..addAll(day.value);
-                  }
+                  const listPadding = EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  );
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    itemCount: rows.length,
-                    itemBuilder: (context, index) {
-                      final row = rows[index];
-                      if (row
-                          case MapEntry<String, List<GunlukFaaliyetTableData>>
-                              day) {
-                        return Padding(
-                          padding: const EdgeInsets.fromLTRB(4, 14, 4, 8),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                        child: Text(
+                          '${_formatTurkishDay(dateFilterStr)}'
+                          ' • ${ordered.length} faaliyet',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      if (_reorderMode)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                           child: Text(
-                            '${_formatTurkishDay(day.key)}'
-                            ' • ${day.value.length} faaliyet',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                            'Kartları tutamaçtan sürükleyerek taşıyın. '
+                            'Sıralama bu güne kaydedilir.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: context.textSecondary,
                             ),
                           ),
-                        );
-                      }
-
-                      final act = row as GunlukFaaliyetTableData;
-                      return ActivityCard(
-                        activity: act,
-                        selectedSquadId: _selectedSquadFilter,
-                        selectionMode: _selectionMode,
-                        isSelected: _selectedActivityIds.contains(act.id),
-                        onLongPress: () => _startSelection(act.id),
-                        onSelectionToggle: () => _toggleSelection(act.id),
-                        onDateChanged: (newDate) {
-                          final parsed = DateTime.tryParse(newDate);
-                          if (parsed != null) {
-                            setState(() => _selectedDateFilter = parsed);
-                          }
-                        },
-                      );
-                    },
+                        ),
+                      Expanded(
+                        child: _reorderMode
+                            ? ReorderableListView.builder(
+                                key: const Key('activity-reorder-list'),
+                                padding: listPadding,
+                                buildDefaultDragHandles: false,
+                                itemCount: ordered.length,
+                                onReorder: (oldIndex, newIndex) =>
+                                    _handleReorder(
+                                  ordered,
+                                  dateFilterStr,
+                                  oldIndex,
+                                  newIndex,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final act = ordered[index];
+                                  return Row(
+                                    key: ValueKey<int>(act.id),
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      ReorderableDragStartListener(
+                                        index: index,
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                            right: 4,
+                                          ),
+                                          child: Icon(
+                                            Icons.drag_indicator_rounded,
+                                            color: context.textSecondary,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: _buildActivityCard(act),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              )
+                            : ListView.builder(
+                                padding: listPadding,
+                                itemCount: ordered.length,
+                                itemBuilder: (context, index) =>
+                                    _buildActivityCard(ordered[index]),
+                              ),
+                      ),
+                    ],
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
