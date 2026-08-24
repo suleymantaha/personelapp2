@@ -69,7 +69,7 @@ void main() {
     final gesture = await tester.startGesture(
       tester.getCenter(firstHandle),
     );
-    await tester.pump(kLongPressTimeout);
+    await tester.pump(const Duration(milliseconds: 600));
     await gesture.moveBy(Offset(0, cardHeight + 40));
     await tester.pumpAndSettle();
     await gesture.up();

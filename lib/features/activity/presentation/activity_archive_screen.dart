@@ -101,9 +101,9 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
     int oldIndex,
     int newIndex,
   ) async {
+    // [newIndex] already accounts for the removed item, so it is used as is.
     final reordered = List<GunlukFaaliyetTableData>.from(activities);
-    final target = newIndex > oldIndex ? newIndex - 1 : newIndex;
-    reordered.insert(target, reordered.removeAt(oldIndex));
+    reordered.insert(newIndex, reordered.removeAt(oldIndex));
     final ids = reordered.map((activity) => activity.id).toList();
     setState(() {
       _loadedOrderDate = date;
@@ -470,7 +470,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                                 padding: listPadding,
                                 buildDefaultDragHandles: false,
                                 itemCount: ordered.length,
-                                onReorder: (oldIndex, newIndex) =>
+                                onReorderItem: (oldIndex, newIndex) =>
                                     _handleReorder(
                                   ordered,
                                   dateFilterStr,
