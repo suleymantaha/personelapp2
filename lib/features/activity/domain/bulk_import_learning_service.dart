@@ -92,11 +92,16 @@ class BulkImportLearningService {
           database.personelIsimTakmaAdTable.personelId,
         ),
       ),
+      leftOuterJoin(
+        database.timTable,
+        database.timTable.id.equalsExp(database.personelTable.timId),
+      ),
     ]);
     final rows = await query.get();
     return rows.map((row) {
       final alias = row.readTable(database.personelIsimTakmaAdTable);
       final person = row.readTable(database.personelTable);
+      final squad = row.readTableOrNull(database.timTable);
       return LearnedAliasItem(
         id: alias.id,
         normalizeTakmaAd: alias.normalizeTakmaAd,
@@ -104,6 +109,7 @@ class BulkImportLearningService {
         personnelId: alias.personelId,
         personelAdSoyad: person.adSoyad,
         personelRutbe: person.rutbe,
+        personelTimAdi: squad?.timAdi,
         kayitTarihi: alias.kayitTarihi,
       );
     }).toList();
@@ -216,6 +222,7 @@ class LearnedAliasItem {
   final int personnelId;
   final String personelAdSoyad;
   final String? personelRutbe;
+  final String? personelTimAdi;
   final String kayitTarihi;
 
   const LearnedAliasItem({
@@ -225,6 +232,7 @@ class LearnedAliasItem {
     required this.personnelId,
     required this.personelAdSoyad,
     this.personelRutbe,
+    this.personelTimAdi,
     required this.kayitTarihi,
   });
 }
