@@ -53,6 +53,11 @@ void main() {
 
     expect(find.text('Sistem Hafızası'), findsOneWidget);
     expect(find.text('1 Öğrenilmiş İsim Takma Adı'), findsOneWidget);
+
+    // Teams start collapsed; open the group to reach its aliases.
+    expect(find.text('Metindeki ad'), findsNothing);
+    await tester.tap(find.text('Timsiz / Diğer Personeller'));
+    await tester.pumpAndSettle();
     expect(find.text('Metindeki ad'), findsOneWidget);
     expect(find.text('Hüseyin ORUCTUTAN'), findsOneWidget);
     expect(find.text('J.Uzm.Çvş. Hüseyin ORUÇTUTAN'), findsOneWidget);
@@ -66,6 +71,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.clear));
     await tester.pumpAndSettle();
     expect(find.text('Hüseyin ORUCTUTAN'), findsOneWidget);
+
 
     // Test delete dialog opening
     await tester.tap(find.byIcon(Icons.delete_outline_rounded));
@@ -147,6 +153,8 @@ void main() {
 
       final dialog = tester.widget<Dialog>(find.byType(Dialog).last);
       expect(dialog.insetPadding, EdgeInsets.zero);
+      await tester.tap(find.text('Timsiz / Diğer Personeller'));
+      await tester.pumpAndSettle();
       expect(find.text('Metindeki ad'), findsOneWidget);
       expect(find.text('Eşleştiği personel'), findsOneWidget);
       expect(tester.takeException(), isNull);

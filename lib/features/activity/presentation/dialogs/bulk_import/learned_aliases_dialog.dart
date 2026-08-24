@@ -33,6 +33,10 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
   bool _isLoading = true;
   String _searchQuery = '';
 
+  /// Teams the user opened. Every group starts collapsed so the dialog opens
+  /// as a short list of teams instead of hundreds of aliases.
+  final Set<String> _expandedSquads = {};
+
   @override
   void initState() {
     super.initState();
@@ -108,7 +112,12 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
           targetNorm.contains(q) ||
           (squadNorm.isNotEmpty && squadNorm.contains(q));
     }).toList();
-    final rows = _buildRowsGroupedBySquad(filtered);
+    // A search should reveal its hits without extra taps.
+    final isSearching = _searchQuery.trim().isNotEmpty;
+    final rows = _buildRowsGroupedBySquad(
+      filtered,
+      isExpanded: (squad) => isSearching || _expandedSquads.contains(squad),
+    );
     final size = MediaQuery.sizeOf(context);
     final isMobile = size.width < 600;
     final radius = isMobile ? 0.0 : 20.0;
@@ -260,6 +269,15 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                     title: row.title,
                                     count: row.count,
                                     isFirst: index == 0,
+                                    expanded: row.expanded,
+                                    onToggle: isSearching
+                                        ? null
+                                        : () => setState(() {
+                                              if (!_expandedSquads
+                                                  .remove(row.title)) {
+                                                _expandedSquads.add(row.title);
+                                              }
+                                            }),
                                   );
                                 }
 
@@ -380,7 +398,10 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
 ///
 /// Teams follow the official military order used elsewhere in the app, and
 /// personnel without a team are collected at the end.
-List<Object> _buildRowsGroupedBySquad(List<LearnedAliasItem> items) {
+List<Object> _buildRowsGroupedBySquad(
+  List<LearnedAliasItem> items, {
+  required bool Function(String squad) isExpanded,
+}) {
   const unassignedTitle = 'Timsiz / Diğer Personeller';
   final grouped = <String, List<LearnedAliasItem>>{};
   for (final item in items) {
@@ -412,18 +433,29 @@ List<Object> _buildRowsGroupedBySquad(List<LearnedAliasItem> items) {
         if (nameOrder != 0) return nameOrder;
         return a.gorunenTakmaAd.compareTo(b.gorunenTakmaAd);
       });
-    rows
-      ..add(_SquadHeaderRow(title: title, count: members.length))
-      ..addAll(members.map(_AliasRow.new));
+    final expanded = isExpanded(title);
+    rows.add(
+      _SquadHeaderRow(
+        title: title,
+        count: members.length,
+        expanded: expanded,
+      ),
+    );
+    if (expanded) rows.addAll(members.map(_AliasRow.new));
   }
   return rows;
 }
 
 class _SquadHeaderRow {
-  const _SquadHeaderRow({required this.title, required this.count});
+  const _SquadHeaderRow({
+    required this.title,
+    required this.count,
+    required this.expanded,
+  });
 
   final String title;
   final int count;
+  final bool expanded;
 }
 
 class _AliasRow {
@@ -437,52 +469,79 @@ class _SquadHeader extends StatelessWidget {
     required this.title,
     required this.count,
     required this.isFirst,
+    required this.expanded,
+    this.onToggle,
   });
 
   final String title;
   final int count;
   final bool isFirst;
+  final bool expanded;
+  final VoidCallback? onToggle;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(4, isFirst ? 2 : 10, 4, 2),
-      child: Row(
-        children: [
-          Icon(
-            Icons.groups_2_outlined,
-            size: 16,
-            color: context.accentOrOlive,
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: context.accentOrOlive,
-              ),
+      padding: EdgeInsets.fromLTRB(0, isFirst ? 0 : 6, 0, 0),
+      child: Material(
+        color: context.accentOrOlive.withValues(alpha: expanded ? 0.12 : 0.06),
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          key: Key('alias-squad-header-$title'),
+          borderRadius: BorderRadius.circular(12),
+          onTap: onToggle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.groups_2_outlined,
+                  size: 17,
+                  color: context.accentOrOlive,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: context.accentOrOlive,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: context.accentOrOlive.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '$count',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: context.accentOrOlive,
+                    ),
+                  ),
+                ),
+                if (onToggle != null)
+                  Icon(
+                    expanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    size: 20,
+                    color: context.accentOrOlive,
+                  ),
+              ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: context.accentOrOlive.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '$count',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: context.accentOrOlive,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

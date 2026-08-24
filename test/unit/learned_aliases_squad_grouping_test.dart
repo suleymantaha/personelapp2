@@ -86,6 +86,8 @@ void main() {
     await tester.tap(find.text('Aç'));
     await tester.pumpAndSettle();
 
+    // Groups start collapsed, so only the team headers are visible.
+    expect(find.text('Abdul Samet HANCI'), findsNothing);
     expect(find.text('1-B Timi'), findsOneWidget);
     expect(find.text('2-B Timi'), findsOneWidget);
     expect(find.text('Timsiz / Diğer Personeller'), findsOneWidget);
@@ -97,21 +99,39 @@ void main() {
     expect(firstSquadTop, lessThan(secondSquadTop));
     expect(secondSquadTop, lessThan(unassignedTop));
 
-    // Each alias sits under its own team header.
+    for (final squad in const [
+      '1-B Timi',
+      '2-B Timi',
+      'Timsiz / Diğer Personeller',
+    ]) {
+      await tester.tap(find.text(squad));
+      await tester.pumpAndSettle();
+    }
+
+    // Each alias sits under its own team header once the groups are open.
+    final openedFirstTop = tester.getTopLeft(find.text('1-B Timi')).dy;
+    final openedSecondTop = tester.getTopLeft(find.text('2-B Timi')).dy;
+    final openedUnassignedTop =
+        tester.getTopLeft(find.text('Timsiz / Diğer Personeller')).dy;
     expect(
       tester.getTopLeft(find.text('Abdul Samet HANCI')).dy,
-      inExclusiveRange(firstSquadTop, secondSquadTop),
+      inExclusiveRange(openedFirstTop, openedSecondTop),
     );
     expect(
       tester.getTopLeft(find.text('A.Furkan ERYILMAZ')).dy,
-      inExclusiveRange(secondSquadTop, unassignedTop),
+      inExclusiveRange(openedSecondTop, openedUnassignedTop),
     );
     expect(
       tester.getTopLeft(find.text('Mehmet YILDIRIM')).dy,
-      greaterThan(unassignedTop),
+      greaterThan(openedUnassignedTop),
     );
 
-    // Searching by team name keeps only that team's aliases.
+    // Searching by team name keeps only that team's aliases and reveals the
+    // hits without needing another tap.
+    await tester.tap(find.text('1-B Timi'));
+    await tester.pumpAndSettle();
+    expect(find.text('Abdul Samet HANCI'), findsNothing);
+
     await tester.enterText(find.byType(TextField), '1-B');
     await tester.pumpAndSettle();
     expect(find.text('Abdul Samet HANCI'), findsOneWidget);
