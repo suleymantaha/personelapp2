@@ -64,31 +64,33 @@ class ArchiveHeaderStats extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isAdmin ? 'KONTROL MERKEZİ' : 'TİM ARŞİVİ',
-                    style: TextStyle(
-                      color: context.textPrimary,
-                      fontWeight: FontWeight.w800,
-                      fontSize: compact ? 14 : 16,
-                      letterSpacing: 0.2,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isAdmin ? 'KONTROL MERKEZİ' : 'TİM ARŞİVİ',
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: compact ? 14 : 16,
+                        letterSpacing: 0.2,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 7),
-                  Wrap(
-                    spacing: 6,
-                    children: [
-                      _MetricBadge(label: '$totalActivitiesCount Kayıt'),
-                      if (isAdmin && pendingCount > 0)
-                        _MetricBadge(
-                          label: '$pendingCount Bekliyor',
-                          color: context.pendingColor,
-                        ),
-                    ],
-                  ),
-                ],
+                    const SizedBox(height: 7),
+                    Wrap(
+                      spacing: 6,
+                      children: [
+                        _MetricBadge(label: '$totalActivitiesCount Kayıt'),
+                        if (isAdmin && pendingCount > 0)
+                          _MetricBadge(
+                            label: '$pendingCount Bekliyor',
+                            color: context.pendingColor,
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           );
