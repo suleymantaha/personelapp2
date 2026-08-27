@@ -238,7 +238,7 @@ class ActivityCard extends ConsumerWidget {
             prefixIcon: Icon(Icons.drive_file_rename_outline_rounded),
           ),
           onChanged: (value) => editedName = value,
-          onSubmitted: (value) {
+          onFieldSubmitted: (value) {
             if (value.trim().isNotEmpty) Navigator.of(dialogContext).pop(value);
           },
         ),
