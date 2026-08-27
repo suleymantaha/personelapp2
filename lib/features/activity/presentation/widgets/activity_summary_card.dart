@@ -221,14 +221,14 @@ class ActivityCard extends ConsumerWidget {
   }
 
   Future<void> _renameActivity(BuildContext context, WidgetRef ref) async {
-    final controller = TextEditingController(text: activity.faaliyetAdi);
+    var editedName = activity.faaliyetAdi;
     final newName = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Faaliyet Adını Değiştir'),
-        content: TextField(
+        content: TextFormField(
           key: const Key('activity-name-field'),
-          controller: controller,
+          initialValue: activity.faaliyetAdi,
           autofocus: true,
           textCapitalization: TextCapitalization.sentences,
           maxLength: 100,
@@ -237,6 +237,7 @@ class ActivityCard extends ConsumerWidget {
             hintText: 'Örn. Gece nöbeti',
             prefixIcon: Icon(Icons.drive_file_rename_outline_rounded),
           ),
+          onChanged: (value) => editedName = value,
           onSubmitted: (value) {
             if (value.trim().isNotEmpty) Navigator.of(dialogContext).pop(value);
           },
@@ -248,7 +249,7 @@ class ActivityCard extends ConsumerWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              final value = controller.text.trim();
+              final value = editedName.trim();
               if (value.isNotEmpty) Navigator.of(dialogContext).pop(value);
             },
             child: const Text('KAYDET'),
