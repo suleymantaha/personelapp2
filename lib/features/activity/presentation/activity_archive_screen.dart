@@ -13,7 +13,6 @@ import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_summary_card.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_filter_bar.dart';
-import 'package:personelapp2/features/activity/presentation/widgets/archive_header_stats.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_date_navigator.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
@@ -158,9 +157,6 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
     final activitiesAsync = ref.watch(filteredActivitiesProvider);
     final squadsAsync = ref.watch(allSquadsProvider);
     final personnelAsync = ref.watch(allPersonnelProvider);
-    final pendingAsync = ref.watch(pendingAssignmentsProvider);
-
-    final pendingCount = pendingAsync.value?.length ?? 0;
     final squads = squadsAsync.value ?? [];
     final allPersonnel = personnelAsync.value ?? [];
     final personnelList = (!isAdmin && session?.timId != null)
@@ -183,6 +179,27 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       );
       if (!mounted || picked == null) return;
       _changeSelectedDate(picked);
+    }
+
+    void exportCurrentArchive() {
+      final filteredForDate = (activitiesAsync.value ?? [])
+          .where((activity) => activity.tarih == dateFilterStr)
+          .toList();
+      final hasSelectedSquad =
+          _selectedSquadFilter != null &&
+          squads.any((squad) => squad.id == _selectedSquadFilter);
+      final selectedSquadName = hasSelectedSquad
+          ? squads
+                .firstWhere((squad) => squad.id == _selectedSquadFilter)
+                .timAdi
+          : null;
+      final squadText = selectedSquadName == null
+          ? ''
+          : ' • $selectedSquadName';
+      final subtitle =
+          '${DateFormat('dd.MM.yyyy').format(_selectedDateFilter)} • '
+          '${filteredForDate.length} Faaliyet$squadText';
+      _exportWithSheet(filteredForDate, personnelList, subtitle: subtitle);
     }
 
     return Scaffold(
@@ -238,6 +255,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
               constraints: const BoxConstraints(minWidth: 280, maxWidth: 320),
               onSelected: (action) async {
                 switch (action) {
+                  case 'export':
+                    exportCurrentArchive();
                   case 'select':
                     setState(() => _selectionMode = true);
                   case 'today':
@@ -265,6 +284,14 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                   icon: Icons.inventory_2_outlined,
                 ),
                 const PopupMenuDivider(),
+                ModernPopupMenuItem(
+                  option: const ModernActionOption(
+                    value: 'export',
+                    title: 'Dışa Aktar / Yazdır',
+                    subtitle: 'Görüntülenen günü paylaş veya yazdır',
+                    icon: Icons.ios_share_rounded,
+                  ),
+                ),
                 ModernPopupMenuItem(
                   option: const ModernActionOption(
                     value: 'select',
@@ -322,6 +349,13 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                 ),
               ],
             ),
+          if (!_selectionMode && !context.isMobile)
+            IconButton(
+              key: const Key('activity-archive-export'),
+              icon: const Icon(Icons.ios_share_rounded),
+              tooltip: 'Dışa Aktar / Yazdır',
+              onPressed: exportCurrentArchive,
+            ),
           if (!_selectionMode && !context.isMobile && !isSelectedToday)
             IconButton(
               icon: const Icon(Icons.today),
@@ -368,39 +402,6 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                 loading: () => const SizedBox(height: 72),
                 error: (_, __) => const SizedBox.shrink(),
               ),
-              // Header Metrics Card & Master Export Toolbar
-              activitiesAsync.when(
-                data: (activities) {
-                  final filteredForDate = activities
-                      .where((a) => a.tarih == dateFilterStr)
-                      .toList();
-
-                  final dateTitle = DateFormat('dd.MM.yyyy')
-                      .format(_selectedDateFilter);
-                  final squadText =
-                      _selectedSquadFilter != null &&
-                          squads.any((s) => s.id == _selectedSquadFilter)
-                      ? ' • ${squads.firstWhere((s) => s.id == _selectedSquadFilter).timAdi}'
-                      : '';
-                  final subtitle =
-                      '$dateTitle • ${filteredForDate.length} Faaliyet$squadText';
-
-                  return ArchiveHeaderStats(
-                    isAdmin: isAdmin,
-                    pendingCount: pendingCount,
-                    totalActivitiesCount: filteredForDate.length,
-                    selectedDateStr: dateFilterStr,
-                    onExportRequested: () => _exportWithSheet(
-                      filteredForDate,
-                      personnelList,
-                      subtitle: subtitle,
-                    ),
-                  );
-                },
-                loading: () => const SizedBox.shrink(),
-                error: (err, _) => const SizedBox.shrink(),
-              ),
-
               // Filters Bar: Squad Tabs for Admin
               ArchiveFilterBar(
                 isAdmin: isAdmin,
