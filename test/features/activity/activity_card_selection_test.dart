@@ -206,7 +206,8 @@ void main() {
       'Yeni Nöbet',
     );
     await tester.tap(find.text('KAYDET'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     final renamed = await (database.select(
       database.gunlukFaaliyetTable,
