@@ -73,7 +73,20 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('$headerDateStr • 2 faaliyet'), findsOneWidget);
+    expect(find.text('KONTROL MERKEZİ'), findsNothing);
+    expect(find.text('Dışa Aktar / Yazdır'), findsNothing);
+
+    await tester.tap(find.byTooltip('Arşiv işlemleri'));
+    await tester.pumpAndSettle();
     expect(find.text('Dışa Aktar / Yazdır'), findsOneWidget);
+
+    await tester.tap(find.text('Dışa Aktar / Yazdır'));
+    await tester.pumpAndSettle();
+    expect(find.text('PDF Belgesi Paylaş'), findsOneWidget);
+    expect(find.text('Doğrudan Yazdır'), findsOneWidget);
+
+    Navigator.of(tester.element(find.text('PDF Belgesi Paylaş'))).pop();
+    await tester.pumpAndSettle();
 
     await tester.longPress(find.byKey(const Key('activity-card-1')));
     await tester.pump();
