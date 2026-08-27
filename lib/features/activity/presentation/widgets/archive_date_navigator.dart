@@ -32,7 +32,7 @@ class ArchiveDateNavigator extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: context.colorScheme.surface.withValues(alpha: 0.96),
         border: Border(bottom: BorderSide(color: context.cardBorderColor)),
@@ -54,7 +54,7 @@ class ArchiveDateNavigator extends StatelessWidget {
                   '${selectedDate.day} ${_months[selectedDate.month - 1]}',
                   style: TextStyle(
                     color: context.textPrimary,
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -63,7 +63,7 @@ class ArchiveDateNavigator extends StatelessWidget {
                   '$activityCount faaliyet',
                   style: TextStyle(
                     color: context.textSecondary,
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -110,9 +110,9 @@ class _DateArrowButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           onTap: onPressed,
           child: SizedBox(
-            width: 46,
-            height: 46,
-            child: Icon(icon, color: context.accentOrOlive, size: 30),
+            width: 40,
+            height: 40,
+            child: Icon(icon, color: context.accentOrOlive, size: 28),
           ),
         ),
       ),
