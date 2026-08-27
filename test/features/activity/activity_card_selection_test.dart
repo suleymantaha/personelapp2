@@ -213,6 +213,9 @@ void main() {
       database.gunlukFaaliyetTable,
     )..where((table) => table.id.equals(91))).getSingle();
     expect(renamed.faaliyetAdi, 'Yeni Nöbet');
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
   });
 }
 
