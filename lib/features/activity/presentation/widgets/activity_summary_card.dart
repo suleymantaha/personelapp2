@@ -256,7 +256,6 @@ class ActivityCard extends ConsumerWidget {
         ],
       ),
     );
-    controller.dispose();
     if (newName == null || !context.mounted) return;
 
     final session = ref.read(userSessionProvider);
