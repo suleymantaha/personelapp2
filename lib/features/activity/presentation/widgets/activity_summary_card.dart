@@ -456,7 +456,7 @@ class ActivityCard extends ConsumerWidget {
                       activity.faaliyetAdi,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: compact ? 16 : 17,
                         letterSpacing: 0.15,
