@@ -44,8 +44,8 @@ class ActivityCard extends ConsumerWidget {
     final message = result.blockedCount == 0
         ? '${result.approvedCount} atama onaylandı.'
         : '${result.approvedCount} onaylandı, '
-            '${result.blockedCount} çakışma nedeniyle beklemede kaldı: '
-            '${result.conflictDescriptions.join(', ')}';
+              '${result.blockedCount} çakışma nedeniyle beklemede kaldı: '
+              '${result.conflictDescriptions.join(', ')}';
     if (result.blockedCount == 0) {
       AppNotifications.success(message);
     } else {
@@ -53,10 +53,7 @@ class ActivityCard extends ConsumerWidget {
     }
   }
 
-  Future<void> _deleteActivity(
-    BuildContext context,
-    AppDatabase db,
-  ) async {
+  Future<void> _deleteActivity(BuildContext context, AppDatabase db) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -84,15 +81,11 @@ class ActivityCard extends ConsumerWidget {
     if (confirm == true) {
       await (db.delete(
         db.gunlukFaaliyetTable,
-      )..where((tbl) => tbl.id.equals(activity.id)))
-          .go();
+      )..where((tbl) => tbl.id.equals(activity.id))).go();
     }
   }
 
-  Widget _buildStatusBadge({
-    required String label,
-    required Color color,
-  }) {
+  Widget _buildStatusBadge({required String label, required Color color}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -136,6 +129,9 @@ class ActivityCard extends ConsumerWidget {
             case _ActivityAdminAction.approveAll:
               await _approveAll(context, ref);
               return;
+            case _ActivityAdminAction.rename:
+              await _renameActivity(context, ref);
+              return;
             case _ActivityAdminAction.changeDate:
               await _changeDate(context, ref, assignments.length);
               return;
@@ -160,6 +156,14 @@ class ActivityCard extends ConsumerWidget {
                 icon: Icons.done_all_rounded,
               ),
             ),
+          ModernPopupMenuItem(
+            option: const ModernActionOption(
+              value: _ActivityAdminAction.rename,
+              title: 'Faaliyet adını değiştir',
+              subtitle: 'Kart başlığını yeniden adlandır',
+              icon: Icons.drive_file_rename_outline_rounded,
+            ),
+          ),
           ModernPopupMenuItem(
             option: const ModernActionOption(
               value: _ActivityAdminAction.changeDate,
@@ -193,6 +197,14 @@ class ActivityCard extends ConsumerWidget {
           ),
         IconButton(
           icon: Icon(
+            Icons.drive_file_rename_outline_rounded,
+            color: context.accentOrOlive,
+          ),
+          tooltip: 'Faaliyet Adını Değiştir',
+          onPressed: () => _renameActivity(context, ref),
+        ),
+        IconButton(
+          icon: Icon(
             Icons.edit_calendar_outlined,
             color: context.accentOrOlive,
           ),
@@ -206,6 +218,61 @@ class ActivityCard extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  Future<void> _renameActivity(BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController(text: activity.faaliyetAdi);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Faaliyet Adını Değiştir'),
+        content: TextField(
+          key: const Key('activity-name-field'),
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+          maxLength: 100,
+          decoration: const InputDecoration(
+            labelText: 'Faaliyet adı',
+            hintText: 'Örn. Gece nöbeti',
+            prefixIcon: Icon(Icons.drive_file_rename_outline_rounded),
+          ),
+          onSubmitted: (value) {
+            if (value.trim().isNotEmpty) Navigator.of(dialogContext).pop(value);
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('İPTAL'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final value = controller.text.trim();
+              if (value.isNotEmpty) Navigator.of(dialogContext).pop(value);
+            },
+            child: const Text('KAYDET'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (newName == null || !context.mounted) return;
+
+    final session = ref.read(userSessionProvider);
+    if (session == null) return;
+    try {
+      await ref
+          .read(activityRepositoryProvider)
+          .renameActivity(
+            activityId: activity.id,
+            newName: newName,
+            actor: session,
+          );
+      AppNotifications.success('Faaliyet adı güncellendi.');
+    } on Object catch (error) {
+      AppNotifications.error('Faaliyet adı değiştirilemedi: $error');
+    }
   }
 
   Future<void> _changeDate(
@@ -316,8 +383,7 @@ class ActivityCard extends ConsumerWidget {
     return StreamBuilder<List<FaaliyetPersonelAtamaTableData>>(
       stream: (db.select(
         db.faaliyetPersonelAtamaTable,
-      )..where((tbl) => tbl.faaliyetId.equals(activity.id)))
-          .watch(),
+      )..where((tbl) => tbl.faaliyetId.equals(activity.id))).watch(),
       builder: (context, snapshot) {
         final assignments = snapshot.data ?? [];
         final personnel = ref.watch(allPersonnelProvider).value ?? [];
@@ -362,28 +428,29 @@ class ActivityCard extends ConsumerWidget {
               onLongPress: onLongPress,
               onTap: selectionMode ? onSelectionToggle : null,
               child: Card(
-                elevation: isSelected ? 5 : 1,
+                elevation: isSelected ? 5 : 2,
                 color: isSelected
                     ? context.accentOrOlive.withValues(alpha: 0.12)
                     : context.colorScheme.surface,
-                margin: const EdgeInsets.only(bottom: 12),
+                margin: const EdgeInsets.only(bottom: 10),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(18),
                   side: BorderSide(
                     color: isSelected
                         ? context.accentOrOlive
                         : statusColor.withValues(alpha: 0.5),
-                    width: isSelected ? 2.5 : 1.25,
+                    width: isSelected ? 2.5 : 1,
                   ),
                 ),
                 child: IgnorePointer(
                   ignoring: selectionMode,
                   child: ExpansionTile(
-                    tilePadding: const EdgeInsets.fromLTRB(16, 6, 12, 6),
-                    childrenPadding: const EdgeInsets.only(bottom: 8),
+                    tilePadding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
+                    childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
                     leading: CircleAvatar(
+                      radius: 25,
                       backgroundColor: statusColor,
-                      child: Icon(statusIcon, color: Colors.white, size: 20),
+                      child: Icon(statusIcon, color: Colors.white, size: 25),
                     ),
                     title: Text(
                       activity.faaliyetAdi,
@@ -391,7 +458,8 @@ class ActivityCard extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 15,
+                        fontSize: compact ? 16 : 17,
+                        letterSpacing: 0.15,
                       ),
                     ),
                     subtitle: Padding(
@@ -411,7 +479,7 @@ class ActivityCard extends ConsumerWidget {
                               maxLines: compact ? 2 : 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12.5,
                                 color: context.textSecondary,
                               ),
                             ),
@@ -456,4 +524,4 @@ class ActivityCard extends ConsumerWidget {
   }
 }
 
-enum _ActivityAdminAction { approveAll, changeDate, delete }
+enum _ActivityAdminAction { approveAll, rename, changeDate, delete }

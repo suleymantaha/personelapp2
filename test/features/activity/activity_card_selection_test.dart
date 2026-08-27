@@ -84,7 +84,9 @@ void main() {
         olusturmaTarihi: '',
       );
       await database.into(database.gunlukFaaliyetTable).insert(activity);
-      final personId = await database.into(database.personelTable).insert(
+      final personId = await database
+          .into(database.personelTable)
+          .insert(
             PersonelTableCompanion.insert(
               adSoyad: 'Uzun İsimli Test Personeli',
               rutbe: 'Astsubay',
@@ -92,7 +94,9 @@ void main() {
               kayitTarihi: '2026-07-31',
             ),
           );
-      await database.into(database.faaliyetPersonelAtamaTable).insert(
+      await database
+          .into(database.faaliyetPersonelAtamaTable)
+          .insert(
             FaaliyetPersonelAtamaTableCompanion.insert(
               faaliyetId: activity.id,
               personelId: personId,
@@ -116,10 +120,7 @@ void main() {
           ],
           child: MaterialApp(
             home: Scaffold(
-              body: ActivityCard(
-                activity: activity,
-                onDateChanged: (_) {},
-              ),
+              body: ActivityCard(activity: activity, onDateChanged: (_) {}),
             ),
           ),
         ),
@@ -128,9 +129,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(tester.takeException(), isNull);
-      final title = tester.widget<Text>(
-        find.text(activity.faaliyetAdi),
-      );
+      final title = tester.widget<Text>(find.text(activity.faaliyetAdi));
       expect(title.maxLines, 2);
       expect(title.overflow, TextOverflow.ellipsis);
       expect(find.text('ADMIN ONAYI BEKLİYOR'), findsOneWidget);
@@ -139,9 +138,17 @@ void main() {
       if (width < 520) {
         expect(find.byKey(const Key('activity-actions-81')), findsOneWidget);
         expect(find.byIcon(Icons.edit_calendar_outlined), findsNothing);
+
+        await tester.tap(find.byKey(const Key('activity-actions-81')));
+        await tester.pumpAndSettle();
+        expect(find.text('Faaliyet adını değiştir'), findsOneWidget);
       } else {
         expect(find.byKey(const Key('activity-actions-81')), findsNothing);
         expect(find.byIcon(Icons.edit_calendar_outlined), findsOneWidget);
+        expect(
+          find.byIcon(Icons.drive_file_rename_outline_rounded),
+          findsOneWidget,
+        );
       }
 
       await tester.pumpWidget(const SizedBox.shrink());
@@ -149,4 +156,63 @@ void main() {
       await tester.pump(const Duration(milliseconds: 1));
     });
   }
+
+  testWidgets('admin renames an activity from the card menu', (tester) async {
+    tester.view
+      ..physicalSize = const Size(390, 844)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+    const activity = GunlukFaaliyetTableData(
+      id: 91,
+      faaliyetAdi: 'Eski Faaliyet',
+      tarih: '2026-08-27',
+      olusturanKullanici: 'admin',
+      olusturmaTarihi: '',
+    );
+    await database.into(database.gunlukFaaliyetTable).insert(activity);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          databaseProvider.overrideWithValue(database),
+          userSessionProvider.overrideWith(
+            (ref) =>
+                const UserSessionState(username: 'admin', role: UserRole.admin),
+          ),
+          allPersonnelProvider.overrideWith((ref) => Stream.value(const [])),
+          allSquadsProvider.overrideWith((ref) => Stream.value(const [])),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(
+            body: ActivityCard(activity: activity, onDateChanged: _ignoreDate),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('activity-actions-91')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Faaliyet adını değiştir'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Faaliyet Adını Değiştir'), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const Key('activity-name-field')),
+      'Yeni Nöbet',
+    );
+    await tester.tap(find.text('KAYDET'));
+    await tester.pumpAndSettle();
+
+    final renamed = await (database.select(
+      database.gunlukFaaliyetTable,
+    )..where((table) => table.id.equals(91))).getSingle();
+    expect(renamed.faaliyetAdi, 'Yeni Nöbet');
+  });
 }
+
+void _ignoreDate(String _) {}

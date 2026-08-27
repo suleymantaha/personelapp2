@@ -14,6 +14,7 @@ import 'package:personelapp2/features/activity/presentation/widgets/activity_sum
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_filter_bar.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_header_stats.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/archive_date_navigator.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/services/activity_order_preferences.dart';
@@ -168,7 +169,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
 
     final dateFilterStr = DateFormat('yyyy-MM-dd').format(_selectedDateFilter);
     final now = DateTime.now();
-    final isSelectedToday = _selectedDateFilter.year == now.year &&
+    final isSelectedToday =
+        _selectedDateFilter.year == now.year &&
         _selectedDateFilter.month == now.month &&
         _selectedDateFilter.day == now.day;
 
@@ -186,6 +188,9 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
+        backgroundColor: context.accentOrOlive,
+        foregroundColor: context.onAccentOrOlive,
+        elevation: 0,
         centerTitle: false,
         titleSpacing: _selectionMode ? null : 0,
         leading: _selectionMode
@@ -271,9 +276,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                 ModernPopupMenuItem(
                   option: ModernActionOption(
                     value: 'reorder',
-                    title: _reorderMode
-                        ? 'Sıralamayı bitir'
-                        : 'Kartları taşı',
+                    title: _reorderMode ? 'Sıralamayı bitir' : 'Kartları taşı',
                     subtitle: _reorderMode
                         ? 'Sürükleme modundan çık'
                         : 'Kartları sürükleyerek yeniden sırala',
@@ -350,177 +353,203 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       ),
       body: TurkishFlagWatermarkBackground(
         child: ResponsiveCenter(
-        maxWidth: AppSpacing.readableContentWidth,
-        padding: EdgeInsets.zero,
-        child: Column(
-          children: [
-            // Header Metrics Card & Master Export Toolbar
-            activitiesAsync.when(
-              data: (activities) {
-                final filteredForDate =
-                    activities.where((a) => a.tarih == dateFilterStr).toList();
-
-                final dateTitle =
-                    DateFormat('dd.MM.yyyy').format(_selectedDateFilter);
-                final squadText = _selectedSquadFilter != null &&
-                        squads.any((s) => s.id == _selectedSquadFilter)
-                    ? ' • ${squads.firstWhere((s) => s.id == _selectedSquadFilter).timAdi}'
-                    : '';
-                final subtitle =
-                    '$dateTitle • ${filteredForDate.length} Faaliyet$squadText';
-
-                return ArchiveHeaderStats(
-                  isAdmin: isAdmin,
-                  pendingCount: pendingCount,
-                  totalActivitiesCount: filteredForDate.length,
-                  selectedDateStr: dateFilterStr,
-                  onExportRequested: () => _exportWithSheet(
-                    filteredForDate,
-                    personnelList,
-                    subtitle: subtitle,
-                  ),
-                );
-              },
-              loading: () => const SizedBox.shrink(),
-              error: (err, _) => const SizedBox.shrink(),
-            ),
-
-            // Filters Bar: Squad Tabs for Admin
-            ArchiveFilterBar(
-              isAdmin: isAdmin,
-              squads: squads,
-              selectedSquadId: _selectedSquadFilter,
-              onSquadSelected: (squadId) {
-                setState(() {
-                  _selectedSquadFilter = squadId;
-                  _selectedActivityIds.clear();
-                  _selectionMode = false;
-                });
-              },
-            ),
-
-            const SizedBox(height: 6),
-
-            // Activity List
-            Expanded(
-              child: activitiesAsync.when(
+          maxWidth: AppSpacing.readableContentWidth,
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              activitiesAsync.when(
+                data: (activities) => ArchiveDateNavigator(
+                  selectedDate: _selectedDateFilter,
+                  activityCount: activities
+                      .where((activity) => activity.tarih == dateFilterStr)
+                      .length,
+                  onDateSelected: _changeSelectedDate,
+                ),
+                loading: () => const SizedBox(height: 72),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+              // Header Metrics Card & Master Export Toolbar
+              activitiesAsync.when(
                 data: (activities) {
-                  final filtered = activities
-                      .where((act) => act.tarih == dateFilterStr)
+                  final filteredForDate = activities
+                      .where((a) => a.tarih == dateFilterStr)
                       .toList();
-                  _pruneSelectionAfterBuild(
-                    filtered.map((activity) => activity.id),
-                  );
 
-                  if (filtered.isEmpty) {
-                    final formattedDate =
-                        DateFormat('dd.MM.yyyy').format(_selectedDateFilter);
-                    return Center(
-                      child: Text(
-                        '$formattedDate tarihine ait faaliyet kaydı bulunamadı.',
-                        style: TextStyle(
-                          color: context.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                    );
-                  }
+                  final dateTitle = DateFormat('dd.MM.yyyy')
+                      .format(_selectedDateFilter);
+                  final squadText =
+                      _selectedSquadFilter != null &&
+                          squads.any((s) => s.id == _selectedSquadFilter)
+                      ? ' • ${squads.firstWhere((s) => s.id == _selectedSquadFilter).timAdi}'
+                      : '';
+                  final subtitle =
+                      '$dateTitle • ${filteredForDate.length} Faaliyet$squadText';
 
-                  filtered.sort((a, b) {
-                    final dateOrder = b.tarih.compareTo(a.tarih);
-                    return dateOrder != 0 ? dateOrder : b.id.compareTo(a.id);
-                  });
-                  final ordered = _applyManualOrder(filtered, dateFilterStr);
-
-                  const listPadding = EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  );
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-                        child: Text(
-                          '${_formatTurkishDay(dateFilterStr)}'
-                          ' • ${ordered.length} faaliyet',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      if (_reorderMode)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                          child: Text(
-                            'Kartları tutamaçtan sürükleyerek taşıyın. '
-                            'Sıralama bu güne kaydedilir.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: context.textSecondary,
-                            ),
-                          ),
-                        ),
-                      Expanded(
-                        child: _reorderMode
-                            ? ReorderableListView.builder(
-                                key: const Key('activity-reorder-list'),
-                                padding: listPadding,
-                                buildDefaultDragHandles: false,
-                                itemCount: ordered.length,
-                                onReorderItem: (oldIndex, newIndex) =>
-                                    _handleReorder(
-                                  ordered,
-                                  dateFilterStr,
-                                  oldIndex,
-                                  newIndex,
-                                ),
-                                itemBuilder: (context, index) {
-                                  final act = ordered[index];
-                                  return Row(
-                                    key: ValueKey<int>(act.id),
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      ReorderableDragStartListener(
-                                        index: index,
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                            right: 4,
-                                          ),
-                                          child: Icon(
-                                            Icons.drag_indicator_rounded,
-                                            color: context.textSecondary,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: _buildActivityCard(act),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              )
-                            : ListView.builder(
-                                padding: listPadding,
-                                itemCount: ordered.length,
-                                itemBuilder: (context, index) =>
-                                    _buildActivityCard(ordered[index]),
-                              ),
-                      ),
-                    ],
+                  return ArchiveHeaderStats(
+                    isAdmin: isAdmin,
+                    pendingCount: pendingCount,
+                    totalActivitiesCount: filteredForDate.length,
+                    selectedDateStr: dateFilterStr,
+                    onExportRequested: () => _exportWithSheet(
+                      filteredForDate,
+                      personnelList,
+                      subtitle: subtitle,
+                    ),
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, _) => Center(child: Text('Hata: $err')),
+                loading: () => const SizedBox.shrink(),
+                error: (err, _) => const SizedBox.shrink(),
               ),
-            ),
-          ],
+
+              // Filters Bar: Squad Tabs for Admin
+              ArchiveFilterBar(
+                isAdmin: isAdmin,
+                squads: squads,
+                selectedSquadId: _selectedSquadFilter,
+                onSquadSelected: (squadId) {
+                  setState(() {
+                    _selectedSquadFilter = squadId;
+                    _selectedActivityIds.clear();
+                    _selectionMode = false;
+                  });
+                },
+              ),
+
+              const SizedBox(height: 6),
+
+              // Activity List
+              Expanded(
+                child: activitiesAsync.when(
+                  data: (activities) {
+                    final filtered = activities
+                        .where((act) => act.tarih == dateFilterStr)
+                        .toList();
+                    _pruneSelectionAfterBuild(
+                      filtered.map((activity) => activity.id),
+                    );
+
+                    if (filtered.isEmpty) {
+                      final formattedDate = DateFormat('dd.MM.yyyy')
+                          .format(_selectedDateFilter);
+                      return Center(
+                        child: Text(
+                          '$formattedDate tarihine ait faaliyet kaydı bulunamadı.',
+                          style: TextStyle(
+                            color: context.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      );
+                    }
+
+                    filtered.sort((a, b) {
+                      final dateOrder = b.tarih.compareTo(a.tarih);
+                      return dateOrder != 0 ? dateOrder : b.id.compareTo(a.id);
+                    });
+                    final ordered = _applyManualOrder(filtered, dateFilterStr);
+
+                    const listPadding = EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    );
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_month_outlined,
+                                color: context.accentOrOlive,
+                                size: 22,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  '${_formatTurkishDay(dateFilterStr)}'
+                                  ' • ${ordered.length} faaliyet',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_reorderMode)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                            child: Text(
+                              'Kartları tutamaçtan sürükleyerek taşıyın. '
+                              'Sıralama bu güne kaydedilir.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: context.textSecondary,
+                              ),
+                            ),
+                          ),
+                        Expanded(
+                          child: _reorderMode
+                              ? ReorderableListView.builder(
+                                  key: const Key('activity-reorder-list'),
+                                  padding: listPadding,
+                                  buildDefaultDragHandles: false,
+                                  itemCount: ordered.length,
+                                  onReorderItem: (oldIndex, newIndex) =>
+                                      _handleReorder(
+                                        ordered,
+                                        dateFilterStr,
+                                        oldIndex,
+                                        newIndex,
+                                      ),
+                                  itemBuilder: (context, index) {
+                                    final act = ordered[index];
+                                    return Row(
+                                      key: ValueKey<int>(act.id),
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        ReorderableDragStartListener(
+                                          index: index,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 4,
+                                            ),
+                                            child: Icon(
+                                              Icons.drag_indicator_rounded,
+                                              color: context.textSecondary,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: _buildActivityCard(act),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                )
+                              : ListView.builder(
+                                  padding: listPadding,
+                                  itemCount: ordered.length,
+                                  itemBuilder: (context, index) =>
+                                      _buildActivityCard(ordered[index]),
+                                ),
+                        ),
+                      ],
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (err, _) => Center(child: Text('Hata: $err')),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 }

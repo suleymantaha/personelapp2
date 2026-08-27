@@ -11,12 +11,10 @@ void main() {
   late AppDatabase database;
   late ActivityRepository repository;
   late int assignmentId;
+  late int activityId;
   late int personId;
 
-  const admin = UserSessionState(
-    username: 'admin',
-    role: UserRole.admin,
-  );
+  const admin = UserSessionState(username: 'admin', role: UserRole.admin);
   const commander = UserSessionState(
     username: 'komutan',
     role: UserRole.teamCommander,
@@ -26,19 +24,25 @@ void main() {
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
     repository = ActivityRepository(database);
-    await database.into(database.timTable).insert(
+    await database
+        .into(database.timTable)
+        .insert(
           TimTableCompanion.insert(
             timAdi: 'Komutan Takımı',
             olusturmaTarihi: '2026-07-28',
           ),
         );
-    await database.into(database.timTable).insert(
+    await database
+        .into(database.timTable)
+        .insert(
           TimTableCompanion.insert(
             timAdi: 'Diğer Takım',
             olusturmaTarihi: '2026-07-28',
           ),
         );
-    personId = await database.into(database.personelTable).insert(
+    personId = await database
+        .into(database.personelTable)
+        .insert(
           PersonelTableCompanion.insert(
             adSoyad: 'Yetki Testi',
             rutbe: 'J.Uzm.Çvş.',
@@ -47,7 +51,9 @@ void main() {
             kayitTarihi: '2026-07-28',
           ),
         );
-    final activityId = await database.into(database.gunlukFaaliyetTable).insert(
+    activityId = await database
+        .into(database.gunlukFaaliyetTable)
+        .insert(
           GunlukFaaliyetTableCompanion.insert(
             faaliyetAdi: 'Yetki',
             tarih: '2026-07-28',
@@ -55,15 +61,16 @@ void main() {
             olusturmaTarihi: '2026-07-28T00:00:00',
           ),
         );
-    assignmentId =
-        await database.into(database.faaliyetPersonelAtamaTable).insert(
-              FaaliyetPersonelAtamaTableCompanion.insert(
-                faaliyetId: activityId,
-                personelId: personId,
-                gorevVeyaIzin: 'GÖREVLİ',
-                durum: AssignmentStatus.beklemede,
-              ),
-            );
+    assignmentId = await database
+        .into(database.faaliyetPersonelAtamaTable)
+        .insert(
+          FaaliyetPersonelAtamaTableCompanion.insert(
+            faaliyetId: activityId,
+            personelId: personId,
+            gorevVeyaIzin: 'GÖREVLİ',
+            durum: AssignmentStatus.beklemede,
+          ),
+        );
   });
 
   tearDown(() => database.close());
@@ -82,8 +89,7 @@ void main() {
 
     final row = await (database.select(
       database.faaliyetPersonelAtamaTable,
-    )..where((table) => table.id.equals(assignmentId)))
-        .getSingle();
+    )..where((table) => table.id.equals(assignmentId))).getSingle();
     expect(row.durum, AssignmentStatus.beklemede);
   });
 
@@ -122,11 +128,47 @@ void main() {
 
   test('bulk activity import is admin only', () async {
     await expectLater(
-      repository.createActivitiesWithAssignments(
-        const [],
+      repository.createActivitiesWithAssignments(const [], actor: commander),
+      throwsA(isA<AuthorizationException>()),
+    );
+  });
+
+  test(
+    'admin can rename an activity and surrounding whitespace is removed',
+    () async {
+      final updated = await repository.renameActivity(
+        activityId: activityId,
+        newName: '  Gece Nöbeti  ',
+        actor: admin,
+      );
+
+      expect(updated, 1);
+      final activity = await (database.select(
+        database.gunlukFaaliyetTable,
+      )..where((table) => table.id.equals(activityId))).getSingle();
+      expect(activity.faaliyetAdi, 'Gece Nöbeti');
+    },
+  );
+
+  test('commander cannot rename an activity', () async {
+    await expectLater(
+      repository.renameActivity(
+        activityId: activityId,
+        newName: 'Yetkisiz Ad',
         actor: commander,
       ),
       throwsA(isA<AuthorizationException>()),
+    );
+  });
+
+  test('activity name cannot be blank', () async {
+    await expectLater(
+      repository.renameActivity(
+        activityId: activityId,
+        newName: '   ',
+        actor: admin,
+      ),
+      throwsA(isA<ArgumentError>()),
     );
   });
 }

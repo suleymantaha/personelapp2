@@ -30,16 +30,22 @@ class ArchiveFilterBar extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Row(
         children: [
           ChoiceChip(
             label: const Text('Tüm Timler'),
+            avatar: selectedSquadId == null
+                ? const Icon(Icons.check_circle, size: 20)
+                : null,
             selected: selectedSquadId == null,
             selectedColor: context.accentOrOlive,
+            backgroundColor: context.colorScheme.surface,
+            side: BorderSide(color: context.cardBorderColor),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             labelStyle: TextStyle(
               color: selectedSquadId == null
                   ? Colors.white
@@ -57,6 +63,15 @@ class ArchiveFilterBar extends StatelessWidget {
                 label: Text(sq.timAdi),
                 selected: isSel,
                 selectedColor: context.accentOrOlive,
+                backgroundColor: context.colorScheme.surface,
+                side: BorderSide(color: context.cardBorderColor),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 9,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 labelStyle: TextStyle(
                   color: isSel ? Colors.white : context.textPrimary,
                   fontWeight: FontWeight.bold,
