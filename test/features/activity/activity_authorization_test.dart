@@ -152,10 +152,12 @@ void main() {
 
   test('commander cannot rename an activity', () async {
     await expectLater(
-      repository.renameActivity(
-        activityId: activityId,
-        newName: 'Yetkisiz Ad',
-        actor: commander,
+      Future<int>.sync(
+        () => repository.renameActivity(
+          activityId: activityId,
+          newName: 'Yetkisiz Ad',
+          actor: commander,
+        ),
       ),
       throwsA(isA<AuthorizationException>()),
     );
@@ -163,10 +165,12 @@ void main() {
 
   test('activity name cannot be blank', () async {
     await expectLater(
-      repository.renameActivity(
-        activityId: activityId,
-        newName: '   ',
-        actor: admin,
+      Future<int>.sync(
+        () => repository.renameActivity(
+          activityId: activityId,
+          newName: '   ',
+          actor: admin,
+        ),
       ),
       throwsA(isA<ArgumentError>()),
     );
