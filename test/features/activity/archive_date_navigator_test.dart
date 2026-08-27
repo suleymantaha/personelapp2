@@ -21,6 +21,10 @@ void main() {
 
     expect(find.text('27 Ağustos'), findsOneWidget);
     expect(find.text('5 faaliyet'), findsOneWidget);
+    expect(
+      tester.getSize(find.byType(ArchiveDateNavigator)).height,
+      lessThanOrEqualTo(64),
+    );
 
     await tester.tap(find.byKey(const Key('archive-previous-day')));
     expect(selected, DateTime(2026, 8, 26));
