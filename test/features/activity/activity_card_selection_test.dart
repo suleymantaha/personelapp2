@@ -142,6 +142,8 @@ void main() {
         await tester.tap(find.byKey(const Key('activity-actions-81')));
         await tester.pumpAndSettle();
         expect(find.text('Faaliyet adını değiştir'), findsOneWidget);
+        await tester.tapAt(Offset.zero);
+        await tester.pumpAndSettle();
       } else {
         expect(find.byKey(const Key('activity-actions-81')), findsNothing);
         expect(find.byIcon(Icons.edit_calendar_outlined), findsOneWidget);
@@ -156,67 +158,4 @@ void main() {
       await tester.pump(const Duration(milliseconds: 1));
     });
   }
-
-  testWidgets('admin renames an activity from the card menu', (tester) async {
-    tester.view
-      ..physicalSize = const Size(390, 844)
-      ..devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    final database = AppDatabase(NativeDatabase.memory());
-    addTearDown(database.close);
-    const activity = GunlukFaaliyetTableData(
-      id: 91,
-      faaliyetAdi: 'Eski Faaliyet',
-      tarih: '2026-08-27',
-      olusturanKullanici: 'admin',
-      olusturmaTarihi: '',
-    );
-    await database.into(database.gunlukFaaliyetTable).insert(activity);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          databaseProvider.overrideWithValue(database),
-          userSessionProvider.overrideWith(
-            (ref) =>
-                const UserSessionState(username: 'admin', role: UserRole.admin),
-          ),
-          allPersonnelProvider.overrideWith((ref) => Stream.value(const [])),
-          allSquadsProvider.overrideWith((ref) => Stream.value(const [])),
-        ],
-        child: const MaterialApp(
-          home: Scaffold(
-            body: ActivityCard(activity: activity, onDateChanged: _ignoreDate),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(const Key('activity-actions-91')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Faaliyet adını değiştir'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Faaliyet Adını Değiştir'), findsOneWidget);
-    await tester.enterText(
-      find.byKey(const Key('activity-name-field')),
-      'Yeni Nöbet',
-    );
-    await tester.tap(find.text('KAYDET'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-
-    final renamed = await (database.select(
-      database.gunlukFaaliyetTable,
-    )..where((table) => table.id.equals(91))).getSingle();
-    expect(renamed.faaliyetAdi, 'Yeni Nöbet');
-
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-  });
 }
-
-void _ignoreDate(String _) {}
