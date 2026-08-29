@@ -21,8 +21,28 @@ void main() {
     gorevVeyaIzin: 'GÖREVLİ',
     durum: 'onaylandi',
   );
+  const transferTargets = [
+    GunlukFaaliyetTableData(
+      id: 2,
+      faaliyetAdi: 'GÜLÜŞKÜR',
+      tarih: '2026-08-05',
+      olusturanKullanici: 'admin',
+      olusturmaTarihi: '2026-08-05',
+    ),
+    GunlukFaaliyetTableData(
+      id: 3,
+      faaliyetAdi: 'HAZIR KITA',
+      tarih: '2026-08-05',
+      olusturanKullanici: 'admin',
+      olusturmaTarihi: '2026-08-05',
+    ),
+  ];
 
-  Widget subject(Widget child) => ProviderScope(
+  Widget subject(
+    Widget child, {
+    List<GunlukFaaliyetTableData> activities = const [source],
+  }) =>
+      ProviderScope(
         overrides: [
           userSessionProvider.overrideWith(
             (ref) => const UserSessionState(
@@ -31,11 +51,59 @@ void main() {
             ),
           ),
           filteredActivitiesProvider.overrideWith(
-            (ref) => Stream.value(const [source]),
+            (ref) => Stream.value(activities),
           ),
         ],
         child: MaterialApp(home: Scaffold(body: child)),
       );
+
+  testWidgets('klavye açıkken tim taşı butonu faaliyet adıyla çakışmaz',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+
+    await tester.pumpWidget(
+      subject(
+        Builder(
+          builder: (context) => Scaffold(
+            body: FilledButton(
+              onPressed: () async {
+                await showTransferSquadDialog(
+                  context,
+                  sourceActivity: source,
+                  squadId: 3,
+                  squadName: 'K.H',
+                );
+              },
+              child: const Text('Tim taşıma penceresini aç'),
+            ),
+          ),
+        ),
+        activities: const [source, ...transferTargets],
+      ),
+    );
+
+    await tester.tap(find.text('Tim taşıma penceresini aç'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('squad-transfer-create-activity')));
+    tester.view.viewInsets = const FakeViewPadding(bottom: 320);
+    await tester.pumpAndSettle();
+
+    final fieldRect = tester.getRect(
+      find.byKey(const Key('squad-transfer-new-activity-name')),
+    );
+    final confirmRect = tester.getRect(
+      find.byKey(const Key('transfer-squad-confirm')),
+    );
+    expect(
+      fieldRect.overlaps(confirmRect),
+      isFalse,
+      reason: 'Metin alanı $fieldRect ve TAŞI butonu $confirmRect çakışıyor.',
+    );
+  });
 
   testWidgets('personel taşıma yeni faaliyet adı girişini açar',
       (tester) async {
