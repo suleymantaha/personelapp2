@@ -37,19 +37,13 @@ class TemgundrapStrengthEditor extends StatelessWidget {
                           List.generate(temgundrapRankLabels.length, (index) {
                         return SizedBox(
                             width: width,
-                            child: TextFormField(
-                              key: Key(
+                            child: _StrengthField(
+                              fieldKey: Key(
                                   'strength-${temgundrapRankLabels[index]}'),
-                              initialValue: '${values[index]}',
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly
-                              ],
-                              decoration: InputDecoration(
-                                  labelText: temgundrapRankLabels[index]),
-                              onChanged: (text) {
-                                final updated = [...values]..[index] =
-                                    int.tryParse(text) ?? 0;
+                              label: temgundrapRankLabels[index],
+                              value: values[index],
+                              onChanged: (next) {
+                                final updated = [...values]..[index] = next;
                                 onChanged(TemgundrapStrength(
                                     officer: updated[0],
                                     nco: updated[1],
@@ -65,5 +59,81 @@ class TemgundrapStrengthEditor extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             )));
+  }
+}
+
+class _StrengthField extends StatefulWidget {
+  const _StrengthField({
+    required this.fieldKey,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final Key fieldKey;
+  final String label;
+  final int value;
+  final ValueChanged<int> onChanged;
+
+  @override
+  State<_StrengthField> createState() => _StrengthFieldState();
+}
+
+class _StrengthFieldState extends State<_StrengthField> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  String _textFor(int value) => value == 0 ? '' : '$value';
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: _textFor(widget.value));
+    _focusNode = FocusNode()..addListener(_selectValueOnFocus);
+  }
+
+  @override
+  void didUpdateWidget(covariant _StrengthField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final text = _textFor(widget.value);
+    if (_controller.text != text) {
+      _controller.value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: text.length),
+      );
+    }
+  }
+
+  void _selectValueOnFocus() {
+    if (!_focusNode.hasFocus || _controller.text.isEmpty) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_focusNode.hasFocus || _controller.text.isEmpty) return;
+      _controller.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: _controller.text.length,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode
+      ..removeListener(_selectValueOnFocus)
+      ..dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      key: widget.fieldKey,
+      controller: _controller,
+      focusNode: _focusNode,
+      keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      decoration: InputDecoration(labelText: widget.label, hintText: '0'),
+      onChanged: (text) => widget.onChanged(int.tryParse(text) ?? 0),
+    );
   }
 }
