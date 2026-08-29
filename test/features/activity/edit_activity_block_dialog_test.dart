@@ -188,4 +188,42 @@ void main() {
     expect(stillDisabled.onPressed, isNull);
     expect(resultBlock, isNull);
   });
+
+  testWidgets('faaliyet kartı düzenleme klavye açıkken taşma yapmaz',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+
+    final block = ParsedActivityBlock(
+      rawTitle: 'Test Card',
+      parsedTimName: '6-B',
+      parsedActivityType: 'HEYBET',
+      parsedDate: '2026-08-03',
+      personnelList: [],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => EditActivityBlockDialog.show(context, block),
+              child: const Text('Open Dialog'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open Dialog'));
+    await tester.pumpAndSettle();
+    tester.view.viewInsets = const FakeViewPadding(bottom: 320);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(Scrollable), findsWidgets);
+    expect(find.byKey(const Key('bulk-edit-activity')), findsOneWidget);
+  });
 }

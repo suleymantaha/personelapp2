@@ -87,6 +87,7 @@ class _TransferPersonnelDialogState
     final session = ref.watch(userSessionProvider);
 
     return AlertDialog(
+      scrollable: true,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Row(
         children: [

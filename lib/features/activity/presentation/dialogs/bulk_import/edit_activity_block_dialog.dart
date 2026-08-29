@@ -165,18 +165,19 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
         20,
         MediaQuery.viewInsetsOf(context).bottom + 20,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: ListView(
+        shrinkWrap: true,
         children: [
           Row(
             children: [
               Icon(Icons.edit_note_rounded,
                   color: context.accentOrOlive, size: 24),
               const SizedBox(width: 8),
-              const Text(
-                'Faaliyet kartını düzenle',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              const Expanded(
+                child: Text(
+                  'Faaliyet kartını düzenle',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),

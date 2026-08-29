@@ -105,6 +105,56 @@ void main() {
     );
   });
 
+  testWidgets('klavye açıkken personel taşı butonu faaliyet adıyla çakışmaz',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+
+    await tester.pumpWidget(
+      subject(
+        Builder(
+          builder: (context) => Scaffold(
+            body: FilledButton(
+              onPressed: () async {
+                await showTransferPersonnelDialog(
+                  context,
+                  sourceActivity: source,
+                  assignment: assignment,
+                  personnelDisplayName: 'J.Uzm.Çvş. Erkan KARCI',
+                );
+              },
+              child: const Text('Personel taşıma penceresini aç'),
+            ),
+          ),
+        ),
+        activities: const [source, ...transferTargets],
+      ),
+    );
+
+    await tester.tap(find.text('Personel taşıma penceresini aç'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const Key('personnel-transfer-create-activity')),
+    );
+    tester.view.viewInsets = const FakeViewPadding(bottom: 320);
+    await tester.pumpAndSettle();
+
+    final fieldRect = tester.getRect(
+      find.byKey(const Key('personnel-transfer-new-activity-name')),
+    );
+    final confirmRect = tester.getRect(
+      find.byKey(const Key('personnel-transfer-confirm')),
+    );
+    expect(
+      fieldRect.overlaps(confirmRect),
+      isFalse,
+      reason: 'Metin alanı $fieldRect ve TAŞI butonu $confirmRect çakışıyor.',
+    );
+  });
+
   testWidgets('personel taşıma yeni faaliyet adı girişini açar',
       (tester) async {
     await tester.pumpWidget(
