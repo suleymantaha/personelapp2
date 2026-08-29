@@ -41,11 +41,11 @@ extension DashboardActionTonePalette on DashboardActionTone {
 
     final (Color startColor, Color endColor) = switch (this) {
       DashboardActionTone.primary => dark
-          ? (const Color(0xFF142419), const Color(0xFF09120C))
-          : (const Color(0xFFF0F7F2), const Color(0xFFE2EFE5)),
+          ? (const Color(0xFF15333A), const Color(0xFF0F1E2C))
+          : (const Color(0xFFF0FDFA), const Color(0xFFE6F7F4)),
       DashboardActionTone.neutral => dark
-          ? (const Color(0xFF181C19), const Color(0xFF0C0F0D))
-          : (const Color(0xFFF5F7F5), const Color(0xFFE7EAE7)),
+          ? (const Color(0xFF1E293B), const Color(0xFF111827))
+          : (const Color(0xFFF8FAFC), const Color(0xFFEEF2F6)),
       DashboardActionTone.personnel => dark
           ? (const Color(0xFF12202C), const Color(0xFF091119))
           : (const Color(0xFFEFF5FA), const Color(0xFFDFECF6)),

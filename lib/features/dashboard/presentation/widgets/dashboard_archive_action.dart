@@ -4,7 +4,7 @@ import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_action_tone.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/tactical_hud_painter.dart';
 
-class DashboardArchiveAction extends StatefulWidget {
+class DashboardArchiveAction extends StatelessWidget {
   const DashboardArchiveAction({
     required this.icon,
     required this.title,
@@ -23,52 +23,24 @@ class DashboardArchiveAction extends StatefulWidget {
   final double? height;
 
   @override
-  State<DashboardArchiveAction> createState() => _DashboardArchiveActionState();
-}
-
-class _DashboardArchiveActionState extends State<DashboardArchiveAction>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 5400),
-    );
-
-    final isTestEnv =
-        WidgetsBinding.instance.runtimeType.toString().contains('Test');
-    if (!isTestEnv) {
-      _controller.repeat();
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final palette = DashboardActionTone.neutral.resolve(context);
     final dark = context.isDarkMode;
 
     return Semantics(
       button: true,
-      label: '${widget.title}, ${widget.subtitle}',
+      label: '$title, $subtitle',
       child: ExcludeSemantics(
         child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: widget.height ?? 56),
+          constraints: BoxConstraints(minHeight: height ?? 56),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
               gradient: palette.borderGradient,
               boxShadow: [
                 BoxShadow(
-                  color: palette.glowColor.withValues(alpha: dark ? 0.24 : 0.14),
+                  color:
+                      palette.glowColor.withValues(alpha: dark ? 0.24 : 0.14),
                   blurRadius: 14,
                   spreadRadius: -2,
                   offset: const Offset(0, 5),
@@ -93,21 +65,11 @@ class _DashboardArchiveActionState extends State<DashboardArchiveAction>
                     ),
                   ),
                   Positioned.fill(
-                    child: AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, child) {
-                        final rawValue =
-                            _controller.isAnimating ? _controller.value : 0.45;
-                        final staggeredValue =
-                            (rawValue + (widget.animationIndex * 0.18)) % 1.0;
-                        return CustomPaint(
-                          painter: TacticalHudPainter(
-                            isDarkMode: dark,
-                            accentColor: palette.content,
-                            animationProgress: staggeredValue,
-                          ),
-                        );
-                      },
+                    child: CustomPaint(
+                      painter: TacticalHudPainter(
+                        isDarkMode: dark,
+                        accentColor: palette.content,
+                      ),
                     ),
                   ),
                   Positioned(
@@ -134,7 +96,7 @@ class _DashboardArchiveActionState extends State<DashboardArchiveAction>
                   Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: widget.onTap,
+                      onTap: onTap,
                       splashColor: palette.content.withValues(alpha: 0.18),
                       highlightColor: palette.content.withValues(alpha: 0.09),
                       child: Padding(
@@ -166,7 +128,7 @@ class _DashboardArchiveActionState extends State<DashboardArchiveAction>
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(AppSpacing.sm),
-                                child: Icon(widget.icon,
+                                child: Icon(icon,
                                     size: 22, color: palette.content),
                               ),
                             ),
@@ -177,7 +139,7 @@ class _DashboardArchiveActionState extends State<DashboardArchiveAction>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    widget.title,
+                                    title,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -197,7 +159,7 @@ class _DashboardArchiveActionState extends State<DashboardArchiveAction>
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    widget.subtitle,
+                                    subtitle,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(

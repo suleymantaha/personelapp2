@@ -5,12 +5,10 @@ class TacticalHudPainter extends CustomPainter {
   const TacticalHudPainter({
     required this.isDarkMode,
     required this.accentColor,
-    this.animationProgress,
   });
 
   final bool isDarkMode;
   final Color accentColor;
-  final double? animationProgress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -47,9 +45,11 @@ class TacticalHudPainter extends CustomPainter {
 
     // 4. Bottom-Right Corner Bracket
     final bottomRight = Path()
-      ..moveTo(size.width - bracketOffset - bracketLength, size.height - bracketOffset)
+      ..moveTo(size.width - bracketOffset - bracketLength,
+          size.height - bracketOffset)
       ..lineTo(size.width - bracketOffset, size.height - bracketOffset)
-      ..lineTo(size.width - bracketOffset, size.height - bracketOffset - bracketLength);
+      ..lineTo(size.width - bracketOffset,
+          size.height - bracketOffset - bracketLength);
     canvas.drawPath(bottomRight, bracketPaint);
 
     // 5. Türk Bayrağı İkonografisi (Büyük Merkez Filigran / Large Centered Emblem Watermark)
@@ -64,14 +64,20 @@ class TacticalHudPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final flagGlowPaint = Paint()
-      ..color = const Color(0xFFE53935).withValues(alpha: isDarkMode ? 0.09 : 0.05)
+      ..color =
+          const Color(0xFFE53935).withValues(alpha: isDarkMode ? 0.09 : 0.05)
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, emblemScale * 0.45);
 
     // Large Crescent (Büyük Hilal)
     final crescentOuter = Path()
-      ..addOval(Rect.fromCircle(center: Offset(flagX - emblemScale * 0.25, flagY), radius: emblemScale));
+      ..addOval(Rect.fromCircle(
+          center: Offset(flagX - emblemScale * 0.25, flagY),
+          radius: emblemScale));
     final crescentInner = Path()
-      ..addOval(Rect.fromCircle(center: Offset(flagX - emblemScale * 0.25 + emblemScale * 0.28, flagY), radius: emblemScale * 0.79));
+      ..addOval(Rect.fromCircle(
+          center:
+              Offset(flagX - emblemScale * 0.25 + emblemScale * 0.28, flagY),
+          radius: emblemScale * 0.79));
     final crescentPath = Path.combine(
       PathOperation.difference,
       crescentOuter,
@@ -79,7 +85,8 @@ class TacticalHudPainter extends CustomPainter {
     );
 
     // Large 5-Pointed Star (Büyük 5 Köşeli Yıldız)
-    final starCenter = Offset(flagX - emblemScale * 0.25 + emblemScale * 1.18, flagY - emblemScale * 0.06);
+    final starCenter = Offset(flagX - emblemScale * 0.25 + emblemScale * 1.18,
+        flagY - emblemScale * 0.06);
     final starPath = Path();
     const points = 5;
     final starRadius = emblemScale * 0.42;
@@ -104,45 +111,7 @@ class TacticalHudPainter extends CustomPainter {
     canvas.drawPath(crescentPath, flagPaint);
     canvas.drawPath(starPath, flagPaint);
 
-    // 6. Moving Tracer Bullet / Laser Beam Effect (Kayan Mermi İzi Efekti)
-    if (animationProgress != null) {
-      final p = animationProgress!;
-
-      final startX = -size.width * 0.4 + (size.width * 1.8) * p;
-      final startY = -size.height * 0.2 + (size.height * 1.4) * p;
-
-      const tracerLength = 48.0;
-      const dx = tracerLength * 0.866;
-      const dy = tracerLength * 0.5;
-
-      final bulletHead = Offset(startX, startY);
-      final bulletTail = Offset(startX - dx, startY - dy);
-
-      final tracerPaint = Paint()
-        ..shader = LinearGradient(
-          colors: [
-            Colors.white.withValues(alpha: isDarkMode ? 0.95 : 0.85),
-            accentColor.withValues(alpha: isDarkMode ? 0.80 : 0.65),
-            accentColor.withValues(alpha: isDarkMode ? 0.30 : 0.20),
-            Colors.transparent,
-          ],
-          stops: const [0.0, 0.25, 0.70, 1.0],
-        ).createShader(Rect.fromPoints(bulletHead, bulletTail))
-        ..strokeWidth = 2.2
-        ..strokeCap = StrokeCap.round
-        ..style = PaintingStyle.stroke;
-
-      canvas.drawLine(bulletHead, bulletTail, tracerPaint);
-
-      final tipPaint = Paint()..color = Colors.white;
-      canvas.drawCircle(bulletHead, 1.6, tipPaint);
-
-      final auraPaint = Paint()
-        ..color = accentColor.withValues(alpha: isDarkMode ? 0.50 : 0.35);
-      canvas.drawCircle(bulletHead, 4.0, auraPaint);
-    }
-
-    // 7. Subtle Technical Grid Scan Shader Overlay
+    // 6. Subtle Technical Grid Scan Shader Overlay
     final scanPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
@@ -161,6 +130,5 @@ class TacticalHudPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant TacticalHudPainter oldDelegate) =>
       oldDelegate.isDarkMode != isDarkMode ||
-      oldDelegate.accentColor != accentColor ||
-      oldDelegate.animationProgress != animationProgress;
+      oldDelegate.accentColor != accentColor;
 }

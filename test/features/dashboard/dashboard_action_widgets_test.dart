@@ -63,4 +63,49 @@ void main() {
     await tester.tap(find.text('Faaliyet Arşivi'));
     expect(taps, 1);
   });
+
+  testWidgets('dashboard cards do not run decorative animations', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      subject(
+        const Column(
+          children: [
+            Expanded(
+              child: DashboardMenuCard(
+                icon: Icons.edit_calendar,
+                title: 'Faaliyet Çizelgesi',
+                subtitle: 'Günlük görev gir',
+                tone: DashboardActionTone.primary,
+                onTap: _noop,
+              ),
+            ),
+            DashboardArchiveAction(
+              icon: Icons.inventory_2_outlined,
+              title: 'Faaliyet Arşivi',
+              subtitle: 'Arama ve İnceleme',
+              onTap: _noop,
+            ),
+          ],
+        ),
+      ),
+    );
+
+    expect(
+      find.descendant(
+        of: find.byType(DashboardMenuCard),
+        matching: find.byType(AnimatedBuilder),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(DashboardArchiveAction),
+        matching: find.byType(AnimatedBuilder),
+      ),
+      findsNothing,
+    );
+  });
 }
+
+void _noop() {}

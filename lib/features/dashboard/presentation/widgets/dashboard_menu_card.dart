@@ -3,7 +3,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_action_tone.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/tactical_hud_painter.dart';
 
-class DashboardMenuCard extends StatefulWidget {
+class DashboardMenuCard extends StatelessWidget {
   const DashboardMenuCard({
     required this.icon,
     required this.title,
@@ -22,42 +22,13 @@ class DashboardMenuCard extends StatefulWidget {
   final int animationIndex;
 
   @override
-  State<DashboardMenuCard> createState() => _DashboardMenuCardState();
-}
-
-class _DashboardMenuCardState extends State<DashboardMenuCard>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 5400),
-    );
-
-    final isTestEnv =
-        WidgetsBinding.instance.runtimeType.toString().contains('Test');
-    if (!isTestEnv) {
-      _controller.repeat();
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final palette = widget.tone.resolve(context);
+    final palette = tone.resolve(context);
     final dark = context.isDarkMode;
 
     return Semantics(
       button: true,
-      label: '${widget.title}, ${widget.subtitle}',
+      label: '$title, $subtitle',
       child: ExcludeSemantics(
         child: Container(
           decoration: BoxDecoration(
@@ -90,21 +61,11 @@ class _DashboardMenuCardState extends State<DashboardMenuCard>
                   ),
                 ),
                 Positioned.fill(
-                  child: AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, child) {
-                      final rawValue =
-                          _controller.isAnimating ? _controller.value : 0.45;
-                      final staggeredValue =
-                          (rawValue + (widget.animationIndex * 0.18)) % 1.0;
-                      return CustomPaint(
-                        painter: TacticalHudPainter(
-                          isDarkMode: dark,
-                          accentColor: palette.content,
-                          animationProgress: staggeredValue,
-                        ),
-                      );
-                    },
+                  child: CustomPaint(
+                    painter: TacticalHudPainter(
+                      isDarkMode: dark,
+                      accentColor: palette.content,
+                    ),
                   ),
                 ),
                 // Glowing HUD Active Status Dot
@@ -132,7 +93,7 @@ class _DashboardMenuCardState extends State<DashboardMenuCard>
                 Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: widget.onTap,
+                    onTap: onTap,
                     splashColor: palette.content.withValues(alpha: 0.18),
                     highlightColor: palette.content.withValues(alpha: 0.09),
                     child: Padding(
@@ -166,7 +127,7 @@ class _DashboardMenuCardState extends State<DashboardMenuCard>
                             child: Padding(
                               padding: const EdgeInsets.all(7.0),
                               child: Icon(
-                                widget.icon,
+                                icon,
                                 size: 20,
                                 color: palette.content,
                               ),
@@ -182,7 +143,7 @@ class _DashboardMenuCardState extends State<DashboardMenuCard>
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      widget.title,
+                                      title,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
@@ -204,7 +165,7 @@ class _DashboardMenuCardState extends State<DashboardMenuCard>
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    widget.subtitle,
+                                    subtitle,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
