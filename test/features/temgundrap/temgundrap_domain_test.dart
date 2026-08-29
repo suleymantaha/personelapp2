@@ -33,6 +33,13 @@ void main() {
     });
     tearDown(() => draft.dispose());
 
+    test('yeni operasyon doğru çıkaran birlikle başlar', () {
+      expect(
+        draft.issuingUnit,
+        'ELAZIĞ İL J.K.LIĞI\nJ.KOMD.ÖZ.HRK.K.LIĞI',
+      );
+    });
+
     test('mevcut toplamını kuvvet metnine taşır', () {
       draft.addVehicle(const TemgundrapVehicleAssignment(
           model: 'TRANSİT', plate: '23 JAA 240'));
@@ -49,5 +56,38 @@ void main() {
       draft.endAt = draft.startAt;
       expect(draft.validate(), contains('Bitiş zamanı'));
     });
+  });
+
+  test('eski varsayılan çıkaran birliği kayıt okunurken günceller', () {
+    Map<String, Object?> operationJson(String issuingUnit) => {
+          'id': 'legacy-operation',
+          'issuingUnit': issuingUnit,
+          'operationArea': 'ELAZIĞ',
+          'commander': <String, Object?>{
+            'personnelId': null,
+            'name': '',
+            'rank': '',
+            'phone': '',
+          },
+          'strength': <String, Object?>{},
+          'vehicles': <Object?>[],
+          'startAt': '2026-08-06T09:00:00.000',
+          'endAt': '2026-08-06T10:00:00.000',
+          'purpose': 'GÖREVLENDİRME',
+          'description': '',
+        };
+
+    final restored = TemgundrapOperation.fromJson(
+      operationJson('ELAZIĞ İL J.K.LIĞI\nJ.KOMD.ÖZ.K.LIĞI'),
+    );
+    final custom = TemgundrapOperation.fromJson(
+      operationJson('KULLANICI TARAFINDAN GİRİLEN BİRLİK'),
+    );
+
+    expect(
+      restored.issuingUnit,
+      'ELAZIĞ İL J.K.LIĞI\nJ.KOMD.ÖZ.HRK.K.LIĞI',
+    );
+    expect(custom.issuingUnit, 'KULLANICI TARAFINDAN GİRİLEN BİRLİK');
   });
 }

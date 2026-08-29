@@ -1,4 +1,4 @@
-const defaultTemgundrapIssuingUnit = 'ELAZIĞ İL J.K.LIĞI\nJ.KOMD.ÖZ.K.LIĞI';
+const defaultTemgundrapIssuingUnit = 'ELAZIĞ İL J.K.LIĞI\nJ.KOMD.ÖZ.HRK.K.LIĞI';
 
 const defaultTemgundrapPurposes = <String>[
   'GÖREVLENDİRME',

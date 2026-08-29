@@ -68,5 +68,19 @@ void main() {
     expect(value('I7'), 'İhsan DAĞLI');
     expect(value('I8'), 'J.Asb.Kd.Bçvş.');
     expect(value('I9'), 'Eğt.Hrk. ve İsth.Ks.A.');
+
+    expect(sheet.cell(CellIndex.indexByString('I6')).cellStyle?.isBold, isTrue);
+    expect(
+        sheet.cell(CellIndex.indexByString('I7')).cellStyle?.isBold, isFalse);
+    for (final row in [6, 7, 8, 9]) {
+      for (final column in ['I', 'J', 'K']) {
+        final style =
+            sheet.cell(CellIndex.indexByString('$column$row')).cellStyle;
+        expect(style?.leftBorder.borderStyle, isNull);
+        expect(style?.rightBorder.borderStyle, isNull);
+        expect(style?.topBorder.borderStyle, isNull);
+        expect(style?.bottomBorder.borderStyle, isNull);
+      }
+    }
   });
 }

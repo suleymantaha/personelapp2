@@ -61,9 +61,16 @@ void main() {
 
     expect(find.byKey(const Key('preview-operation-0')), findsOneWidget);
     expect(find.text('ELAZIĞ İL MERKEZ'), findsOneWidget);
-    expect(find.text('YAZDIR'), findsOneWidget);
-    expect(find.text('PDF PAYLAŞ'), findsOneWidget);
-    expect(find.text('EXCEL'), findsOneWidget);
+    expect(find.text('Yazdır'), findsOneWidget);
+    expect(find.text('PDF Paylaş'), findsOneWidget);
+    expect(find.text('Excel'), findsOneWidget);
+    for (final key in [
+      const Key('preview-excel'),
+      const Key('preview-share'),
+      const Key('preview-print'),
+    ]) {
+      expect(tester.widget(find.byKey(key)), isA<FilledButton>());
+    }
     await tester.tap(find.byKey(const Key('preview-print')));
     await tester.pump();
     await tester.tap(find.byKey(const Key('preview-share')));

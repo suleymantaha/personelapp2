@@ -65,7 +65,6 @@ class _TransferPersonnelDialogState
         textCapitalization: TextCapitalization.sentences,
         decoration: const InputDecoration(
           labelText: 'Yeni faaliyet adı',
-          hintText: 'Örn. Gece Devriyesi',
           prefixIcon: Icon(Icons.add_card_rounded),
         ),
         onChanged: (_) => setState(() {}),

@@ -373,39 +373,70 @@ class _OutputBar extends StatelessWidget {
   final VoidCallback onShare;
   final VoidCallback onExcel;
   @override
-  Widget build(BuildContext context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  key: const Key('preview-excel'),
-                  onPressed: onExcel,
-                  icon: const Icon(Icons.table_view_outlined),
-                  label: const Text('EXCEL'),
+  Widget build(BuildContext context) {
+    Widget action({
+      required Key key,
+      required IconData icon,
+      required String label,
+      required VoidCallback onPressed,
+    }) =>
+        Expanded(
+          child: SizedBox(
+            height: 68,
+            child: FilledButton(
+              key: key,
+              onPressed: onPressed,
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: OutlinedButton.icon(
-                  key: const Key('preview-share'),
-                  onPressed: onShare,
-                  icon: const Icon(Icons.picture_as_pdf_outlined),
-                  label: const FittedBox(child: Text('PDF PAYLAŞ')),
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 20),
+                  const SizedBox(height: 3),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: FilledButton.icon(
-                  key: const Key('preview-print'),
-                  onPressed: onPrint,
-                  icon: const Icon(Icons.print_outlined),
-                  label: const Text('YAZDIR'),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      );
+        );
+
+    return SafeArea(
+        child: Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: Row(
+        children: [
+          action(
+            key: const Key('preview-excel'),
+            onPressed: onExcel,
+            icon: Icons.table_view_outlined,
+            label: 'Excel',
+          ),
+          const SizedBox(width: 8),
+          action(
+            key: const Key('preview-share'),
+            onPressed: onShare,
+            icon: Icons.picture_as_pdf_outlined,
+            label: 'PDF Paylaş',
+          ),
+          const SizedBox(width: 8),
+          action(
+            key: const Key('preview-print'),
+            onPressed: onPrint,
+            icon: Icons.print_outlined,
+            label: 'Yazdır',
+          ),
+        ],
+      ),
+    ));
+  }
 }

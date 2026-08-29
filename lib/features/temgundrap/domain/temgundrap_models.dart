@@ -1,3 +1,5 @@
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
+
 const temgundrapRankLabels = <String>[
   'SB',
   'ASB.',
@@ -159,9 +161,12 @@ class TemgundrapOperation {
     final rawStrength =
         (json['strength'] as Map?)?.cast<String, Object?>() ?? const {};
     final rawCommander = json['commander'];
+    final rawIssuingUnit = json['issuingUnit'] as String? ?? '';
     return TemgundrapOperation(
       id: json['id'] as String,
-      issuingUnit: json['issuingUnit'] as String? ?? '',
+      issuingUnit: rawIssuingUnit == 'ELAZIĞ İL J.K.LIĞI\nJ.KOMD.ÖZ.K.LIĞI'
+          ? defaultTemgundrapIssuingUnit
+          : rawIssuingUnit,
       operationArea: json['operationArea'] as String? ?? '',
       commander: rawCommander is Map
           ? CommanderSnapshot.fromJson(rawCommander.cast<String, Object?>())

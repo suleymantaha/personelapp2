@@ -44,7 +44,13 @@ class TemgundrapExcelExporter {
         ..cellStyle = cellStyle;
     }
 
-    void merge(int c1, int r1, int c2, int r2) {
+    void merge(
+      int c1,
+      int r1,
+      int c2,
+      int r2, {
+      CellStyle? mergedStyle,
+    }) {
       sheet.merge(
         CellIndex.indexByColumnRow(columnIndex: c1, rowIndex: r1),
         CellIndex.indexByColumnRow(columnIndex: c2, rowIndex: r2),
@@ -54,7 +60,7 @@ class TemgundrapExcelExporter {
           sheet
               .cell(CellIndex.indexByColumnRow(
                   columnIndex: column, rowIndex: row))
-              .cellStyle = row == 0 ? titleStyle : headerStyle;
+              .cellStyle = mergedStyle ?? (row == 0 ? titleStyle : headerStyle);
         }
       }
     }
@@ -135,14 +141,14 @@ class TemgundrapExcelExporter {
 
       void setSigLine(String text, CellStyle cellStyle) {
         set(8, sigRow, text, cellStyle);
-        merge(8, sigRow, 10, sigRow);
+        merge(8, sigRow, 10, sigRow, mergedStyle: cellStyle);
         sheet.setRowHeight(sigRow, 20);
         sigRow++;
       }
 
       setSigLine('(İMZALI)', sigStyleBold);
       if (document.approverName.isNotEmpty) {
-        setSigLine(document.approverName, sigStyleBold);
+        setSigLine(document.approverName, sigStyleNormal);
       }
       if (document.approverRank.isNotEmpty) {
         setSigLine(document.approverRank, sigStyleNormal);

@@ -60,6 +60,10 @@ void main() {
       find.byKey(const Key('personnel-transfer-new-activity-name')),
       findsOneWidget,
     );
+    final nameField = tester.widget<TextField>(
+      find.byKey(const Key('personnel-transfer-new-activity-name')),
+    );
+    expect(nameField.decoration?.hintText, isNull);
 
     var confirm = tester.widget<FilledButton>(
       find.byKey(const Key('personnel-transfer-confirm')),
@@ -94,6 +98,10 @@ void main() {
       find.byKey(const Key('squad-transfer-new-activity-name')),
       findsOneWidget,
     );
+    final nameField = tester.widget<TextField>(
+      find.byKey(const Key('squad-transfer-new-activity-name')),
+    );
+    expect(nameField.decoration?.hintText, isNull);
     await tester.enterText(
       find.byKey(const Key('squad-transfer-new-activity-name')),
       'Tim Hedef Kartı',
