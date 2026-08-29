@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/core/notifications/app_notification_host.dart';
 import 'package:personelapp2/features/activity/presentation/activity_archive_screen.dart';
 import 'package:personelapp2/features/activity/presentation/activity_form_screen.dart';
 import 'package:personelapp2/features/activity/presentation/pending_approvals_screen.dart';
@@ -37,43 +38,49 @@ GoRouter createAppRouter({UserSessionState? session}) {
       return null;
     },
     routes: [
-      GoRoute(
-          path: loginRoute, builder: (context, state) => const LoginScreen()),
-      GoRoute(
-          path: '/dashboard',
-          builder: (context, state) => const DashboardScreen()),
-      GoRoute(
-          path: '/activity-form',
-          builder: (context, state) => const ActivityFormScreen()),
-      GoRoute(
-          path: '/pending-approvals',
-          builder: (context, state) => const PendingApprovalsScreen()),
-      GoRoute(
-          path: '/personnel-management',
-          builder: (context, state) => const PersonnelManagementScreen()),
-      GoRoute(
-          path: '/monthly-matrix',
-          builder: (context, state) => const MonthlyMatrixScreen()),
-      GoRoute(
-          path: '/activity-archive',
-          builder: (context, state) => const ActivityArchiveScreen()),
-      GoRoute(
-          path: '/temgundrap',
-          builder: (context, state) => const TemgundrapScreen()),
-      GoRoute(
-        path: '/temgundrap/form',
-        builder: (context, state) => TemgundrapFormScreen(
-          initialDocument: state.extra as TemgundrapDocument?,
-          initialDate: DateTime.tryParse(
-            state.uri.queryParameters['date'] ?? '',
+      ShellRoute(
+        builder: (context, state, child) => AppNotificationHost(child: child),
+        routes: [
+          GoRoute(
+              path: loginRoute,
+              builder: (context, state) => const LoginScreen()),
+          GoRoute(
+              path: '/dashboard',
+              builder: (context, state) => const DashboardScreen()),
+          GoRoute(
+              path: '/activity-form',
+              builder: (context, state) => const ActivityFormScreen()),
+          GoRoute(
+              path: '/pending-approvals',
+              builder: (context, state) => const PendingApprovalsScreen()),
+          GoRoute(
+              path: '/personnel-management',
+              builder: (context, state) => const PersonnelManagementScreen()),
+          GoRoute(
+              path: '/monthly-matrix',
+              builder: (context, state) => const MonthlyMatrixScreen()),
+          GoRoute(
+              path: '/activity-archive',
+              builder: (context, state) => const ActivityArchiveScreen()),
+          GoRoute(
+              path: '/temgundrap',
+              builder: (context, state) => const TemgundrapScreen()),
+          GoRoute(
+            path: '/temgundrap/form',
+            builder: (context, state) => TemgundrapFormScreen(
+              initialDocument: state.extra as TemgundrapDocument?,
+              initialDate: DateTime.tryParse(
+                state.uri.queryParameters['date'] ?? '',
+              ),
+            ),
           ),
-        ),
-      ),
-      GoRoute(
-        path: '/temgundrap/preview',
-        builder: (context, state) => TemgundrapPreviewScreen(
-          document: state.extra! as TemgundrapDocument,
-        ),
+          GoRoute(
+            path: '/temgundrap/preview',
+            builder: (context, state) => TemgundrapPreviewScreen(
+              document: state.extra! as TemgundrapDocument,
+            ),
+          ),
+        ],
       ),
     ],
   );

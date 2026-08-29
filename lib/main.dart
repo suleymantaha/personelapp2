@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/navigation/app_router.dart';
-import 'package:personelapp2/core/notifications/app_notification_host.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -54,9 +53,6 @@ class PersonelApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       routerConfig: router,
-      builder: (context, child) => AppNotificationHost(
-        child: child ?? const SizedBox.shrink(),
-      ),
     );
   }
 }
