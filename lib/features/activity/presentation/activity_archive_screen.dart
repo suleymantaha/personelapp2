@@ -165,8 +165,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
 
     final dateFilterStr = DateFormat('yyyy-MM-dd').format(_selectedDateFilter);
     final now = DateTime.now();
-    final isSelectedToday =
-        _selectedDateFilter.year == now.year &&
+    final isSelectedToday = _selectedDateFilter.year == now.year &&
         _selectedDateFilter.month == now.month &&
         _selectedDateFilter.day == now.day;
 
@@ -185,17 +184,15 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
       final filteredForDate = (activitiesAsync.value ?? [])
           .where((activity) => activity.tarih == dateFilterStr)
           .toList();
-      final hasSelectedSquad =
-          _selectedSquadFilter != null &&
+      final hasSelectedSquad = _selectedSquadFilter != null &&
           squads.any((squad) => squad.id == _selectedSquadFilter);
       final selectedSquadName = hasSelectedSquad
           ? squads
-                .firstWhere((squad) => squad.id == _selectedSquadFilter)
-                .timAdi
+              .firstWhere((squad) => squad.id == _selectedSquadFilter)
+              .timAdi
           : null;
-      final squadText = selectedSquadName == null
-          ? ''
-          : ' • $selectedSquadName';
+      final squadText =
+          selectedSquadName == null ? '' : ' • $selectedSquadName';
       final subtitle =
           '${DateFormat('dd.MM.yyyy').format(_selectedDateFilter)} • '
           '${filteredForDate.length} Faaliyet$squadText';
@@ -430,8 +427,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                     );
 
                     if (filtered.isEmpty) {
-                      final formattedDate = DateFormat('dd.MM.yyyy')
-                          .format(_selectedDateFilter);
+                      final formattedDate =
+                          DateFormat('dd.MM.yyyy').format(_selectedDateFilter);
                       return Center(
                         child: Text(
                           '$formattedDate tarihine ait faaliyet kaydı bulunamadı.',
@@ -501,11 +498,11 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                                   itemCount: ordered.length,
                                   onReorderItem: (oldIndex, newIndex) =>
                                       _handleReorder(
-                                        ordered,
-                                        dateFilterStr,
-                                        oldIndex,
-                                        newIndex,
-                                      ),
+                                    ordered,
+                                    dateFilterStr,
+                                    oldIndex,
+                                    newIndex,
+                                  ),
                                   itemBuilder: (context, index) {
                                     final act = ordered[index];
                                     return Row(
