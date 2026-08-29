@@ -84,7 +84,9 @@ void main() {
         olusturmaTarihi: '',
       );
       await database.into(database.gunlukFaaliyetTable).insert(activity);
-      final personId = await database.into(database.personelTable).insert(
+      final personId = await database
+          .into(database.personelTable)
+          .insert(
             PersonelTableCompanion.insert(
               adSoyad: 'Uzun İsimli Test Personeli',
               rutbe: 'Astsubay',
@@ -92,7 +94,9 @@ void main() {
               kayitTarihi: '2026-07-31',
             ),
           );
-      await database.into(database.faaliyetPersonelAtamaTable).insert(
+      await database
+          .into(database.faaliyetPersonelAtamaTable)
+          .insert(
             FaaliyetPersonelAtamaTableCompanion.insert(
               faaliyetId: activity.id,
               personelId: personId,
@@ -116,10 +120,7 @@ void main() {
           ],
           child: MaterialApp(
             home: Scaffold(
-              body: ActivityCard(
-                activity: activity,
-                onDateChanged: (_) {},
-              ),
+              body: ActivityCard(activity: activity, onDateChanged: (_) {}),
             ),
           ),
         ),
@@ -128,9 +129,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(tester.takeException(), isNull);
-      final title = tester.widget<Text>(
-        find.text(activity.faaliyetAdi),
-      );
+      final title = tester.widget<Text>(find.text(activity.faaliyetAdi));
       expect(title.maxLines, 2);
       expect(title.overflow, TextOverflow.ellipsis);
       expect(find.text('ADMIN ONAYI BEKLİYOR'), findsOneWidget);
@@ -139,9 +138,19 @@ void main() {
       if (width < 520) {
         expect(find.byKey(const Key('activity-actions-81')), findsOneWidget);
         expect(find.byIcon(Icons.edit_calendar_outlined), findsNothing);
+
+        await tester.tap(find.byKey(const Key('activity-actions-81')));
+        await tester.pumpAndSettle();
+        expect(find.text('Faaliyet adını değiştir'), findsOneWidget);
+        await tester.tapAt(Offset.zero);
+        await tester.pumpAndSettle();
       } else {
         expect(find.byKey(const Key('activity-actions-81')), findsNothing);
         expect(find.byIcon(Icons.edit_calendar_outlined), findsOneWidget);
+        expect(
+          find.byIcon(Icons.drive_file_rename_outline_rounded),
+          findsOneWidget,
+        );
       }
 
       await tester.pumpWidget(const SizedBox.shrink());

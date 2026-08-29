@@ -3,6 +3,8 @@ import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/utils/military_structure_helper.dart';
+import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 
 class LearnedAliasesDialog extends StatefulWidget {
@@ -30,6 +32,10 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
   List<LearnedAliasItem> _allAliases = [];
   bool _isLoading = true;
   String _searchQuery = '';
+
+  /// Teams the user opened. Every group starts collapsed so the dialog opens
+  /// as a short list of teams instead of hundreds of aliases.
+  final Set<String> _expandedSquads = {};
 
   @override
   void initState() {
@@ -99,8 +105,19 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
           BulkImportLearningService.normalizeName(item.gorunenTakmaAd);
       final targetNorm =
           BulkImportLearningService.normalizeName(item.personelAdSoyad);
-      return rawNorm.contains(q) || targetNorm.contains(q);
+      final squadNorm = BulkImportLearningService.normalizeName(
+        item.personelTimAdi ?? '',
+      );
+      return rawNorm.contains(q) ||
+          targetNorm.contains(q) ||
+          (squadNorm.isNotEmpty && squadNorm.contains(q));
     }).toList();
+    // A search should reveal its hits without extra taps.
+    final isSearching = _searchQuery.trim().isNotEmpty;
+    final rows = _buildRowsGroupedBySquad(
+      filtered,
+      isExpanded: (squad) => isSearching || _expandedSquads.contains(squad),
+    );
     final size = MediaQuery.sizeOf(context);
     final isMobile = size.width < 600;
     final radius = isMobile ? 0.0 : 20.0;
@@ -242,11 +259,29 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                 horizontal: 16,
                                 vertical: 8,
                               ),
-                              itemCount: filtered.length,
+                              itemCount: rows.length,
                               separatorBuilder: (_, __) =>
                                   const SizedBox(height: 6),
                               itemBuilder: (context, index) {
-                                final item = filtered[index];
+                                final row = rows[index];
+                                if (row is _SquadHeaderRow) {
+                                  return _SquadHeader(
+                                    title: row.title,
+                                    count: row.count,
+                                    isFirst: index == 0,
+                                    expanded: row.expanded,
+                                    onToggle: isSearching
+                                        ? null
+                                        : () => setState(() {
+                                              if (!_expandedSquads
+                                                  .remove(row.title)) {
+                                                _expandedSquads.add(row.title);
+                                              }
+                                            }),
+                                  );
+                                }
+
+                                final item = (row as _AliasRow).item;
                                 final targetName =
                                     '${item.personelRutbe ?? ''} ${item.personelAdSoyad}'
                                         .trim();
@@ -350,6 +385,159 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                     ),
                   ),
                 ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Groups aliases under the official team of the matched personnel.
+///
+/// Teams follow the official military order used elsewhere in the app, and
+/// personnel without a team are collected at the end.
+List<Object> _buildRowsGroupedBySquad(
+  List<LearnedAliasItem> items, {
+  required bool Function(String squad) isExpanded,
+}) {
+  const unassignedTitle = 'Timsiz / Diğer Personeller';
+  final grouped = <String, List<LearnedAliasItem>>{};
+  for (final item in items) {
+    final squad = (item.personelTimAdi ?? '').trim();
+    grouped
+        .putIfAbsent(squad.isEmpty ? unassignedTitle : squad, () => [])
+        .add(item);
+  }
+
+  final titles = grouped.keys.toList()
+    ..sort((a, b) {
+      if (a == unassignedTitle) return b == unassignedTitle ? 0 : 1;
+      if (b == unassignedTitle) return -1;
+      final weightA = MilitaryStructureHelper.getSquadOrderWeight(a);
+      final weightB = MilitaryStructureHelper.getSquadOrderWeight(b);
+      if (weightA != weightB) return weightA.compareTo(weightB);
+      return a.compareTo(b);
+    });
+
+  final rows = <Object>[];
+  for (final title in titles) {
+    final members = grouped[title]!
+      ..sort((a, b) {
+        final rankOrder = getRankWeight(
+          a.personelRutbe ?? '',
+        ).compareTo(getRankWeight(b.personelRutbe ?? ''));
+        if (rankOrder != 0) return rankOrder;
+        final nameOrder = a.personelAdSoyad.compareTo(b.personelAdSoyad);
+        if (nameOrder != 0) return nameOrder;
+        return a.gorunenTakmaAd.compareTo(b.gorunenTakmaAd);
+      });
+    final expanded = isExpanded(title);
+    rows.add(
+      _SquadHeaderRow(
+        title: title,
+        count: members.length,
+        expanded: expanded,
+      ),
+    );
+    if (expanded) rows.addAll(members.map(_AliasRow.new));
+  }
+  return rows;
+}
+
+class _SquadHeaderRow {
+  const _SquadHeaderRow({
+    required this.title,
+    required this.count,
+    required this.expanded,
+  });
+
+  final String title;
+  final int count;
+  final bool expanded;
+}
+
+class _AliasRow {
+  const _AliasRow(this.item);
+
+  final LearnedAliasItem item;
+}
+
+class _SquadHeader extends StatelessWidget {
+  const _SquadHeader({
+    required this.title,
+    required this.count,
+    required this.isFirst,
+    required this.expanded,
+    this.onToggle,
+  });
+
+  final String title;
+  final int count;
+  final bool isFirst;
+  final bool expanded;
+  final VoidCallback? onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(0, isFirst ? 0 : 6, 0, 0),
+      child: Material(
+        color: context.accentOrOlive.withValues(alpha: expanded ? 0.12 : 0.06),
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          key: Key('alias-squad-header-$title'),
+          borderRadius: BorderRadius.circular(12),
+          onTap: onToggle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.groups_2_outlined,
+                  size: 17,
+                  color: context.accentOrOlive,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: context.accentOrOlive,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: context.accentOrOlive.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '$count',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: context.accentOrOlive,
+                    ),
+                  ),
+                ),
+                if (onToggle != null)
+                  Icon(
+                    expanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    size: 20,
+                    color: context.accentOrOlive,
+                  ),
               ],
             ),
           ),
