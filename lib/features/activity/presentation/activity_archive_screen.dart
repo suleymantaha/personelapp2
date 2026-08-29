@@ -12,7 +12,6 @@ import 'package:personelapp2/features/activity/domain/activity_assignment_order.
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_summary_card.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
-import 'package:personelapp2/features/activity/presentation/widgets/archive_filter_bar.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_date_navigator.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
@@ -399,20 +398,6 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
                 loading: () => const SizedBox(height: 72),
                 error: (_, __) => const SizedBox.shrink(),
               ),
-              // Filters Bar: Squad Tabs for Admin
-              ArchiveFilterBar(
-                isAdmin: isAdmin,
-                squads: squads,
-                selectedSquadId: _selectedSquadFilter,
-                onSquadSelected: (squadId) {
-                  setState(() {
-                    _selectedSquadFilter = squadId;
-                    _selectedActivityIds.clear();
-                    _selectionMode = false;
-                  });
-                },
-              ),
-
               const SizedBox(height: 6),
 
               // Activity List

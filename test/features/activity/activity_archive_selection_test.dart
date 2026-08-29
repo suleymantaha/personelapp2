@@ -58,11 +58,21 @@ void main() {
       ProviderScope(
         overrides: [
           databaseProvider.overrideWithValue(database),
+          userSessionProvider.overrideWith(
+            (ref) => const UserSessionState(
+              username: 'admin',
+              role: UserRole.admin,
+            ),
+          ),
           filteredActivitiesProvider.overrideWith(
             (ref) => Stream.value(activities),
           ),
           allPersonnelProvider.overrideWith((ref) => Stream.value(const [])),
-          allSquadsProvider.overrideWith((ref) => Stream.value(const [])),
+          allSquadsProvider.overrideWith(
+            (ref) => Stream.value(const [
+              TimTableData(id: 1, timAdi: 'K.H', olusturmaTarihi: ''),
+            ]),
+          ),
           pendingAssignmentsProvider.overrideWith(
             (ref) => Stream.value(const []),
           ),
@@ -74,6 +84,8 @@ void main() {
 
     expect(find.text('$headerDateStr • 2 faaliyet'), findsOneWidget);
     expect(find.text('KONTROL MERKEZİ'), findsNothing);
+    expect(find.text('Tüm Timler'), findsNothing);
+    expect(find.text('K.H'), findsNothing);
     expect(find.text('Dışa Aktar / Yazdır'), findsNothing);
 
     await tester.tap(find.byTooltip('Arşiv işlemleri'));
