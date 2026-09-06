@@ -24,9 +24,13 @@ class ActivityDetailsStep extends StatelessWidget {
     required this.onNoteChanged,
     required this.onRemovePersonnel,
     required this.onEditPersonnel,
+    this.header,
+    this.showPreviewHint = true,
     super.key,
   });
 
+  final Widget? header;
+  final bool showPreviewHint;
   final ActivityFormDraft draft;
   final List<PersonelTableData> selectedPersonnel;
   final Map<int, String> squadNames;
@@ -52,15 +56,16 @@ class ActivityDetailsStep extends StatelessWidget {
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
       children: [
-        ActivityFormHeader(
-          selectedDate: draft.selectedDate,
-          onPickDate: onPickDate,
-          activityNameController: activityNameController,
-          showNameError: showNameError,
-          onNameChanged: onActivityChanged,
-          templates: activityTemplates,
-          onTemplateSelected: onActivityTemplateSelected,
-        ),
+        header ??
+            ActivityFormHeader(
+              selectedDate: draft.selectedDate,
+              onPickDate: onPickDate,
+              activityNameController: activityNameController,
+              showNameError: showNameError,
+              onNameChanged: onActivityChanged,
+              templates: activityTemplates,
+              onTemplateSelected: onActivityTemplateSelected,
+            ),
         const SizedBox(height: 14),
         _ActionCard(
           key: const Key('common-duty-field'),
@@ -76,7 +81,7 @@ class ActivityDetailsStep extends StatelessWidget {
               duties: availableDuties,
               keyPrefix: 'common-duty',
             );
-            if (duty != null) onCommonDutyChanged(duty);
+            if (context.mounted && duty != null) onCommonDutyChanged(duty);
           },
         ),
         const SizedBox(height: 14),
@@ -92,25 +97,26 @@ class ActivityDetailsStep extends StatelessWidget {
               _assignSquadDuty(context, squadName, personnel),
         ),
         const SizedBox(height: 14),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: context.accentSubtleBg,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.info_outline_rounded, color: context.accentOrOlive),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'Bilgileri kontrol ettikten sonra görevlendirme önizlemesine geçebilirsiniz.',
+        if (showPreviewHint)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: context.accentSubtleBg,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline_rounded, color: context.accentOrOlive),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Bilgileri kontrol ettikten sonra görevlendirme önizlemesine geçebilirsiniz.',
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
       ],
     );
   }
@@ -127,6 +133,7 @@ class ActivityDetailsStep extends StatelessWidget {
       keyPrefix: 'squad-duty-$squadName',
       inheritLabel: draft.commonDuty.isEmpty ? null : 'Ortak görevi kullan',
     );
+    if (!context.mounted) return;
     if (duty == _inheritDutyValue) {
       onSquadDutyChanged(personnel.map((person) => person.id), null);
     } else if (duty != null) {
@@ -185,6 +192,7 @@ class ActivityDetailsStep extends StatelessWidget {
         keyPrefix: 'personnel-duty-${person.id}',
         inheritLabel: draft.commonDuty.isEmpty ? null : 'Ortak görevi kullan',
       );
+      if (!context.mounted) return;
       if (duty == _inheritDutyValue) {
         onDutyOverrideChanged(person.id, null);
       } else if (duty != null) {
@@ -218,7 +226,7 @@ class ActivityDetailsStep extends StatelessWidget {
         ],
       ),
     );
-    if (note != null) onNoteChanged(person.id, note);
+    if (context.mounted && note != null) onNoteChanged(person.id, note);
   }
 }
 

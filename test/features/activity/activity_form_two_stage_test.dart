@@ -335,5 +335,16 @@ void main() {
     await tester.tap(find.text('Devam et'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('personnel-selection-step')), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Çık'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ActivityFormScreen), findsNothing);
+    await tester.tap(find.byKey(const Key('open-activity-form')));
+    await tester.pumpAndSettle();
+    final button = tester.widget<FilledButton>(
+      find.byKey(const Key('continue-to-details-button')),
+    );
+    expect(button.onPressed, isNull);
   });
 }

@@ -35,8 +35,27 @@ void main() {
               role: UserRole.admin,
             ),
           ),
-          allPersonnelProvider.overrideWith((ref) => Stream.value(const [])),
-          allSquadsProvider.overrideWith((ref) => Stream.value(const [])),
+          allPersonnelProvider.overrideWith(
+            (ref) => Stream.value(const [
+              PersonelTableData(
+                id: 1,
+                adSoyad: 'Ahmet YILMAZ',
+                rutbe: 'J.Asb.',
+                birlik: 'Asayis',
+                timId: 1,
+                kayitTarihi: '2026-08-05',
+              ),
+            ]),
+          ),
+          allSquadsProvider.overrideWith(
+            (ref) => Stream.value(const [
+              TimTableData(
+                id: 1,
+                timAdi: '1. Tim',
+                olusturmaTarihi: '2026-08-05',
+              ),
+            ]),
+          ),
         ],
         child: const MaterialApp(
           home: Scaffold(
@@ -57,6 +76,28 @@ void main() {
     expect(find.text('Metinden Toplu Ekle'), findsOneWidget);
     expect(find.textContaining('Metinden Personel Ekle'), findsNothing);
 
+    await tester.tap(find.text('Tek Personel Ekle'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('activity-details-step')), findsOneWidget);
+    await tester.tap(find.text('Personel Seçiniz'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('personnel-team-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('personnel-option-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('1 personel seçildi'), findsOneWidget);
+    await tester.tap(find.text('İPTAL'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('activity-details-step')), findsNothing);
+    await tester.tap(find.text('+ Personel Ekle'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tek Personel Ekle'));
+    await tester.pumpAndSettle();
+    expect(find.text('0 personel seçildi'), findsOneWidget);
+    await tester.tap(find.text('İPTAL'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('+ Personel Ekle'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Metinden Toplu Ekle'));
     await tester.pumpAndSettle();
 

@@ -13,18 +13,16 @@ Future<void> pdfShareRoster({
     style: style,
   );
 
-  final dir = await getTemporaryDirectory();
   final fileName = formatExportFileName(
     title: faaliyetAdi,
     date: tarih,
     extension: 'pdf',
   );
-  final file = File('${dir.path}/$fileName');
-  await file.writeAsBytes(await pdf.save());
+  final file = await createRosterShareFile(fileName, await pdf.save());
 
   await SharePlus.instance.share(
     ShareParams(
-      files: [XFile(file.path)],
+      files: [XFile(file.path, mimeType: 'application/pdf')],
       text: '$faaliyetAdi - Resmi İsim Listesi PDF Dökümanı',
     ),
   );
