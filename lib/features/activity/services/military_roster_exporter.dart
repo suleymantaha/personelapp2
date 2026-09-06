@@ -1,3 +1,4 @@
+import 'roster_share_file.dart';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -175,18 +176,20 @@ class MilitaryRosterExporter {
       rows: rows,
     );
 
-    final dir = await getTemporaryDirectory();
     final fileName = formatExportFileName(
       title: faaliyetAdi,
       date: tarih,
       extension: 'xlsx',
     );
-    final file = File('${dir.path}/$fileName');
-    await file.writeAsBytes(bytes);
+    final file = await createRosterShareFile(fileName, bytes);
 
     await SharePlus.instance.share(
       ShareParams(
-        files: [XFile(file.path)],
+        files: [
+          XFile(file.path,
+              mimeType:
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        ],
         text: '$faaliyetAdi - Resmi İsim Listesi Excel Dökümanı',
       ),
     );
@@ -258,18 +261,20 @@ class MilitaryRosterExporter {
       activities: activities,
     );
 
-    final dir = await getTemporaryDirectory();
     final fileName = formatExportFileName(
       title: title,
       date: dateStr,
       extension: 'xlsx',
     );
-    final file = File('${dir.path}/$fileName');
-    await file.writeAsBytes(bytes);
+    final file = await createRosterShareFile(fileName, bytes);
 
     await SharePlus.instance.share(
       ShareParams(
-        files: [XFile(file.path)],
+        files: [
+          XFile(file.path,
+              mimeType:
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        ],
         text: '$title - Günlük Tüm Faaliyetler Birleşik Excel Dökümanı',
       ),
     );
