@@ -30,7 +30,8 @@ class ActivityArchiveScreen extends ConsumerStatefulWidget {
       _ActivityArchiveScreenState();
 }
 
-class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
+class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
+    with WidgetsBindingObserver {
   DateTime _selectedDateFilter = DateTime.now();
   int? _selectedSquadFilter; // null = Tümü
   final Set<int> _selectedActivityIds = {};
@@ -47,7 +48,25 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadManualOrder(DateFormat('yyyy-MM-dd').format(_selectedDateFilter));
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !mounted) return;
+    // Returning from Android's external share target can restore the Flutter
+    // activity without rebuilding the route. Refresh the live providers so
+    // the archive is immediately interactive and reflects any changes.
+    ref.invalidate(filteredActivitiesProvider);
+    ref.invalidate(allPersonnelProvider);
+    ref.invalidate(allSquadsProvider);
   }
 
   void _changeSelectedDate(DateTime date) {
