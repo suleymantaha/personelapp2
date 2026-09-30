@@ -30,7 +30,8 @@ class ActivityArchiveScreen extends ConsumerStatefulWidget {
       _ActivityArchiveScreenState();
 }
 
-class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>\n    with WidgetsBindingObserver {
+class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
+    with WidgetsBindingObserver {
   DateTime _selectedDateFilter = DateTime.now();
   int? _selectedSquadFilter; // null = Tümü
   final Set<int> _selectedActivityIds = {};
@@ -50,7 +51,24 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>\n
     _loadManualOrder(DateFormat('yyyy-MM-dd').format(_selectedDateFilter));
   }
 
-  @override\n  void dispose() {\n    WidgetsBinding.instance.removeObserver(this);\n    super.dispose();\n  }\n\n  @override\n  void didChangeAppLifecycleState(AppLifecycleState state) {\n    if (state != AppLifecycleState.resumed || !mounted) return;\n    // Returning from Android's external share target can restore the Flutter\n    // activity without rebuilding the route. Refresh the live providers so\n    // the archive is immediately interactive and reflects any changes.\n    ref.invalidate(filteredActivitiesProvider);\n    ref.invalidate(allPersonnelProvider);\n    ref.invalidate(allSquadsProvider);\n  }\n\n  void _changeSelectedDate(DateTime date) {
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !mounted) return;
+    // Returning from Android's external share target can restore the Flutter
+    // activity without rebuilding the route. Refresh the live providers so
+    // the archive is immediately interactive and reflects any changes.
+    ref.invalidate(filteredActivitiesProvider);
+    ref.invalidate(allPersonnelProvider);
+    ref.invalidate(allSquadsProvider);
+  }
+
+  void _changeSelectedDate(DateTime date) {
     setState(() {
       _selectedDateFilter = date;
       _reorderMode = false;
