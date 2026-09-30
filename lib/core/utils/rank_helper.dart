@@ -1,7 +1,7 @@
 /// Standart askeri rütbe seçenekleri listesi (Jandarma kısaltmalı format, kıdem sırasına göre).
 const List<String> kAskeriRutbeler = [
   'J.Alb.',
-  'J.Yrb.',
+  'J.Yb.',
   'J.Bnb.',
   'J.Yzb.',
   'J.Ütğm.',
@@ -36,7 +36,7 @@ String normalizeRank(String rawRutbe) {
 
   // Fallback matching without 'J'
   if (upper.contains('ALB')) return 'J.Alb.';
-  if (upper.contains('YRB')) return 'J.Yrb.';
+  if (upper.contains('YRB')) return 'J.Yb.';
   if (upper.contains('BNB')) return 'J.Bnb.';
   if (upper.contains('YZB') || upper.contains('YÜZBAŞI')) return 'J.Yzb.';
   if (upper.contains('ÜTĞM')) return 'J.Ütğm.';
