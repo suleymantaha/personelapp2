@@ -2,7 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 
 void main() {
-  test('Yarbay is normalized to J.Yb.', () {\n    expect(normalizeRank('J.Yrb.'), equals('J.Yb.'));\n    expect(normalizeRank('Yrb'), equals('J.Yb.'));\n  });\n\n  group('getRankWeight tests', () {
+  test('Yarbay is normalized to J.Yb.', () {
+    expect(normalizeRank('J.Yrb.'), equals('J.Yb.'));
+    expect(normalizeRank('Yrb'), equals('J.Yb.'));
+  });
+
+  group('getRankWeight tests', () {
     test('Officer ranks should be senior to NCOs and Enlisted', () {
       expect(getRankWeight('ALBAY'), lessThan(getRankWeight('YÜZBAŞI')));
       expect(getRankWeight('YÜZBAŞI'), lessThan(getRankWeight('TEĞMEN')));
