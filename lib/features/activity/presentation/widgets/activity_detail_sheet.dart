@@ -19,6 +19,7 @@ import 'package:personelapp2/features/activity/presentation/widgets/archive_expo
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
+import 'package:personelapp2/features/activity/services/roster_image_import_service.dart';
 
 part 'activity_detail_assignments.dart';
 
@@ -171,11 +172,60 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                               onTap: () =>
                                   Navigator.of(sheetContext).pop('bulk'),
                             ),
+                            ListTile(
+                              key: const Key(
+                                'activity-add-image-personnel-option',
+                              ),
+                              leading: const Icon(Icons.image_search_rounded),
+                              title: const Text('Görselden Toplu Ekle'),
+                              subtitle: const Text(
+                                'Personel listesini görselden okuyup bu karta ekle',
+                              ),
+                              onTap: () =>
+                                  Navigator.of(sheetContext).pop('image'),
+                            ),
                           ],
                         ),
                       ),
                     );
                     if (!context.mounted || action == null) return;
+                    if (action == 'image') {
+                      final service = RosterImageImportService();
+                      if (!service.isSupportedPlatform) {
+                        AppNotifications.warning(
+                          'Görselden aktarım Android ve iOS cihazlarda kullanılabilir.',
+                        );
+                        return;
+                      }
+                      try {
+                        final imageResult = await service.pickAndExtract();
+                        if (imageResult == null || !context.mounted) return;
+
+                        final db = ref.read(databaseProvider);
+                        final activityRepo = ref.read(activityRepositoryProvider);
+                        final result = await showDialog<bool>(
+                          context: context,
+                          builder: (dialogContext) => BulkImportDialog(
+                            database: db,
+                            activityRepository: activityRepo,
+                            initialText: imageResult.bulkImportText,
+                            targetActivity: activity,
+                          ),
+                        );
+                        if (result == true && context.mounted) {
+                          ref.invalidate(activityRepositoryProvider);
+                          ref.invalidate(filteredActivitiesProvider);
+                          ref.invalidate(pendingAssignmentsProvider);
+                        }
+                      } on RosterImageImportUnsupportedException catch (error) {
+                        AppNotifications.warning(error.toString());
+                      } on RosterImageImportNoNamesException catch (error) {
+                        AppNotifications.warning(error.toString());
+                      } on Object catch (error) {
+                        AppNotifications.error('Görsel okunamadı: $error');
+                      }
+                      return;
+                    }
                     if (action == 'bulk') {
                       final db = ref.read(databaseProvider);
                       final activityRepo = ref.read(activityRepositoryProvider);

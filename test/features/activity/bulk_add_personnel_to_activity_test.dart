@@ -74,6 +74,7 @@ void main() {
 
     expect(find.text('Tek Personel Ekle'), findsOneWidget);
     expect(find.text('Metinden Toplu Ekle'), findsOneWidget);
+    expect(find.text('Görselden Toplu Ekle'), findsOneWidget);
     expect(find.textContaining('Metinden Personel Ekle'), findsNothing);
 
     await tester.tap(find.text('Tek Personel Ekle'));
