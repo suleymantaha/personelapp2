@@ -48,6 +48,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadManualOrder(DateFormat('yyyy-MM-dd').format(_selectedDateFilter));
   }
 
