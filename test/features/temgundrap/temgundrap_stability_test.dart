@@ -106,6 +106,8 @@ void main() {
       find.byKey(const Key('document-unit-title')),
       'KORUNAN BİRLİK',
     );
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.byKey(const Key('save-document')), 300, scrollable: find.byType(Scrollable).first);
     await tester.ensureVisible(find.byKey(const Key('save-document')));
     await tester.pumpAndSettle();

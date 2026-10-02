@@ -117,7 +117,14 @@ class PersonnelSearchService {
     // Sort by score descending
     scoredResults.sort((a, b) => b.score.compareTo(a.score));
 
-    return scoredResults.take(maxResults).map((s) => s.personnel).toList();
+    // Prefer direct matches while typing. Approximate candidates are a fallback
+    // when no name, rank or unit matches the entered text directly.
+    final hasDirectMatch = scoredResults.any((result) => result.score >= 0.9);
+    return scoredResults
+        .where((result) => !hasDirectMatch || result.score >= 0.9)
+        .take(maxResults)
+        .map((result) => result.personnel)
+        .toList();
   }
 
   static double _jaroWinklerStatic(String s1, String s2) {

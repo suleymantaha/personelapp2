@@ -155,14 +155,16 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       for (final person in block.personnelList) {
         final personnelId = person.matchedPersonnelId;
         if (personnelId == null || duty.isEmpty) continue;
+        final timeRanges = {
+          ...person.sourceTimeRanges,
+          if (block.parsedTimeRange != null) block.parsedTimeRange!,
+        }.where((range) => range.trim().isNotEmpty).toList();
         assignments.add(
           PersonnelAssignmentInput(
             personnelId: personnelId,
             duty: duty,
             note:
-                block.parsedTimeRange == null
-                    ? null
-                    : 'Saat: ${block.parsedTimeRange}',
+                timeRanges.isEmpty ? null : 'Saat: ${timeRanges.join('; ')}',
             teamId: block.taskTeamId ?? person.matchedTimId,
           ),
         );
