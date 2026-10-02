@@ -10,39 +10,72 @@ class BulkImportLearningService {
 
   final AppDatabase database;
 
-  static String normalizeName(String input) => input
-      .replaceAll('I', 'ı')
-      .replaceAll('İ', 'i')
-      .toLowerCase()
-      .replaceAll('ı', 'i')
-      .replaceAll('ğ', 'g')
-      .replaceAll('ü', 'u')
-      .replaceAll('ş', 's')
-      .replaceAll('ö', 'o')
-      .replaceAll('ç', 'c')
-      .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
+  static String normalizeName(String input) =>
+      input
+          .replaceAll('I', 'ı')
+          .replaceAll('İ', 'i')
+          .toLowerCase()
+          .replaceAll('ı', 'i')
+          .replaceAll('ğ', 'g')
+          .replaceAll('ü', 'u')
+          .replaceAll('ş', 's')
+          .replaceAll('ö', 'o')
+          .replaceAll('ç', 'c')
+          .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .trim();
+
+  static String normalizeTeam(String team) {
+    final match = RegExp(r'(\d{1,2})\s*[-/ ]\s*([a-zA-Z])').firstMatch(team);
+    return match == null
+        ? normalizeName(team).replaceAll(RegExp(r'\s+timi$'), '')
+        : '${int.parse(match.group(1)!)}${match.group(2)!.toLowerCase()}';
+  }
+
+  static String aliasKey(String name, {String? teamName}) {
+    final normalized = normalizeName(name);
+    final team = normalizeTeam(teamName ?? '');
+    return team.isEmpty ? normalized : jsonEncode([team, normalized]);
+  }
+
+  Future<void> rememberBlockAliases(
+    Iterable<ParsedActivityBlock> blocks,
+  ) async {
+    for (final block in blocks) {
+      for (final person in block.personnelList) {
+        if (person.matchedPersonnelId == null ||
+            (!person.reviewConfirmed &&
+                (person.matchConfidence < 1 || person.teamMismatch)))
+          continue;
+        await rememberAlias(
+          rawName: person.rawName,
+          personnelId: person.matchedPersonnelId!,
+          teamName: block.parsedTimName,
+        );
+      }
+    }
+  }
 
   Future<Map<String, int>> loadAliases() async {
     final rows = await database.select(database.personelIsimTakmaAdTable).get();
-    return {
-      for (final row in rows) row.normalizeTakmaAd: row.personelId,
-    };
+    return {for (final row in rows) row.normalizeTakmaAd: row.personelId};
   }
 
   Future<void> rememberAlias({
     required String rawName,
     required int personnelId,
+    String? teamName,
   }) async {
-    final normalized = normalizeName(rawName);
+    final normalized = aliasKey(rawName, teamName: teamName);
     if (normalized.isEmpty) return;
-    final existing = await (database.select(
-      database.personelIsimTakmaAdTable,
-    )..where((table) => table.normalizeTakmaAd.equals(normalized)))
-        .getSingleOrNull();
+    final existing =
+        await (database.select(database.personelIsimTakmaAdTable)..where(
+          (table) => table.normalizeTakmaAd.equals(normalized),
+        )).getSingleOrNull();
     if (existing == null) {
-      await database.into(database.personelIsimTakmaAdTable).insert(
+      await database
+          .into(database.personelIsimTakmaAdTable)
+          .insert(
             PersonelIsimTakmaAdTableCompanion.insert(
               normalizeTakmaAd: normalized,
               gorunenTakmaAd: rawName.trim(),
@@ -53,8 +86,7 @@ class BulkImportLearningService {
       return;
     }
     await (database.update(database.personelIsimTakmaAdTable)
-          ..where((table) => table.id.equals(existing.id)))
-        .write(
+      ..where((table) => table.id.equals(existing.id))).write(
       PersonelIsimTakmaAdTableCompanion(
         gorunenTakmaAd: Value(rawName.trim()),
         personelId: Value(personnelId),
@@ -117,8 +149,7 @@ class BulkImportLearningService {
 
   Future<void> deleteAlias(int aliasId) async {
     await (database.delete(database.personelIsimTakmaAdTable)
-          ..where((table) => table.id.equals(aliasId)))
-        .go();
+      ..where((table) => table.id.equals(aliasId))).go();
   }
 
   static String fingerprint(Iterable<ParsedActivityBlock> blocks) {
@@ -171,14 +202,13 @@ class BulkImportLearningService {
 
   Future<void> deleteImportRecord(String fingerprint) async {
     await (database.delete(database.topluAktarimGecmisiTable)
-          ..where((table) => table.parmakIzi.equals(fingerprint)))
-        .go();
+      ..where((table) => table.parmakIzi.equals(fingerprint))).go();
   }
 
   Future<TopluAktarimGecmisiTableData?> findImport(String fingerprint) =>
-      (database.select(database.topluAktarimGecmisiTable)
-            ..where((table) => table.parmakIzi.equals(fingerprint)))
-          .getSingleOrNull();
+      (database.select(database.topluAktarimGecmisiTable)..where(
+        (table) => table.parmakIzi.equals(fingerprint),
+      )).getSingleOrNull();
 
   Future<void> recordImport({
     required String fingerprint,
@@ -186,8 +216,8 @@ class BulkImportLearningService {
     required String actor,
     String? rawText,
   }) async {
-    final dates = blocks.map((block) => block.parsedDate).toSet().toList()
-      ..sort();
+    final dates =
+        blocks.map((block) => block.parsedDate).toSet().toList()..sort();
     final personnel = <int>{};
     for (final block in blocks) {
       personnel.addAll(
@@ -205,7 +235,9 @@ class BulkImportLearningService {
       kayitTarihi: DateTime.now().toIso8601String(),
       hamMetin: Value(rawText),
     );
-    await database.into(database.topluAktarimGecmisiTable).insert(
+    await database
+        .into(database.topluAktarimGecmisiTable)
+        .insert(
           record,
           onConflict: DoUpdate(
             (_) => record,

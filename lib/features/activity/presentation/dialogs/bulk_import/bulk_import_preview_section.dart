@@ -16,6 +16,7 @@ part 'bulk_import_preview_active_issue_card.dart';
 class BulkImportPreviewSection extends StatefulWidget {
   const BulkImportPreviewSection({
     required this.blocks,
+    this.ignoredLineCount = 0,
     required this.issues,
     required this.duplicates,
     required this.allSquads,
@@ -51,6 +52,7 @@ class BulkImportPreviewSection extends StatefulWidget {
   });
 
   final List<ParsedActivityBlock> blocks;
+  final int ignoredLineCount;
   final List<BulkParseIssue> issues;
   final Map<String, List<String>> duplicates;
   final List<TimTableData> allSquads;
@@ -79,7 +81,7 @@ class BulkImportPreviewSection extends StatefulWidget {
   final void Function(int blockIndex, int personIndex) onSelectPersonnel;
   final void Function(int blockIndex, int personIndex) onRemovePerson;
   final void Function(int blockIndex, int personIndex)?
-      onConfirmPersonnelSuggestion;
+  onConfirmPersonnelSuggestion;
   final void Function(int blockIndex, int personIndex)? onAddNewPersonnel;
   final VoidCallback? onConfirmAllSuggestions;
   final VoidCallback onSave;
@@ -132,6 +134,13 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (widget.ignoredLineCount > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            '${widget.ignoredLineCount} başlık, toplam veya not satırı personel kaydı olarak alınmadı.',
+                          ),
+                        ),
                       if (widget.blocks.isNotEmpty) ...[
                         _CorrectnessPanel(
                           cardCount: widget.blocks.length,
@@ -149,9 +158,10 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                         ),
                         const SizedBox(height: 12),
                         _FilterSearchStrip(
-                          selected: widget.previewFilterIsProblems
-                              ? _PreviewFilter.problems
-                              : widget.previewFilterIsReady
+                          selected:
+                              widget.previewFilterIsProblems
+                                  ? _PreviewFilter.problems
+                                  : widget.previewFilterIsReady
                                   ? _PreviewFilter.ready
                                   : _PreviewFilter.all,
                           problemCount: metrics.actionCount,
@@ -191,8 +201,9 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: context.accentOrOlive
-                                    .withValues(alpha: 0.08),
+                                color: context.accentOrOlive.withValues(
+                                  alpha: 0.08,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -232,54 +243,50 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                   )
                 else
                   SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, blockIdx) {
-                        final entry = visibleBlocks[blockIdx];
-                        final originalBlockIndex = entry.key;
-                        final block = entry.value;
-                        final isFocusedBlock =
-                            widget.focusedIssue?.matchesBlock(
-                                  originalBlockIndex,
-                                ) ??
-                                false;
-                        final hasBlockProblems =
-                            problemState.personnelByBlock.containsKey(
-                          originalBlockIndex,
-                        );
-                        final problemPersonnelIndexes =
-                            problemState.personnelByBlock[originalBlockIndex];
-                        return ActivityBlockCard(
-                          cardKey: widget.cardKeys.putIfAbsent(
+                    delegate: SliverChildBuilderDelegate((context, blockIdx) {
+                      final entry = visibleBlocks[blockIdx];
+                      final originalBlockIndex = entry.key;
+                      final block = entry.value;
+                      final isFocusedBlock =
+                          widget.focusedIssue?.matchesBlock(
                             originalBlockIndex,
-                            () => GlobalKey(),
-                          ),
-                          personKeys: widget.personKeys,
-                          block: block,
-                          blockIdx: originalBlockIndex,
-                          duplicates: widget.duplicates,
-                          allSquads: widget.allSquads,
-                          focusedIssue: widget.focusedIssue,
-                          isExpanded: isFocusedBlock ||
-                              visibleBlocks.length == 1 ||
-                              (widget.isMobile &&
-                                  blockIdx == 0 &&
-                                  hasBlockProblems),
-                          visiblePersonnelIndexes: widget
-                                      .previewFilterIsProblems &&
-                                  problemPersonnelIndexes?.isNotEmpty == true
-                              ? problemPersonnelIndexes
-                              : null,
-                          onEditBlock: widget.onEditBlock,
-                          onRemoveBlock: widget.onRemoveBlock,
-                          onSelectPersonnel: widget.onSelectPersonnel,
-                          onRemovePerson: widget.onRemovePerson,
-                          onConfirmPersonnelSuggestion:
-                              widget.onConfirmPersonnelSuggestion,
-                          onAddNewPersonnel: widget.onAddNewPersonnel,
-                        );
-                      },
-                      childCount: visibleBlocks.length,
-                    ),
+                          ) ??
+                          false;
+                      final hasBlockProblems = problemState.personnelByBlock
+                          .containsKey(originalBlockIndex);
+                      final problemPersonnelIndexes =
+                          problemState.personnelByBlock[originalBlockIndex];
+                      return ActivityBlockCard(
+                        cardKey: widget.cardKeys.putIfAbsent(
+                          originalBlockIndex,
+                          () => GlobalKey(),
+                        ),
+                        personKeys: widget.personKeys,
+                        block: block,
+                        blockIdx: originalBlockIndex,
+                        duplicates: widget.duplicates,
+                        allSquads: widget.allSquads,
+                        focusedIssue: widget.focusedIssue,
+                        isExpanded:
+                            isFocusedBlock ||
+                            visibleBlocks.length == 1 ||
+                            (widget.isMobile &&
+                                blockIdx == 0 &&
+                                hasBlockProblems),
+                        visiblePersonnelIndexes:
+                            widget.previewFilterIsProblems &&
+                                    problemPersonnelIndexes?.isNotEmpty == true
+                                ? problemPersonnelIndexes
+                                : null,
+                        onEditBlock: widget.onEditBlock,
+                        onRemoveBlock: widget.onRemoveBlock,
+                        onSelectPersonnel: widget.onSelectPersonnel,
+                        onRemovePerson: widget.onRemovePerson,
+                        onConfirmPersonnelSuggestion:
+                            widget.onConfirmPersonnelSuggestion,
+                        onAddNewPersonnel: widget.onAddNewPersonnel,
+                      );
+                    }, childCount: visibleBlocks.length),
                   ),
               ],
             ),
@@ -295,7 +302,8 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
             isSaving: widget.isSaving,
             blocks: widget.blocks,
             issues: widget.issues,
-            hasUnresolvedProblems: widget.duplicates.isNotEmpty ||
+            hasUnresolvedProblems:
+                widget.duplicates.isNotEmpty ||
                 widget.unresolvedPersonnelCount > 0 ||
                 widget.blocks.any((block) => block.personnelList.isEmpty),
           ),

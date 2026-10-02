@@ -60,6 +60,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   bool _isParsing = false;
   bool _isSaving = false;
   int _deduplicatedPersonnelCount = 0;
+  int _ignoredLineCount = 0;
   bool _keepAuditText = false;
   bool _keepAuditTextChanged = false;
   bool _parseIssuesExpanded = false;
@@ -182,23 +183,24 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }
 
   void _syncParseIssuesWithBlocks() {
-    final newIssues = _sourceParseIssues.where((issue) {
-      if (issue.code == 'no_blocks' || issue.code == 'empty_input') {
-        return _parsedBlocks.isEmpty;
-      }
-      if (issue.code == 'unknown_rank') {
-        // An identified personnel record supplies the missing/unknown rank.
-        return !_parsedBlocks.any(
-          (block) => block.personnelList.any(
-            (person) =>
-                person.sourceLineNumber == issue.lineNumber &&
-                person.isMatched &&
-                (person.matchedRutbe?.trim().isNotEmpty ?? false),
-          ),
-        );
-      }
-      return true;
-    }).toList();
+    final newIssues =
+        _sourceParseIssues.where((issue) {
+          if (issue.code == 'no_blocks' || issue.code == 'empty_input') {
+            return _parsedBlocks.isEmpty;
+          }
+          if (issue.code == 'unknown_rank') {
+            // An identified personnel record supplies the missing/unknown rank.
+            return !_parsedBlocks.any(
+              (block) => block.personnelList.any(
+                (person) =>
+                    person.sourceLineNumber == issue.lineNumber &&
+                    person.isMatched &&
+                    (person.matchedRutbe?.trim().isNotEmpty ?? false),
+              ),
+            );
+          }
+          return true;
+        }).toList();
 
     for (var i = 0; i < _parsedBlocks.length; i++) {
       final block = _parsedBlocks[i];
@@ -330,27 +332,31 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
         final isMobile = constraints.maxWidth < 600;
         final borderRadius = isMobile ? 0.0 : 20.0;
         return Dialog(
-          insetPadding: isMobile
-              ? EdgeInsets.zero
-              : EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: isKeyboardVisible ? 8 : 32,
-                ),
+          insetPadding:
+              isMobile
+                  ? EdgeInsets.zero
+                  : EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: isKeyboardVisible ? 8 : 32,
+                  ),
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(borderRadius)),
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(borderRadius),
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxWidth: isMobile ? mediaQuery.size.width : 1180,
-                maxHeight: isMobile
-                    ? mediaQuery.size.height
-                    : mediaQuery.size.height * 0.9,
+                maxHeight:
+                    isMobile
+                        ? mediaQuery.size.height
+                        : mediaQuery.size.height * 0.9,
               ),
               child: SizedBox(
-                width: isMobile
-                    ? mediaQuery.size.width
-                    : constraints.maxWidth * 0.85,
+                width:
+                    isMobile
+                        ? mediaQuery.size.width
+                        : constraints.maxWidth * 0.85,
                 height: isMobile ? mediaQuery.size.height : double.infinity,
                 child: SafeArea(
                   top: isMobile,
@@ -362,10 +368,11 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
                         children: [
                           BulkImportHeaderBanner(
                             isKeyboardVisible: isKeyboardVisible,
-                            onOpenMemory: () => LearnedAliasesDialog.show(
-                              context,
-                              widget.database,
-                            ),
+                            onOpenMemory:
+                                () => LearnedAliasesDialog.show(
+                                  context,
+                                  widget.database,
+                                ),
                             onClose: () => Navigator.pop(context),
                           ),
                           BulkImportStepper(
@@ -381,9 +388,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
                             },
                           ),
                           Expanded(
-                            child: isMobile
-                                ? _buildMobileBody(isKeyboardVisible)
-                                : _buildDesktopBody(isKeyboardVisible),
+                            child:
+                                isMobile
+                                    ? _buildMobileBody(isKeyboardVisible)
+                                    : _buildDesktopBody(isKeyboardVisible),
                           ),
                         ],
                       ),
@@ -401,7 +409,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   Widget _buildMobileBody(bool isKeyboardVisible) {
     return switch (_currentStep) {
       0 => _buildInputSection(
-          isMobile: true, isKeyboardVisible: isKeyboardVisible),
+        isMobile: true,
+        isKeyboardVisible: isKeyboardVisible,
+      ),
       1 => _buildPreviewSection(isMobile: true),
       _ => _buildConfirmStep(isMobile: true),
     };
@@ -428,9 +438,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
           ],
           Expanded(
             flex: _currentStep == 0 ? 6 : 10,
-            child: _currentStep == 2
-                ? _buildConfirmStep(isMobile: false)
-                : _buildPreviewSection(isMobile: false),
+            child:
+                _currentStep == 2
+                    ? _buildConfirmStep(isMobile: false)
+                    : _buildPreviewSection(isMobile: false),
           ),
         ],
       ),
@@ -455,25 +466,30 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       .any((p) => p.hasWarning && p.isMatched && p.matchedPersonnelId != null);
 
   Future<void> _confirmPersonnelSuggestion(
-      int blockIndex, int personIndex) async {
+    int blockIndex,
+    int personIndex,
+  ) async {
     final currentBlock = _parsedBlocks[blockIndex];
     final item = currentBlock.personnelList[personIndex];
     if (!item.isMatched || item.matchedPersonnelId == null) return;
 
     setState(() {
-      final updatedList =
-          List<ParsedPersonnelItem>.from(currentBlock.personnelList);
+      final updatedList = List<ParsedPersonnelItem>.from(
+        currentBlock.personnelList,
+      );
       updatedList[personIndex] = updatedList[personIndex].copyWith(
         matchConfidence: 1.0,
         teamMismatch: false,
         reviewConfirmed: true,
       );
-      _parsedBlocks[blockIndex] =
-          currentBlock.copyWith(personnelList: updatedList);
+      _parsedBlocks[blockIndex] = currentBlock.copyWith(
+        personnelList: updatedList,
+      );
     });
 
     await BulkImportLearningService(widget.database).rememberAlias(
       rawName: item.rawName,
+      teamName: currentBlock.parsedTimName,
       personnelId: item.matchedPersonnelId!,
     );
   }
@@ -483,6 +499,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     final problemLocs = _getProblemLocations();
     return BulkImportPreviewSection(
       blocks: _parsedBlocks,
+      ignoredLineCount: _ignoredLineCount,
       issues: _parseIssues,
       duplicates: duplicates,
       allSquads: _allSquads,
@@ -499,9 +516,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       isSaving: _isSaving,
       problemLocations: problemLocs,
       onClearAll: _confirmClearAll,
-      onToggleParseIssues: () => setState(
-        () => _parseIssuesExpanded = !_parseIssuesExpanded,
-      ),
+      onToggleParseIssues:
+          () => setState(() => _parseIssuesExpanded = !_parseIssuesExpanded),
       onStartWizard: problemLocs.isEmpty ? null : _focusCurrentProblem,
       onFocusPrevious: _focusPreviousProblem,
       onFocusNext: _focusNextProblem,

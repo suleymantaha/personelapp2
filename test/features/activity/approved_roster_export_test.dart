@@ -94,7 +94,8 @@ void main() {
       expect(sharedTexts.single, isNot(contains('Reddedilen KİŞİ')));
       expect(sharedTexts.single, isNot(contains('İzinli KİŞİ')));
       await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 10));
+      await tester.pump(const Duration(milliseconds: 10));
     },
   );
 }

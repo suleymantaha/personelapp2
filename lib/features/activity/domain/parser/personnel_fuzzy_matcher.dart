@@ -34,10 +34,11 @@ class PersonnelFuzzyMatcher {
 
       var updatedTimName = block.parsedTimName;
       if (updatedTimName.trim().isEmpty) {
-        final matchedTeamIds = matchedPersonnelList
-            .where((p) => p.isMatched && p.matchedTimId != null)
-            .map((p) => p.matchedTimId!)
-            .toSet();
+        final matchedTeamIds =
+            matchedPersonnelList
+                .where((p) => p.isMatched && p.matchedTimId != null)
+                .map((p) => p.matchedTimId!)
+                .toSet();
         if (matchedTeamIds.length == 1) {
           // Tüm personeller %100 aynı timden geliyorsa tim adını çıkar
           final inferredName = teamNames[matchedTeamIds.first];
@@ -68,12 +69,33 @@ class PersonnelFuzzyMatcher {
     if (dbList.isEmpty) return item;
 
     final rawNameClean = _sanitizeString(item.rawName);
-    final aliasPersonnelId = aliases[rawNameClean];
+    final scopedAlias =
+        aliases[BulkImportLearningService.aliasKey(
+          item.rawName,
+          teamName: parsedTeamName,
+        )];
+    final aliasPersonnelId = scopedAlias ?? aliases[rawNameClean];
     if (aliasPersonnelId != null) {
-      final aliasMatch = dbList
-          .where((personnel) => personnel.id == aliasPersonnelId)
-          .firstOrNull;
-      if (aliasMatch != null) {
+      final aliasMatch =
+          dbList
+              .where((personnel) => personnel.id == aliasPersonnelId)
+              .firstOrNull;
+      final isLegacySafe =
+          aliasMatch != null &&
+          dbList
+                  .where(
+                    (p) =>
+                        _sanitizeString(p.adSoyad) ==
+                        _sanitizeString(aliasMatch.adSoyad),
+                  )
+                  .length ==
+              1 &&
+          (parsedTeamName.trim().isEmpty ||
+              BulkImportLearningService.normalizeTeam(parsedTeamName) ==
+                  BulkImportLearningService.normalizeTeam(
+                    teamNames[aliasMatch.timId] ?? '',
+                  ));
+      if (aliasMatch != null && (scopedAlias != null || isLegacySafe)) {
         return _withMatch(
           item,
           aliasMatch,
@@ -91,27 +113,44 @@ class PersonnelFuzzyMatcher {
     ParsedPersonnelItem resolve(
       List<PersonelTableData> candidates,
       double confidence,
-    ) => candidates.length == 1
-        ? _withMatch(
+    ) {
+      if (candidates.length > 1 && parsedTeamName.trim().isNotEmpty) {
+        final inTeam =
+            candidates
+                .where(
+                  (p) =>
+                      BulkImportLearningService.normalizeTeam(
+                        teamNames[p.timId] ?? '',
+                      ) ==
+                      BulkImportLearningService.normalizeTeam(parsedTeamName),
+                )
+                .toList();
+        if (inTeam.length == 1) candidates = inTeam;
+      }
+      return candidates.length == 1
+          ? _withMatch(
             item,
             candidates.single,
             confidence,
             parsedTeamName,
             teamNames,
           )
-        : item;
+          : item;
+    }
 
-    final exactMatches = dbList
-        .where((p) => _sanitizeString(p.adSoyad) == rawNameClean)
-        .toList();
+    final exactMatches =
+        dbList
+            .where((p) => _sanitizeString(p.adSoyad) == rawNameClean)
+            .toList();
     if (exactMatches.isNotEmpty) return resolve(exactMatches, 1);
 
     final rawTokens = _nameTokens(rawNameClean);
-    final tokenMatches = dbList.where((p) {
-      final dbTokens = _nameTokens(_sanitizeString(p.adSoyad));
-      return rawTokens.length == dbTokens.length &&
-          rawTokens.containsAll(dbTokens);
-    }).toList();
+    final tokenMatches =
+        dbList.where((p) {
+          final dbTokens = _nameTokens(_sanitizeString(p.adSoyad));
+          return rawTokens.length == dbTokens.length &&
+              rawTokens.containsAll(dbTokens);
+        }).toList();
     if (tokenMatches.isNotEmpty) return resolve(tokenMatches, 0.95);
 
     // An initial requires the remaining name tokens AND the surname to match.
@@ -120,11 +159,14 @@ class PersonnelFuzzyMatcher {
       return resolve(_firstLetterSurnameMatches(rawTokens, dbList), 0.9);
     }
 
-    final subsetMatches = dbList
-        .where(
-          (p) => _nameTokens(_sanitizeString(p.adSoyad)).containsAll(rawTokens),
-        )
-        .toList();
+    final subsetMatches =
+        dbList
+            .where(
+              (p) => _nameTokens(
+                _sanitizeString(p.adSoyad),
+              ).containsAll(rawTokens),
+            )
+            .toList();
     if (subsetMatches.isNotEmpty) return resolve(subsetMatches, 0.85);
 
     final fuzzyMatch = _tryFuzzyMatch(rawNameClean, dbList);
@@ -172,11 +214,10 @@ class PersonnelFuzzyMatcher {
     String parsedTeamName,
     Map<int, String> teamNames,
   ) {
-    final storedTeam = personnel.timId == null
-        ? null
-        : teamNames[personnel.timId!];
-    final parsedTeamNumber = _teamNumber(parsedTeamName);
-    final storedTeamNumber = _teamNumber(storedTeam ?? '');
+    final storedTeam =
+        personnel.timId == null ? null : teamNames[personnel.timId!];
+    final parsedTeamKey = BulkImportLearningService.normalizeTeam(parsedTeamName);
+    final storedTeamKey = BulkImportLearningService.normalizeTeam(storedTeam ?? '');
     return item.copyWith(
       matchedPersonnelId: personnel.id,
       matchedAdSoyad: personnel.adSoyad,
@@ -184,17 +225,9 @@ class PersonnelFuzzyMatcher {
       matchedTimId: personnel.timId,
       matchConfidence: confidence,
       teamMismatch:
-          parsedTeamNumber != null &&
-          storedTeamNumber != null &&
-          parsedTeamNumber != storedTeamNumber,
+          parsedTeamKey.isNotEmpty && storedTeamKey.isNotEmpty && parsedTeamKey != storedTeamKey,
       reviewConfirmed: false,
     );
-  }
-
-  static int? _teamNumber(String value) {
-    final trimmed = value.trim();
-    final match = RegExp(r'(\d{1,2})').firstMatch(trimmed);
-    return match == null ? null : int.tryParse(match.group(1)!);
   }
 
   static Set<String> _nameTokens(String name) =>
@@ -248,9 +281,10 @@ class PersonnelFuzzyMatcher {
     }
 
     try {
-      final candidates = dbList
-          .where((p) => _sanitizeString(p.adSoyad) == bestMatch.item)
-          .toList();
+      final candidates =
+          dbList
+              .where((p) => _sanitizeString(p.adSoyad) == bestMatch.item)
+              .toList();
       if (candidates.length != 1) return const _FuzzyPersonnelMatch.ambiguous();
       final personnel = candidates.single;
       return _FuzzyPersonnelMatch(

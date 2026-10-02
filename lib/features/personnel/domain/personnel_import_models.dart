@@ -37,20 +37,28 @@ class PersonnelImportEntry {
     required this.rutbe,
     required this.birlik,
     this.timId,
+    this.existingPersonnelId,
+    this.allowDuplicate = false,
+    this.skip = false,
   });
 
   final String adSoyad;
   final String rutbe;
   final String birlik;
   final int? timId;
+  final int? existingPersonnelId;
+  final bool allowDuplicate;
+  final bool skip;
 }
 
 class PersonnelImportResult {
   const PersonnelImportResult({
     required this.addedCount,
     required this.skippedCount,
+    this.updatedCount = 0,
   });
 
   final int addedCount;
   final int skippedCount;
+  final int updatedCount;
 }

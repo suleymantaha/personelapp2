@@ -86,3 +86,7 @@
 - Ruling: Yeni bir sicil zorunluluğu eklemek yerine mevcut sabit personel ID'si ve açık import kararı kullanılacak — mevcut kayıtlar ve çıktı formatı korunur — yanlış seçim kullanıcıya gösterilen adaylarla düzeltilebilir.
 - Ruling: Günlük görev kuralı korunacak; okunmuş saat açıklamada saklanacak, gerçek saat hesabı uydurulmayacak — mevcut çakışma modeliyle uyum — saatlik planlama ayrı özellik olur.
 - Ruling: Önce arşiv/yetki, sonra kalan kimlik ve tarih modeli — geçmiş ve yetki risklerini erken sınırlar — kullanıcı talimatı tüm işleri kesintisiz sürdürmektir.
+
+- 2026-10-02 Task 1 RED: run 37022796129 — 438 eski test geçti, 5 yeni test beklenen davranışlarla başarısız oldu. Düzeltme 17c71977efeb448feaebc13e468e5dab9519f25c: sınırsız varsayılan arşiv, çift yönlü komutan temizliği, yazımda güncel hesap kontrolü, onaylı operasyonel çıktı filtresi. Tam GREEN henüz yok: çıktı testi doğruluk assertions geçti ancak Drift dinleyici temizliğinde test timer sorunu görüldü; ek kapsam sağlayıcısı testi var.
+- 2026-10-02 Task 2 ve geçmiş/çizelge RED: run 37024473935 — kimlik/rütbe, global takma ad, toplam/saat, kalıcı silme, üyelik rollback, varsayılan tim ve görev ölçümü testleri beklenen hataları gösterdi. Sonuç GREEN olarak kaydedilmedi.
+- Ruling: Kritik gerçek davranış testleri CI'da ayrı ilk adımda çalıştırılır, ardından bütün mevcut testler çalışır — yeni hata yolunu doğrudan gösterir — tam suite atlanmaz. Yerel Flutter engeli korunur.
