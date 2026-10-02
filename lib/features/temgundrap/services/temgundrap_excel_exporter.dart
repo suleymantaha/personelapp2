@@ -1,7 +1,5 @@
-import 'dart:io';
-
 import 'package:excel/excel.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:personelapp2/features/activity/services/roster_share_file.dart';
 import 'package:personelapp2/core/utils/export_file_name_helper.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
@@ -23,17 +21,17 @@ class TemgundrapExcelExporter {
       borderColorHex: ExcelColor.fromHexString('#000000'),
     );
     CellStyle style({bool bold = false, int size = 10}) => CellStyle(
-          bold: bold,
-          fontFamily: getFontFamily(FontFamily.Arial),
-          fontSize: size,
-          horizontalAlign: HorizontalAlign.Center,
-          verticalAlign: VerticalAlign.Center,
-          textWrapping: TextWrapping.WrapText,
-          leftBorder: thin,
-          rightBorder: thin,
-          topBorder: thin,
-          bottomBorder: thin,
-        );
+      bold: bold,
+      fontFamily: getFontFamily(FontFamily.Arial),
+      fontSize: size,
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+      textWrapping: TextWrapping.WrapText,
+      leftBorder: thin,
+      rightBorder: thin,
+      topBorder: thin,
+      bottomBorder: thin,
+    );
     final titleStyle = style(bold: true, size: 11);
     final headerStyle = style(bold: true, size: 10);
     final dataStyle = style(size: 10);
@@ -44,13 +42,7 @@ class TemgundrapExcelExporter {
         ..cellStyle = cellStyle;
     }
 
-    void merge(
-      int c1,
-      int r1,
-      int c2,
-      int r2, {
-      CellStyle? mergedStyle,
-    }) {
+    void merge(int c1, int r1, int c2, int r2, {CellStyle? mergedStyle}) {
       sheet.merge(
         CellIndex.indexByColumnRow(columnIndex: c1, rowIndex: r1),
         CellIndex.indexByColumnRow(columnIndex: c2, rowIndex: r2),
@@ -58,8 +50,9 @@ class TemgundrapExcelExporter {
       for (var row = r1; row <= r2; row++) {
         for (var column = c1; column <= c2; column++) {
           sheet
-              .cell(CellIndex.indexByColumnRow(
-                  columnIndex: column, rowIndex: row))
+              .cell(
+                CellIndex.indexByColumnRow(columnIndex: column, rowIndex: row),
+              )
               .cellStyle = mergedStyle ?? (row == 0 ? titleStyle : headerStyle);
         }
       }
@@ -169,7 +162,7 @@ class TemgundrapExcelExporter {
       22.0,
       22.0,
       28.0,
-      24.0
+      24.0,
     ];
     for (var column = 0; column < widths.length; column++) {
       sheet.setColumnWidth(column, widths[column]);
@@ -182,7 +175,6 @@ class TemgundrapExcelExporter {
   }
 
   static Future<void> share(TemgundrapDocument document) async {
-    final directory = await getTemporaryDirectory();
     final dateStr =
         '${document.date.year}-${document.date.month.toString().padLeft(2, '0')}-${document.date.day.toString().padLeft(2, '0')}';
     final fileName = formatExportFileName(
@@ -190,8 +182,7 @@ class TemgundrapExcelExporter {
       date: dateStr,
       extension: 'xlsx',
     );
-    final file = File('${directory.path}/$fileName');
-    await file.writeAsBytes(build(document), flush: true);
+    final file = await createRosterShareFile(fileName, build(document));
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
