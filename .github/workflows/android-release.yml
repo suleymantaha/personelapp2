@@ -64,6 +64,7 @@ jobs:
       - name: Run stability regressions
         run: >-
           flutter test --reporter expanded --timeout 2m
+          test/features/personnel/personnel_search_service_test.dart
           test/unit/stability_regression_test.dart
           test/unit/personnel_identity_regression_test.dart
           test/unit/history_and_ledger_regression_test.dart

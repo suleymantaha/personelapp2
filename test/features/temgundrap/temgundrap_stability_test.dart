@@ -55,6 +55,7 @@ void main() {
       issuingUnit: 'BİRLİK',
       operationArea: 'ELAZIĞ',
       commander: const CommanderSnapshot(
+        personnelId: null,
         name: 'KOMUTAN',
         rank: 'J.Ütğm.',
         phone: '',
