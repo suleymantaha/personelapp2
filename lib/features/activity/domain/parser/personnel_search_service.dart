@@ -81,7 +81,7 @@ class PersonnelSearchService {
             ));
         final results = fuzzy.search(cleanQuery);
         if (results.isNotEmpty) {
-          score = results.first.score * 0.8; // Weight fuzzy match lower
+          score = (1 - results.first.score).clamp(0.0, 1.0).toDouble() * 0.8; // Weight fuzzy match lower
         }
       }
       // 6. Token overlap (partial match)

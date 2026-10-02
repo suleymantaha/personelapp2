@@ -242,12 +242,21 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
   }
 
   List<PersonelTableData> _personnelAvailableToSession(
-    List<PersonelTableData> personnel,
-    UserSessionState? session,
+    List<PersonelTableData> personnel, UserSessionState? session,
+    Map<int, Map<int, MatrixDayCell>> matrixData,
   ) {
-    if (session == null || session.isAdmin) return personnel;
-    if (session.timId == null) return <PersonelTableData>[];
-    return personnel.where((person) => person.timId == session.timId).toList();
+    return personnel.where((person) {
+      if (!person.aktif && !matrixData.containsKey(person.id)) return false;
+      if (session == null || session.isAdmin) return true;
+      return session.timId != null &&
+        (person.timId == session.timId || matrixData.containsKey(person.id));
+    }).map((person) {
+      final taskTeams = (matrixData[person.id]?.values ?? const <MatrixDayCell>[])
+        .expand((cell) => cell.entries).map((entry) => entry.taskTeamId)
+        .whereType<int>().toSet();
+      return taskTeams.length == 1
+        ? person.copyWith(timId: Value(taskTeams.single)) : person;
+    }).toList();
   }
 
   bool _matchesPersonnelSearch(PersonelTableData person) {
@@ -282,18 +291,36 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
     _updateState(() => _searchQuery = '');
   }
 
-  void _exportMatrix({
+  Future<void> _exportMatrix({
     required List<PersonelTableData> personnel,
     required Map<int, Map<int, MatrixDayCell>> matrixData,
-  }) {
-    unawaited(
-      ExcelXmlGenerator.exportAndShareXml(
-        personnel: personnel,
-        matrixData: matrixData,
-        year: _selectedMonth.year,
-        month: _selectedMonth.month,
-      ),
-    );
+  }) async {
+    try {
+      final session = ref.read(userSessionProvider);
+      if (session == null) throw StateError('Oturum doğrulanamadı.');
+      final team = session.isAdmin ? null :
+        await ref.read(personnelRepositoryProvider).currentCommanderTeam(session.username);
+      if (!session.isAdmin && team == null) throw StateError('Tim yetkiniz sona erdi.');
+      final month = DateFormat('yyyy-MM').format(_selectedMonth);
+      final currentMatrix = await ref.read(matrixRepositoryProvider)
+        .watchMonthlyMatrix(month, commanderUsername: session.isAdmin ? null : session.username).first;
+      final latestPeople = await ref.read(personnelRepositoryProvider)
+        .watchAllPersonnelSorted(includeInactive: true).first;
+      final currentSession = session.isAdmin ? session :
+        UserSessionState(username: session.username, role: session.role, timId: team);
+      final selectedIds = personnel.map((person) => person.id).toSet();
+      final currentPeople = _personnelAvailableToSession(latestPeople, currentSession, currentMatrix)
+        .where((person) => selectedIds.contains(person.id)).toList();
+      if (currentPeople.isEmpty) throw StateError('Dışa aktarılacak yetkili kayıt bulunamadı.');
+      await ExcelXmlGenerator.exportAndShareXml(
+        personnel: orderMatrixPersonnel(currentPeople, ref.read(allSquadsProvider).valueOrNull ?? []),
+        matrixData: currentMatrix, year: _selectedMonth.year, month: _selectedMonth.month);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Çizelge dışa aktarılamadı: $error')));
+      }
+    }
   }
 
   Widget _buildEmptyPersonnelState(BuildContext context) {

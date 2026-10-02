@@ -1,3 +1,4 @@
+import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -384,14 +385,25 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
                     final date = _selectedDate!;
                     Navigator.pop(
                       context,
-                      ParsedActivityBlock(
-                        rawTitle: widget.block.rawTitle,
+                      widget.block.copyWith(
                         parsedTimName: team,
+                        taskTeamId: widget.availableSquads.where((squad) =>
+                          BulkImportLearningService.normalizeTeam(squad.timAdi) ==
+                          BulkImportLearningService.normalizeTeam(team)).singleOrNull?.id ??
+                          (BulkImportLearningService.normalizeTeam(team) ==
+                           BulkImportLearningService.normalizeTeam(widget.block.parsedTimName)
+                            ? widget.block.taskTeamId : null),
                         parsedActivityType: activity,
                         parsedDate:
                             '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
                         parsedTimeRange: time.isEmpty ? null : time,
-                        personnelList: widget.block.personnelList,
+                        clearParsedTimeRange: time.isEmpty,
+                        personnelList: widget.block.personnelList.map((person) =>
+                          person.copyWith(sourceTimeRanges: {
+                            for (final range in person.sourceTimeRanges)
+                              if (range != widget.block.parsedTimeRange) range,
+                            if (time.isNotEmpty) time,
+                          }.toList())).toList(),
                       ),
                     );
                   }

@@ -20,6 +20,13 @@ extension _MonthlyMatrixActions on _MonthlyMatrixScreenState {
     String timAdi,
   ) async {
     if (timId == null) return;
+    final session = ref.read(userSessionProvider);
+    if (session?.isAdmin != true) {
+      final team = session == null ? null :
+        await ref.read(personnelRepositoryProvider).currentCommanderTeam(session.username);
+      if (team != timId) return;
+    }
+    if (!context.mounted) return;
     final repository = ref.read(matrixRepositoryProvider);
     final calendarData = await repository.getTeamMonthlyCalendar(
       timId: timId,

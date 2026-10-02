@@ -9,6 +9,12 @@ import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
 
 void main() {
+  late AppDatabase db;
+  setUp(() async {
+    db = AppDatabase(NativeDatabase.memory());
+    await db.customSelect('SELECT 1').get();
+  });
+  tearDown(() => db.close());
   testWidgets('activity bulk option opens the full bulk import dialog', (
     tester,
   ) async {
@@ -17,8 +23,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final database = AppDatabase(NativeDatabase.memory());
-    addTearDown(database.close);
+    final database = db;
     const activity = GunlukFaaliyetTableData(
       id: 10,
       faaliyetAdi: 'Arsiv Faaliyeti',
@@ -126,6 +131,9 @@ void main() {
     expect(find.textContaining('Ham Metni Yapıştır'), findsOneWidget);
     expect(find.textContaining('Metinden Personel Ekle'), findsNothing);
     expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 10));
+    await tester.pump(const Duration(milliseconds: 10));
   });
 
   testWidgets('activity bulk option saves personnel into the selected activity', (
@@ -136,8 +144,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final database = AppDatabase(NativeDatabase.memory());
-    addTearDown(database.close);
+    final database = db;
     final teamId = await database
         .into(database.timTable)
         .insert(
@@ -247,5 +254,8 @@ void main() {
       hasLength(1),
     );
     expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 10));
+    await tester.pump(const Duration(milliseconds: 10));
   });
 }

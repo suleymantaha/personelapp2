@@ -111,7 +111,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          allPersonnelProvider.overrideWith((ref) => Stream.value(personnel)),
+          historicalPersonnelProvider.overrideWith((ref) => Stream.value(personnel)),
           allSquadsProvider.overrideWith((ref) => Stream.value(squads)),
           monthlyMatrixProvider.overrideWith((ref, month) => Stream.value({})),
         ],
@@ -178,7 +178,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          allPersonnelProvider.overrideWith((ref) => Stream.value(personnel)),
+          historicalPersonnelProvider.overrideWith((ref) => Stream.value(personnel)),
           allSquadsProvider.overrideWith((ref) => Stream.value(squads)),
           monthlyMatrixProvider.overrideWith((ref, month) => Stream.value({})),
         ],
@@ -244,7 +244,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          allPersonnelProvider.overrideWith((ref) => Stream.value(personnel)),
+          historicalPersonnelProvider.overrideWith((ref) => Stream.value(personnel)),
           allSquadsProvider.overrideWith((ref) => Stream.value(squads)),
           monthlyMatrixProvider.overrideWith((ref, month) => Stream.value({})),
         ],

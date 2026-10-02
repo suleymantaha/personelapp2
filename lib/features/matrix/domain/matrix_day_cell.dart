@@ -9,6 +9,7 @@ class MatrixDayEntry {
     required this.sourceDate,
     required this.isContinuationDay,
     this.note,
+    this.taskTeamId,
   });
 
   final int activityId;
@@ -18,6 +19,7 @@ class MatrixDayEntry {
   final String sourceDate;
   final bool isContinuationDay;
   final String? note;
+  final int? taskTeamId;
 
   bool get isPending => assignmentStatus == AssignmentStatus.beklemede;
 }

@@ -101,6 +101,7 @@ class ParsedActivityBlock {
     String? parsedActivityType,
     String? parsedDate,
     String? parsedTimeRange,
+    bool clearParsedTimeRange = false,
     int? taskTeamId,
     List<ParsedPersonnelItem>? personnelList,
   }) {
@@ -109,7 +110,7 @@ class ParsedActivityBlock {
       parsedTimName: parsedTimName ?? this.parsedTimName,
       parsedActivityType: parsedActivityType ?? this.parsedActivityType,
       parsedDate: parsedDate ?? this.parsedDate,
-      parsedTimeRange: parsedTimeRange ?? this.parsedTimeRange,
+      parsedTimeRange: clearParsedTimeRange ? null : parsedTimeRange ?? this.parsedTimeRange,
       taskTeamId:
           taskTeamId ??
           (parsedTimName == null || parsedTimName == this.parsedTimName

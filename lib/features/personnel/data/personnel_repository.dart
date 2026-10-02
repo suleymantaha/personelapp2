@@ -15,6 +15,20 @@ class PersonnelRepository {
 
   final AppDatabase db;
 
+  Stream<int?> watchCommanderTeam(String username) {
+    final query = db.select(db.kullaniciTable).join([
+      innerJoin(db.timTable,
+        db.timTable.id.equalsExp(db.kullaniciTable.timId) &
+        db.timTable.timKomutaniId.equalsExp(db.kullaniciTable.id)),
+    ])..where(db.kullaniciTable.kullaniciAdi.equals(username) &
+      db.kullaniciTable.rol.equals('tim_komutani'));
+    return query.watch().map((rows) =>
+      rows.isEmpty ? null : rows.single.readTable(db.timTable).id);
+  }
+
+  Future<int?> currentCommanderTeam(String username) =>
+      watchCommanderTeam(username).first;
+
   /// Return all personnel sorted by rank weight (seniority)
   Stream<List<PersonelTableData>> watchAllPersonnelSorted({
     bool includeInactive = false,

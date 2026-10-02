@@ -13,7 +13,7 @@ class MatrixRepository {
   final AppDatabase db;
 
   Stream<Map<int, Map<int, MatrixDayCell>>> watchMonthlyMatrix(
-    String yearMonth,
+    String yearMonth, {int? timId, String? commanderUsername}
   ) {
     final monthStart = DateTime.tryParse('$yearMonth-01');
     if (monthStart == null) {
@@ -27,6 +27,13 @@ class MatrixRepository {
           db.faaliyetPersonelAtamaTable.faaliyetId,
         ),
       ),
+      if (commanderUsername != null) ...[
+        innerJoin(db.timTable,
+          db.timTable.id.equalsExp(db.faaliyetPersonelAtamaTable.gorevTimId)),
+        innerJoin(db.kullaniciTable,
+          db.kullaniciTable.id.equalsExp(db.timTable.timKomutaniId) &
+          db.kullaniciTable.timId.equalsExp(db.timTable.id)),
+      ],
     ])..where(
       db.gunlukFaaliyetTable.tarih.isBiggerOrEqualValue(
             DateFormat(
@@ -38,6 +45,13 @@ class MatrixRepository {
           ),
     );
 
+    if (timId != null) {
+      query.where(db.faaliyetPersonelAtamaTable.gorevTimId.equals(timId));
+    }
+    if (commanderUsername != null) {
+      query.where(db.kullaniciTable.kullaniciAdi.equals(commanderUsername) &
+        db.kullaniciTable.rol.equals('tim_komutani'));
+    }
     return query.watch().map((rows) {
       final entriesByPersonAndDay = <int, Map<int, List<MatrixDayEntry>>>{};
       for (final row in rows) {
@@ -68,6 +82,7 @@ class MatrixRepository {
                   sourceDate: activity.tarih,
                   isContinuationDay: index > 0,
                   note: assignment.aciklama,
+                  taskTeamId: assignment.gorevTimId,
                 ),
               );
         }

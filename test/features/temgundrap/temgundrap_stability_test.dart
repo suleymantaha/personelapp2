@@ -106,7 +106,7 @@ void main() {
       find.byKey(const Key('document-unit-title')),
       'KORUNAN BİRLİK',
     );
-    await tester.ensureVisible(find.byKey(const Key('save-document')));
+    await tester.scrollUntilVisible(find.byKey(const Key('save-document')), 300, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.byKey(const Key('save-document')));
     await tester.pumpAndSettle();
     expect(find.textContaining('Çizelge kaydedilemedi'), findsOneWidget);
@@ -117,6 +117,8 @@ void main() {
           .onPressed,
       isNotNull,
     );
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('save-document')));
     await tester.pumpAndSettle();
     expect(find.byType(TemgundrapFormScreen), findsNothing);

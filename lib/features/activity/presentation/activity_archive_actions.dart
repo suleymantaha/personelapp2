@@ -100,6 +100,11 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     List<PersonelTableData> personnelList,
   ) async {
     final db = ref.read(databaseProvider);
+    final session = ref.read(userSessionProvider);
+    if (session == null) throw StateError('Oturum doğrulanamadı.');
+    final authorizedTeam = session.isAdmin ? null :
+      await ref.read(personnelRepositoryProvider).currentCommanderTeam(session.username);
+    if (!session.isAdmin && authorizedTeam == null) throw StateError('Tim yetkiniz sona erdi.');
     final pMap = {for (final p in personnelList) p.id: p};
     final squadsList = ref.read(allSquadsProvider).value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
@@ -115,12 +120,12 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
             ..where((tbl) => tbl.faaliyetId.isIn(activityIds))).get();
 
       for (final a in assignments) {
-        final person = pMap[a.personelId];
         final isAllowedTeam =
             _selectedSquadFilter == null ||
-            person?.timId == _selectedSquadFilter;
+            a.gorevTimId == _selectedSquadFilter;
         if (allowedPersonnelIds.contains(a.personelId) &&
             isAllowedTeam &&
+            (session.isAdmin || a.gorevTimId == authorizedTeam) &&
             !seenAssignmentIds.contains(a.id) &&
             DutyOrLeaveType.isApprovedOperationalDuty(
               a.gorevVeyaIzin,
@@ -281,6 +286,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
 
     final action = await showArchiveExportSheet(context, subtitle: subtitle);
     if (!mounted || action == null) return;
+    try {
     switch (action) {
       case ArchiveExportType.excel:
         await _exportMasterExcel(activities, personnelList);
@@ -294,6 +300,9 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
       case ArchiveExportType.text:
         await _exportMasterText(activities, personnelList);
         return;
+    }
+    } catch (error) {
+      if (mounted) AppNotifications.error('Dışa aktarılamadı: $error');
     }
   }
 

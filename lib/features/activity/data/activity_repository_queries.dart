@@ -98,6 +98,27 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
     });
   }
 
+  Stream<List<GunlukFaaliyetTableData>> watchActivitiesForCommander(String username) {
+    final query = db.select(db.gunlukFaaliyetTable).join([
+      innerJoin(db.faaliyetPersonelAtamaTable,
+        db.faaliyetPersonelAtamaTable.faaliyetId.equalsExp(db.gunlukFaaliyetTable.id)),
+      innerJoin(db.timTable,
+        db.timTable.id.equalsExp(db.faaliyetPersonelAtamaTable.gorevTimId)),
+      innerJoin(db.kullaniciTable,
+        db.kullaniciTable.id.equalsExp(db.timTable.timKomutaniId) &
+        db.kullaniciTable.timId.equalsExp(db.timTable.id)),
+    ])..where(db.kullaniciTable.kullaniciAdi.equals(username) &
+      db.kullaniciTable.rol.equals('tim_komutani'));
+    return query.watch().map((rows) {
+      final activities = <int, GunlukFaaliyetTableData>{};
+      for (final row in rows) {
+        final activity = row.readTable(db.gunlukFaaliyetTable);
+        activities[activity.id] = activity;
+      }
+      return activities.values.toList();
+    });
+  }
+
   /// Save daily activity and perform smart conflict evaluation for each assigned personnel
   Future<int> createActivityWithAssignments({
     required String faaliyetAdi,
@@ -335,6 +356,7 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
               await _newAssignment(
                 faaliyetId: activityId,
                 personelId: personId,
+                taskTeamId: item.teamId,
                 gorevVeyaIzin: duty,
                 durum: status,
                 aciklama: Value(note.isEmpty ? null : note),
