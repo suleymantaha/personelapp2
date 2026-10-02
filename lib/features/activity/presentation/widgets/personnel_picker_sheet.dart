@@ -34,6 +34,7 @@ class PersonnelPickerSheet extends StatefulWidget {
     this.selectedPersonnelId,
     this.preferredTimId,
     this.disabledReasons = const {},
+    this.onSelected,
     super.key,
   });
 
@@ -42,6 +43,9 @@ class PersonnelPickerSheet extends StatefulWidget {
   final int? selectedPersonnelId;
   final int? preferredTimId;
   final Map<int, String> disabledReasons;
+
+  /// When supplied, renders an embedded selector without opening another route.
+  final ValueChanged<PersonelTableData>? onSelected;
 
   @override
   State<PersonnelPickerSheet> createState() => _PersonnelPickerSheetState();
@@ -54,6 +58,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
   final _searchController = TextEditingController();
   final Set<int?> _expandedTimIds = <int?>{};
   String _query = '';
+  int? _filterTimId;
 
   @override
   void initState() {
@@ -91,7 +96,11 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
     if (_recentPersonnelIds.length > 5) {
       _recentPersonnelIds.removeRange(5, _recentPersonnelIds.length);
     }
-    Navigator.of(context).pop(person);
+    if (widget.onSelected != null) {
+      widget.onSelected!(person);
+    } else {
+      Navigator.of(context).pop(person);
+    }
   }
 
   @override
@@ -101,6 +110,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
     };
     final normalizedQuery = _normalize(_query);
     final filtered = widget.personnel.where((person) {
+      if (_filterTimId != null && person.timId != _filterTimId) return false;
       if (normalizedQuery.isEmpty) return true;
       final teamName = squadNames[person.timId] ?? 'Tim Dışı';
       return _normalize(
@@ -108,12 +118,15 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
       ).contains(normalizedQuery);
     }).toList();
     final suggested = filtered
-        .where((person) => person.id == widget.selectedPersonnelId)
+        .where((person) =>
+            widget.onSelected == null &&
+            person.id == widget.selectedPersonnelId)
         .firstOrNull;
 
     final grouped = <int?, List<PersonelTableData>>{};
     if (normalizedQuery.isEmpty) {
-      for (final squad in widget.squads) {
+      for (final squad in widget.squads
+          .where((s) => _filterTimId == null || s.id == _filterTimId)) {
         grouped[squad.id] = <PersonelTableData>[];
       }
     }
@@ -151,203 +164,241 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
         .where((person) => person.id != suggested?.id)
         .toList();
 
-    return Container(
-      height: MediaQuery.sizeOf(context).height * 0.88,
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 10),
-          Container(
-            width: 42,
-            height: 4,
-            decoration: BoxDecoration(
-              color: context.textMuted,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 12, 10),
-            child: Row(
-              children: [
-                Icon(Icons.groups_rounded, color: context.accentOrOlive),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    'Personel Seç',
-                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Kapat',
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextField(
-              key: const Key('personnel-search-field'),
-              controller: _searchController,
-              autofocus: true,
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                hintText: 'İsim, soyisim veya rütbe ara',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _query.isEmpty
-                    ? null
-                    : IconButton(
-                        tooltip: 'Aramayı temizle',
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _query = '');
-                        },
-                        icon: const Icon(Icons.clear),
-                      ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+    return Material(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: SizedBox(
+        height: widget.onSelected == null
+            ? MediaQuery.sizeOf(context).height * 0.88
+            : null,
+        child: Column(
+          children: [
+            if (widget.onSelected == null) ...[
+              const SizedBox(height: 10),
+              Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: context.textMuted,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              onChanged: (value) => setState(() => _query = value),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 14, 12, 10),
+                child: Row(
+                  children: [
+                    Icon(Icons.groups_rounded, color: context.accentOrOlive),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Personel Seç',
+                        style: TextStyle(
+                            fontSize: 19, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Kapat',
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                key: const Key('personnel-search-field'),
+                controller: _searchController,
+                autofocus: widget.onSelected == null,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  hintText: widget.onSelected == null
+                      ? 'İsim, soyisim veya rütbe ara'
+                      : 'İsim, rütbe veya tim ara',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _query.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: 'Aramayı temizle',
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _query = '');
+                          },
+                          icon: const Icon(Icons.clear),
+                        ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onChanged: (value) => setState(() => _query = value),
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: filtered.isEmpty && normalizedQuery.isNotEmpty
-                ? const _EmptySearchResult()
-                : ListView(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
-                    children: [
-                      if (suggested != null) ...[
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(8, 10, 8, 6),
-                          child: Text(
-                            'Önerilen Eşleşme',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+            const SizedBox(height: 10),
+            if (widget.onSelected != null)
+              SizedBox(
+                  height: 48,
+                  child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                                label: const Text('Tümü'),
+                                selected: _filterTimId == null,
+                                onSelected: (_) =>
+                                    setState(() => _filterTimId = null))),
+                        for (final squad in widget.squads)
+                          Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                  label: Text(squad.timAdi),
+                                  selected: _filterTimId == squad.id,
+                                  onSelected: (_) => setState(() {
+                                        _filterTimId = squad.id;
+                                        _expandedTimIds.add(squad.id);
+                                      }))),
+                      ])),
+            Expanded(
+              child: filtered.isEmpty && normalizedQuery.isNotEmpty
+                  ? const _EmptySearchResult()
+                  : ListView(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+                      children: [
+                        if (suggested != null) ...[
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
+                            child: Text(
+                              widget.onSelected == null
+                                  ? 'Önerilen Eşleşme'
+                                  : 'Seçilen Personel',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
-                        ),
-                        Card(
-                          clipBehavior: Clip.antiAlias,
-                          margin: EdgeInsets.zero,
-                          child: _PersonnelTile(
-                            person: suggested,
-                            teamName: squadNames[suggested.timId] ?? 'Tim Dışı',
-                            selected: true,
-                            disabledReason:
-                                widget.disabledReasons[suggested.id],
-                            onTap: () => _select(suggested),
+                          Card(
+                            clipBehavior: Clip.antiAlias,
+                            margin: EdgeInsets.zero,
+                            child: _PersonnelTile(
+                              person: suggested,
+                              teamName:
+                                  squadNames[suggested.timId] ?? 'Tim Dışı',
+                              selected: true,
+                              disabledReason:
+                                  widget.disabledReasons[suggested.id],
+                              onTap: () => _select(suggested),
+                            ),
                           ),
-                        ),
-                        const Divider(height: 20),
-                      ],
-                      if (recent.isNotEmpty && normalizedQuery.isEmpty) ...[
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(8, 10, 8, 6),
-                          child: Text(
-                            'Son Seçilenler',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          const Divider(height: 20),
+                        ],
+                        if (widget.onSelected == null &&
+                            recent.isNotEmpty &&
+                            normalizedQuery.isEmpty) ...[
+                          const Padding(
+                            padding: EdgeInsets.fromLTRB(8, 10, 8, 6),
+                            child: Text(
+                              'Son Seçilenler',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
-                        ),
-                        ...recent.map(
-                          (person) => _PersonnelTile(
-                            person: person,
-                            teamName: squadNames[person.timId] ?? 'Tim Dışı',
-                            selected: person.id == widget.selectedPersonnelId,
-                            disabledReason: widget.disabledReasons[person.id],
-                            onTap: () => _select(person),
+                          ...recent.map(
+                            (person) => _PersonnelTile(
+                              person: person,
+                              teamName: squadNames[person.timId] ?? 'Tim Dışı',
+                              selected: person.id == widget.selectedPersonnelId,
+                              disabledReason: widget.disabledReasons[person.id],
+                              onTap: () => _select(person),
+                            ),
                           ),
-                        ),
-                        const Divider(height: 20),
-                      ],
-                      ...groupIds.map((timId) {
-                        final members = grouped[timId]!;
-                        final visibleMembers = members
-                            .where((person) => person.id != suggested?.id)
-                            .toList();
-                        final teamName = timId == null
-                            ? 'Tim Dışı'
-                            : (squadNames[timId] ?? 'Bilinmeyen Tim');
-                        final expanded = normalizedQuery.isNotEmpty ||
-                            _expandedTimIds.contains(timId);
-                        final selectedCount = members
-                            .where(
-                              (person) =>
-                                  person.id == widget.selectedPersonnelId,
-                            )
-                            .length;
+                          const Divider(height: 20),
+                        ],
+                        ...groupIds.map((timId) {
+                          final members = grouped[timId]!;
+                          final visibleMembers = members
+                              .where((person) => person.id != suggested?.id)
+                              .toList();
+                          final teamName = timId == null
+                              ? 'Tim Dışı'
+                              : (squadNames[timId] ?? 'Bilinmeyen Tim');
+                          final expanded = normalizedQuery.isNotEmpty ||
+                              _expandedTimIds.contains(timId);
+                          final selectedCount = members
+                              .where(
+                                (person) =>
+                                    person.id == widget.selectedPersonnelId,
+                              )
+                              .length;
 
-                        return Card(
-                          clipBehavior: Clip.antiAlias,
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: Column(
-                            children: [
-                              ListTile(
-                                key: Key('personnel-team-$timId'),
-                                onTap: normalizedQuery.isNotEmpty
-                                    ? null
-                                    : () => setState(() {
-                                          if (expanded) {
-                                            _expandedTimIds.remove(timId);
-                                          } else {
-                                            _expandedTimIds.add(timId);
-                                          }
-                                        }),
-                                leading: Icon(
-                                  Icons.shield_outlined,
-                                  color: context.accentOrOlive,
-                                ),
-                                title: Text(
-                                  '$teamName — ${members.length} kişi',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                          return Card(
+                            clipBehavior: Clip.antiAlias,
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  key: Key('personnel-team-$timId'),
+                                  onTap: normalizedQuery.isNotEmpty
+                                      ? null
+                                      : () => setState(() {
+                                            if (expanded) {
+                                              _expandedTimIds.remove(timId);
+                                            } else {
+                                              _expandedTimIds.add(timId);
+                                            }
+                                          }),
+                                  leading: Icon(
+                                    Icons.shield_outlined,
+                                    color: context.accentOrOlive,
+                                  ),
+                                  title: Text(
+                                    '$teamName — ${members.length} kişi',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: selectedCount == 0
+                                      ? null
+                                      : Text('$selectedCount kişi seçili'),
+                                  trailing: Icon(
+                                    expanded
+                                        ? Icons.expand_less
+                                        : Icons.expand_more,
                                   ),
                                 ),
-                                subtitle: selectedCount == 0
-                                    ? null
-                                    : Text('$selectedCount kişi seçili'),
-                                trailing: Icon(
-                                  expanded
-                                      ? Icons.expand_less
-                                      : Icons.expand_more,
-                                ),
-                              ),
-                              if (expanded)
-                                if (members.isEmpty)
-                                  Padding(
-                                    padding: EdgeInsets.fromLTRB(16, 0, 16, 14),
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        'Eklenebilecek personel kalmadı.',
-                                        style:
-                                            TextStyle(color: context.textMuted),
+                                if (expanded)
+                                  if (members.isEmpty)
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.fromLTRB(16, 0, 16, 14),
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          'Eklenebilecek personel kalmadı.',
+                                          style: TextStyle(
+                                              color: context.textMuted),
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    ...visibleMembers.map(
+                                      (person) => _PersonnelTile(
+                                        person: person,
+                                        teamName: teamName,
+                                        selected: person.id ==
+                                            widget.selectedPersonnelId,
+                                        disabledReason:
+                                            widget.disabledReasons[person.id],
+                                        onTap: () => _select(person),
                                       ),
                                     ),
-                                  )
-                                else
-                                  ...visibleMembers.map(
-                                    (person) => _PersonnelTile(
-                                      person: person,
-                                      teamName: teamName,
-                                      selected: person.id ==
-                                          widget.selectedPersonnelId,
-                                      disabledReason:
-                                          widget.disabledReasons[person.id],
-                                      onTap: () => _select(person),
-                                    ),
-                                  ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-          ),
-        ],
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

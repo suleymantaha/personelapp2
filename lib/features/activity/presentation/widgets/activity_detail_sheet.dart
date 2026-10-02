@@ -202,7 +202,8 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                         if (imageResult == null || !context.mounted) return;
 
                         final db = ref.read(databaseProvider);
-                        final activityRepo = ref.read(activityRepositoryProvider);
+                        final activityRepo =
+                            ref.read(activityRepositoryProvider);
                         final result = await showDialog<bool>(
                           context: context,
                           builder: (dialogContext) => BulkImportDialog(
@@ -245,13 +246,16 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       return;
                     }
 
-                    final added = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AddPersonnelToActivityDialog(
-                        activity: activity,
-                        isAdmin: isAdmin,
-                        existingPersonnelIds: existingPersonnelIds,
-                      ),
+                    final added =
+                        await Navigator.of(context, rootNavigator: true)
+                            .push<bool>(
+                      MaterialPageRoute(
+                          fullscreenDialog: true,
+                          builder: (ctx) => AddPersonnelToActivityDialog(
+                                activity: activity,
+                                isAdmin: isAdmin,
+                                existingPersonnelIds: existingPersonnelIds,
+                              )),
                     );
                     if (added == true && context.mounted) {
                       AppNotifications.approvalResult(

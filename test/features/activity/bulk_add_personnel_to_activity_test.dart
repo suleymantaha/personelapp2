@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
 
 void main() {
@@ -79,23 +80,37 @@ void main() {
 
     await tester.tap(find.text('Tek Personel Ekle'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('activity-details-step')), findsOneWidget);
-    await tester.tap(find.text('Personel Seçiniz'));
-    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('personnel-search-field')), findsOneWidget);
     await tester.tap(find.byKey(const Key('personnel-team-1')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('personnel-option-1')));
     await tester.pumpAndSettle();
     expect(find.text('1 personel seçildi'), findsOneWidget);
-    await tester.tap(find.text('İPTAL'));
+    await tester.tap(find.text('Devam et'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('activity-details-step')), findsNothing);
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(DutyOrLeaveType.nobetci).last);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.byKey(const Key('assignment-note')), 'Görev notu');
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('1 personel seçildi'), findsOneWidget);
+    await tester.tap(find.text('Devam et'));
+    await tester.pumpAndSettle();
+    expect(find.text('Görev notu'), findsOneWidget);
+    expect(find.text(DutyOrLeaveType.nobetci), findsOneWidget);
+    expect(find.text('Faaliyete Ekle'), findsOneWidget);
+    await tester.tap(find.byTooltip('Kapat'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('personnel-search-field')), findsNothing);
     await tester.tap(find.text('+ Personel Ekle'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tek Personel Ekle'));
     await tester.pumpAndSettle();
     expect(find.text('0 personel seçildi'), findsOneWidget);
-    await tester.tap(find.text('İPTAL'));
+    await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     await tester.tap(find.text('+ Personel Ekle'));
     await tester.pumpAndSettle();
