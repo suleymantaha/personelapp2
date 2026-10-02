@@ -40,6 +40,17 @@ void main() {
             olusturmaTarihi: '2026-07-28',
           ),
         );
+    final commanderId = await database
+        .into(database.kullaniciTable)
+        .insert(
+          KullaniciTableCompanion.insert(
+            kullaniciAdi: 'komutan',
+            rol: 'tim_komutani',
+            timId: Value(1),
+          ),
+        );
+    await (database.update(database.timTable)..where((t) => t.id.equals(1)))
+        .write(TimTableCompanion(timKomutaniId: Value(commanderId)));
     personId = await database
         .into(database.personelTable)
         .insert(

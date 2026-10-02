@@ -19,7 +19,7 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
   }
 
   Stream<List<GunlukFaaliyetTableData>> watchAllActivities({
-    int limit = 100,
+    int? limit,
     int offset = 0,
     String? startDate,
     String? endDate,
@@ -31,11 +31,12 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
     if (endDate != null) {
       query.where((tbl) => tbl.tarih.isSmallerOrEqualValue(endDate));
     }
-    query
-      ..orderBy([
-        (tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.desc),
-      ])
-      ..limit(limit, offset: offset);
+    query.orderBy([
+      (tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.desc),
+    ]);
+    if (limit != null || offset > 0) {
+      query.limit(limit ?? -1, offset: offset);
+    }
     return query.watch();
   }
 

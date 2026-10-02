@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
@@ -62,8 +63,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
       }).toList();
     }
 
-    final existingPersonnelIds =
-        filteredAssignments.map((a) => a.personelId).toSet();
+    final existingPersonnelIds = filteredAssignments
+        .map((a) => a.personelId)
+        .toSet();
     final allSquadsAsync = ref.watch(allSquadsProvider);
     final squadsList = allSquadsAsync.value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
@@ -73,7 +75,10 @@ class ActivityAssignmentDetails extends ConsumerWidget {
     ) {
       final operationalAssignments = orderAssignmentsForExport(
         source.where(
-          (atama) => DutyOrLeaveType.isOperationalDuty(atama.gorevVeyaIzin),
+          (atama) => DutyOrLeaveType.isApprovedOperationalDuty(
+            atama.gorevVeyaIzin,
+            atama.durum,
+          ),
         ),
         pMap,
         squadMap,
@@ -202,8 +207,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                         if (imageResult == null || !context.mounted) return;
 
                         final db = ref.read(databaseProvider);
-                        final activityRepo =
-                            ref.read(activityRepositoryProvider);
+                        final activityRepo = ref.read(
+                          activityRepositoryProvider,
+                        );
                         final result = await showDialog<bool>(
                           context: context,
                           builder: (dialogContext) => BulkImportDialog(
@@ -247,16 +253,19 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                     }
 
                     final added =
-                        await Navigator.of(context, rootNavigator: true)
-                            .push<bool>(
-                      MaterialPageRoute(
-                          fullscreenDialog: true,
-                          builder: (ctx) => AddPersonnelToActivityDialog(
-                                activity: activity,
-                                isAdmin: isAdmin,
-                                existingPersonnelIds: existingPersonnelIds,
-                              )),
-                    );
+                        await Navigator.of(
+                          context,
+                          rootNavigator: true,
+                        ).push<bool>(
+                          MaterialPageRoute(
+                            fullscreenDialog: true,
+                            builder: (ctx) => AddPersonnelToActivityDialog(
+                              activity: activity,
+                              isAdmin: isAdmin,
+                              existingPersonnelIds: existingPersonnelIds,
+                            ),
+                          ),
+                        );
                     if (added == true && context.mounted) {
                       AppNotifications.approvalResult(
                         isAdmin

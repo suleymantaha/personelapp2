@@ -18,28 +18,51 @@ void main() {
   });
   tearDown(() => db.close());
 
-  Future<int> team(String name) => people.addSquad(timAdi: name, olusturmaTarihi: '2026-01-01');
+  Future<int> team(String name) =>
+      people.addSquad(timAdi: name, olusturmaTarihi: '2026-01-01');
   Future<int> commander(String name, int squad) async {
-    final id = await db.into(db.kullaniciTable).insert(KullaniciTableCompanion.insert(
-      kullaniciAdi: name, rol: 'tim_komutani', timId: Value(squad),
-    ));
+    final id = await db
+        .into(db.kullaniciTable)
+        .insert(
+          KullaniciTableCompanion.insert(
+            kullaniciAdi: name,
+            rol: 'tim_komutani',
+            timId: Value(squad),
+          ),
+        );
     await people.assignCommanderToSquad(userId: id, timId: squad);
     return id;
   }
 
-  test('archive default includes records older than the last hundred', () async {
-    await db.batch((b) => b.insertAll(db.gunlukFaaliyetTable, [
-      for (var i = 0; i < 150; i++) GunlukFaaliyetTableCompanion.insert(
-        faaliyetAdi: 'Faaliyet $i', tarih: i == 0 ? '2025-01-01' : '2026-10-02',
-        olusturanKullanici: 'admin', olusturmaTarihi: '2026-01-01',
-      ),
-    ]));
-    final all = await activities.watchAllActivities().first;
-    expect(all, hasLength(150));
-    expect(all.any((a) => a.tarih == '2025-01-01'), isTrue);
-    expect(await activities.watchAllActivities(limit: 10).first, hasLength(10));
-    expect(await activities.watchAllActivities(startDate: '2025-01-01', endDate: '2025-01-01').first, hasLength(1));
-  });
+  test(
+    'archive default includes records older than the last hundred',
+    () async {
+      await db.batch(
+        (b) => b.insertAll(db.gunlukFaaliyetTable, [
+          for (var i = 0; i < 150; i++)
+            GunlukFaaliyetTableCompanion.insert(
+              faaliyetAdi: 'Faaliyet $i',
+              tarih: i == 0 ? '2025-01-01' : '2026-10-02',
+              olusturanKullanici: 'admin',
+              olusturmaTarihi: '2026-01-01',
+            ),
+        ]),
+      );
+      final all = await activities.watchAllActivities().first;
+      expect(all, hasLength(150));
+      expect(all.any((a) => a.tarih == '2025-01-01'), isTrue);
+      expect(
+        await activities.watchAllActivities(limit: 10).first,
+        hasLength(10),
+      );
+      expect(
+        await activities
+            .watchAllActivities(startDate: '2025-01-01', endDate: '2025-01-01')
+            .first,
+        hasLength(1),
+      );
+    },
+  );
 
   test('commander handover revokes the previous account team', () async {
     final squad = await team('1-B');
@@ -61,18 +84,37 @@ void main() {
     expect(squads.singleWhere((s) => s.id == newTeam).timKomutaniId, user);
   });
 
-  test('a session opened before handover cannot assign the old squad', () async {
-    final squad = await team('1-B');
-    await commander('old', squad);
-    final person = await people.addPersonnel(adSoyad: 'Ali KAYA', rutbe: 'J.Er',
-      birlik: '1/B', kayitTarihi: '2026-01-01', timId: squad);
-    final staleSession = UserSessionState(username: 'old', role: UserRole.teamCommander, timId: squad);
-    await commander('new', squad);
-    await expectLater(activities.createActivityWithAssignments(
-      faaliyetAdi: 'Heybet', tarih: '2026-10-02', olusturanKullanici: 'old',
-      personnelAssignments: [PersonnelAssignmentInput(personnelId: person, duty: 'HEYBET')],
-      actor: staleSession,
-    ), throwsA(isA<AuthorizationException>()));
-    expect(await db.select(db.gunlukFaaliyetTable).get(), isEmpty);
-  });
+  test(
+    'a session opened before handover cannot assign the old squad',
+    () async {
+      final squad = await team('1-B');
+      await commander('old', squad);
+      final person = await people.addPersonnel(
+        adSoyad: 'Ali KAYA',
+        rutbe: 'J.Er',
+        birlik: '1/B',
+        kayitTarihi: '2026-01-01',
+        timId: squad,
+      );
+      final staleSession = UserSessionState(
+        username: 'old',
+        role: UserRole.teamCommander,
+        timId: squad,
+      );
+      await commander('new', squad);
+      await expectLater(
+        activities.createActivityWithAssignments(
+          faaliyetAdi: 'Heybet',
+          tarih: '2026-10-02',
+          olusturanKullanici: 'old',
+          personnelAssignments: [
+            PersonnelAssignmentInput(personnelId: person, duty: 'HEYBET'),
+          ],
+          actor: staleSession,
+        ),
+        throwsA(isA<AuthorizationException>()),
+      );
+      expect(await db.select(db.gunlukFaaliyetTable).get(), isEmpty);
+    },
+  );
 }

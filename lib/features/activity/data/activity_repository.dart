@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:personelapp2/core/auth/domain/authorization_exception.dart';
 import 'package:personelapp2/core/auth/domain/user_session.dart';
@@ -40,8 +41,7 @@ class ActivityRepository {
 
     final personnel = await (db.select(
       db.personelTable,
-    )..where((table) => table.id.isIn(personnelIds)))
-        .get();
+    )..where((table) => table.id.isIn(personnelIds))).get();
     if (personnel.length != personnelIds.length) {
       throw const AuthorizationException(
         'Atama listesindeki personelden biri bulunamadı.',
@@ -49,8 +49,22 @@ class ActivityRepository {
     }
     if (actor.isAdmin) return;
 
-    final teamId = actor.timId;
-    if (teamId == null || personnel.any((person) => person.timId != teamId)) {
+    final account =
+        await (db.select(db.kullaniciTable)
+              ..where((table) => table.kullaniciAdi.equals(actor.username)))
+            .getSingleOrNull();
+    final teamId = account?.timId;
+    final team = teamId == null
+        ? null
+        : await (db.select(
+            db.timTable,
+          )..where((table) => table.id.equals(teamId))).getSingleOrNull();
+    if (account == null ||
+        account.rol != UserRole.teamCommander.storageValue ||
+        teamId == null ||
+        teamId != actor.timId ||
+        team?.timKomutaniId != account.id ||
+        personnel.any((person) => person.timId != teamId)) {
       throw const AuthorizationException(
         'Tim komutanı yalnızca kendi timindeki personele atama yapabilir.',
       );
@@ -69,7 +83,8 @@ class ActivityRepository {
     if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) return false;
     final parsed = DateTime.tryParse(value);
     if (parsed == null) return false;
-    final canonical = '${parsed.year.toString().padLeft(4, '0')}-'
+    final canonical =
+        '${parsed.year.toString().padLeft(4, '0')}-'
         '${parsed.month.toString().padLeft(2, '0')}-'
         '${parsed.day.toString().padLeft(2, '0')}';
     return canonical == value;

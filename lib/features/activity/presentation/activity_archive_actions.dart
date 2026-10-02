@@ -77,9 +77,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     });
   }
 
-  String _buildExportDateTitle(
-    List<GunlukFaaliyetTableData> activities,
-  ) {
+  String _buildExportDateTitle(List<GunlukFaaliyetTableData> activities) {
     final dates = activities.map((activity) => activity.tarih).toSet().toList()
       ..sort();
     if (dates.isEmpty) {
@@ -111,17 +109,20 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     if (activityIds.isNotEmpty) {
       final assignments = await (db.select(
         db.faaliyetPersonelAtamaTable,
-      )..where((tbl) => tbl.faaliyetId.isIn(activityIds)))
-          .get();
+      )..where((tbl) => tbl.faaliyetId.isIn(activityIds))).get();
 
       for (final a in assignments) {
         final person = pMap[a.personelId];
-        final isAllowedTeam = _selectedSquadFilter == null ||
+        final isAllowedTeam =
+            _selectedSquadFilter == null ||
             person?.timId == _selectedSquadFilter;
         if (allowedPersonnelIds.contains(a.personelId) &&
             isAllowedTeam &&
             !seenAssignmentIds.contains(a.id) &&
-            DutyOrLeaveType.isOperationalDuty(a.gorevVeyaIzin)) {
+            DutyOrLeaveType.isApprovedOperationalDuty(
+              a.gorevVeyaIzin,
+              a.durum,
+            )) {
           seenAssignmentIds.add(a.id);
           allAssignments.add(a);
         }
@@ -273,10 +274,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
       return;
     }
 
-    final action = await showArchiveExportSheet(
-      context,
-      subtitle: subtitle,
-    );
+    final action = await showArchiveExportSheet(context, subtitle: subtitle);
     if (!mounted || action == null) return;
     switch (action) {
       case ArchiveExportType.excel:
