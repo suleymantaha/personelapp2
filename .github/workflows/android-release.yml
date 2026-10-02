@@ -61,6 +61,10 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
+      - name: Run export permission regressions
+        timeout-minutes: 3
+        run: flutter test --reporter expanded --timeout 2m test/features/activity/approved_roster_export_test.dart
+
       - name: Run stability regressions
         timeout-minutes: 8
         run: >-
@@ -72,7 +76,6 @@ jobs:
           test/unit/stability_regression_test.dart
           test/unit/personnel_identity_regression_test.dart
           test/unit/history_and_ledger_regression_test.dart
-          test/features/activity/approved_roster_export_test.dart
           test/features/activity/bulk_activity_import_preparer_test.dart
           test/core/database/database_migration_test.dart
           test/core/services/commander_scope_provider_test.dart

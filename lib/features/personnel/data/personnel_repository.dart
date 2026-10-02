@@ -26,8 +26,16 @@ class PersonnelRepository {
       rows.isEmpty ? null : rows.single.readTable(db.timTable).id);
   }
 
-  Future<int?> currentCommanderTeam(String username) =>
-      watchCommanderTeam(username).first;
+  Future<int?> currentCommanderTeam(String username) async {
+    final query = db.select(db.kullaniciTable).join([
+      innerJoin(db.timTable,
+        db.timTable.id.equalsExp(db.kullaniciTable.timId) &
+        db.timTable.timKomutaniId.equalsExp(db.kullaniciTable.id)),
+    ])..where(db.kullaniciTable.kullaniciAdi.equals(username) &
+      db.kullaniciTable.rol.equals('tim_komutani'));
+    final rows = await query.get();
+    return rows.isEmpty ? null : rows.single.readTable(db.timTable).id;
+  }
 
   /// Return all personnel sorted by rank weight (seniority)
   Stream<List<PersonelTableData>> watchAllPersonnelSorted({

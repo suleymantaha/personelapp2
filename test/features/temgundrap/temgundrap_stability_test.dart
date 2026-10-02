@@ -107,6 +107,8 @@ void main() {
       'KORUNAN BİRLİK',
     );
     await tester.scrollUntilVisible(find.byKey(const Key('save-document')), 300, scrollable: find.byType(Scrollable).first);
+    await tester.ensureVisible(find.byKey(const Key('save-document')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('save-document')));
     await tester.pumpAndSettle();
     expect(find.textContaining('Çizelge kaydedilemedi'), findsOneWidget);
@@ -152,9 +154,10 @@ void main() {
       );
     },
   );
-  test(
+  testWidgets(
     'repeated TEMGUN Excel shares have immutable attachment names',
-    () async {
+    (tester) async {
+      await tester.runAsync(() async {
       final directory = await Directory.systemTemp.createTemp('temgun_test_');
       addTearDown(() => directory.delete(recursive: true));
       final messenger =
@@ -197,6 +200,7 @@ void main() {
         isNot(attachments.first.split(Platform.pathSeparator).last),
       );
       expect(await File(attachments.first).readAsBytes(), original);
+      });
     },
   );
 }
