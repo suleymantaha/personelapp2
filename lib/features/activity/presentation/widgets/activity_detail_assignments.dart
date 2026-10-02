@@ -11,7 +11,8 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
     required Map<int, String> squadNames,
     required List<MilitaryRosterRow> Function(
       Iterable<FaaliyetPersonelAtamaTableData> assignments,
-    ) buildRosterRows,
+    )
+    buildRosterRows,
   }) {
     final pMap = personnelById;
     final squadMap = squadNames;
@@ -34,17 +35,18 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
           personnelById: pMap,
           squadNames: squadMap,
           selectedSquadId: selectedSquadId,
-          onTransferSquad: !isAdmin
-              ? null
-              : (squadId, squadName) async {
-                  if (squadId == null) return;
-                  await showTransferSquadDialog(
-                    context,
-                    sourceActivity: activity,
-                    squadId: squadId,
-                    squadName: squadName,
-                  );
-                },
+          onTransferSquad:
+              !isAdmin
+                  ? null
+                  : (squadId, squadName) async {
+                    if (squadId == null) return;
+                    await showTransferSquadDialog(
+                      context,
+                      sourceActivity: activity,
+                      squadId: squadId,
+                      squadName: squadName,
+                    );
+                  },
           onExportSelected: (selectedAssignments) async {
             final selectedRows = buildRosterRows(selectedAssignments);
             if (selectedRows.isEmpty) {
@@ -54,14 +56,14 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
               return;
             }
 
-            final selectedTeamIds = selectedAssignments
-                .map((a) => pMap[a.personelId]?.timId)
-                .toSet();
+            final selectedTeamIds =
+                selectedAssignments.map((a) => a.gorevTimId).toSet();
             final teamNames = selectedTeamIds
                 .map(
-                  (id) => id == null
-                      ? 'Tim Dışı'
-                      : squadMap[id] ?? 'Bilinmeyen Tim',
+                  (id) =>
+                      id == null
+                          ? 'Tim Dışı'
+                          : squadMap[id] ?? 'Bilinmeyen Tim',
                 )
                 .join(', ');
 
@@ -104,56 +106,60 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                 return;
             }
           },
-          onDeleteSelected: !isAdmin
-              ? null
-              : (selectedAssignments) async {
-                  final selectedTeamIds = selectedAssignments
-                      .map((a) => pMap[a.personelId]?.timId)
-                      .toSet();
-                  final teamNames = selectedTeamIds
-                      .map(
-                        (id) => id == null
-                            ? 'Tim Dışı'
-                            : squadMap[id] ?? 'Bilinmeyen Tim',
-                      )
-                      .join(', ');
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (dialogContext) => AlertDialog(
-                      title: const Text('Timleri Faaliyetten Sil'),
-                      content: Text(
-                        '$teamNames timlerindeki '
-                        '${selectedAssignments.length} personel bu '
-                        'faaliyetten çıkarılacaktır. Emin misiniz?',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(dialogContext, false),
-                          child: const Text('İPTAL'),
-                        ),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: context.rejectedColor,
+          onDeleteSelected:
+              !isAdmin
+                  ? null
+                  : (selectedAssignments) async {
+                    final selectedTeamIds =
+                        selectedAssignments.map((a) => a.gorevTimId).toSet();
+                    final teamNames = selectedTeamIds
+                        .map(
+                          (id) =>
+                              id == null
+                                  ? 'Tim Dışı'
+                                  : squadMap[id] ?? 'Bilinmeyen Tim',
+                        )
+                        .join(', ');
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder:
+                          (dialogContext) => AlertDialog(
+                            title: const Text('Timleri Faaliyetten Sil'),
+                            content: Text(
+                              '$teamNames timlerindeki '
+                              '${selectedAssignments.length} personel bu '
+                              'faaliyetten çıkarılacaktır. Emin misiniz?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed:
+                                    () => Navigator.pop(dialogContext, false),
+                                child: const Text('İPTAL'),
+                              ),
+                              FilledButton(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: context.rejectedColor,
+                                ),
+                                onPressed:
+                                    () => Navigator.pop(dialogContext, true),
+                                child: const Text('TİMLERİ SİL'),
+                              ),
+                            ],
                           ),
-                          onPressed: () => Navigator.pop(dialogContext, true),
-                          child: const Text('TİMLERİ SİL'),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirmed != true || !context.mounted) return;
-                  final deleted = await ref
-                      .read(activityRepositoryProvider)
-                      .deleteAssignments(
-                        selectedAssignments.map((a) => a.id),
-                        actor: session!,
-                      );
-                  if (context.mounted) {
-                    AppNotifications.info(
-                      '$deleted personel faaliyetten çıkarıldı.',
                     );
-                  }
-                },
+                    if (confirmed != true || !context.mounted) return;
+                    final deleted = await ref
+                        .read(activityRepositoryProvider)
+                        .deleteAssignments(
+                          selectedAssignments.map((a) => a.id),
+                          actor: session!,
+                        );
+                    if (context.mounted) {
+                      AppNotifications.info(
+                        '$deleted personel faaliyetten çıkarıldı.',
+                      );
+                    }
+                  },
           assignmentBuilder: (atama) {
             final p = pMap[atama.personelId];
             final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
@@ -207,12 +213,16 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: isApproved
-                                ? context.approvedColor.withValues(alpha: 0.12)
-                                : (isPending
-                                    ? context.pendingColor
-                                        .withValues(alpha: 0.22)
-                                    : context.rejectedBgColor),
+                            color:
+                                isApproved
+                                    ? context.approvedColor.withValues(
+                                      alpha: 0.12,
+                                    )
+                                    : (isPending
+                                        ? context.pendingColor.withValues(
+                                          alpha: 0.22,
+                                        )
+                                        : context.rejectedBgColor),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -224,11 +234,12 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: isApproved
-                                  ? context.approvedColor
-                                  : (isPending
-                                      ? context.pendingColor
-                                      : context.rejectedColor),
+                              color:
+                                  isApproved
+                                      ? context.approvedColor
+                                      : (isPending
+                                          ? context.pendingColor
+                                          : context.rejectedColor),
                             ),
                           ),
                         ),
@@ -279,8 +290,9 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                               constraints: const BoxConstraints(),
                               tooltip: 'Onayla',
                               onPressed: () async {
-                                final repo =
-                                    ref.read(activityRepositoryProvider);
+                                final repo = ref.read(
+                                  activityRepositoryProvider,
+                                );
                                 final result = await repo.approveAssignment(
                                   atama.id,
                                   actor: session!,
@@ -309,8 +321,9 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                               constraints: const BoxConstraints(),
                               tooltip: 'Reddet',
                               onPressed: () async {
-                                final repo =
-                                    ref.read(activityRepositoryProvider);
+                                final repo = ref.read(
+                                  activityRepositoryProvider,
+                                );
                                 await repo.updateAssignmentStatus(
                                   atama.id,
                                   AssignmentStatus.reddedildi,
@@ -342,11 +355,12 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                               case _AssignmentAction.edit:
                                 final updated = await showDialog<bool>(
                                   context: context,
-                                  builder: (ctx) => EditAssignmentDialog(
-                                    assignment: atama,
-                                    personnelName: displayName,
-                                    isAdmin: isAdmin,
-                                  ),
+                                  builder:
+                                      (ctx) => EditAssignmentDialog(
+                                        assignment: atama,
+                                        personnelName: displayName,
+                                        isAdmin: isAdmin,
+                                      ),
                                 );
                                 if (updated == true && context.mounted) {
                                   AppNotifications.approvalResult(
@@ -366,36 +380,42 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                               case _AssignmentAction.delete:
                                 final confirm = await showDialog<bool>(
                                   context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title:
-                                        const Text('Personeli Görevden Çıkar'),
-                                    content: Text(
-                                      '$displayName adlı personel '
-                                      '${activity.faaliyetAdi} '
-                                      'faaliyetinden çıkarılacaktır. '
-                                      'Emin misiniz?',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.of(ctx).pop(false),
-                                        child: const Text('İPTAL'),
-                                      ),
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              context.rejectedColor,
+                                  builder:
+                                      (ctx) => AlertDialog(
+                                        title: const Text(
+                                          'Personeli Görevden Çıkar',
                                         ),
-                                        onPressed: () =>
-                                            Navigator.of(ctx).pop(true),
-                                        child: const Text('ÇIKAR'),
+                                        content: Text(
+                                          '$displayName adlı personel '
+                                          '${activity.faaliyetAdi} '
+                                          'faaliyetinden çıkarılacaktır. '
+                                          'Emin misiniz?',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed:
+                                                () => Navigator.of(
+                                                  ctx,
+                                                ).pop(false),
+                                            child: const Text('İPTAL'),
+                                          ),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  context.rejectedColor,
+                                            ),
+                                            onPressed:
+                                                () =>
+                                                    Navigator.of(ctx).pop(true),
+                                            child: const Text('ÇIKAR'),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
                                 );
                                 if (confirm == true) {
-                                  final repo =
-                                      ref.read(activityRepositoryProvider);
+                                  final repo = ref.read(
+                                    activityRepositoryProvider,
+                                  );
                                   await repo.deleteAssignment(
                                     atama.id,
                                     actor: session!,
@@ -408,40 +428,43 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                 }
                             }
                           },
-                          itemBuilder: (ctx) => [
-                            ModernMenuHeader<_AssignmentAction>(
-                              title: 'Atama İşlemleri',
-                              subtitle: displayName,
-                              icon: Icons.assignment_ind_outlined,
-                            ),
-                            const PopupMenuDivider(),
-                            ModernPopupMenuItem(
-                              option: const ModernActionOption(
-                                value: _AssignmentAction.edit,
-                                title: 'Düzenle',
-                                subtitle: 'Görev veya izin bilgisini değiştir',
-                                icon: Icons.edit_outlined,
-                              ),
-                            ),
-                            ModernPopupMenuItem(
-                              option: const ModernActionOption(
-                                value: _AssignmentAction.transfer,
-                                title: 'Başka karta taşı',
-                                subtitle: 'Personeli farklı faaliyete aktar',
-                                icon: Icons.swap_horiz_rounded,
-                              ),
-                            ),
-                            const PopupMenuDivider(),
-                            ModernPopupMenuItem(
-                              option: const ModernActionOption(
-                                value: _AssignmentAction.delete,
-                                title: 'Faaliyetten çıkar',
-                                subtitle: 'Personelin bu atamasını kaldır',
-                                icon: Icons.person_remove_outlined,
-                                isDestructive: true,
-                              ),
-                            ),
-                          ],
+                          itemBuilder:
+                              (ctx) => [
+                                ModernMenuHeader<_AssignmentAction>(
+                                  title: 'Atama İşlemleri',
+                                  subtitle: displayName,
+                                  icon: Icons.assignment_ind_outlined,
+                                ),
+                                const PopupMenuDivider(),
+                                ModernPopupMenuItem(
+                                  option: const ModernActionOption(
+                                    value: _AssignmentAction.edit,
+                                    title: 'Düzenle',
+                                    subtitle:
+                                        'Görev veya izin bilgisini değiştir',
+                                    icon: Icons.edit_outlined,
+                                  ),
+                                ),
+                                ModernPopupMenuItem(
+                                  option: const ModernActionOption(
+                                    value: _AssignmentAction.transfer,
+                                    title: 'Başka karta taşı',
+                                    subtitle:
+                                        'Personeli farklı faaliyete aktar',
+                                    icon: Icons.swap_horiz_rounded,
+                                  ),
+                                ),
+                                const PopupMenuDivider(),
+                                ModernPopupMenuItem(
+                                  option: const ModernActionOption(
+                                    value: _AssignmentAction.delete,
+                                    title: 'Faaliyetten çıkar',
+                                    subtitle: 'Personelin bu atamasını kaldır',
+                                    icon: Icons.person_remove_outlined,
+                                    isDestructive: true,
+                                  ),
+                                ),
+                              ],
                         ),
                       ],
                     ),

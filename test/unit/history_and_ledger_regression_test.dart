@@ -55,6 +55,21 @@ void main() {
     db,
   ).getTeamMonthlyCalendar(timId: squad, timAdi: '1-B', year: 2026, month: 10);
 
+  test('all duty types on the same day remain visible', () async {
+    for (var i = 0; i < 5; i++) {
+      await assignment(await person('Gülüşkür $i'), 'GÜLÜŞKÜR');
+    }
+    for (var i = 0; i < 3; i++) {
+      await assignment(await person('Heybet $i'), 'HEYBET');
+    }
+    final result = await calendar();
+    expect(
+      result.ozet.gorevTuruDagilimi.keys,
+      containsAll(['GÜLÜŞKÜR', 'HEYBET']),
+    );
+    expect(result.gunler[1].gorevliPersonelAdlari, hasLength(8));
+  });
+
   test(
     'deactivated and demo personnel are excluded from normal selectors',
     () async {

@@ -587,6 +587,24 @@ class $PersonelTableTable extends PersonelTable
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $PersonelTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _aktifMeta = const VerificationMeta('aktif');
+  @override
+  late final GeneratedColumn<bool> aktif = GeneratedColumn<bool>(
+      'aktif', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("aktif" IN (0, 1))'),
+      defaultValue: const Constant(true));
+  static const VerificationMeta _isDemoMeta = const VerificationMeta('isDemo');
+  @override
+  late final GeneratedColumn<bool> isDemo = GeneratedColumn<bool>(
+      'is_demo', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_demo" IN (0, 1))'),
+      defaultValue: const Constant(false));
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -634,7 +652,7 @@ class $PersonelTableTable extends PersonelTable
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, adSoyad, rutbe, birlik, telefon, timId, kayitTarihi];
+      [aktif, isDemo, id, adSoyad, rutbe, birlik, telefon, timId, kayitTarihi];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -645,6 +663,14 @@ class $PersonelTableTable extends PersonelTable
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('aktif')) {
+      context.handle(
+          _aktifMeta, aktif.isAcceptableOrUnknown(data['aktif']!, _aktifMeta));
+    }
+    if (data.containsKey('is_demo')) {
+      context.handle(_isDemoMeta,
+          isDemo.isAcceptableOrUnknown(data['is_demo']!, _isDemoMeta));
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -691,6 +717,10 @@ class $PersonelTableTable extends PersonelTable
   PersonelTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return PersonelTableData(
+      aktif: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}aktif'])!,
+      isDemo: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_demo'])!,
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       adSoyad: attachedDatabase.typeMapping
@@ -716,6 +746,8 @@ class $PersonelTableTable extends PersonelTable
 
 class PersonelTableData extends DataClass
     implements Insertable<PersonelTableData> {
+  final bool aktif;
+  final bool isDemo;
   final int id;
   final String adSoyad;
   final String rutbe;
@@ -724,7 +756,9 @@ class PersonelTableData extends DataClass
   final int? timId;
   final String kayitTarihi;
   const PersonelTableData(
-      {required this.id,
+      {required this.aktif,
+      required this.isDemo,
+      required this.id,
       required this.adSoyad,
       required this.rutbe,
       required this.birlik,
@@ -734,6 +768,8 @@ class PersonelTableData extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['aktif'] = Variable<bool>(aktif);
+    map['is_demo'] = Variable<bool>(isDemo);
     map['id'] = Variable<int>(id);
     map['ad_soyad'] = Variable<String>(adSoyad);
     map['rutbe'] = Variable<String>(rutbe);
@@ -750,6 +786,8 @@ class PersonelTableData extends DataClass
 
   PersonelTableCompanion toCompanion(bool nullToAbsent) {
     return PersonelTableCompanion(
+      aktif: Value(aktif),
+      isDemo: Value(isDemo),
       id: Value(id),
       adSoyad: Value(adSoyad),
       rutbe: Value(rutbe),
@@ -767,6 +805,8 @@ class PersonelTableData extends DataClass
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PersonelTableData(
+      aktif: serializer.fromJson<bool>(json['aktif']),
+      isDemo: serializer.fromJson<bool>(json['isDemo']),
       id: serializer.fromJson<int>(json['id']),
       adSoyad: serializer.fromJson<String>(json['adSoyad']),
       rutbe: serializer.fromJson<String>(json['rutbe']),
@@ -780,6 +820,8 @@ class PersonelTableData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'aktif': serializer.toJson<bool>(aktif),
+      'isDemo': serializer.toJson<bool>(isDemo),
       'id': serializer.toJson<int>(id),
       'adSoyad': serializer.toJson<String>(adSoyad),
       'rutbe': serializer.toJson<String>(rutbe),
@@ -791,7 +833,9 @@ class PersonelTableData extends DataClass
   }
 
   PersonelTableData copyWith(
-          {int? id,
+          {bool? aktif,
+          bool? isDemo,
+          int? id,
           String? adSoyad,
           String? rutbe,
           String? birlik,
@@ -799,6 +843,8 @@ class PersonelTableData extends DataClass
           Value<int?> timId = const Value.absent(),
           String? kayitTarihi}) =>
       PersonelTableData(
+        aktif: aktif ?? this.aktif,
+        isDemo: isDemo ?? this.isDemo,
         id: id ?? this.id,
         adSoyad: adSoyad ?? this.adSoyad,
         rutbe: rutbe ?? this.rutbe,
@@ -809,6 +855,8 @@ class PersonelTableData extends DataClass
       );
   PersonelTableData copyWithCompanion(PersonelTableCompanion data) {
     return PersonelTableData(
+      aktif: data.aktif.present ? data.aktif.value : this.aktif,
+      isDemo: data.isDemo.present ? data.isDemo.value : this.isDemo,
       id: data.id.present ? data.id.value : this.id,
       adSoyad: data.adSoyad.present ? data.adSoyad.value : this.adSoyad,
       rutbe: data.rutbe.present ? data.rutbe.value : this.rutbe,
@@ -823,6 +871,8 @@ class PersonelTableData extends DataClass
   @override
   String toString() {
     return (StringBuffer('PersonelTableData(')
+          ..write('aktif: $aktif, ')
+          ..write('isDemo: $isDemo, ')
           ..write('id: $id, ')
           ..write('adSoyad: $adSoyad, ')
           ..write('rutbe: $rutbe, ')
@@ -835,12 +885,14 @@ class PersonelTableData extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, adSoyad, rutbe, birlik, telefon, timId, kayitTarihi);
+  int get hashCode => Object.hash(
+      aktif, isDemo, id, adSoyad, rutbe, birlik, telefon, timId, kayitTarihi);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is PersonelTableData &&
+          other.aktif == this.aktif &&
+          other.isDemo == this.isDemo &&
           other.id == this.id &&
           other.adSoyad == this.adSoyad &&
           other.rutbe == this.rutbe &&
@@ -851,6 +903,8 @@ class PersonelTableData extends DataClass
 }
 
 class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
+  final Value<bool> aktif;
+  final Value<bool> isDemo;
   final Value<int> id;
   final Value<String> adSoyad;
   final Value<String> rutbe;
@@ -859,6 +913,8 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
   final Value<int?> timId;
   final Value<String> kayitTarihi;
   const PersonelTableCompanion({
+    this.aktif = const Value.absent(),
+    this.isDemo = const Value.absent(),
     this.id = const Value.absent(),
     this.adSoyad = const Value.absent(),
     this.rutbe = const Value.absent(),
@@ -868,6 +924,8 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
     this.kayitTarihi = const Value.absent(),
   });
   PersonelTableCompanion.insert({
+    this.aktif = const Value.absent(),
+    this.isDemo = const Value.absent(),
     this.id = const Value.absent(),
     required String adSoyad,
     required String rutbe,
@@ -880,6 +938,8 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
         birlik = Value(birlik),
         kayitTarihi = Value(kayitTarihi);
   static Insertable<PersonelTableData> custom({
+    Expression<bool>? aktif,
+    Expression<bool>? isDemo,
     Expression<int>? id,
     Expression<String>? adSoyad,
     Expression<String>? rutbe,
@@ -889,6 +949,8 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
     Expression<String>? kayitTarihi,
   }) {
     return RawValuesInsertable({
+      if (aktif != null) 'aktif': aktif,
+      if (isDemo != null) 'is_demo': isDemo,
       if (id != null) 'id': id,
       if (adSoyad != null) 'ad_soyad': adSoyad,
       if (rutbe != null) 'rutbe': rutbe,
@@ -900,7 +962,9 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
   }
 
   PersonelTableCompanion copyWith(
-      {Value<int>? id,
+      {Value<bool>? aktif,
+      Value<bool>? isDemo,
+      Value<int>? id,
       Value<String>? adSoyad,
       Value<String>? rutbe,
       Value<String>? birlik,
@@ -908,6 +972,8 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
       Value<int?>? timId,
       Value<String>? kayitTarihi}) {
     return PersonelTableCompanion(
+      aktif: aktif ?? this.aktif,
+      isDemo: isDemo ?? this.isDemo,
       id: id ?? this.id,
       adSoyad: adSoyad ?? this.adSoyad,
       rutbe: rutbe ?? this.rutbe,
@@ -921,6 +987,12 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (aktif.present) {
+      map['aktif'] = Variable<bool>(aktif.value);
+    }
+    if (isDemo.present) {
+      map['is_demo'] = Variable<bool>(isDemo.value);
+    }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
@@ -948,6 +1020,8 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
   @override
   String toString() {
     return (StringBuffer('PersonelTableCompanion(')
+          ..write('aktif: $aktif, ')
+          ..write('isDemo: $isDemo, ')
           ..write('id: $id, ')
           ..write('adSoyad: $adSoyad, ')
           ..write('rutbe: $rutbe, ')
@@ -1283,6 +1357,21 @@ class $FaaliyetPersonelAtamaTableTable extends FaaliyetPersonelAtamaTable
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $FaaliyetPersonelAtamaTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _gorevTimIdMeta =
+      const VerificationMeta('gorevTimId');
+  @override
+  late final GeneratedColumn<int> gorevTimId = GeneratedColumn<int>(
+      'gorev_tim_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES tim_table (id) ON DELETE SET NULL'));
+  static const VerificationMeta _gorevTimAdiMeta =
+      const VerificationMeta('gorevTimAdi');
+  @override
+  late final GeneratedColumn<String> gorevTimAdi = GeneratedColumn<String>(
+      'gorev_tim_adi', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -1328,8 +1417,16 @@ class $FaaliyetPersonelAtamaTableTable extends FaaliyetPersonelAtamaTable
       'aciklama', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, faaliyetId, personelId, gorevVeyaIzin, durum, aciklama];
+  List<GeneratedColumn> get $columns => [
+        gorevTimId,
+        gorevTimAdi,
+        id,
+        faaliyetId,
+        personelId,
+        gorevVeyaIzin,
+        durum,
+        aciklama
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1341,6 +1438,18 @@ class $FaaliyetPersonelAtamaTableTable extends FaaliyetPersonelAtamaTable
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('gorev_tim_id')) {
+      context.handle(
+          _gorevTimIdMeta,
+          gorevTimId.isAcceptableOrUnknown(
+              data['gorev_tim_id']!, _gorevTimIdMeta));
+    }
+    if (data.containsKey('gorev_tim_adi')) {
+      context.handle(
+          _gorevTimAdiMeta,
+          gorevTimAdi.isAcceptableOrUnknown(
+              data['gorev_tim_adi']!, _gorevTimAdiMeta));
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -1388,6 +1497,10 @@ class $FaaliyetPersonelAtamaTableTable extends FaaliyetPersonelAtamaTable
       {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return FaaliyetPersonelAtamaTableData(
+      gorevTimId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}gorev_tim_id']),
+      gorevTimAdi: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}gorev_tim_adi']),
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       faaliyetId: attachedDatabase.typeMapping
@@ -1411,6 +1524,8 @@ class $FaaliyetPersonelAtamaTableTable extends FaaliyetPersonelAtamaTable
 
 class FaaliyetPersonelAtamaTableData extends DataClass
     implements Insertable<FaaliyetPersonelAtamaTableData> {
+  final int? gorevTimId;
+  final String? gorevTimAdi;
   final int id;
   final int faaliyetId;
   final int personelId;
@@ -1418,7 +1533,9 @@ class FaaliyetPersonelAtamaTableData extends DataClass
   final String durum;
   final String? aciklama;
   const FaaliyetPersonelAtamaTableData(
-      {required this.id,
+      {this.gorevTimId,
+      this.gorevTimAdi,
+      required this.id,
       required this.faaliyetId,
       required this.personelId,
       required this.gorevVeyaIzin,
@@ -1427,6 +1544,12 @@ class FaaliyetPersonelAtamaTableData extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (!nullToAbsent || gorevTimId != null) {
+      map['gorev_tim_id'] = Variable<int>(gorevTimId);
+    }
+    if (!nullToAbsent || gorevTimAdi != null) {
+      map['gorev_tim_adi'] = Variable<String>(gorevTimAdi);
+    }
     map['id'] = Variable<int>(id);
     map['faaliyet_id'] = Variable<int>(faaliyetId);
     map['personel_id'] = Variable<int>(personelId);
@@ -1440,6 +1563,12 @@ class FaaliyetPersonelAtamaTableData extends DataClass
 
   FaaliyetPersonelAtamaTableCompanion toCompanion(bool nullToAbsent) {
     return FaaliyetPersonelAtamaTableCompanion(
+      gorevTimId: gorevTimId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gorevTimId),
+      gorevTimAdi: gorevTimAdi == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gorevTimAdi),
       id: Value(id),
       faaliyetId: Value(faaliyetId),
       personelId: Value(personelId),
@@ -1455,6 +1584,8 @@ class FaaliyetPersonelAtamaTableData extends DataClass
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return FaaliyetPersonelAtamaTableData(
+      gorevTimId: serializer.fromJson<int?>(json['gorevTimId']),
+      gorevTimAdi: serializer.fromJson<String?>(json['gorevTimAdi']),
       id: serializer.fromJson<int>(json['id']),
       faaliyetId: serializer.fromJson<int>(json['faaliyetId']),
       personelId: serializer.fromJson<int>(json['personelId']),
@@ -1467,6 +1598,8 @@ class FaaliyetPersonelAtamaTableData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'gorevTimId': serializer.toJson<int?>(gorevTimId),
+      'gorevTimAdi': serializer.toJson<String?>(gorevTimAdi),
       'id': serializer.toJson<int>(id),
       'faaliyetId': serializer.toJson<int>(faaliyetId),
       'personelId': serializer.toJson<int>(personelId),
@@ -1477,13 +1610,17 @@ class FaaliyetPersonelAtamaTableData extends DataClass
   }
 
   FaaliyetPersonelAtamaTableData copyWith(
-          {int? id,
+          {Value<int?> gorevTimId = const Value.absent(),
+          Value<String?> gorevTimAdi = const Value.absent(),
+          int? id,
           int? faaliyetId,
           int? personelId,
           String? gorevVeyaIzin,
           String? durum,
           Value<String?> aciklama = const Value.absent()}) =>
       FaaliyetPersonelAtamaTableData(
+        gorevTimId: gorevTimId.present ? gorevTimId.value : this.gorevTimId,
+        gorevTimAdi: gorevTimAdi.present ? gorevTimAdi.value : this.gorevTimAdi,
         id: id ?? this.id,
         faaliyetId: faaliyetId ?? this.faaliyetId,
         personelId: personelId ?? this.personelId,
@@ -1494,6 +1631,10 @@ class FaaliyetPersonelAtamaTableData extends DataClass
   FaaliyetPersonelAtamaTableData copyWithCompanion(
       FaaliyetPersonelAtamaTableCompanion data) {
     return FaaliyetPersonelAtamaTableData(
+      gorevTimId:
+          data.gorevTimId.present ? data.gorevTimId.value : this.gorevTimId,
+      gorevTimAdi:
+          data.gorevTimAdi.present ? data.gorevTimAdi.value : this.gorevTimAdi,
       id: data.id.present ? data.id.value : this.id,
       faaliyetId:
           data.faaliyetId.present ? data.faaliyetId.value : this.faaliyetId,
@@ -1510,6 +1651,8 @@ class FaaliyetPersonelAtamaTableData extends DataClass
   @override
   String toString() {
     return (StringBuffer('FaaliyetPersonelAtamaTableData(')
+          ..write('gorevTimId: $gorevTimId, ')
+          ..write('gorevTimAdi: $gorevTimAdi, ')
           ..write('id: $id, ')
           ..write('faaliyetId: $faaliyetId, ')
           ..write('personelId: $personelId, ')
@@ -1521,12 +1664,14 @@ class FaaliyetPersonelAtamaTableData extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, faaliyetId, personelId, gorevVeyaIzin, durum, aciklama);
+  int get hashCode => Object.hash(gorevTimId, gorevTimAdi, id, faaliyetId,
+      personelId, gorevVeyaIzin, durum, aciklama);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is FaaliyetPersonelAtamaTableData &&
+          other.gorevTimId == this.gorevTimId &&
+          other.gorevTimAdi == this.gorevTimAdi &&
           other.id == this.id &&
           other.faaliyetId == this.faaliyetId &&
           other.personelId == this.personelId &&
@@ -1537,6 +1682,8 @@ class FaaliyetPersonelAtamaTableData extends DataClass
 
 class FaaliyetPersonelAtamaTableCompanion
     extends UpdateCompanion<FaaliyetPersonelAtamaTableData> {
+  final Value<int?> gorevTimId;
+  final Value<String?> gorevTimAdi;
   final Value<int> id;
   final Value<int> faaliyetId;
   final Value<int> personelId;
@@ -1544,6 +1691,8 @@ class FaaliyetPersonelAtamaTableCompanion
   final Value<String> durum;
   final Value<String?> aciklama;
   const FaaliyetPersonelAtamaTableCompanion({
+    this.gorevTimId = const Value.absent(),
+    this.gorevTimAdi = const Value.absent(),
     this.id = const Value.absent(),
     this.faaliyetId = const Value.absent(),
     this.personelId = const Value.absent(),
@@ -1552,6 +1701,8 @@ class FaaliyetPersonelAtamaTableCompanion
     this.aciklama = const Value.absent(),
   });
   FaaliyetPersonelAtamaTableCompanion.insert({
+    this.gorevTimId = const Value.absent(),
+    this.gorevTimAdi = const Value.absent(),
     this.id = const Value.absent(),
     required int faaliyetId,
     required int personelId,
@@ -1563,6 +1714,8 @@ class FaaliyetPersonelAtamaTableCompanion
         gorevVeyaIzin = Value(gorevVeyaIzin),
         durum = Value(durum);
   static Insertable<FaaliyetPersonelAtamaTableData> custom({
+    Expression<int>? gorevTimId,
+    Expression<String>? gorevTimAdi,
     Expression<int>? id,
     Expression<int>? faaliyetId,
     Expression<int>? personelId,
@@ -1571,6 +1724,8 @@ class FaaliyetPersonelAtamaTableCompanion
     Expression<String>? aciklama,
   }) {
     return RawValuesInsertable({
+      if (gorevTimId != null) 'gorev_tim_id': gorevTimId,
+      if (gorevTimAdi != null) 'gorev_tim_adi': gorevTimAdi,
       if (id != null) 'id': id,
       if (faaliyetId != null) 'faaliyet_id': faaliyetId,
       if (personelId != null) 'personel_id': personelId,
@@ -1581,13 +1736,17 @@ class FaaliyetPersonelAtamaTableCompanion
   }
 
   FaaliyetPersonelAtamaTableCompanion copyWith(
-      {Value<int>? id,
+      {Value<int?>? gorevTimId,
+      Value<String?>? gorevTimAdi,
+      Value<int>? id,
       Value<int>? faaliyetId,
       Value<int>? personelId,
       Value<String>? gorevVeyaIzin,
       Value<String>? durum,
       Value<String?>? aciklama}) {
     return FaaliyetPersonelAtamaTableCompanion(
+      gorevTimId: gorevTimId ?? this.gorevTimId,
+      gorevTimAdi: gorevTimAdi ?? this.gorevTimAdi,
       id: id ?? this.id,
       faaliyetId: faaliyetId ?? this.faaliyetId,
       personelId: personelId ?? this.personelId,
@@ -1600,6 +1759,12 @@ class FaaliyetPersonelAtamaTableCompanion
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (gorevTimId.present) {
+      map['gorev_tim_id'] = Variable<int>(gorevTimId.value);
+    }
+    if (gorevTimAdi.present) {
+      map['gorev_tim_adi'] = Variable<String>(gorevTimAdi.value);
+    }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
@@ -1624,6 +1789,8 @@ class FaaliyetPersonelAtamaTableCompanion
   @override
   String toString() {
     return (StringBuffer('FaaliyetPersonelAtamaTableCompanion(')
+          ..write('gorevTimId: $gorevTimId, ')
+          ..write('gorevTimAdi: $gorevTimAdi, ')
           ..write('id: $id, ')
           ..write('faaliyetId: $faaliyetId, ')
           ..write('personelId: $personelId, ')
@@ -3084,6 +3251,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
             ],
           ),
           WritePropagation(
+            on: TableUpdateQuery.onTableName('tim_table',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('faaliyet_personel_atama_table',
+                  kind: UpdateKind.update),
+            ],
+          ),
+          WritePropagation(
             on: TableUpdateQuery.onTableName('gunluk_faaliyet_table',
                 limitUpdateKind: UpdateKind.delete),
             result: [
@@ -3174,6 +3349,25 @@ final class $$TimTableTableReferences
         .filter((f) => f.timId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_personelTableRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$FaaliyetPersonelAtamaTableTable,
+          List<FaaliyetPersonelAtamaTableData>>
+      _faaliyetPersonelAtamaTableRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.faaliyetPersonelAtamaTable,
+              aliasName:
+                  'tim_table__id__faaliyet_personel_atama_table__gorev_tim_id');
+
+  $$FaaliyetPersonelAtamaTableTableProcessedTableManager
+      get faaliyetPersonelAtamaTableRefs {
+    final manager = $$FaaliyetPersonelAtamaTableTableTableManager(
+            $_db, $_db.faaliyetPersonelAtamaTable)
+        .filter((f) => f.gorevTimId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult
+        .readTableOrNull(_faaliyetPersonelAtamaTableRefsTable($_db));
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
@@ -3275,6 +3469,30 @@ class $$TimTableTableFilterComposer
               $removeJoinBuilderFromRootComposer:
                   $removeJoinBuilderFromRootComposer,
             ));
+    return f(composer);
+  }
+
+  Expression<bool> faaliyetPersonelAtamaTableRefs(
+      Expression<bool> Function(
+              $$FaaliyetPersonelAtamaTableTableFilterComposer f)
+          f) {
+    final $$FaaliyetPersonelAtamaTableTableFilterComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.faaliyetPersonelAtamaTable,
+            getReferencedColumn: (t) => t.gorevTimId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$FaaliyetPersonelAtamaTableTableFilterComposer(
+                  $db: $db,
+                  $table: $db.faaliyetPersonelAtamaTable,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
     return f(composer);
   }
 
@@ -3422,6 +3640,30 @@ class $$TimTableTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> faaliyetPersonelAtamaTableRefs<T extends Object>(
+      Expression<T> Function(
+              $$FaaliyetPersonelAtamaTableTableAnnotationComposer a)
+          f) {
+    final $$FaaliyetPersonelAtamaTableTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.faaliyetPersonelAtamaTable,
+            getReferencedColumn: (t) => t.gorevTimId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$FaaliyetPersonelAtamaTableTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.faaliyetPersonelAtamaTable,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
   Expression<T> timUyelikGecmisiTableRefs<T extends Object>(
       Expression<T> Function($$TimUyelikGecmisiTableTableAnnotationComposer a)
           f) {
@@ -3461,6 +3703,7 @@ class $$TimTableTableTableManager extends RootTableManager<
         {bool timKomutaniId,
         bool kullaniciTableRefs,
         bool personelTableRefs,
+        bool faaliyetPersonelAtamaTableRefs,
         bool timUyelikGecmisiTableRefs})> {
   $$TimTableTableTableManager(_$AppDatabase db, $TimTableTable table)
       : super(TableManagerState(
@@ -3504,12 +3747,15 @@ class $$TimTableTableTableManager extends RootTableManager<
               {timKomutaniId = false,
               kullaniciTableRefs = false,
               personelTableRefs = false,
+              faaliyetPersonelAtamaTableRefs = false,
               timUyelikGecmisiTableRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
                 if (kullaniciTableRefs) db.kullaniciTable,
                 if (personelTableRefs) db.personelTable,
+                if (faaliyetPersonelAtamaTableRefs)
+                  db.faaliyetPersonelAtamaTable,
                 if (timUyelikGecmisiTableRefs) db.timUyelikGecmisiTable
               ],
               addJoins: <
@@ -3564,6 +3810,19 @@ class $$TimTableTableTableManager extends RootTableManager<
                                 referencedItems) =>
                             referencedItems.where((e) => e.timId == item.id),
                         typedResults: items),
+                  if (faaliyetPersonelAtamaTableRefs)
+                    await $_getPrefetchedData<TimTableData, $TimTableTable,
+                            FaaliyetPersonelAtamaTableData>(
+                        currentTable: table,
+                        referencedTable: $$TimTableTableReferences
+                            ._faaliyetPersonelAtamaTableRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$TimTableTableReferences(db, table, p0)
+                                .faaliyetPersonelAtamaTableRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.gorevTimId == item.id),
+                        typedResults: items),
                   if (timUyelikGecmisiTableRefs)
                     await $_getPrefetchedData<TimTableData, $TimTableTable,
                             TimUyelikGecmisiTableData>(
@@ -3599,6 +3858,7 @@ typedef $$TimTableTableProcessedTableManager = ProcessedTableManager<
         {bool timKomutaniId,
         bool kullaniciTableRefs,
         bool personelTableRefs,
+        bool faaliyetPersonelAtamaTableRefs,
         bool timUyelikGecmisiTableRefs})>;
 typedef $$KullaniciTableTableCreateCompanionBuilder = KullaniciTableCompanion
     Function({
@@ -3943,6 +4203,8 @@ typedef $$KullaniciTableTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function({bool timId, bool timTableRefs})>;
 typedef $$PersonelTableTableCreateCompanionBuilder = PersonelTableCompanion
     Function({
+  Value<bool> aktif,
+  Value<bool> isDemo,
   Value<int> id,
   required String adSoyad,
   required String rutbe,
@@ -3953,6 +4215,8 @@ typedef $$PersonelTableTableCreateCompanionBuilder = PersonelTableCompanion
 });
 typedef $$PersonelTableTableUpdateCompanionBuilder = PersonelTableCompanion
     Function({
+  Value<bool> aktif,
+  Value<bool> isDemo,
   Value<int> id,
   Value<String> adSoyad,
   Value<String> rutbe,
@@ -4045,6 +4309,12 @@ class $$PersonelTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<bool> get aktif => $composableBuilder(
+      column: $table.aktif, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isDemo => $composableBuilder(
+      column: $table.isDemo, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
 
@@ -4161,6 +4431,12 @@ class $$PersonelTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<bool> get aktif => $composableBuilder(
+      column: $table.aktif, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isDemo => $composableBuilder(
+      column: $table.isDemo, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
@@ -4209,6 +4485,12 @@ class $$PersonelTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<bool> get aktif =>
+      $composableBuilder(column: $table.aktif, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDemo =>
+      $composableBuilder(column: $table.isDemo, builder: (column) => column);
+
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -4344,6 +4626,8 @@ class $$PersonelTableTableTableManager extends RootTableManager<
           createComputedFieldComposer: () =>
               $$PersonelTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
+            Value<bool> aktif = const Value.absent(),
+            Value<bool> isDemo = const Value.absent(),
             Value<int> id = const Value.absent(),
             Value<String> adSoyad = const Value.absent(),
             Value<String> rutbe = const Value.absent(),
@@ -4353,6 +4637,8 @@ class $$PersonelTableTableTableManager extends RootTableManager<
             Value<String> kayitTarihi = const Value.absent(),
           }) =>
               PersonelTableCompanion(
+            aktif: aktif,
+            isDemo: isDemo,
             id: id,
             adSoyad: adSoyad,
             rutbe: rutbe,
@@ -4362,6 +4648,8 @@ class $$PersonelTableTableTableManager extends RootTableManager<
             kayitTarihi: kayitTarihi,
           ),
           createCompanionCallback: ({
+            Value<bool> aktif = const Value.absent(),
+            Value<bool> isDemo = const Value.absent(),
             Value<int> id = const Value.absent(),
             required String adSoyad,
             required String rutbe,
@@ -4371,6 +4659,8 @@ class $$PersonelTableTableTableManager extends RootTableManager<
             required String kayitTarihi,
           }) =>
               PersonelTableCompanion.insert(
+            aktif: aktif,
+            isDemo: isDemo,
             id: id,
             adSoyad: adSoyad,
             rutbe: rutbe,
@@ -4764,6 +5054,8 @@ typedef $$GunlukFaaliyetTableTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function({bool faaliyetPersonelAtamaTableRefs})>;
 typedef $$FaaliyetPersonelAtamaTableTableCreateCompanionBuilder
     = FaaliyetPersonelAtamaTableCompanion Function({
+  Value<int?> gorevTimId,
+  Value<String?> gorevTimAdi,
   Value<int> id,
   required int faaliyetId,
   required int personelId,
@@ -4773,6 +5065,8 @@ typedef $$FaaliyetPersonelAtamaTableTableCreateCompanionBuilder
 });
 typedef $$FaaliyetPersonelAtamaTableTableUpdateCompanionBuilder
     = FaaliyetPersonelAtamaTableCompanion Function({
+  Value<int?> gorevTimId,
+  Value<String?> gorevTimAdi,
   Value<int> id,
   Value<int> faaliyetId,
   Value<int> personelId,
@@ -4787,6 +5081,21 @@ final class $$FaaliyetPersonelAtamaTableTableReferences extends BaseReferences<
     FaaliyetPersonelAtamaTableData> {
   $$FaaliyetPersonelAtamaTableTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
+
+  static $TimTableTable _gorevTimIdTable(_$AppDatabase db) =>
+      db.timTable.createAlias(
+          'faaliyet_personel_atama_table__gorev_tim_id__tim_table__id');
+
+  $$TimTableTableProcessedTableManager? get gorevTimId {
+    final $_column = $_itemColumn<int>('gorev_tim_id');
+    if ($_column == null) return null;
+    final manager = $$TimTableTableTableManager($_db, $_db.timTable)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_gorevTimIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 
   static $GunlukFaaliyetTableTable _faaliyetIdTable(_$AppDatabase db) =>
       db.gunlukFaaliyetTable.createAlias(
@@ -4829,6 +5138,9 @@ class $$FaaliyetPersonelAtamaTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<String> get gorevTimAdi => $composableBuilder(
+      column: $table.gorevTimAdi, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
 
@@ -4840,6 +5152,26 @@ class $$FaaliyetPersonelAtamaTableTableFilterComposer
 
   ColumnFilters<String> get aciklama => $composableBuilder(
       column: $table.aciklama, builder: (column) => ColumnFilters(column));
+
+  $$TimTableTableFilterComposer get gorevTimId {
+    final $$TimTableTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.gorevTimId,
+        referencedTable: $db.timTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TimTableTableFilterComposer(
+              $db: $db,
+              $table: $db.timTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   $$GunlukFaaliyetTableTableFilterComposer get faaliyetId {
     final $$GunlukFaaliyetTableTableFilterComposer composer = $composerBuilder(
@@ -4891,6 +5223,9 @@ class $$FaaliyetPersonelAtamaTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<String> get gorevTimAdi => $composableBuilder(
+      column: $table.gorevTimAdi, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
@@ -4903,6 +5238,26 @@ class $$FaaliyetPersonelAtamaTableTableOrderingComposer
 
   ColumnOrderings<String> get aciklama => $composableBuilder(
       column: $table.aciklama, builder: (column) => ColumnOrderings(column));
+
+  $$TimTableTableOrderingComposer get gorevTimId {
+    final $$TimTableTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.gorevTimId,
+        referencedTable: $db.timTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TimTableTableOrderingComposer(
+              $db: $db,
+              $table: $db.timTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   $$GunlukFaaliyetTableTableOrderingComposer get faaliyetId {
     final $$GunlukFaaliyetTableTableOrderingComposer composer =
@@ -4955,6 +5310,9 @@ class $$FaaliyetPersonelAtamaTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<String> get gorevTimAdi => $composableBuilder(
+      column: $table.gorevTimAdi, builder: (column) => column);
+
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -4966,6 +5324,26 @@ class $$FaaliyetPersonelAtamaTableTableAnnotationComposer
 
   GeneratedColumn<String> get aciklama =>
       $composableBuilder(column: $table.aciklama, builder: (column) => column);
+
+  $$TimTableTableAnnotationComposer get gorevTimId {
+    final $$TimTableTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.gorevTimId,
+        referencedTable: $db.timTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TimTableTableAnnotationComposer(
+              $db: $db,
+              $table: $db.timTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   $$GunlukFaaliyetTableTableAnnotationComposer get faaliyetId {
     final $$GunlukFaaliyetTableTableAnnotationComposer composer =
@@ -5023,7 +5401,8 @@ class $$FaaliyetPersonelAtamaTableTableTableManager extends RootTableManager<
       $$FaaliyetPersonelAtamaTableTableReferences
     ),
     FaaliyetPersonelAtamaTableData,
-    PrefetchHooks Function({bool faaliyetId, bool personelId})> {
+    PrefetchHooks Function(
+        {bool gorevTimId, bool faaliyetId, bool personelId})> {
   $$FaaliyetPersonelAtamaTableTableTableManager(
       _$AppDatabase db, $FaaliyetPersonelAtamaTableTable table)
       : super(TableManagerState(
@@ -5039,6 +5418,8 @@ class $$FaaliyetPersonelAtamaTableTableTableManager extends RootTableManager<
               $$FaaliyetPersonelAtamaTableTableAnnotationComposer(
                   $db: db, $table: table),
           updateCompanionCallback: ({
+            Value<int?> gorevTimId = const Value.absent(),
+            Value<String?> gorevTimAdi = const Value.absent(),
             Value<int> id = const Value.absent(),
             Value<int> faaliyetId = const Value.absent(),
             Value<int> personelId = const Value.absent(),
@@ -5047,6 +5428,8 @@ class $$FaaliyetPersonelAtamaTableTableTableManager extends RootTableManager<
             Value<String?> aciklama = const Value.absent(),
           }) =>
               FaaliyetPersonelAtamaTableCompanion(
+            gorevTimId: gorevTimId,
+            gorevTimAdi: gorevTimAdi,
             id: id,
             faaliyetId: faaliyetId,
             personelId: personelId,
@@ -5055,6 +5438,8 @@ class $$FaaliyetPersonelAtamaTableTableTableManager extends RootTableManager<
             aciklama: aciklama,
           ),
           createCompanionCallback: ({
+            Value<int?> gorevTimId = const Value.absent(),
+            Value<String?> gorevTimAdi = const Value.absent(),
             Value<int> id = const Value.absent(),
             required int faaliyetId,
             required int personelId,
@@ -5063,6 +5448,8 @@ class $$FaaliyetPersonelAtamaTableTableTableManager extends RootTableManager<
             Value<String?> aciklama = const Value.absent(),
           }) =>
               FaaliyetPersonelAtamaTableCompanion.insert(
+            gorevTimId: gorevTimId,
+            gorevTimAdi: gorevTimAdi,
             id: id,
             faaliyetId: faaliyetId,
             personelId: personelId,
@@ -5076,7 +5463,8 @@ class $$FaaliyetPersonelAtamaTableTableTableManager extends RootTableManager<
                     $$FaaliyetPersonelAtamaTableTableReferences(db, table, e)
                   ))
               .toList(),
-          prefetchHooksCallback: ({faaliyetId = false, personelId = false}) {
+          prefetchHooksCallback: (
+              {gorevTimId = false, faaliyetId = false, personelId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -5093,6 +5481,18 @@ class $$FaaliyetPersonelAtamaTableTableTableManager extends RootTableManager<
                       dynamic,
                       dynamic,
                       dynamic>>(state) {
+                if (gorevTimId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.gorevTimId,
+                    referencedTable: $$FaaliyetPersonelAtamaTableTableReferences
+                        ._gorevTimIdTable(db),
+                    referencedColumn:
+                        $$FaaliyetPersonelAtamaTableTableReferences
+                            ._gorevTimIdTable(db)
+                            .id,
+                  ) as T;
+                }
                 if (faaliyetId) {
                   state = state.withJoin(
                     currentTable: table,
@@ -5143,7 +5543,8 @@ typedef $$FaaliyetPersonelAtamaTableTableProcessedTableManager
           $$FaaliyetPersonelAtamaTableTableReferences
         ),
         FaaliyetPersonelAtamaTableData,
-        PrefetchHooks Function({bool faaliyetId, bool personelId})>;
+        PrefetchHooks Function(
+            {bool gorevTimId, bool faaliyetId, bool personelId})>;
 typedef $$RaporKayitTableTableCreateCompanionBuilder = RaporKayitTableCompanion
     Function({
   Value<int> id,

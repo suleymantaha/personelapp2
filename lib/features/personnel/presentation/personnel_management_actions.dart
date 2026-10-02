@@ -5,43 +5,44 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
     final action = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.pagePadding,
-            0,
-            AppSpacing.pagePadding,
-            AppSpacing.pagePadding,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Personel Ekle',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+      builder:
+          (context) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pagePadding,
+                0,
+                AppSpacing.pagePadding,
+                AppSpacing.pagePadding,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Personel Ekle',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  ListTile(
+                    key: const Key('add-single-personnel-option'),
+                    leading: const Icon(Icons.person_add_alt_1_rounded),
+                    title: const Text('Tek Personel Ekle'),
+                    subtitle: const Text('Bilgileri form üzerinden girin'),
+                    onTap: () => Navigator.of(context).pop('single'),
+                  ),
+                  ListTile(
+                    key: const Key('add-personnel-from-text-option'),
+                    leading: const Icon(Icons.content_paste_go_rounded),
+                    title: const Text('Metinden Toplu Ekle'),
+                    subtitle: const Text('Listeyi yapıştırıp önizleyin'),
+                    onTap: () => Navigator.of(context).pop('bulk'),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.sm),
-              ListTile(
-                key: const Key('add-single-personnel-option'),
-                leading: const Icon(Icons.person_add_alt_1_rounded),
-                title: const Text('Tek Personel Ekle'),
-                subtitle: const Text('Bilgileri form üzerinden girin'),
-                onTap: () => Navigator.of(context).pop('single'),
-              ),
-              ListTile(
-                key: const Key('add-personnel-from-text-option'),
-                leading: const Icon(Icons.content_paste_go_rounded),
-                title: const Text('Metinden Toplu Ekle'),
-                subtitle: const Text('Listeyi yapıştırıp önizleyin'),
-                onTap: () => Navigator.of(context).pop('bulk'),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
     if (!mounted || action == null) return;
 
@@ -57,7 +58,7 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
     if (!mounted || result == null) return;
     AppNotifications.success(
       '${result.addedCount} personel eklendi, '
-      '${result.skippedCount} mükerrer kayıt atlandı.',
+      '${result.updatedCount} personel güncellendi, ${result.skippedCount} satır atlandı.',
     );
   }
 
@@ -123,12 +124,13 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                             decoration: const InputDecoration(
                               labelText: 'Komutanı Olacağı Tim',
                             ),
-                            items: squads.map((s) {
-                              return DropdownMenuItem<int?>(
-                                value: s.id,
-                                child: Text(s.timAdi),
-                              );
-                            }).toList(),
+                            items:
+                                squads.map((s) {
+                                  return DropdownMenuItem<int?>(
+                                    value: s.id,
+                                    child: Text(s.timAdi),
+                                  );
+                                }).toList(),
                             onChanged: (val) {
                               setDialogState(() => selectedSquadId = val);
                             },
@@ -239,8 +241,9 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                                       menuMaxHeight:
                                           modernDropdownMenuMaxHeight(context),
                                       borderRadius: modernDropdownBorderRadius,
-                                      dropdownColor:
-                                          modernDropdownColor(context),
+                                      dropdownColor: modernDropdownColor(
+                                        context,
+                                      ),
                                       initialValue: cmd.timId,
                                       decoration: const InputDecoration(
                                         labelText: 'Atanan Tim',
@@ -283,8 +286,8 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                       },
                     );
                   },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                  loading:
+                      () => const Center(child: CircularProgressIndicator()),
                   error: (err, st) => Text('Hata: $err'),
                 );
               },
@@ -298,53 +301,56 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                 final userCtrl = TextEditingController();
                 await showDialog<void>(
                   context: ctx,
-                  builder: (dialogCtx) => AlertDialog(
-                    title: const Text('Yeni Komutan Yetkilendirme'),
-                    content: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextField(
-                            controller: userCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'Kullanıcı Adı (Örn: ahmet.kaya)',
-                              prefixIcon: Icon(Icons.person),
-                            ),
+                  builder:
+                      (dialogCtx) => AlertDialog(
+                        title: const Text('Yeni Komutan Yetkilendirme'),
+                        content: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: userCtrl,
+                                decoration: const InputDecoration(
+                                  labelText: 'Kullanıcı Adı (Örn: ahmet.kaya)',
+                                  prefixIcon: Icon(Icons.person),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '💡 Şifre istenmez. Kullanıcı ilk girişinde kendi parolasını belirler.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: context.textSecondary,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '💡 Şifre istenmez. Kullanıcı ilk girişinde kendi parolasını belirler.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: context.textSecondary,
-                            ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(dialogCtx).pop(),
+                            child: const Text('İPTAL'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () async {
+                              final u = userCtrl.text.trim();
+                              if (u.isNotEmpty) {
+                                final repo = ref.read(
+                                  personnelRepositoryProvider,
+                                );
+                                await repo.createUserAccount(
+                                  kullaniciAdi: u,
+                                  rol: 'tim_komutani',
+                                );
+                                if (dialogCtx.mounted) {
+                                  Navigator.of(dialogCtx).pop();
+                                }
+                              }
+                            },
+                            child: const Text('YETKİLENDİR'),
                           ),
                         ],
                       ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(dialogCtx).pop(),
-                        child: const Text('İPTAL'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          final u = userCtrl.text.trim();
-                          if (u.isNotEmpty) {
-                            final repo = ref.read(personnelRepositoryProvider);
-                            await repo.createUserAccount(
-                              kullaniciAdi: u,
-                              rol: 'tim_komutani',
-                            );
-                            if (dialogCtx.mounted) {
-                              Navigator.of(dialogCtx).pop();
-                            }
-                          }
-                        },
-                        child: const Text('YETKİLENDİR'),
-                      ),
-                    ],
-                  ),
                 );
               },
             ),

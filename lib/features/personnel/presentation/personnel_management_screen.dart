@@ -310,10 +310,10 @@ class _PersonnelManagementScreenState
                                                   context: context,
                                                   builder: (ctx) => AlertDialog(
                                                     title: const Text(
-                                                      'Personeli Sil',
+                                                      'Personeli Pasifleştir',
                                                     ),
                                                     content: Text(
-                                                      '${p.rutbe} ${p.adSoyad} isimli personel sistemden silinecektir. Emin misiniz?',
+                                                      '${p.rutbe} ${p.adSoyad} isimli personel pasifleştirilecektir. Geçmiş görev ve raporları korunur. Emin misiniz?',
                                                     ),
                                                     actions: [
                                                       TextButton(

@@ -30,16 +30,8 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
           await (db.select(db.faaliyetPersonelAtamaTable)
             ..where((tbl) => tbl.faaliyetId.equals(sourceActivityId))).get();
 
-      // Filter by squadId via personnelTable
-      final squadPersonnel =
-          await (db.select(db.personelTable)
-            ..where((tbl) => tbl.timId.equals(squadId))).get();
-      final squadPersonnelIds = squadPersonnel.map((p) => p.id).toSet();
-
       final toTransfer =
-          allSourceAssignments
-              .where((a) => squadPersonnelIds.contains(a.personelId))
-              .toList();
+          allSourceAssignments.where((a) => a.gorevTimId == squadId).toList();
 
       if (toTransfer.isEmpty) {
         return const SquadTransferResult(
