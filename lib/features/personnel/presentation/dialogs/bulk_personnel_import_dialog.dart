@@ -6,7 +6,6 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
-import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 import 'package:personelapp2/features/personnel/data/personnel_repository.dart';
 import 'package:personelapp2/features/personnel/domain/personnel_import_draft.dart';
@@ -109,11 +108,21 @@ class _BulkPersonnelImportDialogState
         _items.where((item) => item.rank.trim().isEmpty).length;
     final invalidCount = _items.where((item) => !item.isValid).length;
     final seenKeys = existingPersonnel
-        .map((person) => _draftKey(person.adSoyad, person.rutbe))
+        .map((person) => personnelImportKey(
+              name: person.adSoyad,
+              rank: person.rutbe,
+              unit: person.birlik,
+              teamId: person.timId,
+            ))
         .toSet();
     final duplicateIndexes = <int>{};
     for (final entry in _items.asMap().entries) {
-      if (!seenKeys.add(_draftKey(entry.value.name, entry.value.rank))) {
+      if (!seenKeys.add(personnelImportKey(
+        name: entry.value.name,
+        rank: entry.value.rank,
+        unit: entry.value.unit,
+        teamId: entry.value.squadId,
+      ))) {
         duplicateIndexes.add(entry.key);
       }
     }
@@ -372,17 +381,4 @@ class _BulkPersonnelImportDialogState
     );
   }
 
-  static String _draftKey(String name, String rank) {
-    String fold(String value) => value
-        .trim()
-        .toLowerCase()
-        .replaceAll('ı', 'i')
-        .replaceAll('ğ', 'g')
-        .replaceAll('ü', 'u')
-        .replaceAll('ş', 's')
-        .replaceAll('ö', 'o')
-        .replaceAll('ç', 'c')
-        .replaceAll(RegExp(r'\s+'), ' ');
-    return '${fold(normalizeRank(rank))}|${fold(name)}';
-  }
 }
