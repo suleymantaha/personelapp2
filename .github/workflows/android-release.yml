@@ -52,6 +52,19 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
+      - name: Run stability regressions
+        run: >-
+          flutter test --reporter expanded --timeout 2m
+          test/unit/stability_regression_test.dart
+          test/unit/personnel_identity_regression_test.dart
+          test/unit/history_and_ledger_regression_test.dart
+          test/features/activity/approved_roster_export_test.dart
+          test/features/activity/bulk_activity_import_preparer_test.dart
+          test/core/database/database_migration_test.dart
+          test/core/services/commander_scope_provider_test.dart
+          test/core/services/app_backup_service_test.dart
+          test/features/temgundrap/temgundrap_stability_test.dart
+
       - name: Run tests
         run: flutter test --reporter expanded
 

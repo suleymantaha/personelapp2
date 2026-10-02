@@ -22,6 +22,20 @@ void main() {
 
   tearDown(() => db.close());
 
+  test('backup restores approver defaults and all dated archive card orders', () async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('temgundrap_approver_defaults_v1', '{"name":"ALİ"}');
+    await prefs.setStringList('activity_card_order_2026-10-02', ['2', '1']);
+    final backup = await service.exportBackupJson();
+    await prefs.setString('temgundrap_approver_defaults_v1', '{}');
+    await prefs.setStringList('activity_card_order_2026-10-02', ['1', '2']);
+    await prefs.setStringList('activity_card_order_2026-10-03', ['9']);
+    await service.restoreBackupJson(backup);
+    expect(prefs.getString('temgundrap_approver_defaults_v1'), contains('ALİ'));
+    expect(prefs.getStringList('activity_card_order_2026-10-02'), ['2', '1']);
+    expect(prefs.containsKey('activity_card_order_2026-10-03'), isFalse);
+  });
+
   test('exports and replaces every durable application data source', () async {
     await _seedAllData(db);
     final prefs = await SharedPreferences.getInstance();
