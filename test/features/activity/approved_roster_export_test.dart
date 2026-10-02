@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/activity_archive_screen.dart';
 
@@ -17,9 +18,10 @@ void main() {
     await db.customSelect('SELECT 1').get();
   });
   tearDown(() => db.close());
-  for (final commander in [false, true]) {
+  for (final scenario in ['admin', 'commander', 'selected-reassigned', 'pdf-revoked']) {
+    final commander = scenario != 'admin';
     testWidgets(
-      'archive text export approval and team scope commander=$commander',
+      'archive text export approval and team scope scenario=$scenario',
       (tester) async {
         tester.view.physicalSize = const Size(500, 1000);
         tester.view.devicePixelRatio = 1;
@@ -120,12 +122,47 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('Arşiv işlemleri'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Dışa Aktar / Yazdır'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Metin Listesi Paylaş'));
-        await tester.pumpAndSettle();
+        if (scenario == 'selected-reassigned') {
+          await tester.tap(find.byKey(Key('activity-card-$activity')));
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(Key('activity-team-select-$team')));
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('export-selected-teams')));
+          await tester.pumpAndSettle();
+          await (db.update(db.kullaniciTable)..where((u) => u.kullaniciAdi.equals('komutan')))
+              .write(KullaniciTableCompanion(timId: Value(otherTeam)));
+          await (db.update(db.timTable)..where((t) => t.id.equals(team)))
+              .write(const TimTableCompanion(timKomutaniId: Value(null)));
+          final account = await (db.select(db.kullaniciTable)..where((u) => u.kullaniciAdi.equals('komutan'))).getSingle();
+          await (db.update(db.timTable)..where((t) => t.id.equals(otherTeam)))
+              .write(TimTableCompanion(timKomutaniId: Value(account.id)));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Metin Listesi Paylaş'));
+          await tester.pumpAndSettle();
+          expect(sharedTexts, isEmpty);
+          expect(tester.takeException(), isNull);
+        } else {
+          await tester.tap(find.byTooltip('Arşiv işlemleri'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Dışa Aktar / Yazdır'));
+          await tester.pumpAndSettle();
+          if (scenario == 'pdf-revoked') {
+            await tester.tap(find.text('PDF Belgesi Paylaş'));
+            await tester.pumpAndSettle();
+            await (db.update(db.timTable)..where((t) => t.id.equals(team)))
+                .write(const TimTableCompanion(timKomutaniId: Value(null)));
+            await tester.pumpAndSettle();
+            while (AppNotifications.controller.current != null) {
+              AppNotifications.controller.dismiss();
+            }
+            await tester.tap(find.text('Stil 1: Dikey Blok Mimarisi (VIP Format)'));
+            await tester.pumpAndSettle();
+            expect(AppNotifications.controller.current?.message, contains('Tim yetkiniz sona erdi'));
+            expect(sharedTexts, isEmpty);
+            expect(tester.takeException(), isNull);
+          } else {
+            await tester.tap(find.text('Metin Listesi Paylaş'));
+            await tester.pumpAndSettle();
         expect(sharedTexts, hasLength(1));
         expect(sharedTexts.single, contains('Onaylı KİŞİ'));
         expect(
@@ -137,6 +174,11 @@ void main() {
         expect(sharedTexts.single, isNot(contains('Bekleyen KİŞİ')));
         expect(sharedTexts.single, isNot(contains('Reddedilen KİŞİ')));
         expect(sharedTexts.single, isNot(contains('İzinli KİŞİ')));
+          }
+        }
+        while (AppNotifications.controller.current != null) {
+          AppNotifications.controller.dismiss();
+        }
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pump(const Duration(milliseconds: 10));
         await tester.pump(const Duration(milliseconds: 10));
