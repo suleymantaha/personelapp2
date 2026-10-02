@@ -140,8 +140,9 @@ class MatrixRepository {
     for (final row in rows) {
       final assignment = row.readTable(db.faaliyetPersonelAtamaTable);
       if (assignment.durum == AssignmentStatus.reddedildi ||
-          !personnelById.containsKey(assignment.personelId))
+          !personnelById.containsKey(assignment.personelId)) {
         continue;
+      }
       final activity = row.readTable(db.gunlukFaaliyetTable);
       final dates = DutyCoverage.coveredDates(
         startDate: activity.tarih,
@@ -149,8 +150,9 @@ class MatrixRepository {
       );
       if (assignment.gorevTimId == null &&
           assignment.gorevTimAdi == null &&
-          dates.any((d) => d.startsWith(yearMonth)))
+          dates.any((d) => d.startsWith(yearMonth))) {
         unknownTeamCount++;
+      }
       if (assignment.gorevTimId != timId) continue;
       for (final date in dates.where((d) => d.startsWith(yearMonth))) {
         final day = int.parse(date.substring(8, 10));
@@ -191,8 +193,9 @@ class MatrixRepository {
                 .where((h) => h.tarih.split('T').first.compareTo(date) <= 0)
                 .firstOrNull;
         if (last != null) {
-          if (last.islem == 'eklendi' && last.timId == timId)
+          if (last.islem == 'eklendi' && last.timId == timId) {
             availableIds.add(person.id);
+          }
         } else if (person.timId == timId &&
             person.kayitTarihi.split('T').first.compareTo(date) <= 0) {
           rosterHistoryKnown = false;
