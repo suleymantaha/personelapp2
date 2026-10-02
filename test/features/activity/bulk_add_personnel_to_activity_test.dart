@@ -73,12 +73,12 @@ void main() {
     await tester.tap(find.text('+ Personel Ekle'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Tek Personel Ekle'), findsOneWidget);
+    expect(find.text('Personel Seçerek Ekle'), findsOneWidget);
     expect(find.text('Metinden Toplu Ekle'), findsOneWidget);
     expect(find.text('Görselden Toplu Ekle'), findsOneWidget);
     expect(find.textContaining('Metinden Personel Ekle'), findsNothing);
 
-    await tester.tap(find.text('Tek Personel Ekle'));
+    await tester.tap(find.text('Personel Seçerek Ekle'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('personnel-search-field')), findsOneWidget);
     await tester.tap(find.byKey(const Key('personnel-team-1')));
@@ -88,12 +88,14 @@ void main() {
     expect(find.text('1 personel seçildi'), findsOneWidget);
     await tester.tap(find.text('Devam et'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.tap(find.byType(DropdownButtonFormField<String>).first);
     await tester.pumpAndSettle();
     await tester.tap(find.text(DutyOrLeaveType.nobetci).last);
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Not ekle'));
+    await tester.pumpAndSettle();
     await tester.enterText(
-        find.byKey(const Key('assignment-note')), 'Görev notu');
+        find.byKey(const Key('assignment-note-1')), 'Görev notu');
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.text('1 personel seçildi'), findsOneWidget);
@@ -107,7 +109,7 @@ void main() {
     expect(find.byKey(const Key('personnel-search-field')), findsNothing);
     await tester.tap(find.text('+ Personel Ekle'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Tek Personel Ekle'));
+    await tester.tap(find.text('Personel Seçerek Ekle'));
     await tester.pumpAndSettle();
     expect(find.text('0 personel seçildi'), findsOneWidget);
     await tester.binding.handlePopRoute();

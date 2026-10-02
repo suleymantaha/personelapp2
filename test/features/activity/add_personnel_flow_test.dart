@@ -6,12 +6,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
 
 void main() {
   for (final width in [320.0, 412.0]) {
     for (final existing in [false, true]) {
-      testWidgets('single assignment existing=$existing at width $width',
+      testWidgets('multi assignment existing=$existing at width $width',
           (tester) async {
         tester.view.physicalSize = Size(width, 800);
         tester.view.devicePixelRatio = 1;
@@ -24,6 +25,13 @@ void main() {
         final person = await db.into(db.personelTable).insert(
             PersonelTableCompanion.insert(
                 adSoyad: 'Ahmet Yılmaz',
+                rutbe: 'J.Asb.',
+                birlik: 'Asayiş',
+                timId: Value(team),
+                kayitTarihi: '2026-10-03'));
+        final second = await db.into(db.personelTable).insert(
+            PersonelTableCompanion.insert(
+                adSoyad: 'Mehmet Kaya',
                 rutbe: 'J.Asb.',
                 birlik: 'Asayiş',
                 timId: Value(team),
@@ -81,18 +89,50 @@ void main() {
           expect(tester.takeException(), isNull);
           return;
         }
+        if (width == 412) {
+          await tester.enterText(
+              find.byKey(const Key('personnel-search-field')), '');
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(Key('personnel-squad-select-$team')));
+        } else {
+          await tester.enterText(
+              find.byKey(const Key('personnel-search-field')), 'kaya');
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(Key('personnel-option-$second')));
+        }
+        await tester.pumpAndSettle();
+        expect(find.text('2 personel seçildi'), findsOneWidget);
         await tester.tap(find.text('Devam et'));
         await tester.pumpAndSettle();
+        expect(find.byKey(Key('assignment-note-$person')), findsNothing);
+        await tester.tap(find
+            .byKey(Key('assignment-duty-$second-${DutyOrLeaveType.gorevli}')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(DutyOrLeaveType.nobetci).last);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Not ekle').first);
+        await tester.pumpAndSettle();
         await tester.enterText(
-            find.byKey(const Key('assignment-note')), 'Kapı nöbeti');
+            find.byKey(Key('assignment-note-$person')), 'Kapı nöbeti');
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        expect(find.text('2 personel seçildi'), findsOneWidget);
+        await tester.tap(find.text('Devam et'));
+        await tester.pumpAndSettle();
+        expect(find.text('Kapı nöbeti'), findsOneWidget);
         await tester.tap(find.text('Faaliyete Ekle'));
         await tester.pumpAndSettle();
         expect(find.text('Arşiv'), findsOneWidget);
         final rows = await db.select(db.faaliyetPersonelAtamaTable).get();
-        expect(rows, hasLength(1));
-        expect(rows.single.faaliyetId, activityId);
-        expect(rows.single.personelId, person);
-        expect(rows.single.aciklama, 'Kapı nöbeti');
+        expect(rows, hasLength(2));
+        expect(rows.every((r) => r.faaliyetId == activityId), isTrue);
+        expect(rows.map((r) => r.personelId), containsAll([person, second]));
+        expect(rows.singleWhere((r) => r.personelId == person).aciklama,
+            'Kapı nöbeti');
+        expect(rows.singleWhere((r) => r.personelId == second).gorevVeyaIzin,
+            DutyOrLeaveType.nobetci);
+        expect(rows.singleWhere((r) => r.personelId == person).gorevVeyaIzin,
+            DutyOrLeaveType.gorevli);
         expect(tester.takeException(), isNull);
       });
     }

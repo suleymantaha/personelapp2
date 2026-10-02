@@ -151,9 +151,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                               leading: const Icon(
                                 Icons.person_add_alt_1_rounded,
                               ),
-                              title: const Text('Tek Personel Ekle'),
+                              title: const Text('Personel Seçerek Ekle'),
                               subtitle: const Text(
-                                'Kayıtlı personelden bir kişi seçin',
+                                'Bir veya birden fazla personel seçin',
                               ),
                               onTap: () =>
                                   Navigator.of(sheetContext).pop('single'),

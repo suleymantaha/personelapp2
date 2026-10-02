@@ -35,6 +35,8 @@ class PersonnelPickerSheet extends StatefulWidget {
     this.preferredTimId,
     this.disabledReasons = const {},
     this.onSelected,
+    this.selectedPersonnelIds = const {},
+    this.onToggleSquad,
     super.key,
   });
 
@@ -46,6 +48,8 @@ class PersonnelPickerSheet extends StatefulWidget {
 
   /// When supplied, renders an embedded selector without opening another route.
   final ValueChanged<PersonelTableData>? onSelected;
+  final Set<int> selectedPersonnelIds;
+  final ValueChanged<List<int>>? onToggleSquad;
 
   @override
   State<PersonnelPickerSheet> createState() => _PersonnelPickerSheetState();
@@ -87,6 +91,10 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
 
+  bool _isSelected(PersonelTableData person) =>
+      widget.selectedPersonnelIds.contains(person.id) ||
+      person.id == widget.selectedPersonnelId;
+
   void _select(PersonelTableData person) {
     if (widget.disabledReasons.containsKey(person.id)) return;
     _lastSelectedTimId = person.timId;
@@ -118,9 +126,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
       ).contains(normalizedQuery);
     }).toList();
     final suggested = filtered
-        .where((person) =>
-            widget.onSelected == null &&
-            person.id == widget.selectedPersonnelId)
+        .where((person) => widget.onSelected == null && _isSelected(person))
         .firstOrNull;
 
     final grouped = <int?, List<PersonelTableData>>{};
@@ -305,7 +311,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                             (person) => _PersonnelTile(
                               person: person,
                               teamName: squadNames[person.timId] ?? 'Tim Dışı',
-                              selected: person.id == widget.selectedPersonnelId,
+                              selected: _isSelected(person),
                               disabledReason: widget.disabledReasons[person.id],
                               onTap: () => _select(person),
                             ),
@@ -324,11 +330,16 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                               _expandedTimIds.contains(timId);
                           final selectedCount = members
                               .where(
-                                (person) =>
-                                    person.id == widget.selectedPersonnelId,
+                                (person) => _isSelected(person),
                               )
                               .length;
 
+                          final eligible = members
+                              .where((p) =>
+                                  !widget.disabledReasons.containsKey(p.id))
+                              .toList();
+                          final allSelected = eligible.isNotEmpty &&
+                              eligible.every(_isSelected);
                           return Card(
                             clipBehavior: Clip.antiAlias,
                             margin: const EdgeInsets.only(bottom: 8),
@@ -358,11 +369,25 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                                   subtitle: selectedCount == 0
                                       ? null
                                       : Text('$selectedCount kişi seçili'),
-                                  trailing: Icon(
-                                    expanded
-                                        ? Icons.expand_less
-                                        : Icons.expand_more,
-                                  ),
+                                  trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (widget.onToggleSquad != null)
+                                          Checkbox(
+                                            key: Key(
+                                                'personnel-squad-select-$timId'),
+                                            value: allSelected,
+                                            onChanged: eligible.isEmpty
+                                                ? null
+                                                : (_) => widget.onToggleSquad!(
+                                                    eligible
+                                                        .map((p) => p.id)
+                                                        .toList()),
+                                          ),
+                                        Icon(expanded
+                                            ? Icons.expand_less
+                                            : Icons.expand_more),
+                                      ]),
                                 ),
                                 if (expanded)
                                   if (members.isEmpty)
@@ -383,8 +408,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                                       (person) => _PersonnelTile(
                                         person: person,
                                         teamName: teamName,
-                                        selected: person.id ==
-                                            widget.selectedPersonnelId,
+                                        selected: _isSelected(person),
                                         disabledReason:
                                             widget.disabledReasons[person.id],
                                         onTap: () => _select(person),

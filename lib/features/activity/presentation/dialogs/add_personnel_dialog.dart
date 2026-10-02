@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../widgets/single_assignment_details.dart';
+import '../widgets/activity_assignment_details_editor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -57,7 +57,6 @@ class AddPersonnelToActivityDialog extends ConsumerStatefulWidget {
 class _AddPersonnelToActivityDialogState
     extends ConsumerState<AddPersonnelToActivityDialog> {
   late final ActivityFormDraft _draft;
-  final _noteController = TextEditingController();
   bool _details = false;
   late final Future<Map<int, String>> _reservations;
   bool _saving = false;
@@ -75,22 +74,8 @@ class _AddPersonnelToActivityDialogState
         .getDailyReservationDescriptions(widget.activity.tarih);
   }
 
-  @override
-  void dispose() {
-    _noteController.dispose();
-    super.dispose();
-  }
-
   void _select(PersonelTableData person) {
-    setState(() {
-      for (final id in _draft.selectedPersonnelIds.toList()) {
-        if (id != person.id) _draft.togglePersonnel(id);
-      }
-      if (!_draft.selectedPersonnelIds.contains(person.id)) {
-        _draft.togglePersonnel(person.id);
-        _draft.setNote(person.id, _noteController.text);
-      }
-    });
+    setState(() => _draft.togglePersonnel(person.id));
   }
 
   void _back() {
@@ -107,18 +92,31 @@ class _AddPersonnelToActivityDialogState
     if (_saving || !_draft.canPreview) return;
     final actor = ref.read(userSessionProvider);
     if (actor == null) return;
-    final assignment = _draft.resolvedPersonnelAssignments.single;
+    final assignments = _draft.resolvedPersonnelAssignments;
     setState(() => _saving = true);
     try {
-      await ref.read(activityRepositoryProvider).addSingleAssignment(
-            faaliyetId: widget.activity.id,
-            personelId: assignment.personnelId,
-            gorevVeyaIzin: assignment.duty,
-            aciklama: assignment.note,
-            tarih: widget.activity.tarih,
-            actor: actor,
-          );
-      if (mounted) Navigator.of(context).pop(true);
+      final result =
+          await ref.read(activityRepositoryProvider).addAssignmentsToActivity(
+                activityId: widget.activity.id,
+                assignments: assignments,
+                actor: actor,
+              );
+      if (!mounted) return;
+      if (result.alreadyAssignedCount + result.conflictSkippedCount > 0) {
+        await showDialog<void>(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+                  title: const Text('Ekleme sonucu'),
+                  content: Text(
+                      '${result.addedCount} personel eklendi.\n${result.alreadyAssignedCount} personel zaten kayıtlı.\n${result.conflictSkippedCount} personel çakışma nedeniyle eklenemedi.'),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        child: const Text('Tamam'))
+                  ],
+                ));
+      }
+      if (mounted) Navigator.of(context).pop(result.addedCount > 0);
     } on AssignmentConflictException catch (error) {
       if (mounted) AppNotifications.error(error.message);
     } catch (error) {
@@ -207,24 +205,18 @@ class _AddPersonnelToActivityDialogState
               Expanded(
                   child: AbsorbPointer(
                       absorbing: _saving,
-                      child: _details && selected.length == 1
-                          ? SingleAssignmentDetails(
-                              person: selected.single,
-                              teamName: squads
-                                      .where(
-                                          (s) => s.id == selected.single.timId)
-                                      .firstOrNull
-                                      ?.timAdi ??
-                                  'Tim Dışı',
-                              duty: _draft.commonDuty,
+                      child: _details && selected.isNotEmpty
+                          ? ActivityAssignmentDetailsEditor(
+                              people: selected,
+                              squadNames: {
+                                for (final squad in squads)
+                                  squad.id: squad.timAdi
+                              },
+                              draft: _draft,
                               duties: duties,
-                              noteController: _noteController,
                               isAdmin: widget.isAdmin,
                               onChangePerson: _back,
-                              onDutyChanged: (value) =>
-                                  setState(() => _draft.setCommonDuty(value)),
-                              onNoteChanged: (value) =>
-                                  _draft.setNote(selected.single.id, value),
+                              onChanged: () => setState(() {}),
                             )
                           : FutureBuilder<Map<int, String>>(
                               future: _reservations,
@@ -250,7 +242,10 @@ class _AddPersonnelToActivityDialogState
                                 return PersonnelPickerSheet(
                                   personnel: people,
                                   squads: squads,
-                                  selectedPersonnelId: selected.firstOrNull?.id,
+                                  selectedPersonnelIds:
+                                      _draft.selectedPersonnelIds,
+                                  onToggleSquad: (ids) =>
+                                      setState(() => _draft.toggleSquad(ids)),
                                   preferredTimId:
                                       widget.isAdmin ? null : session?.timId,
                                   disabledReasons: {
@@ -279,7 +274,7 @@ class _AddPersonnelToActivityDialogState
                       ],
                       Expanded(
                           child: FilledButton(
-                        onPressed: _saving || selected.length != 1
+                        onPressed: _saving || selected.isEmpty
                             ? null
                             : _details
                                 ? _save
