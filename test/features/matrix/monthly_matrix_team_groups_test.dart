@@ -1,3 +1,4 @@
+import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,69 @@ import 'package:personelapp2/features/matrix/presentation/monthly_matrix_screen.
 
 void main() {
   setUpAll(() => initializeDateFormatting('tr_TR'));
+
+  testWidgets(
+    'historical matrix retains an inactive person with monthly tasks',
+    (tester) async {
+      tester.view.physicalSize = const Size(500, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      const person = PersonelTableData(
+        id: 9,
+        adSoyad: 'Ayrılan PERSONEL',
+        rutbe: 'J.Er',
+        birlik: 'Asayiş',
+        timId: 1,
+        kayitTarihi: '2026-01-01',
+        aktif: false,
+        isDemo: false,
+      );
+      const entry = MatrixDayEntry(
+        activityId: 1,
+        activityName: 'HEYBET',
+        duty: 'HEYBET',
+        assignmentStatus: 'onaylandi',
+        sourceDate: '2026-10-02',
+        isContinuationDay: false,
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            allPersonnelProvider.overrideWith((ref) => Stream.value([])),
+            historicalPersonnelProvider.overrideWith(
+              (ref) => Stream.value([person]),
+            ),
+            allSquadsProvider.overrideWith(
+              (ref) => Stream.value([
+                const TimTableData(id: 1, timAdi: '1-B', olusturmaTarihi: ''),
+              ]),
+            ),
+            userSessionProvider.overrideWith(
+              (ref) => const UserSessionState(
+                username: 'admin',
+                role: UserRole.admin,
+              ),
+            ),
+            monthlyMatrixProvider.overrideWith(
+              (ref, month) => Stream.value({
+                9: {
+                  2: MatrixDayCell.fromEntries([entry]),
+                },
+              }),
+            ),
+          ],
+          child: const MaterialApp(home: MonthlyMatrixScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('1-B'), findsOneWidget);
+      await tester.tap(find.text('1-B'));
+      await tester.pumpAndSettle();
+      expect(find.text('Ayrılan PERSONEL'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('mobile matrix shows personnel under official team headers', (
     tester,
@@ -23,7 +87,8 @@ void main() {
     ];
     const personnel = [
       PersonelTableData(
-      aktif: true, isDemo: false,
+        aktif: true,
+        isDemo: false,
         id: 1,
         adSoyad: 'Yedinci Tim Personeli',
         rutbe: 'J.Bnb.',
@@ -32,7 +97,8 @@ void main() {
         kayitTarihi: '',
       ),
       PersonelTableData(
-      aktif: true, isDemo: false,
+        aktif: true,
+        isDemo: false,
         id: 2,
         adSoyad: 'Karargah Personeli',
         rutbe: 'J.Ütğm.',
@@ -88,7 +154,8 @@ void main() {
     ];
     const personnel = [
       PersonelTableData(
-      aktif: true, isDemo: false,
+        aktif: true,
+        isDemo: false,
         id: 1,
         adSoyad: 'Ayşe Çelik',
         rutbe: 'Astsubay',
@@ -97,7 +164,8 @@ void main() {
         kayitTarihi: '',
       ),
       PersonelTableData(
-      aktif: true, isDemo: false,
+        aktif: true,
+        isDemo: false,
         id: 2,
         adSoyad: 'Çağrı Öztürk',
         rutbe: 'Teğmen',
@@ -121,7 +189,9 @@ void main() {
 
     expect(find.text('Aylık Matris'), findsOneWidget);
     expect(
-        find.byKey(const ValueKey('matrix-personnel-search')), findsOneWidget);
+      find.byKey(const ValueKey('matrix-personnel-search')),
+      findsOneWidget,
+    );
     expect(find.text('7-B Timi'), findsOneWidget);
     expect(find.text('Karargah'), findsOneWidget);
 
@@ -139,10 +209,7 @@ void main() {
       'bulunmayan',
     );
     await tester.pump();
-    expect(
-      find.text('Aramanızla eşleşen personel bulunamadı'),
-      findsOneWidget,
-    );
+    expect(find.text('Aramanızla eşleşen personel bulunamadı'), findsOneWidget);
 
     await tester.tap(find.text('Aramayı temizle'));
     await tester.pump();
@@ -163,7 +230,8 @@ void main() {
     ];
     const personnel = [
       PersonelTableData(
-      aktif: true, isDemo: false,
+        aktif: true,
+        isDemo: false,
         id: 1,
         adSoyad: 'Mehmet Yılmaz',
         rutbe: 'Astsubay',
@@ -186,21 +254,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('matrix-personnel-search')), findsNothing);
-    await tester.tap(
-      find.byKey(const ValueKey('matrix-mobile-search-button')),
-    );
+    await tester.tap(find.byKey(const ValueKey('matrix-mobile-search-button')));
     await tester.pumpAndSettle();
 
     expect(
-        find.byKey(const ValueKey('matrix-personnel-search')), findsOneWidget);
+      find.byKey(const ValueKey('matrix-personnel-search')),
+      findsOneWidget,
+    );
     await tester.enterText(
       find.byKey(const ValueKey('matrix-personnel-search')),
       'bulunmayan',
     );
     await tester.pump();
-    expect(
-      find.text('Aramanızla eşleşen personel bulunamadı'),
-      findsOneWidget,
-    );
+    expect(find.text('Aramanızla eşleşen personel bulunamadı'), findsOneWidget);
   });
 }

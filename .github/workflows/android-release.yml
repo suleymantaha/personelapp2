@@ -66,6 +66,8 @@ jobs:
           flutter test --reporter expanded --timeout 2m
           test/features/personnel/personnel_search_service_test.dart
           test/features/activity/edit_activity_block_dialog_test.dart
+          test/features/matrix/monthly_matrix_team_groups_test.dart
+          test/features/activity/bulk_add_personnel_to_activity_test.dart
           test/unit/stability_regression_test.dart
           test/unit/personnel_identity_regression_test.dart
           test/unit/history_and_ledger_regression_test.dart

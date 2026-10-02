@@ -9,8 +9,9 @@ import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
 
 void main() {
-  testWidgets('activity bulk option opens the full bulk import dialog',
-      (tester) async {
+  testWidgets('activity bulk option opens the full bulk import dialog', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -31,15 +32,14 @@ void main() {
         overrides: [
           databaseProvider.overrideWithValue(database),
           userSessionProvider.overrideWith(
-            (ref) => const UserSessionState(
-              username: 'admin',
-              role: UserRole.admin,
-            ),
+            (ref) =>
+                const UserSessionState(username: 'admin', role: UserRole.admin),
           ),
           allPersonnelProvider.overrideWith(
             (ref) => Stream.value(const [
               PersonelTableData(
-      aktif: true, isDemo: false,
+                aktif: true,
+                isDemo: false,
                 id: 1,
                 adSoyad: 'Ahmet YILMAZ',
                 rutbe: 'J.Asb.',
@@ -96,7 +96,9 @@ void main() {
     await tester.tap(find.text('Not ekle'));
     await tester.pumpAndSettle();
     await tester.enterText(
-        find.byKey(const Key('assignment-note-1')), 'Görev notu');
+      find.byKey(const Key('assignment-note-1')),
+      'Görev notu',
+    );
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.text('1 personel seçildi'), findsOneWidget);
@@ -126,8 +128,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('activity bulk option saves personnel into the selected activity',
-      (tester) async {
+  testWidgets('activity bulk option saves personnel into the selected activity', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -135,13 +138,17 @@ void main() {
 
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);
-    final teamId = await database.into(database.timTable).insert(
+    final teamId = await database
+        .into(database.timTable)
+        .insert(
           TimTableCompanion.insert(
             timAdi: '1. Tim',
             olusturmaTarihi: '2026-08-05',
           ),
         );
-    final personId = await database.into(database.personelTable).insert(
+    final personId = await database
+        .into(database.personelTable)
+        .insert(
           PersonelTableCompanion.insert(
             adSoyad: 'Ahmet YILMAZ',
             rutbe: 'J.Asb.Cvs.',
@@ -150,7 +157,9 @@ void main() {
             kayitTarihi: '2026-08-05',
           ),
         );
-    final activityId = await database.into(database.gunlukFaaliyetTable).insert(
+    final activityId = await database
+        .into(database.gunlukFaaliyetTable)
+        .insert(
           GunlukFaaliyetTableCompanion.insert(
             faaliyetAdi: 'Hedef Faaliyet',
             tarih: '2026-08-05',
@@ -166,7 +175,8 @@ void main() {
       olusturmaTarihi: '2026-08-05T08:00:00',
     );
     final person = PersonelTableData(
-      aktif: true, isDemo: false,
+      aktif: true,
+      isDemo: false,
       id: personId,
       adSoyad: 'Ahmet YILMAZ',
       rutbe: 'J.Asb.Cvs.',
@@ -180,10 +190,8 @@ void main() {
         overrides: [
           databaseProvider.overrideWithValue(database),
           userSessionProvider.overrideWith(
-            (ref) => const UserSessionState(
-              username: 'admin',
-              role: UserRole.admin,
-            ),
+            (ref) =>
+                const UserSessionState(username: 'admin', role: UserRole.admin),
           ),
           allPersonnelProvider.overrideWith((ref) => Stream.value([person])),
           allSquadsProvider.overrideWith(
@@ -215,7 +223,7 @@ void main() {
 
     await tester.enterText(
       find.byType(TextField).first,
-      '1- J.Asb.Cvs. Ahmet YILMAZ',
+      '05.08.2026\n1. Tim HEYBET 08:00 - 09:00\n1- J.Asb.Cvs. Ahmet YILMAZ\n1. Tim HEYBET 18:00 - 19:00\n1- J.Asb.Cvs. Ahmet YILMAZ',
     );
     await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
     await tester.pumpAndSettle();
@@ -231,7 +239,9 @@ void main() {
     expect(assignments, hasLength(1));
     expect(assignments.single.faaliyetId, activityId);
     expect(assignments.single.personelId, personId);
-    expect(assignments.single.gorevVeyaIzin, 'Hedef Faaliyet');
+    expect(assignments.single.gorevVeyaIzin, 'HEYBET');
+    expect(assignments.single.aciklama, contains('08:00 - 09:00'));
+    expect(assignments.single.aciklama, contains('18:00 - 19:00'));
     expect(
       await database.select(database.gunlukFaaliyetTable).get(),
       hasLength(1),
