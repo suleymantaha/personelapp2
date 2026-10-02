@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
-import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
@@ -40,7 +39,7 @@ void main() {
     const share = MethodChannel('dev.fluttercommunity.plus/share');
     final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     messenger.setMockMethodCallHandler(share, (call) async {
-      final args = call.arguments as Map;
+      final args = call.arguments as Map<dynamic, dynamic>;
       sharedTexts.add(args['text'] as String);
       return 'test.viewer';
     });
