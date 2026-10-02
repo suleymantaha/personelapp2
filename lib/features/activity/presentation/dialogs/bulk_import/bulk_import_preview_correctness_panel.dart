@@ -30,7 +30,14 @@ class _CorrectnessPanel extends StatelessWidget {
   final VoidCallback? onConfirmAllSuggestions;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) => _buildPanel(
+          context,
+          compact && constraints.maxWidth >= 720,
+        ),
+      );
+
+  Widget _buildPanel(BuildContext context, bool compact) {
     final actionText = actionCount == 0
         ? 'Tüm kontroller tamam'
         : 'Kaydetmeden önce $actionCount işlem tamamlanmalı';
