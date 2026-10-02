@@ -1,3 +1,4 @@
+import 'package:personelapp2/features/matrix/presentation/widgets/team_duty_day_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -6,6 +7,44 @@ import 'package:personelapp2/features/matrix/presentation/widgets/team_duty_cale
 
 void main() {
   group('TeamDutyCalendarModal Widget Tests', () {
+    testWidgets('day details show separate duties and pending status', (
+      tester,
+    ) async {
+      const day = TeamDayDutyDto(
+        tarih: '2026-10-02',
+        gunIndex: 2,
+        gorevKodu: '2 grup',
+        gorevTamAdi: 'GÜLÜŞKÜR / HEYBET',
+        gorevliPersonelAdlari: ['Ali KAYA', 'Ali KAYA', 'Veli DEMİR'],
+        gorevGruplari: [
+          TeamDutyGroupDto(
+            gorev: 'GÜLÜŞKÜR',
+            durum: 'onaylandi',
+            personelIds: [1, 2],
+            personelAdlari: ['Ali KAYA', 'Ali KAYA'],
+          ),
+          TeamDutyGroupDto(
+            gorev: 'HEYBET',
+            durum: 'beklemede',
+            personelIds: [3],
+            personelAdlari: ['Veli DEMİR'],
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: TeamDutyDayDetails(day: day, monthName: 'Ekim', year: 2026),
+          ),
+        ),
+      );
+      expect(find.text('2 GÜLÜŞKÜR • Onaylı'), findsOneWidget);
+      expect(find.text('1 HEYBET • Bekleyen'), findsOneWidget);
+      expect(find.text('Ali KAYA (#1)'), findsOneWidget);
+      expect(find.text('Ali KAYA (#2)'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     for (final dark in [false, true]) {
       testWidgets(
         'switches day details without keeping the previous personnel (dark: $dark)',
