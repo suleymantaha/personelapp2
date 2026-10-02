@@ -36,6 +36,8 @@ void main() {
   const assignments = [
     FaaliyetPersonelAtamaTableData(
       id: 1,
+      gorevTimId: 1,
+      gorevTimAdi: 'K.H',
       faaliyetId: 10,
       personelId: 1,
       gorevVeyaIzin: 'HEYBET',
@@ -43,6 +45,8 @@ void main() {
     ),
     FaaliyetPersonelAtamaTableData(
       id: 2,
+      gorevTimId: 1,
+      gorevTimAdi: 'K.H',
       faaliyetId: 10,
       personelId: 2,
       gorevVeyaIzin: 'HEYBET',
@@ -50,6 +54,8 @@ void main() {
     ),
     FaaliyetPersonelAtamaTableData(
       id: 3,
+      gorevTimId: 2,
+      gorevTimAdi: '7-B Timi',
       faaliyetId: 10,
       personelId: 3,
       gorevVeyaIzin: 'HEYBET',

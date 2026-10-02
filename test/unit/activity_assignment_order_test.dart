@@ -42,6 +42,8 @@ void main() {
     return FaaliyetPersonelAtamaTableData(
       id: id,
       faaliyetId: 1,
+      gorevTimId: personnel[personnelId]!.timId,
+      gorevTimAdi: squads[personnel[personnelId]!.timId],
       personelId: personnelId,
       gorevVeyaIzin: duty,
       durum: 'onaylandi',

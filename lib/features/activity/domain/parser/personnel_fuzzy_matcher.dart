@@ -132,7 +132,7 @@ class PersonnelFuzzyMatcher {
                 .where(
                   (p) =>
                       BulkImportLearningService.normalizeTeam(
-                        teamNames[p.timId] ?? '',
+                        teamNames[p.timId] ?? p.birlik,
                       ) ==
                       BulkImportLearningService.normalizeTeam(parsedTeamName),
                 )
