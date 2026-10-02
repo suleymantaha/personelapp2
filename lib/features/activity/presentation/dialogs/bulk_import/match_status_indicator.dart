@@ -9,32 +9,37 @@ class MatchStatusIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (label, color, icon) = switch (item) {
+    final (label, color, background, icon) = switch (item) {
       ParsedPersonnelItem(reviewConfirmed: true, isMatched: true) => (
           'Kullanıcı onayladı',
           context.approvedColor,
+          context.customColors.statusDutyBg,
           Icons.verified_rounded,
         ),
       ParsedPersonnelItem(teamMismatch: true) => (
           'Tim disi gorev',
-          Colors.orange.shade800,
+          context.warningColor,
+          context.warningBgColor,
           Icons.account_tree_outlined,
         ),
       ParsedPersonnelItem(matchConfidence: < 0.9, isMatched: true) => (
           item.matchConfidence > 0
               ? 'Eşleşmeyi kontrol edin (%${(item.matchConfidence * 100).toInt()})'
               : 'Eşleşmeyi kontrol edin',
-          Colors.orange.shade800,
+          context.warningColor,
+          context.warningBgColor,
           Icons.help_rounded,
         ),
       ParsedPersonnelItem(matchConfidence: >= 0.9, isMatched: true) => (
           'Eşleşti',
           context.approvedColor,
+          context.customColors.statusDutyBg,
           Icons.check_circle_rounded,
         ),
       _ => (
           'Eşleşmedi',
-          Colors.red.shade700,
+          context.rejectedColor,
+          context.rejectedBgColor,
           Icons.warning_amber_rounded,
         ),
     };
@@ -42,7 +47,7 @@ class MatchStatusIndicator extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: background,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(

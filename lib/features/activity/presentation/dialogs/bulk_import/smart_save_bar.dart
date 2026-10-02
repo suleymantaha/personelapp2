@@ -30,12 +30,12 @@ class BulkImportSaveButton extends StatelessWidget {
               ? null
               : onPressed,
       icon: isSaving
-          ? const SizedBox(
+          ? SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: Colors.white,
+                color: context.onStatusColor(context.approvedColor),
               ),
             )
           : const Icon(Icons.check_circle_rounded),
@@ -55,7 +55,7 @@ class BulkImportSaveButton extends StatelessWidget {
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: context.approvedColor,
-        foregroundColor: Colors.white,
+        foregroundColor: context.onStatusColor(context.approvedColor),
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -134,12 +134,12 @@ class SmartSaveBar extends StatelessWidget {
                 key: const Key('bulk-import-save-button'),
                 onPressed: isSaving ? null : onSave,
                 icon: isSaving
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: context.onStatusColor(context.approvedColor),
                         ),
                       )
                     : const Icon(Icons.check_circle_rounded, size: 20),
@@ -154,7 +154,7 @@ class SmartSaveBar extends StatelessWidget {
                 ),
                 style: FilledButton.styleFrom(
                   backgroundColor: context.approvedColor,
-                  foregroundColor: Colors.white,
+                  foregroundColor: context.onStatusColor(context.approvedColor),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -241,7 +241,7 @@ class SmartSaveBar extends StatelessWidget {
                     ),
                     style: FilledButton.styleFrom(
                       backgroundColor: wizardButtonColor,
-                      foregroundColor: Colors.white,
+                      foregroundColor: context.onStatusColor(wizardButtonColor),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -256,8 +256,8 @@ class SmartSaveBar extends StatelessWidget {
               key: const Key('bulk-import-save-button'),
               onPressed: null,
               style: FilledButton.styleFrom(
-                backgroundColor: Colors.grey.shade300,
-                foregroundColor: Colors.grey.shade600,
+                backgroundColor: context.colorScheme.surfaceContainerHighest,
+                foregroundColor: context.textMuted,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),

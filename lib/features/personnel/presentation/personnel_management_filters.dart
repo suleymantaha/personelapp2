@@ -77,7 +77,7 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
                 selectedColor: context.accentOrOlive,
                 labelStyle: TextStyle(
                   color: _selectedFilterTimId == null
-                      ? Colors.white
+                      ? context.onAccentOrOlive
                       : context.textPrimary,
                   fontWeight: _selectedFilterTimId == null
                       ? FontWeight.bold
@@ -90,7 +90,9 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
                   avatar: Icon(
                     Icons.shield,
                     size: 16,
-                    color: isSelected ? Colors.white : context.accentOrOlive,
+                    color: isSelected
+                        ? context.onAccentOrOlive
+                        : context.accentOrOlive,
                   ),
                   label: Text(sq.timAdi),
                   selected: isSelected,
@@ -101,7 +103,9 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
                   },
                   selectedColor: context.accentOrOlive,
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : context.textPrimary,
+                    color: isSelected
+                        ? context.onAccentOrOlive
+                        : context.textPrimary,
                     fontWeight:
                         isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
@@ -112,7 +116,7 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
                   Icons.person_off,
                   size: 16,
                   color: _selectedFilterTimId == -1
-                      ? Colors.white
+                      ? context.onStatusColor(context.rejectedBorderColor)
                       : context.rejectedColor,
                 ),
                 label: const Text('Boşta / Kadro Dışı'),
@@ -125,7 +129,7 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
                 selectedColor: context.rejectedBorderColor,
                 labelStyle: TextStyle(
                   color: _selectedFilterTimId == -1
-                      ? Colors.white
+                      ? context.onStatusColor(context.rejectedBorderColor)
                       : context.textPrimary,
                   fontWeight: _selectedFilterTimId == -1
                       ? FontWeight.bold

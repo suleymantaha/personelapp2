@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -48,7 +49,8 @@ class BackupRestoreDialog extends ConsumerStatefulWidget {
   final BackupFileGateway? fileGateway;
 
   @override
-  ConsumerState<BackupRestoreDialog> createState() => _BackupRestoreDialogState();
+  ConsumerState<BackupRestoreDialog> createState() =>
+      _BackupRestoreDialogState();
 }
 
 class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
@@ -551,8 +553,14 @@ class _NoticeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final (icon, color) = switch (notice.type) {
-      _BackupNoticeType.success => (Icons.check_circle_outline, Colors.green),
-      _BackupNoticeType.warning => (Icons.warning_amber_rounded, Colors.orange),
+      _BackupNoticeType.success => (
+          Icons.check_circle_outline,
+          context.approvedColor
+        ),
+      _BackupNoticeType.warning => (
+          Icons.warning_amber_rounded,
+          context.warningColor
+        ),
       _BackupNoticeType.error => (Icons.error_outline, colors.error),
     };
     return Container(
