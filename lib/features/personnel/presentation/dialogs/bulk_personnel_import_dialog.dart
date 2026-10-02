@@ -109,11 +109,21 @@ class _BulkPersonnelImportDialogState
         _items.where((item) => item.rank.trim().isEmpty).length;
     final invalidCount = _items.where((item) => !item.isValid).length;
     final seenKeys = existingPersonnel
-        .map((person) => _draftKey(person.adSoyad, person.rutbe))
+        .map((person) => personnelImportKey(
+              name: person.adSoyad,
+              rank: person.rutbe,
+              unit: person.birlik,
+              teamId: person.timId,
+            ))
         .toSet();
     final duplicateIndexes = <int>{};
     for (final entry in _items.asMap().entries) {
-      if (!seenKeys.add(_draftKey(entry.value.name, entry.value.rank))) {
+      if (!seenKeys.add(personnelImportKey(
+        name: entry.value.name,
+        rank: entry.value.rank,
+        unit: entry.value.unit,
+        teamId: entry.value.squadId,
+      ))) {
         duplicateIndexes.add(entry.key);
       }
     }
@@ -372,17 +382,4 @@ class _BulkPersonnelImportDialogState
     );
   }
 
-  static String _draftKey(String name, String rank) {
-    String fold(String value) => value
-        .trim()
-        .toLowerCase()
-        .replaceAll('ı', 'i')
-        .replaceAll('ğ', 'g')
-        .replaceAll('ü', 'u')
-        .replaceAll('ş', 's')
-        .replaceAll('ö', 'o')
-        .replaceAll('ç', 'c')
-        .replaceAll(RegExp(r'\s+'), ' ');
-    return '${fold(normalizeRank(rank))}|${fold(name)}';
-  }
 }

@@ -23,6 +23,16 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         _cardKeys.clear();
         _personKeys.clear();
         _parsedBlocks = blocks;
+        const cardIssueCodes = {
+          'empty_block',
+          'missing_date',
+          'unknown_team',
+          'unknown_activity',
+          'unmatched_personnel',
+        };
+        _sourceParseIssues = draft.issues
+            .where((issue) => !cardIssueCodes.contains(issue.code))
+            .toList();
         _parseIssues = List<BulkParseIssue>.from(draft.issues);
         _deduplicatedPersonnelCount = draft.deduplicatedPersonnelCount;
         _previewFilter = _BulkPreviewFilter.all;
@@ -318,6 +328,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       _updateState(() {
         _parsedBlocks.clear();
         _parseIssues.clear();
+        _sourceParseIssues.clear();
         _previewFilter = _BulkPreviewFilter.all;
         _parseIssuesExpanded = false;
         _deduplicatedPersonnelCount = 0;

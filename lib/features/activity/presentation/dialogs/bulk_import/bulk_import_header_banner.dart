@@ -33,12 +33,12 @@ class BulkImportHeaderBanner extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: context.onAccentOrOlive.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.paste_rounded,
-              color: Colors.white,
+              color: context.onAccentOrOlive,
               size: 24,
             ),
           ),
@@ -52,16 +52,16 @@ class BulkImportHeaderBanner extends StatelessWidget {
                   style: TextStyle(
                     fontSize: isKeyboardVisible ? 16 : 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: context.onAccentOrOlive,
                   ),
                 ),
                 if (!isKeyboardVisible) ...[
                   const SizedBox(height: 2),
-                  const Text(
+                  Text(
                     'WhatsApp / Telegram nöbet listelerini yapıştırıp akıllı ayrıştırın',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white70,
+                      color: context.onAccentOrOlive,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -72,11 +72,12 @@ class BulkImportHeaderBanner extends StatelessWidget {
           if (onOpenMemory != null)
             IconButton(
               tooltip: 'Sistem Hafızasını (Takma Adları) Yönet',
-              icon: const Icon(Icons.psychology_rounded, color: Colors.white),
+              icon: Icon(Icons.psychology_rounded,
+                  color: context.onAccentOrOlive),
               onPressed: onOpenMemory,
             ),
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
+            icon: Icon(Icons.close, color: context.onAccentOrOlive),
             onPressed: onClose,
           ),
         ],

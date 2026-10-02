@@ -507,7 +507,7 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isDraft ? Colors.orange.shade800 : context.accentOrOlive;
+    final color = isDraft ? context.warningColor : context.accentOrOlive;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(

@@ -11,6 +11,17 @@ double contrastRatio(Color foreground, Color background) {
 }
 
 void main() {
+  for (final colors in [AppCustomColors.light, AppCustomColors.dark]) {
+    test(
+      'warning text remains readable on its status background ($colors)',
+      () {
+        expect(
+          contrastRatio(colors.statusPendingText, colors.statusPendingBg),
+          greaterThanOrEqualTo(4.5),
+        );
+      },
+    );
+  }
   test('light theme uses the slate and emerald palette', () {
     final theme = AppTheme.militaryTheme;
 

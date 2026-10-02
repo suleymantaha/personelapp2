@@ -53,6 +53,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   final TextEditingController _textController = TextEditingController();
   List<ParsedActivityBlock> _parsedBlocks = [];
   List<BulkParseIssue> _parseIssues = [];
+  // Preserve source rows that never became editable card fields until reparse.
+  List<BulkParseIssue> _sourceParseIssues = [];
   List<PersonelTableData> _allPersonnel = [];
   List<TimTableData> _allSquads = [];
   bool _isParsing = false;
@@ -180,12 +182,23 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }
 
   void _syncParseIssuesWithBlocks() {
-    if (_parsedBlocks.isEmpty) {
-      _parseIssues = [];
-      return;
-    }
-
-    final newIssues = <BulkParseIssue>[];
+    final newIssues = _sourceParseIssues.where((issue) {
+      if (issue.code == 'no_blocks' || issue.code == 'empty_input') {
+        return _parsedBlocks.isEmpty;
+      }
+      if (issue.code == 'unknown_rank') {
+        // An identified personnel record supplies the missing/unknown rank.
+        return !_parsedBlocks.any(
+          (block) => block.personnelList.any(
+            (person) =>
+                person.sourceLineNumber == issue.lineNumber &&
+                person.isMatched &&
+                (person.matchedRutbe?.trim().isNotEmpty ?? false),
+          ),
+        );
+      }
+      return true;
+    }).toList();
 
     for (var i = 0; i < _parsedBlocks.length; i++) {
       final block = _parsedBlocks[i];

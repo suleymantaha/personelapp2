@@ -78,7 +78,14 @@ class PersonnelRepository {
     return db.transaction(() async {
       final existing = await db.select(db.personelTable).get();
       final knownKeys = existing
-          .map((person) => _personnelKey(person.adSoyad, person.rutbe))
+          .map(
+            (person) => personnelImportKey(
+              name: person.adSoyad,
+              rank: person.rutbe,
+              unit: person.birlik,
+              teamId: person.timId,
+            ),
+          )
           .toSet();
       var addedCount = 0;
       var skippedCount = 0;
@@ -86,13 +93,20 @@ class PersonnelRepository {
       for (final entry in entries) {
         final name = entry.adSoyad.trim();
         final rank = normalizeRank(entry.rutbe.trim());
-        final key = _personnelKey(name, rank);
+        final key = personnelImportKey(
+          name: name,
+          rank: rank,
+          unit: entry.birlik,
+          teamId: entry.timId,
+        );
         if (name.isEmpty || knownKeys.contains(key)) {
           skippedCount++;
           continue;
         }
 
-        final newId = await db.into(db.personelTable).insert(
+        final newId = await db
+            .into(db.personelTable)
+            .insert(
               PersonelTableCompanion.insert(
                 adSoyad: name,
                 rutbe: rank.isEmpty ? 'J.Er' : rank,
@@ -104,7 +118,9 @@ class PersonnelRepository {
               ),
             );
         if (entry.timId != null) {
-          await db.into(db.timUyelikGecmisiTable).insert(
+          await db
+              .into(db.timUyelikGecmisiTable)
+              .insert(
                 TimUyelikGecmisiTableCompanion.insert(
                   personelId: newId,
                   timId: Value(entry.timId),
@@ -122,20 +138,6 @@ class PersonnelRepository {
         skippedCount: skippedCount,
       );
     });
-  }
-
-  static String _personnelKey(String name, String rank) {
-    String fold(String value) => value
-        .trim()
-        .toLowerCase()
-        .replaceAll('ı', 'i')
-        .replaceAll('ğ', 'g')
-        .replaceAll('ü', 'u')
-        .replaceAll('ş', 's')
-        .replaceAll('ö', 'o')
-        .replaceAll('ç', 'c')
-        .replaceAll(RegExp(r'\s+'), ' ');
-    return '${fold(normalizeRank(rank))}|${fold(name)}';
   }
 
   Future<bool> updatePersonnel(PersonelTableData data, {String? tarih}) async {

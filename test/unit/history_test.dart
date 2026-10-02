@@ -74,29 +74,26 @@ void main() {
       timId: timId,
     );
 
-    final result = await repo.importPersonnelBatch(
-      [
-        PersonnelImportEntry(
-          adSoyad: 'ahmet yilmaz',
-          rutbe: 'J.Asb.Çvş.',
-          birlik: 'Asayiş Timi',
-          timId: timId,
-        ),
-        PersonnelImportEntry(
-          adSoyad: 'Mehmet DEMİR',
-          rutbe: 'J.Uzm.Çvş.',
-          birlik: 'Asayiş Timi',
-          timId: timId,
-        ),
-        PersonnelImportEntry(
-          adSoyad: 'Mehmet DEMİR',
-          rutbe: 'J.Uzm.Çvş.',
-          birlik: 'Asayiş Timi',
-          timId: timId,
-        ),
-      ],
-      kayitTarihi: '2026-08-05',
-    );
+    final result = await repo.importPersonnelBatch([
+      PersonnelImportEntry(
+        adSoyad: 'ahmet yilmaz',
+        rutbe: 'J.Asb.Çvş.',
+        birlik: 'Asayiş Timi',
+        timId: timId,
+      ),
+      PersonnelImportEntry(
+        adSoyad: 'Mehmet DEMİR',
+        rutbe: 'J.Uzm.Çvş.',
+        birlik: 'Asayiş Timi',
+        timId: timId,
+      ),
+      PersonnelImportEntry(
+        adSoyad: 'Mehmet DEMİR',
+        rutbe: 'J.Uzm.Çvş.',
+        birlik: 'Asayiş Timi',
+        timId: timId,
+      ),
+    ], kayitTarihi: '2026-08-05');
 
     expect(result.addedCount, 1);
     expect(result.skippedCount, 2);
@@ -105,4 +102,54 @@ void main() {
     final history = await db.select(db.timUyelikGecmisiTable).get();
     expect(history, hasLength(2));
   });
+  test('batch import keeps namesakes in different teams', () async {
+    final firstTeam = await repo.addSquad(
+      timAdi: '1-B',
+      olusturmaTarihi: '2026-08-05',
+    );
+    final secondTeam = await repo.addSquad(
+      timAdi: '2-B',
+      olusturmaTarihi: '2026-08-05',
+    );
+    await repo.addPersonnel(
+      adSoyad: 'Ahmet YILMAZ',
+      rutbe: 'J.Asb.Çvş.',
+      birlik: 'Asayiş Timi',
+      kayitTarihi: '2026-08-05',
+      timId: firstTeam,
+    );
+    final result = await repo.importPersonnelBatch([
+      PersonnelImportEntry(
+        adSoyad: 'Ahmet YILMAZ',
+        rutbe: 'J.Asb.Çvş.',
+        birlik: 'Asayiş Timi',
+        timId: secondTeam,
+      ),
+    ], kayitTarihi: '2026-08-05');
+    expect(result.addedCount, 1);
+    expect(result.skippedCount, 0);
+    expect(await db.select(db.personelTable).get(), hasLength(2));
+    expect(await db.select(db.timUyelikGecmisiTable).get(), hasLength(2));
+  });
+
+  test(
+    'batch import keeps namesakes in different units without a team',
+    () async {
+      await repo.addPersonnel(
+        adSoyad: 'Ali DEMİR',
+        rutbe: 'J.Er',
+        birlik: '1. Bölük',
+        kayitTarihi: '2026-08-05',
+      );
+      final result = await repo.importPersonnelBatch([
+        const PersonnelImportEntry(
+          adSoyad: 'Ali DEMİR',
+          rutbe: 'J.Er',
+          birlik: '2. Bölük',
+        ),
+      ], kayitTarihi: '2026-08-05');
+      expect(result.addedCount, 1);
+      expect(await db.select(db.personelTable).get(), hasLength(2));
+    },
+  );
 }

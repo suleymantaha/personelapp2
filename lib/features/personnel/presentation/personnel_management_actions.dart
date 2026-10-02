@@ -156,7 +156,7 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: context.accentOrOlive,
-                      foregroundColor: Colors.white,
+                      foregroundColor: context.onAccentOrOlive,
                     ),
                     onPressed: () async {
                       final u = userCtrl.text.trim();

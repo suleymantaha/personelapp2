@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
-import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/match_status_indicator.dart';
+import 'personnel_match_header.dart';
+import 'personnel_match_badges.dart';
+import 'personnel_match_actions.dart';
 
 export 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/match_status_indicator.dart';
 
@@ -35,33 +37,20 @@ class PersonnelMatchCard extends StatelessWidget {
     final problem = duplicate || item.hasWarning || !item.isMatched;
 
     final accentColor = !item.isMatched
-        ? Colors.red.shade600
-        : (item.hasWarning ? Colors.orange.shade800 : context.approvedColor);
+        ? context.rejectedColor
+        : (item.hasWarning ? context.warningColor : context.approvedColor);
 
     final borderColor = isFocused
-        ? Colors.amber.shade800
+        ? context.warningColor
         : (problem
             ? accentColor.withValues(alpha: 0.4)
             : context.cardBorderColor);
 
     final bgColor = isFocused
-        ? Colors.amber.shade50
+        ? context.warningBgColor
         : (problem
             ? accentColor.withValues(alpha: 0.035)
             : Theme.of(context).cardColor);
-
-    final rawRankText = item.rawRank.trim();
-    final rawNameText = item.rawName.trim();
-    final matchedName = item.isMatched
-        ? '${item.matchedRutbe ?? ''} ${item.matchedAdSoyad}'.trim()
-        : 'Personel seçilmedi';
-
-    final hasNameDiff = item.isMatched &&
-        (rawNameText.toLowerCase() !=
-                (item.matchedAdSoyad ?? '').toLowerCase() ||
-            (rawRankText.isNotEmpty &&
-                item.matchedRutbe != null &&
-                rawRankText.toLowerCase() != item.matchedRutbe!.toLowerCase()));
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
@@ -73,7 +62,7 @@ class PersonnelMatchCard extends StatelessWidget {
         boxShadow: isFocused
             ? [
                 BoxShadow(
-                  color: Colors.amber.withValues(alpha: 0.25),
+                  color: context.warningColor.withValues(alpha: 0.25),
                   blurRadius: 10,
                   spreadRadius: 2,
                 ),
@@ -97,422 +86,26 @@ class PersonnelMatchCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Üst Satır: Sıra No + Rütbe + Ana Personel Başlığı + Sil Butonu
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  context.accentOrOlive.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              '${item.rawIndex}',
-                              style: TextStyle(
-                                color: context.accentOrOlive,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        item.isMatched
-                                            ? matchedName
-                                            : rawNameText,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15,
-                                          color: item.isMatched
-                                              ? null
-                                              : Colors.red.shade700,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.fade,
-                                        softWrap: true,
-                                      ),
-                                    ),
-                                    if (item.isMatched &&
-                                        item.reviewConfirmed &&
-                                        item.matchConfidence == 1.0 &&
-                                        hasNameDiff) ...[
-                                      const SizedBox(width: 6),
-                                      Tooltip(
-                                        message: 'Hafızadan Otomatik Eşleşti',
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.amber.shade50,
-                                            borderRadius:
-                                                BorderRadius.circular(6),
-                                            border: Border.all(
-                                              color: Colors.amber.shade400,
-                                              width: 0.8,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.auto_awesome,
-                                                size: 11,
-                                                color: Colors.amber.shade900,
-                                              ),
-                                              const SizedBox(width: 3),
-                                              Text(
-                                                'Hafızadan',
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.amber.shade900,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                                if (hasNameDiff ||
-                                    item.sourceLineNumber != null) ...[
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    [
-                                      if (hasNameDiff)
-                                        'Metinde: $rawRankText $rawNameText'
-                                            .trim(),
-                                      if (item.sourceLineNumber != null)
-                                        '📍 Satır ${item.sourceLineNumber}',
-                                    ].join(' • '),
-                                    style: TextStyle(
-                                      color: context.textSecondary,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            key: const Key('bulk-person-delete'),
-                            tooltip: 'Personeli kaldır',
-                            visualDensity: VisualDensity.compact,
-                            onPressed: onDelete,
-                            icon: Icon(
-                              Icons.delete_outline_rounded,
-                              color: Colors.redAccent.shade200,
-                              size: 18,
-                            ),
-                          ),
-                        ],
+                      PersonnelMatchHeader(
+                        item: item,
+                        onDelete: onDelete,
                       ),
-
                       const SizedBox(height: 6),
-
-                      // Rozetler Satırı: Eşleşme durumu + Mükerrer / Tim Uyuşmazlığı
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          if (isFocused)
-                            Container(
-                              key: const Key('bulk-focused-person-badge'),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: !item.isMatched
-                                    ? Colors.red.shade800
-                                    : Colors.amber.shade900,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.east_rounded,
-                                    size: 10,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    !item.isMatched
-                                        ? 'SEÇİLİ HATA'
-                                        : 'İNCELENEN PERSONEL',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          MatchStatusIndicator(item: item),
-                          if (duplicate)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                'Aynı tarihte ayrıca: ${duplicateAssignments!.join(', ')}',
-                                key: const Key('bulk-duplicate-warning'),
-                                style: TextStyle(
-                                  color: Colors.red.shade700,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          if (item.teamMismatch && !item.reviewConfirmed)
-                            InkWell(
-                              onTap: onConfirmSuggestion,
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.orange.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.orange.shade300,
-                                    width: 0.8,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.info_outline_rounded,
-                                      size: 13,
-                                      color: Colors.orange.shade800,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Tim disi gorev (Kabul et)',
-                                      key: const Key(
-                                          'bulk-team-mismatch-warning'),
-                                      style: TextStyle(
-                                        color: Colors.orange.shade900,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                        ],
+                      PersonnelMatchBadges(
+                        item: item,
+                        duplicateAssignments: duplicateAssignments,
+                        isFocused: isFocused,
+                        onConfirmSuggestion: onConfirmSuggestion,
                       ),
-
                       const SizedBox(height: 8),
-
-                      // Alt Aksiyon Satırı
-                      if (item.isMatched)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            if (item.hasWarning &&
-                                onConfirmSuggestion != null) ...[
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: FilledButton.icon(
-                                  key: const Key(
-                                      'bulk-person-confirm-suggestion'),
-                                  onPressed: onConfirmSuggestion,
-                                  icon:
-                                      const Icon(Icons.done_rounded, size: 14),
-                                  label: const Text(
-                                    'Onayla',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: const Color(0xFF16A34A),
-                                    foregroundColor: Colors.white,
-                                    minimumSize: const Size(0, 48),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                            ],
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.groups_outlined,
-                                  size: 16,
-                                  color: context.textSecondary,
-                                ),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      if (registeredTeamName
-                                              ?.trim()
-                                              .isNotEmpty ==
-                                          true)
-                                        Text(
-                                          'Kayitli tim: ${registeredTeamName!.trim()}',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: context.textSecondary,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      Text(
-                                        'Liste timi: $teamName',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: context.textPrimary,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                InkWell(
-                                  key: const Key('bulk-person-select'),
-                                  onTap: onSelect,
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Container(
-                                    constraints:
-                                        const BoxConstraints(minHeight: 48),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: context.accentOrOlive
-                                          .withValues(alpha: 0.12),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          'Değiştir',
-                                          style: TextStyle(
-                                            color: context.accentOrOlive,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 2),
-                                        Icon(
-                                          Icons.chevron_right_rounded,
-                                          size: 16,
-                                          color: context.accentOrOlive,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        )
-                      else
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                key: const Key('bulk-person-select-btn'),
-                                onPressed: onSelect,
-                                icon: const Icon(Icons.search, size: 14),
-                                label: const Text(
-                                  'Personel Seç',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 6,
-                                  ),
-                                  visualDensity: VisualDensity.compact,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            if (onAddNewPerson != null) ...[
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: FilledButton.icon(
-                                  key: const Key('bulk-person-add-new'),
-                                  onPressed: onAddNewPerson,
-                                  icon: const Icon(
-                                    Icons.person_add_alt_1_rounded,
-                                    size: 14,
-                                  ),
-                                  label: Text(
-                                    '+ ${teamName.toLowerCase().contains('tim') ? teamName : '$teamName Timine'} Ekle',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: context.accentOrOlive,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 6,
-                                    ),
-                                    visualDensity: VisualDensity.compact,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
+                      PersonnelMatchActions(
+                        item: item,
+                        teamName: teamName,
+                        registeredTeamName: registeredTeamName,
+                        onSelect: onSelect,
+                        onConfirmSuggestion: onConfirmSuggestion,
+                        onAddNewPerson: onAddNewPerson,
+                      ),
                     ],
                   ),
                 ),
