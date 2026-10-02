@@ -13,6 +13,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
       Iterable<FaaliyetPersonelAtamaTableData> assignments,
     )
     buildRosterRows,
+    required Future<List<MilitaryRosterRow>> Function(Iterable<FaaliyetPersonelAtamaTableData>) loadCurrentRows,
   }) {
     final pMap = personnelById;
     final squadMap = squadNames;
@@ -73,12 +74,15 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
             );
             if (action == null || !context.mounted) return;
 
+            try {
+            final currentRows = await loadCurrentRows(selectedAssignments);
+            if (!context.mounted || currentRows.isEmpty) return;
             switch (action) {
               case ArchiveExportType.excel:
                 await MilitaryRosterExporter.shareExcelRoster(
                   faaliyetAdi: activity.faaliyetAdi,
                   tarih: activity.tarih,
-                  rows: selectedRows,
+                  rows: currentRows,
                 );
                 return;
               case ArchiveExportType.pdf:
@@ -86,7 +90,8 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                   context,
                   faaliyetAdi: activity.faaliyetAdi,
                   tarih: activity.tarih,
-                  rows: selectedRows,
+                  rows: currentRows,
+                  loadRows: () => loadCurrentRows(selectedAssignments),
                 );
                 return;
               case ArchiveExportType.print:
@@ -94,16 +99,20 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                   context,
                   faaliyetAdi: activity.faaliyetAdi,
                   tarih: activity.tarih,
-                  rows: selectedRows,
+                  rows: currentRows,
+                  loadRows: () => loadCurrentRows(selectedAssignments),
                 );
                 return;
               case ArchiveExportType.text:
                 await MilitaryRosterExporter.shareTextRoster(
                   faaliyetAdi: activity.faaliyetAdi,
                   tarih: activity.tarih,
-                  rows: selectedRows,
+                  rows: currentRows,
                 );
                 return;
+            }
+            } catch (error) {
+              if (context.mounted) AppNotifications.error('Dışa aktarılamadı: $error');
             }
           },
           onDeleteSelected:

@@ -225,6 +225,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
         faaliyetAdi: mainActivityName,
         tarih: dateTitle,
         rows: rows,
+        loadRows: () => _buildRosterRowsForMasterExport(activities, personnelList),
       );
     }
   }
@@ -271,6 +272,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
               : 'GÜNLÜK TÜM FAALİYETLER',
       tarih: _buildExportDateTitle(activities),
       rows: rows,
+      loadRows: () => _buildRosterRowsForMasterExport(activities, personnelList),
     );
   }
 

@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'package:drift/drift.dart' hide Column;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -112,7 +112,25 @@ class ActivityAssignmentDetails extends ConsumerWidget {
       ];
     }
 
-    final rosterRows = buildRosterRows(filteredAssignments);
+    Future<List<MilitaryRosterRow>> loadCurrentRows(
+      Iterable<FaaliyetPersonelAtamaTableData> selected,
+    ) async {
+      final currentSession = ref.read(userSessionProvider);
+      if (currentSession == null) throw StateError('Oturum doğrulanamadı.');
+      final team = currentSession.isAdmin ? null : await ref
+          .read(personnelRepositoryProvider)
+          .currentCommanderTeam(currentSession.username);
+      if (!currentSession.isAdmin && team == null) {
+        throw StateError('Tim yetkiniz sona erdi.');
+      }
+      final ids = selected.map((a) => a.id).toSet();
+      final db = ref.read(databaseProvider);
+      final current = await (db.select(db.faaliyetPersonelAtamaTable)
+        ..where((a) => a.faaliyetId.equals(activity.id) & a.id.isIn(ids))).get();
+      return buildRosterRows(current.where((a) =>
+        (currentSession.isAdmin || a.gorevTimId == team) &&
+        (selectedSquadId == null || a.gorevTimId == selectedSquadId)));
+    }
 
     return Container(
       color: context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
@@ -300,32 +318,33 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                 surfaceTintColor: context.colorScheme.surface,
                 shape: modernPopupShape(context),
                 constraints: const BoxConstraints(minWidth: 290, maxWidth: 330),
-                onSelected: (val) {
-                  if (val == 'excel') {
-                    unawaited(
-                      MilitaryRosterExporter.shareExcelRoster(
+                onSelected: (val) async {
+                  try {
+                    final rows = await loadCurrentRows(filteredAssignments);
+                    if (!context.mounted || rows.isEmpty) return;
+                    if (val == 'excel') {
+                      await MilitaryRosterExporter.shareExcelRoster(
                         faaliyetAdi: activity.faaliyetAdi,
                         tarih: activity.tarih,
-                        rows: rosterRows,
-                      ),
-                    );
-                  } else if (val == 'pdf') {
-                    unawaited(
-                      PdfRosterExporter.showStylePickerAndSharePdf(
+                        rows: rows,
+                      );
+                    } else if (val == 'pdf') {
+                      await PdfRosterExporter.showStylePickerAndSharePdf(
                         context,
                         faaliyetAdi: activity.faaliyetAdi,
                         tarih: activity.tarih,
-                        rows: rosterRows,
-                      ),
-                    );
-                  } else if (val == 'text') {
-                    unawaited(
-                      MilitaryRosterExporter.shareTextRoster(
+                        rows: rows,
+                        loadRows: () => loadCurrentRows(filteredAssignments),
+                      );
+                    } else if (val == 'text') {
+                      await MilitaryRosterExporter.shareTextRoster(
                         faaliyetAdi: activity.faaliyetAdi,
                         tarih: activity.tarih,
-                        rows: rosterRows,
-                      ),
-                    );
+                        rows: rows,
+                      );
+                    }
+                  } catch (error) {
+                    if (context.mounted) AppNotifications.error('Dışa aktarılamadı: $error');
                   }
                 },
                 itemBuilder:
@@ -375,6 +394,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
             personnelById: pMap,
             squadNames: squadMap,
             buildRosterRows: buildRosterRows,
+            loadCurrentRows: loadCurrentRows,
           ),
         ],
       ),

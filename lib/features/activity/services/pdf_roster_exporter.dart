@@ -82,6 +82,7 @@ class PdfRosterExporter {
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
+    Future<List<MilitaryRosterRow>> Function()? loadRows,
     bool printDirectly = false,
   }) =>
       pdfShowStylePickerAndShare(
@@ -89,6 +90,7 @@ class PdfRosterExporter {
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
         rows: rows,
+        loadRows: loadRows,
         printDirectly: printDirectly,
       );
 
@@ -97,11 +99,13 @@ class PdfRosterExporter {
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
+    Future<List<MilitaryRosterRow>> Function()? loadRows,
   }) =>
       pdfShowStylePickerAndPrint(
         context,
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
         rows: rows,
+        loadRows: loadRows,
       );
 }

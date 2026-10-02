@@ -53,6 +53,7 @@ Future<void> pdfShowStylePickerAndShare(
   required String faaliyetAdi,
   required String tarih,
   required List<MilitaryRosterRow> rows,
+  Future<List<MilitaryRosterRow>> Function()? loadRows,
   bool printDirectly = false,
 }) async {
   final selectedStyle = await showModalBottomSheet<PdfRosterStyle>(
@@ -144,18 +145,20 @@ Future<void> pdfShowStylePickerAndShare(
   );
 
   if (selectedStyle != null && context.mounted) {
+    final currentRows = loadRows == null ? rows : await loadRows();
+    if (currentRows.isEmpty) return;
     if (printDirectly) {
       await pdfPrintRoster(
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
-        rows: rows,
+        rows: currentRows,
         style: selectedStyle,
       );
     } else {
       await pdfShareRoster(
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
-        rows: rows,
+        rows: currentRows,
         style: selectedStyle,
       );
     }
@@ -167,6 +170,7 @@ Future<void> pdfShowStylePickerAndPrint(
   required String faaliyetAdi,
   required String tarih,
   required List<MilitaryRosterRow> rows,
+  Future<List<MilitaryRosterRow>> Function()? loadRows,
 }) {
   return pdfShowStylePickerAndShare(
     context,
@@ -174,5 +178,6 @@ Future<void> pdfShowStylePickerAndPrint(
     tarih: tarih,
     rows: rows,
     printDirectly: true,
+    loadRows: loadRows,
   );
 }
