@@ -27,7 +27,7 @@ class BulkImportEmptyState extends StatelessWidget {
                   : Icons.task_alt_rounded,
               size: 52,
               color: hasBlockingParseIssue
-                  ? Colors.orange.shade800
+                  ? context.warningColor
                   : context.approvedColor,
             ),
             const SizedBox(height: 12),
@@ -47,7 +47,7 @@ class BulkImportEmptyState extends StatelessWidget {
                   ? 'Kalan kritik ayrıştırma sorunlarını yukarıdaki uyarı panelinden inceleyin.'
                   : 'İsterseniz tüm faaliyet kartlarına geri dönebilirsiniz.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey.shade600),
+              style: TextStyle(color: context.textMuted),
             ),
             const SizedBox(height: 14),
             OutlinedButton.icon(

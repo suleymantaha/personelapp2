@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 
@@ -38,7 +39,7 @@ class BulkImportConfirmSection extends StatelessWidget {
           Icon(
             hasBlocking ? Icons.error_rounded : Icons.task_alt_rounded,
             size: 64,
-            color: hasBlocking ? const Color(0xFFD32F2F) : const Color(0xFF16A34A),
+            color: hasBlocking ? context.rejectedColor : context.approvedColor,
           ),
           const SizedBox(height: 20),
           Text(
@@ -46,7 +47,8 @@ class BulkImportConfirmSection extends StatelessWidget {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: hasBlocking ? const Color(0xFFD32F2F) : const Color(0xFF16A34A),
+              color:
+                  hasBlocking ? context.rejectedColor : context.approvedColor,
             ),
           ),
           const SizedBox(height: 8),
@@ -54,7 +56,7 @@ class BulkImportConfirmSection extends StatelessWidget {
             hasBlocking
                 ? 'Lütfen önizleme adımına dönüp sorunları çözün.'
                 : '${blocks.length} kart, $totalPersonnel personel, $totalDays gün',
-            style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+            style: TextStyle(fontSize: 16, color: context.textMuted),
           ),
           const SizedBox(height: 24),
           if (!hasBlocking)
@@ -65,12 +67,12 @@ class BulkImportConfirmSection extends StatelessWidget {
                 key: const Key('bulk-import-save-button'),
                 onPressed: isSaving ? null : onSave,
                 icon: isSaving
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: context.onStatusColor(context.approvedColor),
                         ),
                       )
                     : const Icon(Icons.check_circle_rounded),
@@ -79,8 +81,8 @@ class BulkImportConfirmSection extends StatelessWidget {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF16A34A),
-                  foregroundColor: Colors.white,
+                  backgroundColor: context.approvedColor,
+                  foregroundColor: context.onStatusColor(context.approvedColor),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                   shape: RoundedRectangleBorder(

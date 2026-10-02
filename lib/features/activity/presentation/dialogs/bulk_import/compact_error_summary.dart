@@ -40,9 +40,8 @@ class CompactErrorSummary extends StatelessWidget {
     final criticalCount = problemLocations.isNotEmpty
         ? criticalLocs.length
         : (blockingIssues.length + problemCount);
-    final reviewWarningCount = problemLocations.isNotEmpty
-        ? warningLocs.length
-        : warningCount;
+    final reviewWarningCount =
+        problemLocations.isNotEmpty ? warningLocs.length : warningCount;
 
     final hasCritical = criticalCount > 0;
     final hasReviewWarnings = reviewWarningCount > 0;
@@ -55,7 +54,6 @@ class CompactErrorSummary extends StatelessWidget {
     String subtitle;
 
     if (hasCritical) {
-
       bgColor = context.rejectedBgColor;
       borderColor = context.rejectedBorderColor.withValues(alpha: 0.5);
       textColor = context.rejectedColor;
@@ -67,9 +65,7 @@ class CompactErrorSummary extends StatelessWidget {
     } else if (hasReviewWarnings) {
       bgColor = context.pendingColor.withValues(alpha: 0.12);
       borderColor = context.pendingColor.withValues(alpha: 0.4);
-      textColor = context.isDarkMode
-          ? const Color(0xFFFFD54F)
-          : const Color(0xFFB45309);
+      textColor = context.warningColor;
       icon = Icons.warning_amber_rounded;
       title = 'İnceleme Bekleyen Ögeler Var';
       subtitle = '$reviewWarningCount eşleşme/tim kontrolü gerektiriyor';
@@ -82,17 +78,16 @@ class CompactErrorSummary extends StatelessWidget {
       subtitle = 'Kayda hazır';
     }
 
-
-    final displayTotal = totalIssues > 0
-        ? totalIssues
-        : (criticalCount + reviewWarningCount);
+    final displayTotal =
+        totalIssues > 0 ? totalIssues : (criticalCount + reviewWarningCount);
     final displayIndex = currentIndex < 0
         ? 1
         : (displayTotal > 0 ? (currentIndex % displayTotal) + 1 : 1);
 
     final allDisplayItems = <_SummaryItem>[];
     for (final issue in parseIssues) {
-      final lineText = issue.lineNumber > 0 ? 'Satır ${issue.lineNumber}: ' : '';
+      final lineText =
+          issue.lineNumber > 0 ? 'Satır ${issue.lineNumber}: ' : '';
       allDisplayItems.add(
         _SummaryItem(
           text: '$lineText${issue.message}',
@@ -181,12 +176,15 @@ class CompactErrorSummary extends StatelessWidget {
                       icon: const Icon(Icons.done_all_rounded, size: 14),
                       label: const Text(
                         'Tümünü Onayla',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF16A34A),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        backgroundColor: context.approvedColor,
+                        foregroundColor:
+                            context.onStatusColor(context.approvedColor),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         visualDensity: VisualDensity.compact,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -219,8 +217,8 @@ class CompactErrorSummary extends StatelessWidget {
                         final isCurrentlyFocused = currentIndex >= 0 &&
                             index == (currentIndex % allDisplayItems.length);
                         final itemTextColor = item.isCritical
-                            ? const Color(0xFFD32F2F)
-                            : const Color(0xFFB45309);
+                            ? context.rejectedColor
+                            : context.warningColor;
                         return InkWell(
                           onTap: onSelectIssue != null
                               ? () => onSelectIssue!(index)

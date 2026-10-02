@@ -151,9 +151,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                               leading: const Icon(
                                 Icons.person_add_alt_1_rounded,
                               ),
-                              title: const Text('Tek Personel Ekle'),
+                              title: const Text('Personel Seçerek Ekle'),
                               subtitle: const Text(
-                                'Kayıtlı personelden bir kişi seçin',
+                                'Bir veya birden fazla personel seçin',
                               ),
                               onTap: () =>
                                   Navigator.of(sheetContext).pop('single'),
@@ -202,7 +202,8 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                         if (imageResult == null || !context.mounted) return;
 
                         final db = ref.read(databaseProvider);
-                        final activityRepo = ref.read(activityRepositoryProvider);
+                        final activityRepo =
+                            ref.read(activityRepositoryProvider);
                         final result = await showDialog<bool>(
                           context: context,
                           builder: (dialogContext) => BulkImportDialog(
@@ -245,13 +246,16 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       return;
                     }
 
-                    final added = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AddPersonnelToActivityDialog(
-                        activity: activity,
-                        isAdmin: isAdmin,
-                        existingPersonnelIds: existingPersonnelIds,
-                      ),
+                    final added =
+                        await Navigator.of(context, rootNavigator: true)
+                            .push<bool>(
+                      MaterialPageRoute(
+                          fullscreenDialog: true,
+                          builder: (ctx) => AddPersonnelToActivityDialog(
+                                activity: activity,
+                                isAdmin: isAdmin,
+                                existingPersonnelIds: existingPersonnelIds,
+                              )),
                     );
                     if (added == true && context.mounted) {
                       AppNotifications.approvalResult(
