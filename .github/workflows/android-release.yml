@@ -83,7 +83,8 @@ jobs:
           test/features/temgundrap/temgundrap_stability_test.dart
 
       - name: Run tests
-        run: flutter test --reporter expanded
+        timeout-minutes: 8
+        run: flutter test --reporter expanded --timeout 2m
 
       - name: Calculate app version
         id: version
