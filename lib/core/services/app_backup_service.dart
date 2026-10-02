@@ -500,8 +500,9 @@ class AppBackupService {
     if (defaults != null) {
       try {
         final decoded = jsonDecode(defaults as String) as Map<String, dynamic>;
-        if (decoded.values.any((value) => value is! String))
+        if (decoded.values.any((value) => value is! String)) {
           throw const FormatException();
+        }
       } catch (_) {
         throw const FormatException('Onaylayan varsayılanları geçersiz.');
       }
