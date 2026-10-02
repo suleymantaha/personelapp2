@@ -30,6 +30,21 @@ void main() {
     );
   }
 
+  test('declared total mismatch blocks a truncated pasted list', () async {
+    final draft = await BulkActivityImportDraft.fromRawText(
+      '2026-07-30\n9/B Guluskur\n1) J.Asb.Cvs. Ahmet TINAS\nToplam 5 personel',
+      matchBlocks: (blocks) async => blocks,
+    );
+    expect(draft.declaredTotals.single.expectedCount, 5);
+    expect(draft.issues.any((i) => i.code == 'declared_total_mismatch' && i.isBlocking), isTrue);
+  });
+  test('parsed shift survives in the persisted assignment note', () {
+    final result = BulkActivityImportPreparer.prepare([
+      block(date: '2026-07-30', duty: 'HEYBET', time: '08:00 - 19:30', person: person(1, 'Ali')),
+    ]);
+    expect(result.requests.single.personnelAssignments.single.note, contains('08:00 - 19:30'));
+  });
+
   test('creates one activity card per duty for the same day', () {
     final result = BulkActivityImportPreparer.prepare([
       block(
