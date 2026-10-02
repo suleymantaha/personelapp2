@@ -81,23 +81,24 @@ final pendingAssignmentsProvider =
 
 /// Role-Filtered Activities Stream Provider
 final filteredActivitiesProvider =
-    StreamProvider<List<GunlukFaaliyetTableData>>((ref) async* {
+    StreamProvider<List<GunlukFaaliyetTableData>>((ref) {
       final session = ref.watch(userSessionProvider);
       final repo = ref.watch(activityRepositoryProvider);
       if (session == null) {
-        yield const [];
+        return Stream.value(const []);
       } else if (session.isAdmin) {
-        yield* repo.watchAllActivities();
+        return repo.watchAllActivities();
       } else {
         final authority = ref.watch(commanderAuthorityProvider);
-        final teamId =
-            authority.hasValue
-                ? authority.value
-                : await ref.watch(commanderAuthorityProvider.future);
+        if (authority.hasError) {
+          return Stream.error(authority.error!, authority.stackTrace);
+        }
+        if (!authority.hasValue) return const Stream.empty();
+        final teamId = authority.value;
         if (teamId == null) {
-          yield const [];
+          return Stream.value(const []);
         } else {
-          yield* repo.watchActivitiesForTeam(teamId);
+          return repo.watchActivitiesForTeam(teamId);
         }
       }
     });

@@ -3,10 +3,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/matrix/domain/team_duty_analytics_dto.dart';
 
 class TeamDutyCalendarSummary extends StatelessWidget {
-  const TeamDutyCalendarSummary({
-    required this.summary,
-    super.key,
-  });
+  const TeamDutyCalendarSummary({required this.summary, super.key});
 
   final TeamDutySummaryDto summary;
 
@@ -19,33 +16,47 @@ class TeamDutyCalendarSummary extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.accentSubtleBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: context.cardBorderColor,
-          ),
+          border: Border.all(color: context.cardBorderColor),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+        child: Column(
           children: [
-            _CalendarStatItem(
-              label: 'Görevli Gün',
-              value: '${summary.toplamGorevGunSayisi} Gün',
-              icon: Icons.assignment_outlined,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _CalendarStatItem(
+                  label: 'Görevli Gün',
+                  value: '${summary.toplamGorevGunSayisi} Gün',
+                  icon: Icons.assignment_outlined,
+                ),
+                _CalendarStatItem(
+                  label: 'Aktif Personel',
+                  value: '${summary.aktifPersonelSayisi} Kişi',
+                  icon: Icons.groups_outlined,
+                ),
+                _CalendarStatItem(
+                  label: 'Personel-gün oranı',
+                  value:
+                      summary.yukHesabiTam
+                          ? '%${summary.ortalamaYukYuzdesi.toStringAsFixed(0)}'
+                          : 'Veri eksik',
+                  icon: Icons.speed_rounded,
+                  valueColor:
+                      summary.ortalamaYukYuzdesi > 70
+                          ? context.rejectedColor
+                          : (summary.ortalamaYukYuzdesi > 40
+                              ? context.warningColor
+                              : context.approvedColor),
+                ),
+              ],
             ),
-            _CalendarStatItem(
-              label: 'Aktif Personel',
-              value: '${summary.aktifPersonelSayisi} Kişi',
-              icon: Icons.groups_outlined,
-            ),
-            _CalendarStatItem(
-              label: 'Yoğunluk İndeksi',
-              value: '%${summary.ortalamaYukYuzdesi.toStringAsFixed(0)}',
-              icon: Icons.speed_rounded,
-              valueColor: summary.ortalamaYukYuzdesi > 70
-                  ? context.rejectedColor
-                  : (summary.ortalamaYukYuzdesi > 40
-                      ? context.warningColor
-                      : context.approvedColor),
-            ),
+            if (summary.bilinmeyenTimAtamaSayisi > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Bu ay tim geçmişi bilinmeyen ${summary.bilinmeyenTimAtamaSayisi} eski atama var; tim hesabına katılmadı.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
           ],
         ),
       ),

@@ -1,3 +1,18 @@
+class TeamDutyGroupDto {
+  const TeamDutyGroupDto({
+    required this.gorev,
+    required this.durum,
+    required this.personelIds,
+    required this.personelAdlari,
+    this.devamEdenPersonelIds = const [],
+  });
+  final String gorev;
+  final String durum;
+  final List<int> personelIds;
+  final List<String> personelAdlari;
+  final List<int> devamEdenPersonelIds;
+}
+
 /// Belirli bir timin aylık görev özeti ve analitik verileri DTO'su.
 class TeamDutySummaryDto {
   final int timId;
@@ -6,7 +21,11 @@ class TeamDutySummaryDto {
   final int toplamGorevGunSayisi;
   final double toplamGorevSaati;
   final int aktifPersonelSayisi;
-  final double ortalamaYukYuzdesi; // % yorgunluk/yoğunluk indeksi
+  final double
+  ortalamaYukYuzdesi; // Onaylı personel-gün / bilinen kadro ve görev katılımcısı günleri.
+  final int toplamPersonelGorevGunu;
+  final int bilinmeyenTimAtamaSayisi;
+  final bool yukHesabiTam;
   final Map<String, int> gorevTuruDagilimi; // {'GÜLÜŞKÜR': 12, 'HAZIR KITA': 5}
 
   const TeamDutySummaryDto({
@@ -18,6 +37,9 @@ class TeamDutySummaryDto {
     required this.aktifPersonelSayisi,
     required this.ortalamaYukYuzdesi,
     required this.gorevTuruDagilimi,
+    this.toplamPersonelGorevGunu = 0,
+    this.bilinmeyenTimAtamaSayisi = 0,
+    this.yukHesabiTam = true,
   });
 }
 
@@ -29,6 +51,7 @@ class TeamDayDutyDto {
   final String gorevTamAdi; // 'GÜLÜŞKÜR'
   final List<String> gorevliPersonelAdlari;
   final bool isYogunGorev;
+  final List<TeamDutyGroupDto> gorevGruplari;
 
   const TeamDayDutyDto({
     required this.tarih,
@@ -37,6 +60,7 @@ class TeamDayDutyDto {
     required this.gorevTamAdi,
     required this.gorevliPersonelAdlari,
     this.isYogunGorev = false,
+    this.gorevGruplari = const [],
   });
 }
 

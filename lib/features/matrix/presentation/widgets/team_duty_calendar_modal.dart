@@ -6,10 +6,7 @@ import 'package:personelapp2/core/utils/duty_abbreviation_mapper.dart';
 import 'package:personelapp2/features/matrix/domain/team_duty_analytics_dto.dart';
 
 class TeamDutyCalendarModal extends StatefulWidget {
-  const TeamDutyCalendarModal({
-    super.key,
-    required this.calendarData,
-  });
+  const TeamDutyCalendarModal({super.key, required this.calendarData});
 
   final TeamMonthlyCalendarDto calendarData;
 
@@ -87,8 +84,10 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
                     color: context.accentOrOlive.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.calendar_month_rounded,
-                      color: context.accentOrOlive),
+                  child: Icon(
+                    Icons.calendar_month_rounded,
+                    color: context.accentOrOlive,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -153,11 +152,11 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
                       itemCount: widget.calendarData.gunler.length,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 7,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                        childAspectRatio: 0.85,
-                      ),
+                            crossAxisCount: 7,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
+                            childAspectRatio: 0.85,
+                          ),
                       itemBuilder: (context, index) {
                         final dayDto = widget.calendarData.gunler[index];
                         final hasDuty = dayDto.gorevKodu.isNotEmpty;
@@ -173,24 +172,30 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
                           borderRadius: BorderRadius.circular(12),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: isSelected
-                                  ? context.accentOrOlive.withValues(alpha: 0.2)
-                                  : (hasDuty
-                                      ? DutyAbbreviationMapper.getBadgeBgColor(
-                                          dayDto.gorevTamAdi,
-                                          isDark: isDark,
-                                        )
-                                      : (context.colorScheme.surfaceContainer)),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isSelected
-                                    ? context.accentOrOlive
-                                    : (hasDuty
-                                        ? DutyAbbreviationMapper.getTextColor(
+                              color:
+                                  isSelected
+                                      ? context.accentOrOlive.withValues(
+                                        alpha: 0.2,
+                                      )
+                                      : (hasDuty
+                                          ? DutyAbbreviationMapper.getBadgeBgColor(
                                             dayDto.gorevTamAdi,
                                             isDark: isDark,
-                                          ).withValues(alpha: 0.3)
-                                        : Colors.transparent),
+                                          )
+                                          : (context
+                                              .colorScheme
+                                              .surfaceContainer)),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color:
+                                    isSelected
+                                        ? context.accentOrOlive
+                                        : (hasDuty
+                                            ? DutyAbbreviationMapper.getTextColor(
+                                              dayDto.gorevTamAdi,
+                                              isDark: isDark,
+                                            ).withValues(alpha: 0.3)
+                                            : Colors.transparent),
                                 width: isSelected ? 2 : 1,
                               ),
                             ),
@@ -214,21 +219,29 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
                                     decoration: BoxDecoration(
                                       color:
                                           DutyAbbreviationMapper.getTextColor(
-                                        dayDto.gorevTamAdi,
-                                        isDark: isDark,
-                                      ).withValues(alpha: 0.15),
+                                            dayDto.gorevTamAdi,
+                                            isDark: isDark,
+                                          ).withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
-                                      dayDto.gorevKodu,
+                                      dayDto.gorevGruplari.isEmpty
+                                          ? dayDto.gorevKodu
+                                          : dayDto.gorevGruplari
+                                              .take(2)
+                                              .map(
+                                                (g) =>
+                                                    '${DutyAbbreviationMapper.getAbbreviation(g.gorev)}:${g.personelIds.length}',
+                                              )
+                                              .join('\n'),
                                       style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 9,
                                         fontWeight: FontWeight.bold,
                                         color:
                                             DutyAbbreviationMapper.getTextColor(
-                                          dayDto.gorevTamAdi,
-                                          isDark: isDark,
-                                        ),
+                                              dayDto.gorevTamAdi,
+                                              isDark: isDark,
+                                            ),
                                       ),
                                     ),
                                   )
@@ -255,9 +268,10 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
           // Seçilen Gün Şık & Kaydırılabilir Detay Paneli
           if (selectedDay != null)
             TeamDutyDayDetails(
-                day: selectedDay!,
-                monthName: ayAdi,
-                year: widget.calendarData.yil),
+              day: selectedDay!,
+              monthName: ayAdi,
+              year: widget.calendarData.yil,
+            ),
         ],
       ),
     );

@@ -10,6 +10,12 @@ import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/activity_archive_screen.dart';
 
 void main() {
+  late AppDatabase db;
+  setUp(() async {
+    db = AppDatabase(NativeDatabase.memory());
+    await db.customSelect('SELECT 1').get();
+  });
+  tearDown(() => db.close());
   testWidgets(
     'archive text export includes only approved operational personnel',
     (tester) async {
@@ -17,8 +23,6 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      final db = AppDatabase(NativeDatabase.memory());
-      addTearDown(db.close);
       final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
       final activity = await db
           .into(db.gunlukFaaliyetTable)

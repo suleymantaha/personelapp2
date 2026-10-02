@@ -31,14 +31,19 @@ class DutyOrLeaveType {
       status == AssignmentStatus.onaylandi && isOperationalDuty(dutyOrLeave);
 
   static bool isOperationalDuty(String dutyOrLeave) {
-    final d = dutyOrLeave.toUpperCase().trim();
-    if (d.contains('İZİN') ||
-        d.contains('İSTİRAHAT') ||
+    final d =
+        dutyOrLeave
+            .toUpperCase()
+            .replaceAll('İ', 'I')
+            .replaceAll('Ş', 'S')
+            .trim();
+    if (d.contains('IZIN') ||
+        d.contains('ISTIRAHAT') ||
         d.contains('RAPOR') ||
         d.contains('SEVK')) {
       return false;
     }
-    return true;
+    return d.isNotEmpty;
   }
 }
 

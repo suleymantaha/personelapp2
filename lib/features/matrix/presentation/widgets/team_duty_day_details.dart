@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/matrix/domain/team_duty_analytics_dto.dart';
-import 'package:personelapp2/core/utils/duty_abbreviation_mapper.dart';
 
 class TeamDutyDayDetails extends StatelessWidget {
   const TeamDutyDayDetails({
@@ -10,15 +9,46 @@ class TeamDutyDayDetails extends StatelessWidget {
     required this.year,
     super.key,
   });
-
   final TeamDayDutyDto day;
   final String monthName;
   final int year;
 
+  Widget _people(BuildContext context, TeamDutyGroupDto group) => Wrap(
+    spacing: 6,
+    runSpacing: 6,
+    children: [
+      for (var i = 0; i < group.personelAdlari.length; i++)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: context.colorScheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: context.cardBorderColor),
+          ),
+          child: Text(
+            '${group.personelAdlari[i]}${group.personelIds.length > i && group.personelAdlari.where((name) => name == group.personelAdlari[i]).length > 1 ? ' (#${group.personelIds[i]})' : ''}',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+          ),
+        ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = context.isDarkMode;
+    final groups =
+        day.gorevGruplari.isEmpty
+            ? [
+              TeamDutyGroupDto(
+                gorev: day.gorevTamAdi,
+                durum: 'onaylandi',
+                personelIds: const [],
+                personelAdlari: day.gorevliPersonelAdlari,
+              ),
+            ]
+            : day.gorevGruplari;
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.28,
@@ -42,34 +72,8 @@ class TeamDutyDayDetails extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Panel Başlığı ve Görev Türü Rozeti
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: DutyAbbreviationMapper.getBadgeBgColor(
-                        day.gorevTamAdi,
-                        isDark: isDark,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      day.gorevKodu.isNotEmpty ? day.gorevKodu : 'SERBEST',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: DutyAbbreviationMapper.getTextColor(
-                          day.gorevTamAdi,
-                          isDark: isDark,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       '${day.gunIndex} $monthName $year • ${day.gorevTamAdi}',
@@ -80,22 +84,10 @@ class TeamDutyDayDetails extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.accentOrOlive.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${day.gorevliPersonelAdlari.length} Personel',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: context.accentOrOlive,
-                      ),
+                  Text(
+                    '${day.gorevliPersonelAdlari.length} Personel',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: context.accentOrOlive,
                     ),
                   ),
                 ],
@@ -103,60 +95,49 @@ class TeamDutyDayDetails extends StatelessWidget {
               const SizedBox(height: 10),
               const Divider(height: 1),
               const SizedBox(height: 10),
-
-              // Kaydırılabilir Personel Çipleri
               Expanded(
-                child: day.gorevliPersonelAdlari.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Bu tarihte görevli personel kaydı bulunmuyor.',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.hintColor,
-                            fontStyle: FontStyle.italic,
+                child:
+                    day.gorevliPersonelAdlari.isEmpty
+                        ? Center(
+                          child: Text(
+                            'Bu tarihte görevli personel kaydı bulunmuyor.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.hintColor,
+                            ),
                           ),
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        child: Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: day.gorevliPersonelAdlari
-                              .map(
-                                (personName) => Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: context.colorScheme.surfaceContainer,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: context.cardBorderColor,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.person_outline_rounded,
-                                        size: 14,
-                                        color: context.accentOrOlive,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        personName,
-                                        style:
-                                            theme.textTheme.bodySmall?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
+                        )
+                        : SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (final group in groups) ...[
+                                Text(
+                                  '${group.personelAdlari.length} ${group.gorev} • ${switch (group.durum) {
+                                    'onaylandi' => 'Onaylı',
+                                    'beklemede' => 'Bekleyen',
+                                    'reddedildi' => 'Reddedilen',
+                                    _ => group.durum,
+                                  }}',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        group.durum == 'beklemede'
+                                            ? context.warningColor
+                                            : context.textPrimary,
                                   ),
                                 ),
-                              )
-                              .toList(),
+                                if (group.devamEdenPersonelIds.isNotEmpty)
+                                  Text(
+                                    'Önceki günden devam eden ${group.devamEdenPersonelIds.length} kişi',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                const SizedBox(height: 6),
+                                _people(context, group),
+                                const SizedBox(height: 12),
+                              ],
+                            ],
+                          ),
                         ),
-                      ),
               ),
             ],
           ),

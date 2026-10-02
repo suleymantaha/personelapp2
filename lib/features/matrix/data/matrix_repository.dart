@@ -27,21 +27,19 @@ class MatrixRepository {
           db.faaliyetPersonelAtamaTable.faaliyetId,
         ),
       ),
-    ])
-      ..where(
-        db.gunlukFaaliyetTable.tarih.isBiggerOrEqualValue(
-              DateFormat(
-                'yyyy-MM-dd',
-              ).format(monthStart.subtract(const Duration(days: 1))),
-            ) &
-            db.gunlukFaaliyetTable.tarih.isSmallerThanValue(
-              DateFormat('yyyy-MM-dd').format(nextMonth),
-            ),
-      );
+    ])..where(
+      db.gunlukFaaliyetTable.tarih.isBiggerOrEqualValue(
+            DateFormat(
+              'yyyy-MM-dd',
+            ).format(monthStart.subtract(const Duration(days: 1))),
+          ) &
+          db.gunlukFaaliyetTable.tarih.isSmallerThanValue(
+            DateFormat('yyyy-MM-dd').format(nextMonth),
+          ),
+    );
 
     return query.watch().map((rows) {
-      final entriesByPersonAndDay =
-          <int, Map<int, List<MatrixDayEntry>>>{};
+      final entriesByPersonAndDay = <int, Map<int, List<MatrixDayEntry>>>{};
       for (final row in rows) {
         final assignment = row.readTable(db.faaliyetPersonelAtamaTable);
         if (assignment.durum == AssignmentStatus.reddedildi) continue;
@@ -59,7 +57,9 @@ class MatrixRepository {
             assignment.personelId,
             () => {},
           );
-          personDays.putIfAbsent(day, () => []).add(
+          personDays
+              .putIfAbsent(day, () => [])
+              .add(
                 MatrixDayEntry(
                   activityId: activity.id,
                   activityName: activity.faaliyetAdi,
@@ -91,125 +91,199 @@ class MatrixRepository {
     required int year,
     required int month,
   }) async {
-    final yearMonthStr =
-        '$year-${month.toString().padLeft(2, '0')}';
+    final yearMonth = '$year-${month.toString().padLeft(2, '0')}';
     final daysInMonth = DateTime(year, month + 1, 0).day;
-
-    // Tim personelini getir
-    final teamPersonnels = await (db.select(db.personelTable)
-          ..where((tbl) => tbl.timId.equals(timId)))
-        .get();
-
-    final teamPersonnelIds = teamPersonnels.map((p) => p.id).toSet();
-    final personnelMap = {for (var p in teamPersonnels) p.id: p.adSoyad};
-
-    // Aylık atamaları getir
     final monthStart = DateTime(year, month, 1);
-    final monthEnd = DateTime(year, month + 1, 0);
-
-    final query = db.select(db.faaliyetPersonelAtamaTable).join([
-      innerJoin(
-        db.gunlukFaaliyetTable,
-        db.gunlukFaaliyetTable.id.equalsExp(
-          db.faaliyetPersonelAtamaTable.faaliyetId,
-        ),
-      ),
-    ])
-      ..where(
-        db.gunlukFaaliyetTable.tarih.isBiggerOrEqualValue(
-              DateFormat('yyyy-MM-dd')
-                  .format(monthStart.subtract(const Duration(days: 1))),
-            ) &
-            db.gunlukFaaliyetTable.tarih.isSmallerThanValue(
-              DateFormat('yyyy-MM-dd')
-                  .format(monthEnd.add(const Duration(days: 1))),
+    final nextMonth = DateTime(year, month + 1);
+    final people =
+        await (db.select(db.personelTable)
+          ..where((p) => p.isDemo.equals(false))).get();
+    final personnelById = {for (final p in people) p.id: p};
+    final history =
+        await (db.select(db.timUyelikGecmisiTable)
+              ..where(
+                (h) => h.tarih.isSmallerThanValue(
+                  DateFormat('yyyy-MM-dd').format(nextMonth),
+                ),
+              )
+              ..orderBy([
+                (h) => OrderingTerm.desc(h.tarih),
+                (h) => OrderingTerm.desc(h.id),
+              ]))
+            .get();
+    final historyByPerson = <int, List<TimUyelikGecmisiTableData>>{};
+    for (final entry in history) {
+      historyByPerson.putIfAbsent(entry.personelId, () => []).add(entry);
+    }
+    final rows =
+        await (db.select(db.faaliyetPersonelAtamaTable).join([
+          innerJoin(
+            db.gunlukFaaliyetTable,
+            db.gunlukFaaliyetTable.id.equalsExp(
+              db.faaliyetPersonelAtamaTable.faaliyetId,
             ),
+          ),
+        ])..where(
+          db.gunlukFaaliyetTable.tarih.isBiggerOrEqualValue(
+                DateFormat(
+                  'yyyy-MM-dd',
+                ).format(monthStart.subtract(const Duration(days: 1))),
+              ) &
+              db.gunlukFaaliyetTable.tarih.isSmallerThanValue(
+                DateFormat('yyyy-MM-dd').format(nextMonth),
+              ),
+        )).get();
+    final groupedByDay = <int, Map<({String duty, String status}), Set<int>>>{};
+    final continuingByDay =
+        <int, Map<({String duty, String status}), Set<int>>>{};
+    var unknownTeamCount = 0;
+    for (final row in rows) {
+      final assignment = row.readTable(db.faaliyetPersonelAtamaTable);
+      if (assignment.durum == AssignmentStatus.reddedildi ||
+          !personnelById.containsKey(assignment.personelId))
+        continue;
+      final activity = row.readTable(db.gunlukFaaliyetTable);
+      final dates = DutyCoverage.coveredDates(
+        startDate: activity.tarih,
+        duty: assignment.gorevVeyaIzin,
       );
-
-    final rows = await query.get();
-
-    final Map<int, List<TeamDayDutyDto>> dayDutiesMap = {};
-    final Map<String, int> gorevTuruCounts = {};
-    int totalGorevDays = 0;
-
-    for (var day = 1; day <= daysInMonth; day++) {
-      final dateStr =
-          '$yearMonthStr-${day.toString().padLeft(2, '0')}';
-      final List<String> activePersonnel = [];
-      String mainDutyName = '';
-
-      for (final row in rows) {
-        final assignment = row.readTable(db.faaliyetPersonelAtamaTable);
-        if (assignment.durum == AssignmentStatus.reddedildi) continue;
-        if (!teamPersonnelIds.contains(assignment.personelId)) continue;
-
-        final activity = row.readTable(db.gunlukFaaliyetTable);
-        final coveredDates = DutyCoverage.coveredDates(
-          startDate: activity.tarih,
-          duty: assignment.gorevVeyaIzin,
+      if (assignment.gorevTimId == null &&
+          assignment.gorevTimAdi == null &&
+          dates.any((d) => d.startsWith(yearMonth)))
+        unknownTeamCount++;
+      if (assignment.gorevTimId != timId) continue;
+      for (final date in dates.where((d) => d.startsWith(yearMonth))) {
+        final day = int.parse(date.substring(8, 10));
+        final key = (
+          duty: assignment.gorevVeyaIzin.trim().toUpperCase(),
+          status: assignment.durum,
         );
-
-        if (coveredDates.contains(dateStr)) {
-          final pName = personnelMap[assignment.personelId] ?? 'Personel #${assignment.personelId}';
-          if (!activePersonnel.contains(pName)) {
-            activePersonnel.add(pName);
-          }
-          if (mainDutyName.isEmpty) {
-            mainDutyName = assignment.gorevVeyaIzin;
-          }
+        groupedByDay
+            .putIfAbsent(day, () => {})
+            .putIfAbsent(key, () => {})
+            .add(assignment.personelId);
+        if (date != activity.tarih) {
+          continuingByDay
+              .putIfAbsent(day, () => {})
+              .putIfAbsent(key, () => {})
+              .add(assignment.personelId);
         }
       }
-
-      if (activePersonnel.isNotEmpty) {
-        totalGorevDays++;
-        final abbrev = DutyAbbreviationMapper.getAbbreviation(mainDutyName);
-        gorevTuruCounts[mainDutyName] =
-            (gorevTuruCounts[mainDutyName] ?? 0) + 1;
-
-        final dto = TeamDayDutyDto(
-          tarih: dateStr,
-          gunIndex: day,
-          gorevKodu: abbrev,
-          gorevTamAdi: mainDutyName,
-          gorevliPersonelAdlari: activePersonnel,
-          isYogunGorev: activePersonnel.length >= (teamPersonnelIds.length * 0.7),
+    }
+    final calendarDays = <TeamDayDutyDto>[];
+    final distribution = <String, int>{};
+    var operationalDays = 0;
+    var personnelDutyDays = 0;
+    var availablePersonnelDays = 0;
+    var rosterHistoryKnown = unknownTeamCount == 0;
+    for (var day = 1; day <= daysInMonth; day++) {
+      final date = '$yearMonth-${day.toString().padLeft(2, '0')}';
+      final groups = <TeamDutyGroupDto>[];
+      final allIds = <int>{};
+      final operationalIds = <int>{};
+      final dutyTypes = <String>{};
+      final availableIds = <int>{};
+      for (final person in people) {
+        final events =
+            historyByPerson[person.id] ?? const <TimUyelikGecmisiTableData>[];
+        final last =
+            events
+                .where((h) => h.tarih.split('T').first.compareTo(date) <= 0)
+                .firstOrNull;
+        if (last != null) {
+          if (last.islem == 'eklendi' && last.timId == timId)
+            availableIds.add(person.id);
+        } else if (person.timId == timId &&
+            person.kayitTarihi.split('T').first.compareTo(date) <= 0) {
+          rosterHistoryKnown = false;
+        }
+      }
+      for (final entry in (groupedByDay[day] ?? {}).entries) {
+        final ids =
+            entry.value.toList()..sort((a, b) {
+              final byName = personnelById[a]!.adSoyad.compareTo(
+                personnelById[b]!.adSoyad,
+              );
+              return byName == 0 ? a.compareTo(b) : byName;
+            });
+        allIds.addAll(ids);
+        if (DutyOrLeaveType.isApprovedOperationalDuty(
+          entry.key.duty,
+          entry.key.status,
+        )) {
+          operationalIds.addAll(ids);
+          dutyTypes.add(entry.key.duty);
+        }
+        groups.add(
+          TeamDutyGroupDto(
+            gorev: entry.key.duty,
+            durum: entry.key.status,
+            personelIds: ids,
+            personelAdlari:
+                ids.map((id) => personnelById[id]!.adSoyad).toList(),
+            devamEdenPersonelIds:
+                (continuingByDay[day]?[entry.key] ?? {}).toList(),
+          ),
         );
-        dayDutiesMap.putIfAbsent(day, () => []).add(dto);
       }
-    }
-
-    final List<TeamDayDutyDto> calendarDays = [];
-    for (var d = 1; d <= daysInMonth; d++) {
-      if (dayDutiesMap.containsKey(d) && dayDutiesMap[d]!.isNotEmpty) {
-        calendarDays.add(dayDutiesMap[d]!.first);
-      } else {
-        calendarDays.add(TeamDayDutyDto(
-          tarih: '$yearMonthStr-${d.toString().padLeft(2, '0')}',
-          gunIndex: d,
-          gorevKodu: '',
-          gorevTamAdi: 'Boş / Serbest',
-          gorevliPersonelAdlari: const [],
-        ));
+      groups.sort(
+        (a, b) => '${a.gorev}|${a.durum}'.compareTo('${b.gorev}|${b.durum}'),
+      );
+      availableIds.addAll(operationalIds);
+      availablePersonnelDays += availableIds.length;
+      personnelDutyDays += operationalIds.length;
+      if (operationalIds.isNotEmpty) operationalDays++;
+      for (final duty in dutyTypes) {
+        distribution[duty] = (distribution[duty] ?? 0) + 1;
       }
+      calendarDays.add(
+        TeamDayDutyDto(
+          tarih: date,
+          gunIndex: day,
+          gorevKodu:
+              groups.isEmpty
+                  ? ''
+                  : groups.length == 1
+                  ? DutyAbbreviationMapper.getAbbreviation(groups.single.gorev)
+                  : '${groups.length} grup',
+          gorevTamAdi:
+              groups.isEmpty
+                  ? 'Boş / Serbest'
+                  : groups.length == 1
+                  ? groups.single.gorev
+                  : '${groups.length} görev / durum',
+          gorevliPersonelAdlari:
+              allIds.map((id) => personnelById[id]!.adSoyad).toList(),
+          gorevGruplari: groups,
+          isYogunGorev:
+              availableIds.isNotEmpty &&
+              operationalIds.length / availableIds.length >= 0.7,
+        ),
+      );
     }
-
-    final summary = TeamDutySummaryDto(
-      timId: timId,
-      timAdi: timAdi,
-      toplamGorevGunSayisi: totalGorevDays,
-      toplamGorevSaati: totalGorevDays * 24.0,
-      aktifPersonelSayisi: teamPersonnelIds.length,
-      ortalamaYukYuzdesi: (totalGorevDays / daysInMonth) * 100,
-      gorevTuruDagilimi: gorevTuruCounts,
-    );
-
     return TeamMonthlyCalendarDto(
       timId: timId,
       timAdi: timAdi,
       yil: year,
       ay: month,
       gunler: calendarDays,
-      ozet: summary,
+      ozet: TeamDutySummaryDto(
+        timId: timId,
+        timAdi: timAdi,
+        toplamGorevGunSayisi: operationalDays,
+        toplamGorevSaati:
+            0, // Gün kapsaması süre değildir; gerçek saat hesabı henüz yok.
+        aktifPersonelSayisi:
+            people.where((p) => p.aktif && p.timId == timId).length,
+        ortalamaYukYuzdesi:
+            rosterHistoryKnown && availablePersonnelDays > 0
+                ? 100 * personnelDutyDays / availablePersonnelDays
+                : 0,
+        gorevTuruDagilimi: distribution,
+        toplamPersonelGorevGunu: personnelDutyDays,
+        bilinmeyenTimAtamaSayisi: unknownTeamCount,
+        yukHesabiTam: rosterHistoryKnown,
+      ),
     );
   }
 }

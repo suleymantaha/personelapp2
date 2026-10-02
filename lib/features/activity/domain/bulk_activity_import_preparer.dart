@@ -41,7 +41,7 @@ class BulkActivityImportDraft {
       blocks: List<ParsedActivityBlock>.unmodifiable(deduplicated.blocks),
       issues: List<BulkParseIssue>.unmodifiable([
         ...parseResult.issues,
-
+        ...declaredTotalIssues(parseResult.blocks, parseResult.declaredTotals),
       ]),
       deduplicatedPersonnelCount: deduplicated.removedCount,
       ignoredLineCount: parseResult.ignoredLineCount,
@@ -172,7 +172,9 @@ class BulkActivityImportPreparer {
                 }.toList(),
           );
           if (first.block != result.length) {
-            result[first.block] = result[first.block].copyWith(personnelList: firstPeople);
+            result[first.block] = result[first.block].copyWith(
+              personnelList: firstPeople,
+            );
           }
           removedCount++;
         }
