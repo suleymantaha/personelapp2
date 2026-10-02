@@ -79,20 +79,22 @@ class BulkImportStepper extends StatelessWidget {
                                       : (i == 2 && canProceedToSave)
                                           ? approvedColor.withAlpha(40)
                                           : disabledLineColor,
-                              border: i == 2 && canProceedToSave && currentStep < 2
-                                  ? Border.all(
-                                      color: approvedColor, width: 1.5)
+                              border: i == 2 &&
+                                      canProceedToSave &&
+                                      currentStep < 2
+                                  ? Border.all(color: approvedColor, width: 1.5)
                                   : null,
                             ),
                             child: Center(
                               child: i < currentStep
-                                  ? const Icon(Icons.check,
-                                      color: Colors.white, size: 16)
+                                  ? Icon(Icons.check,
+                                      color: context.onAccentOrOlive, size: 16)
                                   : Text(
                                       '${i + 1}',
                                       style: TextStyle(
                                         color: i == currentStep
-                                            ? context.customColors.onAccentOrOlive
+                                            ? context
+                                                .customColors.onAccentOrOlive
                                             : i == 2 && canProceedToSave
                                                 ? approvedColor
                                                 : disabledTextColor,
@@ -112,9 +114,9 @@ class BulkImportStepper extends StatelessWidget {
                                   color: disabledTextColor,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.lock_rounded,
-                                  color: Colors.white,
+                                  color: context.onAccentOrOlive,
                                   size: 9,
                                 ),
                               ),
@@ -126,10 +128,10 @@ class BulkImportStepper extends StatelessWidget {
                         steps[i],
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight: i == currentStep ||
-                                  (i == 2 && canProceedToSave)
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                          fontWeight:
+                              i == currentStep || (i == 2 && canProceedToSave)
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                           color: i == currentStep
                               ? accentColor
                               : i == 2 && canProceedToSave

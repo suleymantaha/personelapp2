@@ -164,7 +164,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
             width: 42,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade400,
+              color: context.textMuted,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -317,13 +317,14 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                               ),
                               if (expanded)
                                 if (members.isEmpty)
-                                  const Padding(
+                                  Padding(
                                     padding: EdgeInsets.fromLTRB(16, 0, 16, 14),
                                     child: Align(
                                       alignment: Alignment.centerLeft,
                                       child: Text(
                                         'Eklenebilecek personel kalmadı.',
-                                        style: TextStyle(color: Colors.grey),
+                                        style:
+                                            TextStyle(color: context.textMuted),
                                       ),
                                     ),
                                   )
@@ -388,7 +389,7 @@ class _PersonnelTile extends StatelessWidget {
             : '$teamName • Kayıtlı: $disabledReason',
       ),
       trailing: disabledReason != null
-          ? const Icon(Icons.block, color: Colors.redAccent)
+          ? Icon(Icons.block, color: context.rejectedColor)
           : selected
               ? Icon(Icons.check_circle, color: context.accentOrOlive)
               : null,
@@ -402,13 +403,14 @@ class _EmptySearchResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
         padding: EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.person_search_rounded, size: 52, color: Colors.grey),
+            Icon(Icons.person_search_rounded,
+                size: 52, color: context.textMuted),
             SizedBox(height: 12),
             Text(
               'Aramanızla eşleşen personel bulunamadı.',

@@ -102,7 +102,7 @@ class BulkImportInputSection extends StatelessWidget {
               scrollPadding: const EdgeInsets.only(bottom: 80),
               decoration: InputDecoration(
                 hintText: 'Mesaj metnini buraya yapıştırın…',
-                hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                hintStyle: TextStyle(color: context.textMuted, fontSize: 13),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide(color: context.cardBorderColor),
@@ -131,12 +131,12 @@ class BulkImportInputSection extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: isParsing ? null : onProcessText,
               icon: isParsing
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: context.onAccentOrOlive,
                       ),
                     )
                   : const Icon(Icons.auto_awesome_rounded),
@@ -146,7 +146,7 @@ class BulkImportInputSection extends StatelessWidget {
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.accentOrOlive,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onAccentOrOlive,
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

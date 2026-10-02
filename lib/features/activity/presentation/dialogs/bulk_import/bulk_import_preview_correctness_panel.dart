@@ -158,7 +158,7 @@ class _CorrectnessPanel extends StatelessWidget {
                 ),
                 style: FilledButton.styleFrom(
                   backgroundColor: context.approvedColor,
-                  foregroundColor: Colors.white,
+                  foregroundColor: context.onStatusColor(context.approvedColor),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   visualDensity: VisualDensity.compact,
@@ -171,9 +171,9 @@ class _CorrectnessPanel extends StatelessWidget {
             IconButton(
               onPressed: onClearAll,
               visualDensity: VisualDensity.compact,
-              icon: const Icon(
+              icon: Icon(
                 Icons.delete_outline_rounded,
-                color: Colors.redAccent,
+                color: context.rejectedColor,
                 size: 20,
               ),
               tooltip: 'Tümünü Temizle',
@@ -231,7 +231,8 @@ class _CorrectnessPanel extends StatelessWidget {
                         ),
                         style: FilledButton.styleFrom(
                           backgroundColor: context.approvedColor,
-                          foregroundColor: Colors.white,
+                          foregroundColor:
+                              context.onStatusColor(context.approvedColor),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
                             vertical: 4,
@@ -248,9 +249,9 @@ class _CorrectnessPanel extends StatelessWidget {
               IconButton(
                 onPressed: onClearAll,
                 visualDensity: VisualDensity.compact,
-                icon: const Icon(
+                icon: Icon(
                   Icons.delete_outline_rounded,
-                  color: Colors.redAccent,
+                  color: context.rejectedColor,
                   size: 20,
                 ),
                 tooltip: 'Tümünü Temizle',

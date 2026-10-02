@@ -207,7 +207,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
                         fontSize: 12,
                         fontWeight:
                             isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? Colors.white : context.textPrimary,
+                        color: isSelected ? context.onAccentOrOlive : context.textPrimary,
                       ),
                     ),
                     selected: isSelected,
