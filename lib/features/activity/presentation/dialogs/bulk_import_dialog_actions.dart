@@ -163,7 +163,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
                 block.parsedTimeRange == null
                     ? null
                     : 'Saat: ${block.parsedTimeRange}',
-            teamId: person.matchedTimId,
+            teamId: block.taskTeamId ?? person.matchedTimId,
           ),
         );
       }

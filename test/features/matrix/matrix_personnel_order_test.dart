@@ -10,6 +10,7 @@ void main() {
     int? timId,
   }) {
     return PersonelTableData(
+      aktif: true, isDemo: false,
       id: id,
       adSoyad: name,
       rutbe: rank,

@@ -22,18 +22,16 @@ class ActivityAssignmentGroups extends StatefulWidget {
   final Map<int, PersonelTableData> personnelById;
   final Map<int, String> squadNames;
   final int? selectedSquadId;
-  final Future<void> Function(
-    List<FaaliyetPersonelAtamaTableData> assignments,
-  )? onExportSelected;
-  final Future<void> Function(
-    List<FaaliyetPersonelAtamaTableData> assignments,
-  )? onDeleteSelected;
+  final Future<void> Function(List<FaaliyetPersonelAtamaTableData> assignments)?
+  onExportSelected;
+  final Future<void> Function(List<FaaliyetPersonelAtamaTableData> assignments)?
+  onDeleteSelected;
 
   /// Called when the user taps "Taşı" on a squad header.
   /// Receives [squadId] (nullable = "Tim Dışı") and [squadName].
   final Future<void> Function(int? squadId, String squadName)? onTransferSquad;
   final Widget Function(FaaliyetPersonelAtamaTableData assignment)
-      assignmentBuilder;
+  assignmentBuilder;
 
   @override
   State<ActivityAssignmentGroups> createState() =>
@@ -64,7 +62,7 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
   Widget build(BuildContext context) {
     final grouped = <int?, List<FaaliyetPersonelAtamaTableData>>{};
     for (final assignment in widget.assignments) {
-      final squadId = widget.personnelById[assignment.personelId]?.timId;
+      final squadId = assignment.gorevTimId;
       grouped.putIfAbsent(squadId, () => []).add(assignment);
     }
     for (final assignments in grouped.values) {
@@ -79,17 +77,17 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
       });
     }
 
-    final squadIds = grouped.keys.toList()
-      ..sort((a, b) {
-        if (a == null) return 1;
-        if (b == null) return -1;
-        final nameA = widget.squadNames[a] ?? 'Bilinmeyen Tim';
-        final nameB = widget.squadNames[b] ?? 'Bilinmeyen Tim';
-        final weightA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
-        final weightB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
-        if (weightA != weightB) return weightA.compareTo(weightB);
-        return nameA.compareTo(nameB);
-      });
+    final squadIds =
+        grouped.keys.toList()..sort((a, b) {
+          if (a == null) return 1;
+          if (b == null) return -1;
+          final nameA = widget.squadNames[a] ?? 'Bilinmeyen Tim';
+          final nameB = widget.squadNames[b] ?? 'Bilinmeyen Tim';
+          final weightA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
+          final weightB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
+          if (weightA != weightB) return weightA.compareTo(weightB);
+          return nameA.compareTo(nameB);
+        });
 
     return Column(
       children: [
@@ -110,11 +108,10 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
                 if (widget.onExportSelected != null)
                   FilledButton.tonalIcon(
                     key: const Key('export-selected-teams'),
-                    onPressed: () => widget.onExportSelected!(
-                      [
-                        for (final id in _selectedSquadIds) ...?grouped[id],
-                      ],
-                    ),
+                    onPressed:
+                        () => widget.onExportSelected!([
+                          for (final id in _selectedSquadIds) ...?grouped[id],
+                        ]),
                     icon: const Icon(Icons.print_outlined, size: 18),
                     label: const Text('Yazdır'),
                   ),
@@ -143,12 +140,15 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
           ),
         ...squadIds.map((squadId) {
           final assignments = grouped[squadId]!;
-          final teamName = squadId == null
-              ? 'Tim Dışı'
-              : (widget.squadNames[squadId] ?? 'Bilinmeyen Tim');
-          final expanded = squadId == null
-              ? _hasExpandedTimDisi
-              : _expandedSquadId == squadId;
+          final teamName =
+              squadId == null
+                  ? grouped[squadId]!.first.gorevTimAdi ??
+                      'Tim geçmişi bilinmiyor'
+                  : (widget.squadNames[squadId] ?? 'Bilinmeyen Tim');
+          final expanded =
+              squadId == null
+                  ? _hasExpandedTimDisi
+                  : _expandedSquadId == squadId;
 
           return CollapsibleSquadCard(
             cardKey: Key('activity-team-card-$squadId'),
@@ -168,24 +168,26 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
               Checkbox(
                 key: Key('activity-team-select-$squadId'),
                 value: _selectedSquadIds.contains(squadId),
-                onChanged: (selected) => setState(() {
-                  if (selected ?? false) {
-                    _selectedSquadIds.add(squadId);
-                  } else {
-                    _selectedSquadIds.remove(squadId);
-                  }
-                }),
+                onChanged:
+                    (selected) => setState(() {
+                      if (selected ?? false) {
+                        _selectedSquadIds.add(squadId);
+                      } else {
+                        _selectedSquadIds.remove(squadId);
+                      }
+                    }),
               ),
             ],
-            onToggle: () => setState(() {
-              if (squadId == null) {
-                _hasExpandedTimDisi = !_hasExpandedTimDisi;
-                _expandedSquadId = null;
-              } else {
-                _expandedSquadId = expanded ? null : squadId;
-                _hasExpandedTimDisi = false;
-              }
-            }),
+            onToggle:
+                () => setState(() {
+                  if (squadId == null) {
+                    _hasExpandedTimDisi = !_hasExpandedTimDisi;
+                    _expandedSquadId = null;
+                  } else {
+                    _expandedSquadId = expanded ? null : squadId;
+                    _hasExpandedTimDisi = false;
+                  }
+                }),
             children: assignments
                 .map(widget.assignmentBuilder)
                 .toList(growable: false),

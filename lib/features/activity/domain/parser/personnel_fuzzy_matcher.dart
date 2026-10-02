@@ -1,4 +1,5 @@
 import 'package:fuzzy/fuzzy.dart';
+import 'package:drift/drift.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
@@ -11,7 +12,9 @@ class PersonnelFuzzyMatcher {
   Future<List<ParsedActivityBlock>> matchBlocks(
     List<ParsedActivityBlock> blocks,
   ) async {
-    final allPersonnel = await database.select(database.personelTable).get();
+    final allPersonnel =
+        await (database.select(database.personelTable)
+          ..where((p) => p.aktif.equals(true) & p.isDemo.equals(false))).get();
     final allTeams = await database.select(database.timTable).get();
     final aliases = await BulkImportLearningService(database).loadAliases();
     final teamNames = {for (final team in allTeams) team.id: team.timAdi};
@@ -48,9 +51,18 @@ class PersonnelFuzzyMatcher {
         }
       }
 
+      final taskTeams =
+          allTeams
+              .where(
+                (t) =>
+                    BulkImportLearningService.normalizeTeam(t.timAdi) ==
+                    BulkImportLearningService.normalizeTeam(updatedTimName),
+              )
+              .toList();
       matchedBlocks.add(
         block.copyWith(
           parsedTimName: updatedTimName,
+          taskTeamId: taskTeams.length == 1 ? taskTeams.single.id : null,
           personnelList: matchedPersonnelList,
         ),
       );
@@ -216,8 +228,12 @@ class PersonnelFuzzyMatcher {
   ) {
     final storedTeam =
         personnel.timId == null ? null : teamNames[personnel.timId!];
-    final parsedTeamKey = BulkImportLearningService.normalizeTeam(parsedTeamName);
-    final storedTeamKey = BulkImportLearningService.normalizeTeam(storedTeam ?? '');
+    final parsedTeamKey = BulkImportLearningService.normalizeTeam(
+      parsedTeamName,
+    );
+    final storedTeamKey = BulkImportLearningService.normalizeTeam(
+      storedTeam ?? '',
+    );
     return item.copyWith(
       matchedPersonnelId: personnel.id,
       matchedAdSoyad: personnel.adSoyad,
@@ -225,7 +241,9 @@ class PersonnelFuzzyMatcher {
       matchedTimId: personnel.timId,
       matchConfidence: confidence,
       teamMismatch:
-          parsedTeamKey.isNotEmpty && storedTeamKey.isNotEmpty && parsedTeamKey != storedTeamKey,
+          parsedTeamKey.isNotEmpty &&
+          storedTeamKey.isNotEmpty &&
+          parsedTeamKey != storedTeamKey,
       reviewConfirmed: false,
     );
   }

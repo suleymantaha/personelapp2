@@ -11,11 +11,9 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
     if (normalizedName.isEmpty) {
       throw ArgumentError.value(newName, 'newName', 'Faaliyet adı boş olamaz.');
     }
-    return (db.update(
-      db.gunlukFaaliyetTable,
-    )..where((table) => table.id.equals(activityId))).write(
-      GunlukFaaliyetTableCompanion(faaliyetAdi: Value(normalizedName)),
-    );
+    return (db.update(db.gunlukFaaliyetTable)..where(
+      (table) => table.id.equals(activityId),
+    )).write(GunlukFaaliyetTableCompanion(faaliyetAdi: Value(normalizedName)));
   }
 
   Stream<List<GunlukFaaliyetTableData>> watchAllActivities({
@@ -50,9 +48,8 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
 
   /// Watch pending duty assignments
   Stream<List<FaaliyetPersonelAtamaTableData>> watchPendingAssignments() {
-    return (db.select(
-      db.faaliyetPersonelAtamaTable,
-    )..where((tbl) => tbl.durum.equals(AssignmentStatus.beklemede))).watch();
+    return (db.select(db.faaliyetPersonelAtamaTable)
+      ..where((tbl) => tbl.durum.equals(AssignmentStatus.beklemede))).watch();
   }
 
   /// Watch all duty assignments for a given date
@@ -69,9 +66,10 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
     ])..where(db.gunlukFaaliyetTable.tarih.equals(dateStr));
 
     return query.watch().map(
-      (rows) => rows
-          .map((row) => row.readTable(db.faaliyetPersonelAtamaTable))
-          .toList(),
+      (rows) =>
+          rows
+              .map((row) => row.readTable(db.faaliyetPersonelAtamaTable))
+              .toList(),
     );
   }
 
@@ -88,7 +86,7 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
         db.personelTable,
         db.personelTable.id.equalsExp(db.faaliyetPersonelAtamaTable.personelId),
       ),
-    ])..where(db.personelTable.timId.equals(timId));
+    ])..where(db.faaliyetPersonelAtamaTable.gorevTimId.equals(timId));
 
     return query.watch().map((rows) {
       final map = <int, GunlukFaaliyetTableData>{};
@@ -130,14 +128,15 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
     await _requirePersonnelScope(actor, personnelAssignments);
     final reports = await _loadDomainReports();
     final existingAssignments = await _loadExistingAssignments();
-    final personnelIds = personnelAssignments
-        .map((assignment) => assignment.personnelId)
-        .toSet();
-    final personnel = personnelIds.isEmpty
-        ? <PersonelTableData>[]
-        : await (db.select(
-            db.personelTable,
-          )..where((table) => table.id.isIn(personnelIds))).get();
+    final personnelIds =
+        personnelAssignments
+            .map((assignment) => assignment.personnelId)
+            .toSet();
+    final personnel =
+        personnelIds.isEmpty
+            ? <PersonelTableData>[]
+            : await (db.select(db.personelTable)
+              ..where((table) => table.id.isIn(personnelIds))).get();
     final personnelById = {for (final person in personnel) person.id: person};
     final squads = await db.select(db.timTable).get();
     final seen = <int>{};
@@ -164,9 +163,10 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
           squadId: person.timId,
           duty: duty,
           note: assignment.note,
-          expectedStatus: hasConflict || !actor.isAdmin
-              ? AssignmentStatus.beklemede
-              : AssignmentStatus.onaylandi,
+          expectedStatus:
+              hasConflict || !actor.isAdmin
+                  ? AssignmentStatus.beklemede
+                  : AssignmentStatus.onaylandi,
           hasConflict: hasConflict,
         ),
       );
@@ -183,22 +183,23 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
     required String tarih,
     required List<PersonnelAssignmentInput> personnelAssignments,
   }) async {
-    final activities = await (db.select(
-      db.gunlukFaaliyetTable,
-    )..where((table) => table.tarih.equals(tarih))).get();
+    final activities =
+        await (db.select(db.gunlukFaaliyetTable)
+          ..where((table) => table.tarih.equals(tarih))).get();
     final normalizedName = _normalizeActivityName(faaliyetAdi);
-    final matches = activities
-        .where(
-          (activity) =>
-              _normalizeActivityName(activity.faaliyetAdi) == normalizedName,
-        )
-        .toList();
+    final matches =
+        activities
+            .where(
+              (activity) =>
+                  _normalizeActivityName(activity.faaliyetAdi) ==
+                  normalizedName,
+            )
+            .toList();
     if (matches.isEmpty) return const [];
     final assignments =
         await (db.select(db.faaliyetPersonelAtamaTable)..where(
-              (table) => table.faaliyetId.isIn(matches.map((item) => item.id)),
-            ))
-            .get();
+          (table) => table.faaliyetId.isIn(matches.map((item) => item.id)),
+        )).get();
     final assignmentsByActivity = <int, List<FaaliyetPersonelAtamaTableData>>{};
     for (final assignment in assignments) {
       assignmentsByActivity
@@ -251,12 +252,12 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
   }) {
     return db.transaction(() async {
       await _requirePersonnelScope(actor, personnelAssignments);
-      final activity = await (db.select(
-        db.gunlukFaaliyetTable,
-      )..where((table) => table.id.equals(activityId))).getSingle();
-      final existingRows = await (db.select(
-        db.faaliyetPersonelAtamaTable,
-      )..where((table) => table.faaliyetId.equals(activityId))).get();
+      final activity =
+          await (db.select(db.gunlukFaaliyetTable)
+            ..where((table) => table.id.equals(activityId))).getSingle();
+      final existingRows =
+          await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((table) => table.faaliyetId.equals(activityId))).get();
       final byPersonnel = {
         for (final assignment in existingRows)
           assignment.personelId: assignment,
@@ -303,9 +304,8 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
             continue;
           }
           if (!actor.isAdmin) status = AssignmentStatus.beklemede;
-          await (db.update(
-            db.faaliyetPersonelAtamaTable,
-          )..where((table) => table.id.equals(current.id))).write(
+          await (db.update(db.faaliyetPersonelAtamaTable)
+            ..where((table) => table.id.equals(current.id))).write(
             FaaliyetPersonelAtamaTableCompanion(
               gorevVeyaIzin: Value(duty),
               aciklama: Value(note.isEmpty ? null : note),
@@ -332,7 +332,7 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
         final assignmentId = await db
             .into(db.faaliyetPersonelAtamaTable)
             .insert(
-              FaaliyetPersonelAtamaTableCompanion.insert(
+              await _newAssignment(
                 faaliyetId: activityId,
                 personelId: personId,
                 gorevVeyaIzin: duty,
@@ -380,22 +380,22 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
       var alreadyAssignedCount = 0;
 
       for (final request in requests) {
-        final sameDayActivities = await (db.select(
-          db.gunlukFaaliyetTable,
-        )..where((tbl) => tbl.tarih.equals(request.tarih))).get();
+        final sameDayActivities =
+            await (db.select(db.gunlukFaaliyetTable)
+              ..where((tbl) => tbl.tarih.equals(request.tarih))).get();
         final normalizedRequestName = _normalizeActivityName(
           request.faaliyetAdi,
         );
-        final matchingActivities = sameDayActivities
-            .where(
-              (activity) =>
-                  _normalizeActivityName(activity.faaliyetAdi) ==
-                  normalizedRequestName,
-            )
-            .toList();
-        final existingActivity = matchingActivities.isEmpty
-            ? null
-            : matchingActivities.first;
+        final matchingActivities =
+            sameDayActivities
+                .where(
+                  (activity) =>
+                      _normalizeActivityName(activity.faaliyetAdi) ==
+                      normalizedRequestName,
+                )
+                .toList();
+        final existingActivity =
+            matchingActivities.isEmpty ? null : matchingActivities.first;
 
         if (existingActivity != null) {
           ids.add(existingActivity.id);
@@ -424,9 +424,9 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
             skippedPersonnelIds: activitySkipped,
           );
           ids.add(id);
-          final inserted = await (db.select(
-            db.faaliyetPersonelAtamaTable,
-          )..where((table) => table.faaliyetId.equals(id))).get();
+          final inserted =
+              await (db.select(db.faaliyetPersonelAtamaTable)
+                ..where((table) => table.faaliyetId.equals(id))).get();
           addedCount += inserted.length;
           skipped.addAll(
             activitySkipped.map(
@@ -440,11 +440,11 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
         }
       }
       final personnelIds = skipped.map((item) => item.personelId).toSet();
-      final personnel = personnelIds.isEmpty
-          ? const <PersonelTableData>[]
-          : await (db.select(
-              db.personelTable,
-            )..where((table) => table.id.isIn(personnelIds))).get();
+      final personnel =
+          personnelIds.isEmpty
+              ? const <PersonelTableData>[]
+              : await (db.select(db.personelTable)
+                ..where((table) => table.id.isIn(personnelIds))).get();
       final names = {for (final person in personnel) person.id: person.adSoyad};
       return ActivityBatchCreateResult(
         activityIds: ids,

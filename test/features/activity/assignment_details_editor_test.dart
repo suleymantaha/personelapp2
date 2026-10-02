@@ -19,6 +19,7 @@ void main() {
             body: ActivityAssignmentDetailsEditor(
       people: const [
         PersonelTableData(
+      aktif: true, isDemo: false,
             id: 1,
             adSoyad: 'Ahmet',
             rutbe: 'J.Asb.',

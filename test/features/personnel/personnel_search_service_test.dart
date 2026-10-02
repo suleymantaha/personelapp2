@@ -5,6 +5,7 @@ import 'package:personelapp2/features/activity/domain/parser/personnel_search_se
 void main() {
   const personnel = [
     PersonelTableData(
+      aktif: true, isDemo: false,
       id: 1,
       adSoyad: 'Ahmet Yılmaz',
       rutbe: 'J.Asb.Çvş.',
@@ -12,6 +13,7 @@ void main() {
       kayitTarihi: '2026-01-01',
     ),
     PersonelTableData(
+      aktif: true, isDemo: false,
       id: 2,
       adSoyad: 'Mehmet Demir',
       rutbe: 'J.Uzm.Çvş.',

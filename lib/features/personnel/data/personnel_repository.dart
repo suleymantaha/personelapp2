@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
@@ -14,8 +15,14 @@ class PersonnelRepository {
   final AppDatabase db;
 
   /// Return all personnel sorted by rank weight (seniority)
-  Stream<List<PersonelTableData>> watchAllPersonnelSorted() {
-    return db.select(db.personelTable).watch().map((list) {
+  Stream<List<PersonelTableData>> watchAllPersonnelSorted({
+    bool includeInactive = false,
+    bool includeDemo = false,
+  }) {
+    final query = db.select(db.personelTable);
+    if (!includeInactive) query.where((p) => p.aktif.equals(true));
+    if (!includeDemo) query.where((p) => p.isDemo.equals(false));
+    return query.watch().map((list) {
       return List<PersonelTableData>.from(list)..sort(
         (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
       );
@@ -24,8 +31,12 @@ class PersonnelRepository {
 
   /// Return personnel belonging to a specific squad sorted by rank
   Stream<List<PersonelTableData>> watchPersonnelBySquad(int timId) {
-    return (db.select(db.personelTable)
-      ..where((tbl) => tbl.timId.equals(timId))).watch().map((list) {
+    return (db.select(db.personelTable)..where(
+      (tbl) =>
+          tbl.timId.equals(timId) &
+          tbl.aktif.equals(true) &
+          tbl.isDemo.equals(false),
+    )).watch().map((list) {
       return List<PersonelTableData>.from(list)..sort(
         (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
       );
@@ -110,8 +121,9 @@ class PersonnelRepository {
               await (db.select(db.personelTable)..where(
                 (p) => p.id.equals(entry.existingPersonnelId!),
               )).getSingleOrNull();
-          if (current == null)
+          if (current == null) {
             throw ArgumentError('Güncellenecek personel bulunamadı.');
+          }
           await updatePersonnel(
             current.copyWith(
               adSoyad: name,
@@ -247,7 +259,8 @@ class PersonnelRepository {
           await (db.select(db.personelTable)
             ..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
 
-      if (p != null && p.timId != null) {
+      if (p == null || !p.aktif) return 0;
+      if (p.timId != null) {
         await db
             .into(db.timUyelikGecmisiTable)
             .insert(
@@ -273,39 +286,7 @@ class PersonnelRepository {
     ])).watch();
   }
 
-  Future<void> ensureDefaultSquads() async {
-    final existingSquads = await db.select(db.timTable).get();
-    final existingNames = existingSquads.map((s) => s.timAdi.trim()).toSet();
-
-    final defaultSquads = [
-      'K.H',
-      "1'inci Bl. K.H",
-      '1-B Timi',
-      '2-B Timi',
-      '3-B Timi',
-      '4-B Timi',
-      "2'nci Bl. K.H",
-      '5-B Timi',
-      '6-B Timi',
-      '7-B Timi',
-      '8-B Timi',
-      "3'üncü Bl. K.H",
-      '9-B Timi',
-      '10-B Timi',
-      '11-B Timi',
-      '12-B Timi',
-    ];
-    final nowStr = DateTime.now().toIso8601String();
-    for (final name in defaultSquads) {
-      if (!existingNames.contains(name)) {
-        await db
-            .into(db.timTable)
-            .insert(
-              TimTableCompanion.insert(timAdi: name, olusturmaTarihi: nowStr),
-            );
-      }
-    }
-  }
+  Future<void> ensureDefaultSquads() => db.ensureSeeded();
 
   /// Squad operations
   Stream<List<TimTableData>> watchAllSquads() async* {
@@ -445,10 +426,13 @@ class PersonnelRepository {
     required int personnelId,
   }) async {
     await db.transaction(() async {
-      // 1. Assign personnel to squad
-      await (db.update(db.personelTable)..where(
-        (tbl) => tbl.id.equals(personnelId),
-      )).write(PersonelTableCompanion(timId: Value(timId)));
+      final person =
+          await (db.select(db.personelTable)
+            ..where((p) => p.id.equals(personnelId))).getSingle();
+      if (!person.aktif || person.isDemo) {
+        throw ArgumentError('Aktif gerçek personel seçilmeli.');
+      }
+      await updatePersonnel(person.copyWith(timId: Value(timId)));
 
       // 2. Check if user already exists
       final existingUser =
@@ -485,6 +469,9 @@ class PersonnelRepository {
 
   /// Seed test personnel (e.g. 10 per squad) for trial/testing purposes
   Future<int> seedTestPersonnelPerSquad({int countPerSquad = 10}) async {
+    if (!kDebugMode) {
+      throw StateError('Test verisi yalnızca geliştirme sürümünde oluşturulur.');
+    }
     final squads = await db.select(db.timTable).get();
     if (squads.isEmpty) return 0;
 
@@ -552,6 +539,11 @@ class PersonnelRepository {
     var insertedCount = 0;
 
     await db.transaction(() async {
+      final existingDemo =
+          await (db.select(db.personelTable)
+            ..where((p) => p.isDemo.equals(true))).get();
+      final demoKeys =
+          existingDemo.map((p) => '${p.timId}|${p.adSoyad}').toSet();
       var nameIdx = 0;
       for (final squad in squads) {
         final toInsert = <PersonelTableCompanion>[];
@@ -561,9 +553,11 @@ class PersonnelRepository {
           final rank = ranks[i % ranks.length];
           nameIdx++;
 
+          if (!demoKeys.add('${squad.id}|$fName $lName')) continue;
           toInsert.add(
             PersonelTableCompanion.insert(
               adSoyad: '$fName $lName',
+              isDemo: const Value(true),
               rutbe: rank,
               birlik: MilitaryStructureHelper.getOfficialBirlikName(
                 squad.timAdi,
@@ -581,11 +575,20 @@ class PersonnelRepository {
     return insertedCount;
   }
 
-  /// Delete all personnel records from database
+  /// Only explicitly marked demo personnel may be permanently removed here.
   Future<int> deleteAllPersonnel() async {
+    if (!kDebugMode) {
+      throw StateError('Test verisi temizliği yalnızca geliştirme sürümünde yapılır.');
+    }
     return db.transaction(() async {
-      await db.delete(db.timUyelikGecmisiTable).go();
-      return db.delete(db.personelTable).go();
+      final demo =
+          await (db.select(db.personelTable)
+            ..where((p) => p.isDemo.equals(true))).get();
+      final ids = demo.map((p) => p.id).toList();
+      if (ids.isEmpty) return 0;
+      await (db.delete(db.timUyelikGecmisiTable)
+        ..where((h) => h.personelId.isIn(ids))).go();
+      return (db.delete(db.personelTable)..where((p) => p.id.isIn(ids))).go();
     });
   }
 }

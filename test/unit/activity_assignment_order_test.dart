@@ -6,6 +6,7 @@ void main() {
   const squads = {1: '1-B Timi', 6: '6-B Timi'};
   const personnel = {
     1: PersonelTableData(
+      aktif: true, isDemo: false,
       id: 1,
       adSoyad: 'Astsubay Altı',
       rutbe: 'J.Asb.Çvş.',
@@ -14,6 +15,7 @@ void main() {
       kayitTarihi: '',
     ),
     2: PersonelTableData(
+      aktif: true, isDemo: false,
       id: 2,
       adSoyad: 'Uzman İki',
       rutbe: 'J.Uzm.Çvş.',
@@ -22,6 +24,7 @@ void main() {
       kayitTarihi: '',
     ),
     3: PersonelTableData(
+      aktif: true, isDemo: false,
       id: 3,
       adSoyad: 'Astsubay Bir',
       rutbe: 'J.Asb.Bçvş.',

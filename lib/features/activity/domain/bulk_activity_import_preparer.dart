@@ -171,10 +171,9 @@ class BulkActivityImportPreparer {
                     block.parsedTimeRange!.trim(),
                 }.toList(),
           );
-          if (first.block != result.length)
-            result[first.block] = result[first.block].copyWith(
-              personnelList: firstPeople,
-            );
+          if (first.block != result.length) {
+            result[first.block] = result[first.block].copyWith(personnelList: firstPeople);
+          }
           removedCount++;
         }
       }
@@ -277,7 +276,7 @@ class BulkActivityImportPreparer {
                 duty: duty,
                 note:
                     'Görev Türü: $duty${item.person.sourceTimeRanges.isEmpty ? '' : ' (${item.person.sourceTimeRanges.join('; ')})'}',
-                teamId: item.person.matchedTimId,
+                teamId: item.block.taskTeamId ?? item.person.matchedTimId,
               ),
             );
       }

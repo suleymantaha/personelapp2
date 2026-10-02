@@ -19,6 +19,7 @@ void main() {
         allPersonnelProvider.overrideWith(
           (ref) => Stream.value(const [
             PersonelTableData(
+      aktif: true, isDemo: false,
               id: 1,
               adSoyad: 'Ahmet Yılmaz',
               rutbe: 'J.Bnb.',

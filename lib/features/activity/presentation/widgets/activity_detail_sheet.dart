@@ -40,7 +40,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(userSessionProvider);
     final isAdmin = session?.isAdmin ?? false;
-    final allPersonnelAsync = ref.watch(allPersonnelProvider);
+    final allPersonnelAsync = ref.watch(historicalPersonnelProvider);
     final personnelList = allPersonnelAsync.value ?? [];
     final pMap = {for (final p in personnelList) p.id: p};
 
@@ -49,23 +49,24 @@ class ActivityAssignmentDetails extends ConsumerWidget {
       if (session?.timId == null) {
         filteredAssignments = const <FaaliyetPersonelAtamaTableData>[];
       } else {
-        filteredAssignments = filteredAssignments.where((a) {
-          final person = pMap[a.personelId];
-          return person?.timId == session!.timId;
-        }).toList();
+        filteredAssignments =
+            filteredAssignments.where((a) {
+              final authority =
+                  ref.watch(commanderAuthorityProvider).valueOrNull;
+              return authority != null && a.gorevTimId == authority;
+            }).toList();
       }
     }
 
     if (selectedSquadId != null) {
-      filteredAssignments = filteredAssignments.where((a) {
-        final p = pMap[a.personelId];
-        return p?.timId == selectedSquadId;
-      }).toList();
+      filteredAssignments =
+          filteredAssignments.where((a) {
+            return a.gorevTimId == selectedSquadId;
+          }).toList();
     }
 
-    final existingPersonnelIds = filteredAssignments
-        .map((a) => a.personelId)
-        .toSet();
+    final existingPersonnelIds =
+        filteredAssignments.map((a) => a.personelId).toSet();
     final allSquadsAsync = ref.watch(allSquadsProvider);
     final squadsList = allSquadsAsync.value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
@@ -89,9 +90,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
           () {
             final atama = operationalAssignments[i];
             final p = pMap[atama.personelId];
-            final timName = (p?.timId != null && squadMap.containsKey(p!.timId))
-                ? squadMap[p.timId]!
-                : '';
+            final timName = atama.gorevTimAdi ?? 'Tim geçmişi bilinmiyor';
             return MilitaryRosterRow(
               sNu: i + 1,
               birligi: MilitaryStructureHelper.getRosterBirlikName(
@@ -145,53 +144,62 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                     final action = await showModalBottomSheet<String>(
                       context: context,
                       showDragHandle: true,
-                      builder: (sheetContext) => SafeArea(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              key: const Key(
-                                'activity-add-single-personnel-option',
-                              ),
-                              leading: const Icon(
-                                Icons.person_add_alt_1_rounded,
-                              ),
-                              title: const Text('Personel Seçerek Ekle'),
-                              subtitle: const Text(
-                                'Bir veya birden fazla personel seçin',
-                              ),
-                              onTap: () =>
-                                  Navigator.of(sheetContext).pop('single'),
+                      builder:
+                          (sheetContext) => SafeArea(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  key: const Key(
+                                    'activity-add-single-personnel-option',
+                                  ),
+                                  leading: const Icon(
+                                    Icons.person_add_alt_1_rounded,
+                                  ),
+                                  title: const Text('Personel Seçerek Ekle'),
+                                  subtitle: const Text(
+                                    'Bir veya birden fazla personel seçin',
+                                  ),
+                                  onTap:
+                                      () => Navigator.of(
+                                        sheetContext,
+                                      ).pop('single'),
+                                ),
+                                ListTile(
+                                  key: const Key(
+                                    'activity-add-bulk-personnel-option',
+                                  ),
+                                  leading: const Icon(
+                                    Icons.content_paste_go_rounded,
+                                  ),
+                                  title: const Text('Metinden Toplu Ekle'),
+                                  subtitle: const Text(
+                                    'Listeyi tam önizleme ve hata kontrolüyle aktar',
+                                  ),
+                                  onTap:
+                                      () => Navigator.of(
+                                        sheetContext,
+                                      ).pop('bulk'),
+                                ),
+                                ListTile(
+                                  key: const Key(
+                                    'activity-add-image-personnel-option',
+                                  ),
+                                  leading: const Icon(
+                                    Icons.image_search_rounded,
+                                  ),
+                                  title: const Text('Görselden Toplu Ekle'),
+                                  subtitle: const Text(
+                                    'Personel listesini görselden okuyup bu karta ekle',
+                                  ),
+                                  onTap:
+                                      () => Navigator.of(
+                                        sheetContext,
+                                      ).pop('image'),
+                                ),
+                              ],
                             ),
-                            ListTile(
-                              key: const Key(
-                                'activity-add-bulk-personnel-option',
-                              ),
-                              leading: const Icon(
-                                Icons.content_paste_go_rounded,
-                              ),
-                              title: const Text('Metinden Toplu Ekle'),
-                              subtitle: const Text(
-                                'Listeyi tam önizleme ve hata kontrolüyle aktar',
-                              ),
-                              onTap: () =>
-                                  Navigator.of(sheetContext).pop('bulk'),
-                            ),
-                            ListTile(
-                              key: const Key(
-                                'activity-add-image-personnel-option',
-                              ),
-                              leading: const Icon(Icons.image_search_rounded),
-                              title: const Text('Görselden Toplu Ekle'),
-                              subtitle: const Text(
-                                'Personel listesini görselden okuyup bu karta ekle',
-                              ),
-                              onTap: () =>
-                                  Navigator.of(sheetContext).pop('image'),
-                            ),
-                          ],
-                        ),
-                      ),
+                          ),
                     );
                     if (!context.mounted || action == null) return;
                     if (action == 'image') {
@@ -212,12 +220,13 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                         );
                         final result = await showDialog<bool>(
                           context: context,
-                          builder: (dialogContext) => BulkImportDialog(
-                            database: db,
-                            activityRepository: activityRepo,
-                            initialText: imageResult.bulkImportText,
-                            targetActivity: activity,
-                          ),
+                          builder:
+                              (dialogContext) => BulkImportDialog(
+                                database: db,
+                                activityRepository: activityRepo,
+                                initialText: imageResult.bulkImportText,
+                                targetActivity: activity,
+                              ),
                         );
                         if (result == true && context.mounted) {
                           ref.invalidate(activityRepositoryProvider);
@@ -238,11 +247,12 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       final activityRepo = ref.read(activityRepositoryProvider);
                       final result = await showDialog<bool>(
                         context: context,
-                        builder: (dialogContext) => BulkImportDialog(
-                          database: db,
-                          activityRepository: activityRepo,
-                          targetActivity: activity,
-                        ),
+                        builder:
+                            (dialogContext) => BulkImportDialog(
+                              database: db,
+                              activityRepository: activityRepo,
+                              targetActivity: activity,
+                            ),
                       );
                       if (result == true && context.mounted) {
                         ref.invalidate(activityRepositoryProvider);
@@ -252,20 +262,20 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       return;
                     }
 
-                    final added =
-                        await Navigator.of(
-                          context,
-                          rootNavigator: true,
-                        ).push<bool>(
-                          MaterialPageRoute(
-                            fullscreenDialog: true,
-                            builder: (ctx) => AddPersonnelToActivityDialog(
+                    final added = await Navigator.of(
+                      context,
+                      rootNavigator: true,
+                    ).push<bool>(
+                      MaterialPageRoute(
+                        fullscreenDialog: true,
+                        builder:
+                            (ctx) => AddPersonnelToActivityDialog(
                               activity: activity,
                               isAdmin: isAdmin,
                               existingPersonnelIds: existingPersonnelIds,
                             ),
-                          ),
-                        );
+                      ),
+                    );
                     if (added == true && context.mounted) {
                       AppNotifications.approvalResult(
                         isAdmin
@@ -318,38 +328,39 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                     );
                   }
                 },
-                itemBuilder: (ctx) => [
-                  const ModernMenuHeader<String>(
-                    title: 'Dışa Aktar',
-                    subtitle: 'Faaliyet listesini paylaş veya yazdır',
-                    icon: Icons.ios_share_rounded,
-                  ),
-                  const PopupMenuDivider(),
-                  ModernPopupMenuItem(
-                    option: const ModernActionOption(
-                      value: 'excel',
-                      title: 'Excel’e aktar',
-                      subtitle: 'Hesap tablosu olarak paylaş',
-                      icon: Icons.table_chart_outlined,
-                    ),
-                  ),
-                  ModernPopupMenuItem(
-                    option: const ModernActionOption(
-                      value: 'pdf',
-                      title: 'PDF / Yazdır',
-                      subtitle: 'PDF oluştur veya doğrudan yazdır',
-                      icon: Icons.picture_as_pdf_outlined,
-                    ),
-                  ),
-                  ModernPopupMenuItem(
-                    option: const ModernActionOption(
-                      value: 'text',
-                      title: 'Metin olarak paylaş',
-                      subtitle: 'Mesajlaşma uygulamaları için hazırla',
-                      icon: Icons.share_outlined,
-                    ),
-                  ),
-                ],
+                itemBuilder:
+                    (ctx) => [
+                      const ModernMenuHeader<String>(
+                        title: 'Dışa Aktar',
+                        subtitle: 'Faaliyet listesini paylaş veya yazdır',
+                        icon: Icons.ios_share_rounded,
+                      ),
+                      const PopupMenuDivider(),
+                      ModernPopupMenuItem(
+                        option: const ModernActionOption(
+                          value: 'excel',
+                          title: 'Excel’e aktar',
+                          subtitle: 'Hesap tablosu olarak paylaş',
+                          icon: Icons.table_chart_outlined,
+                        ),
+                      ),
+                      ModernPopupMenuItem(
+                        option: const ModernActionOption(
+                          value: 'pdf',
+                          title: 'PDF / Yazdır',
+                          subtitle: 'PDF oluştur veya doğrudan yazdır',
+                          icon: Icons.picture_as_pdf_outlined,
+                        ),
+                      ),
+                      ModernPopupMenuItem(
+                        option: const ModernActionOption(
+                          value: 'text',
+                          title: 'Metin olarak paylaş',
+                          subtitle: 'Mesajlaşma uygulamaları için hazırla',
+                          icon: Icons.share_outlined,
+                        ),
+                      ),
+                    ],
               ),
             ],
           ),

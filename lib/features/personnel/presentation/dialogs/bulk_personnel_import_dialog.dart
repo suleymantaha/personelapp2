@@ -103,10 +103,11 @@ class _BulkPersonnelImportDialogState
       ref.invalidate(allPersonnelProvider);
       if (mounted) Navigator.of(context).pop(result);
     } catch (error) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Personel aktarımı kaydedilemedi: $error')),
         );
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -145,8 +146,9 @@ class _BulkPersonnelImportDialogState
             .toSet();
     final existingKeys = Set<String>.of(seenKeys);
     bool needsDecision(PersonnelImportDraft item) {
-      if (item.skip || item.allowDuplicate || item.existingPersonnelId != null)
+      if (item.skip || item.allowDuplicate || item.existingPersonnelId != null) {
         return false;
+      }
       final matches = _matchingPeople(item, existingPersonnel);
       return matches.length > 1 ||
           (matches.isNotEmpty &&

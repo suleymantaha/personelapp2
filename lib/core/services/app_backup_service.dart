@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AppBackupService {
   AppBackupService(this.db, {Future<SharedPreferences> Function()? preferences})
-      : _preferences = preferences ?? SharedPreferences.getInstance;
+    : _preferences = preferences ?? SharedPreferences.getInstance;
 
   final AppDatabase db;
   final Future<SharedPreferences> Function() _preferences;
@@ -29,30 +29,38 @@ class AppBackupService {
     final payload = <String, Object?>{
       'databaseSchemaVersion': db.schemaVersion,
       'tables': <String, Object?>{
-        'users': (await db.select(db.kullaniciTable).get())
-            .map((row) => row.toJson())
-            .toList(),
-        'squads': (await db.select(db.timTable).get())
-            .map((row) => row.toJson())
-            .toList(),
-        'personnel': (await db.select(db.personelTable).get())
-            .map((row) => row.toJson())
-            .toList(),
-        'activities': (await db.select(db.gunlukFaaliyetTable).get())
-            .map((row) => row.toJson())
-            .toList(),
-        'assignments': (await db.select(db.faaliyetPersonelAtamaTable).get())
-            .map((row) => row.toJson())
-            .toList(),
-        'reports': (await db.select(db.raporKayitTable).get())
-            .map((row) => row.toJson())
-            .toList(),
-        'membershipHistory': (await db.select(db.timUyelikGecmisiTable).get())
-            .map((row) => row.toJson())
-            .toList(),
-        'aliases': (await db.select(db.personelIsimTakmaAdTable).get())
-            .map((row) => row.toJson())
-            .toList(),
+        'users':
+            (await db.select(db.kullaniciTable).get())
+                .map((row) => row.toJson())
+                .toList(),
+        'squads':
+            (await db.select(db.timTable).get())
+                .map((row) => row.toJson())
+                .toList(),
+        'personnel':
+            (await db.select(db.personelTable).get())
+                .map((row) => row.toJson())
+                .toList(),
+        'activities':
+            (await db.select(db.gunlukFaaliyetTable).get())
+                .map((row) => row.toJson())
+                .toList(),
+        'assignments':
+            (await db.select(db.faaliyetPersonelAtamaTable).get())
+                .map((row) => row.toJson())
+                .toList(),
+        'reports':
+            (await db.select(db.raporKayitTable).get())
+                .map((row) => row.toJson())
+                .toList(),
+        'membershipHistory':
+            (await db.select(db.timUyelikGecmisiTable).get())
+                .map((row) => row.toJson())
+                .toList(),
+        'aliases':
+            (await db.select(db.personelIsimTakmaAdTable).get())
+                .map((row) => row.toJson())
+                .toList(),
         'bulkImportHistory':
             (await db.select(db.topluAktarimGecmisiTable).get())
                 .map((row) => row.toJson())
@@ -77,8 +85,9 @@ class AppBackupService {
     final decoded = _decode(jsonString);
     if (decoded['format'] != format && decoded['version'] == 1) {
       final personnel = decoded['personnel'];
-      final exportedAt =
-          DateTime.tryParse(decoded['exportedAt']?.toString() ?? '');
+      final exportedAt = DateTime.tryParse(
+        decoded['exportedAt']?.toString() ?? '',
+      );
       return AppBackupPreview(
         exportedAt: exportedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
         personnelCount: personnel is List<Object?> ? personnel.length : 0,
@@ -95,8 +104,9 @@ class AppBackupService {
   Future<AppBackupRestoreResult> restoreBackupJson(String jsonString) async {
     final decoded = _decode(jsonString);
     if (decoded['format'] != format && decoded['version'] == 1) {
-      final count =
-          await PersonnelBackupService(db).importBackupJson(jsonString);
+      final count = await PersonnelBackupService(
+        db,
+      ).importBackupJson(jsonString);
       return AppBackupRestoreResult(legacy: true, importedPersonnel: count);
     }
 
@@ -127,7 +137,8 @@ class AppBackupService {
     final decoded = _decode(input);
     if (decoded['format'] != format || decoded['version'] != backupVersion) {
       throw const FormatException(
-          'Bu yedek biçimi veya sürümü desteklenmiyor.');
+        'Bu yedek biçimi veya sürümü desteklenmiyor.',
+      );
     }
     final payload = _object(decoded['payload'], 'payload');
     final expectedChecksum = _string(decoded['checksum'], 'checksum');
@@ -144,9 +155,17 @@ class AppBackupService {
     final tables = _object(payload['tables'], 'tables');
     final users = _rows(tables, 'users', KullaniciTableData.fromJson);
     final squads = _rows(tables, 'squads', TimTableData.fromJson);
-    final personnel = _rows(tables, 'personnel', PersonelTableData.fromJson);
-    final activities =
-        _rows(tables, 'activities', GunlukFaaliyetTableData.fromJson);
+    final personnel = _rows(
+      tables,
+      'personnel',
+      (json) =>
+          PersonelTableData.fromJson({'aktif': true, 'isDemo': false, ...json}),
+    );
+    final activities = _rows(
+      tables,
+      'activities',
+      GunlukFaaliyetTableData.fromJson,
+    );
     final assignments = _rows(
       tables,
       'assignments',
@@ -182,10 +201,14 @@ class AppBackupService {
     _requireUniqueIds('assignments', assignments.map((row) => row.id));
     _requireUniqueIds('reports', reports.map((row) => row.id));
     _requireUniqueIds(
-        'membershipHistory', membershipHistory.map((row) => row.id));
+      'membershipHistory',
+      membershipHistory.map((row) => row.id),
+    );
     _requireUniqueIds('aliases', aliases.map((row) => row.id));
     _requireUniqueIds(
-        'bulkImportHistory', bulkImportHistory.map((row) => row.id));
+      'bulkImportHistory',
+      bulkImportHistory.map((row) => row.id),
+    );
 
     _requireReferences(
       users.where((row) => row.timId != null).map((row) => row.timId!),
@@ -237,8 +260,9 @@ class AppBackupService {
       'Personel-takma ad bağlantısı',
     );
 
-    final exportedAt =
-        DateTime.tryParse(_string(decoded['exportedAt'], 'exportedAt'));
+    final exportedAt = DateTime.tryParse(
+      _string(decoded['exportedAt'], 'exportedAt'),
+    );
     if (exportedAt == null) {
       throw const FormatException('Yedek tarihi geçersiz.');
     }
@@ -271,12 +295,12 @@ class AppBackupService {
     await db.delete(db.gunlukFaaliyetTable).go();
     await db.delete(db.topluAktarimGecmisiTable).go();
     await db.delete(db.personelTable).go();
-    await db.update(db.kullaniciTable).write(
-          const KullaniciTableCompanion(timId: Value(null)),
-        );
-    await db.update(db.timTable).write(
-          const TimTableCompanion(timKomutaniId: Value(null)),
-        );
+    await db
+        .update(db.kullaniciTable)
+        .write(const KullaniciTableCompanion(timId: Value(null)));
+    await db
+        .update(db.timTable)
+        .write(const TimTableCompanion(timKomutaniId: Value(null)));
     await db.delete(db.timTable).go();
     await db.delete(db.kullaniciTable).go();
 
@@ -286,18 +310,19 @@ class AppBackupService {
           .insert(row.copyWith(timId: const Value(null)));
     }
     for (final row in data.squads) {
-      await db.into(db.timTable).insert(
-            row.copyWith(timKomutaniId: const Value(null)),
-          );
+      await db
+          .into(db.timTable)
+          .insert(row.copyWith(timKomutaniId: const Value(null)));
     }
     for (final row in data.users.where((row) => row.timId != null)) {
-      await (db.update(db.kullaniciTable)
-            ..where((table) => table.id.equals(row.id)))
-          .write(KullaniciTableCompanion(timId: Value(row.timId)));
+      await (db.update(db.kullaniciTable)..where(
+        (table) => table.id.equals(row.id),
+      )).write(KullaniciTableCompanion(timId: Value(row.timId)));
     }
     for (final row in data.squads.where((row) => row.timKomutaniId != null)) {
-      await (db.update(db.timTable)..where((table) => table.id.equals(row.id)))
-          .write(TimTableCompanion(timKomutaniId: Value(row.timKomutaniId)));
+      await (db.update(db.timTable)..where(
+        (table) => table.id.equals(row.id),
+      )).write(TimTableCompanion(timKomutaniId: Value(row.timKomutaniId)));
     }
     await db.batch((batch) {
       batch.insertAll(db.personelTable, data.personnel);
@@ -308,6 +333,7 @@ class AppBackupService {
       batch.insertAll(db.personelIsimTakmaAdTable, data.aliases);
       batch.insertAll(db.topluAktarimGecmisiTable, data.bulkImportHistory);
     });
+    await db.backfillTaskTeamsFromHistory();
   }
 
   Future<void> _replacePreferences(
@@ -325,9 +351,9 @@ class AppBackupService {
         final double v => prefs.setDouble(entry.key, v),
         final String v => prefs.setString(entry.key, v),
         final List<Object?> v => prefs.setStringList(
-            entry.key,
-            v.map((item) => item as String).toList(),
-          ),
+          entry.key,
+          v.map((item) => item as String).toList(),
+        ),
         _ => throw FormatException('${entry.key} tercihi geçersiz.'),
       };
       if (!await saved) {
@@ -364,7 +390,9 @@ class AppBackupService {
         cleaned = lines.sublist(1, lines.length - 1).join('\n').trim();
       }
     }
-    if (cleaned.startsWith('"') && cleaned.endsWith('"') && cleaned.length > 2) {
+    if (cleaned.startsWith('"') &&
+        cleaned.endsWith('"') &&
+        cleaned.length > 2) {
       try {
         final unescaped = jsonDecode(cleaned);
         if (unescaped is String) {
@@ -439,7 +467,8 @@ class AppBackupService {
       throw const FormatException('Yedekte desteklenmeyen bir tercih var.');
     }
     for (final entry in preferences.entries) {
-      final valid = entry.value is bool ||
+      final valid =
+          entry.value is bool ||
           entry.value is int ||
           entry.value is double ||
           entry.value is String ||

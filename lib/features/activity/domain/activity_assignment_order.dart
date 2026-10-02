@@ -65,7 +65,7 @@ String _rosterUnit(
   Map<int, String> squadNames,
 ) {
   return MilitaryStructureHelper.getRosterBirlikName(
-    timName: squadNames[person?.timId] ?? '',
+    timName: assignment.gorevTimAdi ?? 'Tim geçmişi bilinmiyor',
     birlik: person?.birlik ?? '',
     duty: assignment.gorevVeyaIzin,
   );

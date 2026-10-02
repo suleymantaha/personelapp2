@@ -23,6 +23,7 @@ void main() {
   ];
   const personnel = [
     PersonelTableData(
+      aktif: true, isDemo: false,
       id: 1,
       adSoyad: 'İhsan DAĞLI',
       rutbe: 'J.Asb.Kd.Bçvş.',
@@ -31,6 +32,7 @@ void main() {
       kayitTarihi: '2026-01-01',
     ),
     PersonelTableData(
+      aktif: true, isDemo: false,
       id: 2,
       adSoyad: 'Ahmet ÇALIŞKAN',
       rutbe: 'J.Uzm.Çvş.',
@@ -39,6 +41,7 @@ void main() {
       kayitTarihi: '2026-01-01',
     ),
     PersonelTableData(
+      aktif: true, isDemo: false,
       id: 3,
       adSoyad: 'Ziya KAYA',
       rutbe: 'J.Uzm.Çvş.',

@@ -34,6 +34,20 @@ void main() {
     return id;
   }
 
+  test('task team remains stable after personnel transfer', () async {
+    final oldTeam = await team('1-B');
+    final newTeam = await team('2-B');
+    final id = await people.addPersonnel(adSoyad: 'Ali', rutbe: 'J.Er', birlik: 'Asayiş', kayitTarihi: '2026-01-01', timId: oldTeam);
+    await activities.createActivityWithAssignments(faaliyetAdi: 'HEYBET', tarih: '2026-10-02', olusturanKullanici: 'admin', personnelAssignments: [PersonnelAssignmentInput(personnelId: id, duty: 'HEYBET')], actor: const UserSessionState(username: 'admin', role: UserRole.admin));
+    final person = (await db.select(db.personelTable).get()).single;
+    await people.updatePersonnel(person.copyWith(timId: Value(newTeam)), tarih: '2026-10-03');
+    expect(await activities.watchActivitiesForTeam(oldTeam).first, hasLength(1));
+    expect(await activities.watchActivitiesForTeam(newTeam).first, isEmpty);
+    final task = (await db.select(db.faaliyetPersonelAtamaTable).get()).single;
+    expect(task.gorevTimId, oldTeam);
+    expect(task.gorevTimAdi, '1-B');
+  });
+
   test(
     'archive default includes records older than the last hundred',
     () async {

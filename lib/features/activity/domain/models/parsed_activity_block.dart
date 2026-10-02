@@ -79,6 +79,7 @@ class ParsedActivityBlock {
     required this.parsedDate,
     required this.personnelList,
     this.parsedTimeRange,
+    this.taskTeamId,
     Object? identity,
     int? stableOrder,
   }) : identity = identity ?? Object(),
@@ -88,6 +89,7 @@ class ParsedActivityBlock {
   final String
   parsedActivityType; // e.g. "Gülüşkür", "Hazır Kıta", "Heybet", "İhtiyat"
   final String parsedDate; // YYYY-AA-DD
+  final int? taskTeamId;
   final String? parsedTimeRange; // e.g. "08:00 - 19:30"
   final List<ParsedPersonnelItem> personnelList;
   final Object identity;
@@ -99,6 +101,7 @@ class ParsedActivityBlock {
     String? parsedActivityType,
     String? parsedDate,
     String? parsedTimeRange,
+    int? taskTeamId,
     List<ParsedPersonnelItem>? personnelList,
   }) {
     return ParsedActivityBlock(
@@ -107,6 +110,11 @@ class ParsedActivityBlock {
       parsedActivityType: parsedActivityType ?? this.parsedActivityType,
       parsedDate: parsedDate ?? this.parsedDate,
       parsedTimeRange: parsedTimeRange ?? this.parsedTimeRange,
+      taskTeamId:
+          taskTeamId ??
+          (parsedTimName == null || parsedTimName == this.parsedTimName
+              ? this.taskTeamId
+              : null),
       personnelList: personnelList ?? this.personnelList,
       identity: identity,
       stableOrder: stableOrder,

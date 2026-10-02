@@ -6,6 +6,7 @@ import 'package:personelapp2/features/activity/presentation/widgets/activity_ass
 void main() {
   const personnel = {
     1: PersonelTableData(
+      aktif: true, isDemo: false,
       id: 1,
       adSoyad: 'Ziya KAYA',
       rutbe: 'J.Uzm.Çvş.',
@@ -14,6 +15,7 @@ void main() {
       kayitTarihi: '2026-01-01',
     ),
     2: PersonelTableData(
+      aktif: true, isDemo: false,
       id: 2,
       adSoyad: 'Ahmet YILMAZ',
       rutbe: 'J.Bnb.',
@@ -22,6 +24,7 @@ void main() {
       kayitTarihi: '2026-01-01',
     ),
     3: PersonelTableData(
+      aktif: true, isDemo: false,
       id: 3,
       adSoyad: 'Mehmet DEMİR',
       rutbe: 'J.Asb.',

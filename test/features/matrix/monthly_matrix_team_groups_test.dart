@@ -23,6 +23,7 @@ void main() {
     ];
     const personnel = [
       PersonelTableData(
+      aktif: true, isDemo: false,
         id: 1,
         adSoyad: 'Yedinci Tim Personeli',
         rutbe: 'J.Bnb.',
@@ -31,6 +32,7 @@ void main() {
         kayitTarihi: '',
       ),
       PersonelTableData(
+      aktif: true, isDemo: false,
         id: 2,
         adSoyad: 'Karargah Personeli',
         rutbe: 'J.Ütğm.',
@@ -86,6 +88,7 @@ void main() {
     ];
     const personnel = [
       PersonelTableData(
+      aktif: true, isDemo: false,
         id: 1,
         adSoyad: 'Ayşe Çelik',
         rutbe: 'Astsubay',
@@ -94,6 +97,7 @@ void main() {
         kayitTarihi: '',
       ),
       PersonelTableData(
+      aktif: true, isDemo: false,
         id: 2,
         adSoyad: 'Çağrı Öztürk',
         rutbe: 'Teğmen',
@@ -159,6 +163,7 @@ void main() {
     ];
     const personnel = [
       PersonelTableData(
+      aktif: true, isDemo: false,
         id: 1,
         adSoyad: 'Mehmet Yılmaz',
         rutbe: 'Astsubay',

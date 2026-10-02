@@ -39,6 +39,7 @@ void main() {
           allPersonnelProvider.overrideWith(
             (ref) => Stream.value(const [
               PersonelTableData(
+      aktif: true, isDemo: false,
                 id: 1,
                 adSoyad: 'Ahmet YILMAZ',
                 rutbe: 'J.Asb.',
@@ -165,6 +166,7 @@ void main() {
       olusturmaTarihi: '2026-08-05T08:00:00',
     );
     final person = PersonelTableData(
+      aktif: true, isDemo: false,
       id: personId,
       adSoyad: 'Ahmet YILMAZ',
       rutbe: 'J.Asb.Cvs.',

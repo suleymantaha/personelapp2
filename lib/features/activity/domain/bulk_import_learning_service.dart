@@ -45,8 +45,9 @@ class BulkImportLearningService {
       for (final person in block.personnelList) {
         if (person.matchedPersonnelId == null ||
             (!person.reviewConfirmed &&
-                (person.matchConfidence < 1 || person.teamMismatch)))
+                (person.matchConfidence < 1 || person.teamMismatch))) {
           continue;
+        }
         await rememberAlias(
           rawName: person.rawName,
           personnelId: person.matchedPersonnelId!,

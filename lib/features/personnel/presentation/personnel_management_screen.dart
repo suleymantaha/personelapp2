@@ -337,7 +337,7 @@ class _PersonnelManagementScreenState
                                                           ctx,
                                                         ).pop(true),
                                                         child: const Text(
-                                                          'SİL',
+                                                          'PASİFLEŞTİR',
                                                         ),
                                                       ),
                                                     ],

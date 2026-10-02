@@ -10,14 +10,13 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
   }) {
     _requireAdmin(actor);
     return db.transaction(() async {
-      final assignment = await (db.select(
-        db.faaliyetPersonelAtamaTable,
-      )..where((table) => table.id.equals(assignmentId)))
-          .getSingle();
-      final activity = await (db.select(
-        db.gunlukFaaliyetTable,
-      )..where((table) => table.id.equals(assignment.faaliyetId)))
-          .getSingle();
+      final assignment =
+          await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((table) => table.id.equals(assignmentId))).getSingle();
+      final activity =
+          await (db.select(db.gunlukFaaliyetTable)..where(
+            (table) => table.id.equals(assignment.faaliyetId),
+          )).getSingle();
       if (newStatus != AssignmentStatus.reddedildi) {
         final status = ConflictChecker.evaluateAssignmentStatus(
           personelId: assignment.personelId,
@@ -33,10 +32,8 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
           );
         }
       }
-      return (db.update(
-        db.faaliyetPersonelAtamaTable,
-      )..where((tbl) => tbl.id.equals(assignmentId)))
-          .write(
+      return (db.update(db.faaliyetPersonelAtamaTable)
+        ..where((tbl) => tbl.id.equals(assignmentId))).write(
         FaaliyetPersonelAtamaTableCompanion(
           gorevVeyaIzin: Value(gorevVeyaIzin),
           aciklama: Value(aciklama),
@@ -56,24 +53,19 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
     required UserSessionState actor,
   }) async {
     return db.transaction(() async {
-      await _requirePersonnelScope(
-        actor,
-        [
-          PersonnelAssignmentInput(
-            personnelId: personelId,
-            duty: gorevVeyaIzin,
-            note: aciklama,
-          ),
-        ],
-      );
-      final duplicate = await (db.select(
-        db.faaliyetPersonelAtamaTable,
-      )..where(
-              (tbl) =>
-                  tbl.faaliyetId.equals(faaliyetId) &
-                  tbl.personelId.equals(personelId),
-            ))
-          .getSingleOrNull();
+      await _requirePersonnelScope(actor, [
+        PersonnelAssignmentInput(
+          personnelId: personelId,
+          duty: gorevVeyaIzin,
+          note: aciklama,
+        ),
+      ]);
+      final duplicate =
+          await (db.select(db.faaliyetPersonelAtamaTable)..where(
+            (tbl) =>
+                tbl.faaliyetId.equals(faaliyetId) &
+                tbl.personelId.equals(personelId),
+          )).getSingleOrNull();
       if (duplicate != null) return duplicate.id;
 
       final reports = await _loadDomainReports();
@@ -92,8 +84,10 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
       }
       if (!actor.isAdmin) status = AssignmentStatus.beklemede;
 
-      return db.into(db.faaliyetPersonelAtamaTable).insert(
-            FaaliyetPersonelAtamaTableCompanion.insert(
+      return db
+          .into(db.faaliyetPersonelAtamaTable)
+          .insert(
+            await _newAssignment(
               faaliyetId: faaliyetId,
               personelId: personelId,
               gorevVeyaIzin: gorevVeyaIzin,
@@ -114,18 +108,20 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
   }) {
     return db.transaction(() async {
       await _requirePersonnelScope(actor, assignments);
-      final activity = await (db.select(db.gunlukFaaliyetTable)
-            ..where((table) => table.id.equals(activityId)))
-          .getSingleOrNull();
+      final activity =
+          await (db.select(db.gunlukFaaliyetTable)
+            ..where((table) => table.id.equals(activityId))).getSingleOrNull();
       if (activity == null) {
         throw ArgumentError.value(
-            activityId, 'activityId', 'Faaliyet bulunamadı');
+          activityId,
+          'activityId',
+          'Faaliyet bulunamadı',
+        );
       }
 
-      final existingInActivity = await (db.select(
-        db.faaliyetPersonelAtamaTable,
-      )..where((table) => table.faaliyetId.equals(activityId)))
-          .get();
+      final existingInActivity =
+          await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((table) => table.faaliyetId.equals(activityId))).get();
       final existingPersonnelIds =
           existingInActivity.map((row) => row.personelId).toSet();
       final reports = await _loadDomainReports();
@@ -162,13 +158,16 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
         }
         if (!actor.isAdmin) status = AssignmentStatus.beklemede;
 
-        final id = await db.into(db.faaliyetPersonelAtamaTable).insert(
-              FaaliyetPersonelAtamaTableCompanion.insert(
+        final id = await db
+            .into(db.faaliyetPersonelAtamaTable)
+            .insert(
+              await _newAssignment(
                 faaliyetId: activityId,
                 personelId: assignment.personnelId,
                 gorevVeyaIzin: duty,
                 durum: status,
                 aciklama: Value(assignment.note?.trim()),
+                taskTeamId: assignment.teamId,
               ),
             );
         existingAssignments.add(

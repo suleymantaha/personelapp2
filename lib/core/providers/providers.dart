@@ -1,6 +1,7 @@
 export 'package:personelapp2/core/auth/domain/user_session.dart';
 
 import 'package:flutter/material.dart';
+import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -35,6 +36,31 @@ final allPersonnelProvider = StreamProvider<List<PersonelTableData>>((ref) {
   return ref.watch(personnelRepositoryProvider).watchAllPersonnelSorted();
 });
 
+final historicalPersonnelProvider = StreamProvider<List<PersonelTableData>>(
+  (ref) => ref
+      .watch(personnelRepositoryProvider)
+      .watchAllPersonnelSorted(includeInactive: true),
+);
+
+final commanderAuthorityProvider = StreamProvider<int?>((ref) {
+  final session = ref.watch(userSessionProvider);
+  if (session == null || session.isAdmin) return Stream.value(null);
+  final db = ref.watch(databaseProvider);
+  final query = db.select(db.kullaniciTable).join([
+    innerJoin(
+      db.timTable,
+      db.timTable.id.equalsExp(db.kullaniciTable.timId) &
+          db.timTable.timKomutaniId.equalsExp(db.kullaniciTable.id),
+    ),
+  ])..where(
+    db.kullaniciTable.kullaniciAdi.equals(session.username) &
+        db.kullaniciTable.rol.equals(UserRole.teamCommander.storageValue),
+  );
+  return query.watch().map(
+    (rows) => rows.isEmpty ? null : rows.single.readTable(db.timTable).id,
+  );
+});
+
 final allSquadsProvider = StreamProvider<List<TimTableData>>((ref) {
   return ref.watch(personnelRepositoryProvider).watchAllSquads();
 });
@@ -55,22 +81,25 @@ final pendingAssignmentsProvider =
 
 /// Role-Filtered Activities Stream Provider
 final filteredActivitiesProvider =
-    StreamProvider<List<GunlukFaaliyetTableData>>((ref) {
+    StreamProvider<List<GunlukFaaliyetTableData>>((ref) async* {
       final session = ref.watch(userSessionProvider);
       final repo = ref.watch(activityRepositoryProvider);
-
       if (session == null) {
-        return Stream.value(const <GunlukFaaliyetTableData>[]);
+        yield const [];
+      } else if (session.isAdmin) {
+        yield* repo.watchAllActivities();
+      } else {
+        final authority = ref.watch(commanderAuthorityProvider);
+        final teamId =
+            authority.hasValue
+                ? authority.value
+                : await ref.watch(commanderAuthorityProvider.future);
+        if (teamId == null) {
+          yield const [];
+        } else {
+          yield* repo.watchActivitiesForTeam(teamId);
+        }
       }
-
-      if (!session.isAdmin && session.timId == null) {
-        return Stream.value(const <GunlukFaaliyetTableData>[]);
-      }
-
-      if (!session.isAdmin && session.timId != null) {
-        return repo.watchActivitiesForTeam(session.timId!);
-      }
-      return repo.watchAllActivities();
     });
 
 /// Matrix Repository & Monthly Matrix Provider

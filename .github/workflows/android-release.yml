@@ -49,6 +49,15 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Regenerate Drift database
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Upload generated database source
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-database
+          path: lib/core/database/database.g.dart
+
       - name: Analyze
         run: flutter analyze
 

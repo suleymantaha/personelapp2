@@ -65,7 +65,7 @@ void main() {
           'toplu_aktarim_gecmisi_table',
         ],
       );
-      expect(sqliteDatabase.userVersion, 4);
+      expect(sqliteDatabase.userVersion, 5);
     });
 
     test('propagates migration failures instead of marking schema ready',
@@ -120,7 +120,7 @@ void main() {
 
       expect(
           columns.map((row) => row.read<String>('name')), contains('telefon'));
-      expect(sqliteDatabase.userVersion, 4);
+      expect(sqliteDatabase.userVersion, 5);
     });
   });
 }
