@@ -41,7 +41,7 @@ class BulkActivityImportDraft {
       blocks: List<ParsedActivityBlock>.unmodifiable(deduplicated.blocks),
       issues: List<BulkParseIssue>.unmodifiable([
         ...parseResult.issues,
-        ...declaredTotalIssues(parseResult.blocks, parseResult.declaredTotals),
+
       ]),
       deduplicatedPersonnelCount: deduplicated.removedCount,
       ignoredLineCount: parseResult.ignoredLineCount,

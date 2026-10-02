@@ -274,8 +274,7 @@ class PersonnelRepository {
             );
       }
 
-      return (db.delete(db.personelTable)
-        ..where((tbl) => tbl.id.equals(id))).go();
+      return (db.update(db.personelTable)..where((p) => p.id.equals(id))).write(const PersonelTableCompanion(aktif: Value(false)));
     });
   }
 

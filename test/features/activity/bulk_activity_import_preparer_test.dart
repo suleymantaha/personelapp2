@@ -32,7 +32,7 @@ void main() {
 
   test('declared total mismatch blocks a truncated pasted list', () async {
     final draft = await BulkActivityImportDraft.fromRawText(
-      '2026-07-30\n9/B Guluskur\n1) J.Asb.Cvs. Ahmet TINAS\nToplam 5 personel',
+      '30.07.2026\n9/B Guluskur\n1) J.Asb.Cvs. Ahmet TINAS\nToplam 5 personel',
       matchBlocks: (blocks) async => blocks,
     );
     expect(draft.declaredTotals.single.expectedCount, 5);
