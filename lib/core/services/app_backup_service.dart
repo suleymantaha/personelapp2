@@ -20,8 +20,24 @@ class AppBackupService {
 
   static const _preferenceKeys = <String>{
     'temgundrap_documents_v1',
+    'temgundrap_approver_defaults_v1',
     'bulk_import_keep_audit_text_enabled',
     'app_theme_mode',
+  };
+
+  static bool _isCardOrderKey(String key) {
+    const prefix = 'activity_card_order_';
+    if (!key.startsWith(prefix)) return false;
+    final date = key.substring(prefix.length);
+    final parsed = DateTime.tryParse(date);
+    return RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(date) &&
+        parsed != null &&
+        parsed.toIso8601String().split('T').first == date;
+  }
+
+  static Set<String> _savedPreferenceKeys(SharedPreferences prefs) => {
+    ..._preferenceKeys,
+    ...prefs.getKeys().where(_isCardOrderKey),
   };
 
   Future<String> exportBackupJson() async {
@@ -67,7 +83,7 @@ class AppBackupService {
                 .toList(),
       },
       'preferences': <String, Object?>{
-        for (final key in _preferenceKeys)
+        for (final key in _savedPreferenceKeys(prefs))
           if (prefs.containsKey(key)) key: prefs.get(key),
       },
     };
@@ -113,7 +129,7 @@ class AppBackupService {
     final parsed = _parseAndValidate(jsonString);
     final prefs = await _preferences();
     final oldPreferences = <String, Object?>{
-      for (final key in _preferenceKeys)
+      for (final key in _savedPreferenceKeys(prefs))
         if (prefs.containsKey(key)) key: prefs.get(key),
     };
 
@@ -340,8 +356,10 @@ class AppBackupService {
     SharedPreferences prefs,
     Map<String, Object?> values,
   ) async {
-    for (final key in _preferenceKeys) {
-      await prefs.remove(key);
+    for (final key in {..._savedPreferenceKeys(prefs), ...values.keys}) {
+      if (prefs.containsKey(key) && !await prefs.remove(key)) {
+        throw StateError('$key tercihi temizlenemedi.');
+      }
     }
     for (final entry in values.entries) {
       final value = entry.value;
@@ -463,7 +481,9 @@ class AppBackupService {
   }
 
   void _validatePreferences(Map<String, Object?> preferences) {
-    if (preferences.keys.any((key) => !_preferenceKeys.contains(key))) {
+    if (preferences.keys.any(
+      (key) => !_preferenceKeys.contains(key) && !_isCardOrderKey(key),
+    )) {
       throw const FormatException('Yedekte desteklenmeyen bir tercih var.');
     }
     for (final entry in preferences.entries) {
@@ -475,6 +495,25 @@ class AppBackupService {
           (entry.value is List<Object?> &&
               (entry.value as List<Object?>).every((item) => item is String));
       if (!valid) throw FormatException('${entry.key} tercihi geçersiz.');
+    }
+    final defaults = preferences['temgundrap_approver_defaults_v1'];
+    if (defaults != null) {
+      try {
+        final decoded = jsonDecode(defaults as String) as Map<String, dynamic>;
+        if (decoded.values.any((value) => value is! String))
+          throw const FormatException();
+      } catch (_) {
+        throw const FormatException('Onaylayan varsayılanları geçersiz.');
+      }
+    }
+    for (final entry in preferences.entries.where(
+      (entry) => _isCardOrderKey(entry.key),
+    )) {
+      final value = entry.value;
+      if (value is! List<Object?> ||
+          value.any((id) => id is! String || int.tryParse(id) == null)) {
+        throw const FormatException('Faaliyet kart sıralaması geçersiz.');
+      }
     }
     _temgundrapCount(preferences);
   }

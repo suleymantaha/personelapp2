@@ -129,7 +129,7 @@ class _BulkPersonnelImportDialogState
   Widget build(BuildContext context) {
     final squads = ref.watch(allSquadsProvider).valueOrNull ?? [];
     final existingPersonnel =
-        ref.watch(allPersonnelProvider).valueOrNull ?? const [];
+        ref.watch(historicalPersonnelProvider).valueOrNull ?? const [];
     final unknownRankCount =
         _items.where((item) => item.rank.trim().isEmpty).length;
     final invalidCount = _items.where((item) => !item.isValid).length;
@@ -146,7 +146,9 @@ class _BulkPersonnelImportDialogState
             .toSet();
     final existingKeys = Set<String>.of(seenKeys);
     bool needsDecision(PersonnelImportDraft item) {
-      if (item.skip || item.allowDuplicate || item.existingPersonnelId != null) {
+      if (item.skip ||
+          item.allowDuplicate ||
+          item.existingPersonnelId != null) {
         return false;
       }
       final matches = _matchingPeople(item, existingPersonnel);
@@ -361,7 +363,7 @@ class _BulkPersonnelImportDialogState
                                 (p) => DropdownMenuItem(
                                   value: 'update:${p.id}',
                                   child: Text(
-                                    'Güncelle: #${p.id} • ${p.rutbe} • ${p.birlik}',
+                                    'Güncelle: #${p.id} • ${p.rutbe} • ${p.birlik}${p.aktif ? '' : ' • Pasif kalır'}',
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),

@@ -90,8 +90,9 @@ class _AddPersonnelToActivityDialogState
       _confirming = true;
       try {
         if (_draft.selectedPersonnelIds.isNotEmpty &&
-            !await confirmDiscardChanges(context))
+            !await confirmDiscardChanges(context)) {
           return;
+        }
         await _leave(false);
       } finally {
         _confirming = false;

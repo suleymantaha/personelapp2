@@ -35,10 +35,11 @@ class TemgundrapPreviewScreen extends StatelessWidget {
     try {
       await action();
     } catch (error) {
-      if (context.mounted)
+      if (context.mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Çıktı hazırlanamadı: $error')));
+      }
     }
   }
 

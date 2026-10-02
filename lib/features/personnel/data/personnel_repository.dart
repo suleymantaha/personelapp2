@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/utils/password_policy.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -87,7 +88,9 @@ class PersonnelRepository {
     required String kayitTarihi,
   }) async {
     return db.transaction(() async {
-      final existing = await db.select(db.personelTable).get();
+      final existing =
+          await (db.select(db.personelTable)
+            ..where((p) => p.isDemo.equals(false))).get();
       final knownKeys =
           existing
               .map(
@@ -121,7 +124,7 @@ class PersonnelRepository {
               await (db.select(db.personelTable)..where(
                 (p) => p.id.equals(entry.existingPersonnelId!),
               )).getSingleOrNull();
-          if (current == null) {
+          if (current == null || current.isDemo) {
             throw ArgumentError('Güncellenecek personel bulunamadı.');
           }
           await updatePersonnel(
@@ -274,7 +277,9 @@ class PersonnelRepository {
             );
       }
 
-      return (db.update(db.personelTable)..where((p) => p.id.equals(id))).write(const PersonelTableCompanion(aktif: Value(false)));
+      return (db.update(db.personelTable)..where(
+        (p) => p.id.equals(id),
+      )).write(const PersonelTableCompanion(aktif: Value(false)));
     });
   }
 
@@ -362,6 +367,7 @@ class PersonnelRepository {
     required String kullaniciAdi,
     required String newPassword,
   }) async {
+    PasswordPolicy.requireValid(newPassword);
     final hashedPassword = await PasswordHasher.hashPassword(newPassword);
     return (db.update(db.kullaniciTable)..where(
       (tbl) => tbl.kullaniciAdi.equals(kullaniciAdi),
@@ -469,7 +475,9 @@ class PersonnelRepository {
   /// Seed test personnel (e.g. 10 per squad) for trial/testing purposes
   Future<int> seedTestPersonnelPerSquad({int countPerSquad = 10}) async {
     if (!kDebugMode) {
-      throw StateError('Test verisi yalnızca geliştirme sürümünde oluşturulur.');
+      throw StateError(
+        'Test verisi yalnızca geliştirme sürümünde oluşturulur.',
+      );
     }
     final squads = await db.select(db.timTable).get();
     if (squads.isEmpty) return 0;
@@ -577,7 +585,9 @@ class PersonnelRepository {
   /// Only explicitly marked demo personnel may be permanently removed here.
   Future<int> deleteAllPersonnel() async {
     if (!kDebugMode) {
-      throw StateError('Test verisi temizliği yalnızca geliştirme sürümünde yapılır.');
+      throw StateError(
+        'Test verisi temizliği yalnızca geliştirme sürümünde yapılır.',
+      );
     }
     return db.transaction(() async {
       final demo =

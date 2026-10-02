@@ -26,13 +26,14 @@ void main() {
     int id,
     String duty, {
     String status = 'onaylandi',
+    String date = '2026-10-02',
   }) async {
     final activity = await db
         .into(db.gunlukFaaliyetTable)
         .insert(
           GunlukFaaliyetTableCompanion.insert(
             faaliyetAdi: duty,
-            tarih: '2026-10-02',
+            tarih: date,
             olusturanKullanici: 'admin',
             olusturmaTarihi: '2026-10-02',
           ),
@@ -54,6 +55,47 @@ void main() {
   Future<dynamic> calendar() => MatrixRepository(
     db,
   ).getTeamMonthlyCalendar(timId: squad, timAdi: '1-B', year: 2026, month: 10);
+
+  test(
+    'month boundary continuation keeps its task team after transfer',
+    () async {
+      final id = await person('Ali KAYA');
+      await assignment(id, 'GÜLÜŞKÜR', date: '2026-09-30');
+      final other = await people.addSquad(
+        timAdi: '2-B',
+        olusturmaTarihi: '2026-01-01',
+      );
+      final current =
+          await (db.select(db.personelTable)
+            ..where((p) => p.id.equals(id))).getSingle();
+      await people.updatePersonnel(
+        current.copyWith(timId: Value(other)),
+        tarih: '2026-10-01',
+      );
+      final result = await calendar();
+      final firstDay = result.gunler.first;
+      expect(firstDay.gorevGruplari.single.personelIds, [id]);
+      expect(firstDay.gorevGruplari.single.devamEdenPersonelIds, [id]);
+      expect(result.ozet.toplamPersonelGorevGunu, 1);
+      final newTeam = await MatrixRepository(db).getTeamMonthlyCalendar(
+        timId: other,
+        timAdi: '2-B',
+        year: 2026,
+        month: 10,
+      );
+      expect(newTeam.gunler.first.gorevGruplari, isEmpty);
+    },
+  );
+
+  test('approved and pending assignments remain separate day groups', () async {
+    final id = await person('Ali KAYA');
+    await assignment(id, 'HEYBET');
+    await assignment(id, 'HEYBET', status: 'beklemede');
+    final result = await calendar();
+    expect(result.gunler[1].gorevGruplari, hasLength(2));
+    expect(result.gunler[1].gorevliPersonelAdlari, hasLength(1));
+    expect(result.ozet.toplamPersonelGorevGunu, 1);
+  });
 
   test('all duty types on the same day remain visible', () async {
     for (var i = 0; i < 5; i++) {

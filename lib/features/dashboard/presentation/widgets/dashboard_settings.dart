@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/utils/password_policy.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -20,60 +21,104 @@ class DashboardSettings {
     String username,
   ) async {
     final passCtrl = TextEditingController();
+    bool saving = false;
+    String? errorText;
     try {
       await showDialog<void>(
         context: context,
         builder: (ctx) {
-          return AlertDialog(
-            title: const Text('Şifremi Değiştir'),
-            content: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Kullanıcı: $username',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: passCtrl,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Yeni Şifreniz',
-                        prefixIcon: Icon(Icons.lock),
+          return StatefulBuilder(
+            builder:
+                (ctx, updateDialog) => PopScope(
+                  canPop: !saving,
+                  child: AlertDialog(
+                    title: const Text('Şifremi Değiştir'),
+                    content: SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 400),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Kullanıcı: $username',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: passCtrl,
+                              obscureText: true,
+                              decoration: InputDecoration(
+                                errorText: errorText,
+                                labelText: 'Yeni Şifreniz',
+                                prefixIcon: const Icon(Icons.lock),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ],
+                    actions: [
+                      TextButton(
+                        onPressed:
+                            saving ? null : () => Navigator.of(ctx).pop(),
+                        child: const Text('İPTAL'),
+                      ),
+                      ElevatedButton(
+                        onPressed:
+                            saving
+                                ? null
+                                : () async {
+                                  final newPass = passCtrl.text.trim();
+                                  if (!PasswordPolicy.isValid(newPass)) {
+                                    updateDialog(
+                                      () => errorText = PasswordPolicy.message,
+                                    );
+                                    return;
+                                  }
+                                  updateDialog(() {
+                                    saving = true;
+                                    errorText = null;
+                                  });
+                                  try {
+                                    final changed = await ref
+                                        .read(personnelRepositoryProvider)
+                                        .updateUserPassword(
+                                          kullaniciAdi: username,
+                                          newPassword: newPass,
+                                        );
+                                    if (changed != 1) {
+                                      throw StateError('Kullanıcı bulunamadı.');
+                                    }
+                                    if (ctx.mounted) {
+                                      updateDialog(() => saving = false);
+                                      await WidgetsBinding.instance.endOfFrame;
+                                      if (!ctx.mounted) return;
+                                      Navigator.of(ctx).pop();
+                                      AppNotifications.success(
+                                        'Şifreniz başarıyla güncellendi!',
+                                      );
+                                    }
+                                  } catch (error) {
+                                    if (ctx.mounted) {
+                                      updateDialog(
+                                        () =>
+                                            errorText =
+                                                'Şifre güncellenemedi: $error',
+                                      );
+                                    }
+                                  } finally {
+                                    if (ctx.mounted) {
+                                      updateDialog(() => saving = false);
+                                    }
+                                  }
+                                },
+                        child: const Text('GÜNCELLE'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('İPTAL'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final newPass = passCtrl.text.trim();
-                  if (newPass.length >= 4) {
-                    final repo = ref.read(personnelRepositoryProvider);
-                    await repo.updateUserPassword(
-                      kullaniciAdi: username,
-                      newPassword: newPass,
-                    );
-                    if (ctx.mounted) {
-                      Navigator.of(ctx).pop();
-                      AppNotifications.success(
-                        'Şifreniz başarıyla güncellendi!',
-                      );
-                    }
-                  }
-                },
-                child: const Text('GÜNCELLE'),
-              ),
-            ],
           );
         },
       );
