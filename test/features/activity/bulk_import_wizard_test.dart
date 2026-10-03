@@ -12,32 +12,39 @@ void main() {
 
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
-    final teamId = await database.into(database.timTable).insert(
+    final teamId = await database
+        .into(database.timTable)
+        .insert(
           TimTableCompanion.insert(
-              timAdi: '6-B Timi', olusturmaTarihi: '2026-01-01'),
+            timAdi: '6-B Timi',
+            olusturmaTarihi: '2026-01-01',
+          ),
         );
     await database.batch((batch) {
       batch.insertAll(database.personelTable, [
         PersonelTableCompanion.insert(
-            adSoyad: 'Ali DENEME',
-            rutbe: 'J.Uzm.Çvş.',
-            birlik: '6/B',
-            timId: Value(teamId),
-            kayitTarihi: '2026-01-01'),
+          adSoyad: 'Ali DENEME',
+          rutbe: 'J.Uzm.Çvş.',
+          birlik: '6/B',
+          timId: Value(teamId),
+          kayitTarihi: '2026-01-01',
+        ),
         PersonelTableCompanion.insert(
-            adSoyad: 'Veli SAĞLAM',
-            rutbe: 'J.Uzm.Çvş.',
-            birlik: '6/B',
-            timId: Value(teamId),
-            kayitTarihi: '2026-01-01'),
+          adSoyad: 'Veli SAĞLAM',
+          rutbe: 'J.Uzm.Çvş.',
+          birlik: '6/B',
+          timId: Value(teamId),
+          kayitTarihi: '2026-01-01',
+        ),
       ]);
     });
   });
 
   tearDown(() => database.close());
 
-  testWidgets('"Soruna Git" butonu sorunlu personel olduğunda görünür',
-      (tester) async {
+  testWidgets('"Soruna Git" butonu sorunlu personel olduğunda görünür', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -57,14 +64,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byType(TextField).first,
-      '''
+    await tester.enterText(find.byType(TextField).first, '''
 6/B Heybet Listesi
 25.07.2026
 1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
-''',
-    );
+''');
     await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
     await tester.pumpAndSettle();
 
@@ -72,8 +76,9 @@ void main() {
     expect(find.byKey(const Key('bulk-goto-problem')), findsOneWidget);
   });
 
-  testWidgets('Wizard "Sonraki Sorun" butonu odaklanan kartı değiştirir',
-      (tester) async {
+  testWidgets('Wizard "Sonraki Sorun" butonu odaklanan kartı değiştirir', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -93,17 +98,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byType(TextField).first,
-      '''
+    await tester.enterText(find.byType(TextField).first, '''
 6/B Heybet Listesi
 25.07.2026
 1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
 6/B Devriye Listesi
 25.07.2026
 1- J.Uzm.Çvş. Ahmet KAYIP
-''',
-    );
+''');
     await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
     await tester.pumpAndSettle();
 
@@ -121,8 +123,9 @@ void main() {
     expect(find.byKey(const Key('bulk-wizard-next')), findsOneWidget);
   });
 
-  testWidgets('sorun takibi son sorundan sonra ilk personele geri odaklanir',
-      (tester) async {
+  testWidgets('sorun takibi son sorundan sonra ilk personele geri odaklanir', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -142,17 +145,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byType(TextField).first,
-      '''
+    await tester.enterText(find.byType(TextField).first, '''
 6/B Heybet Listesi
 25.07.2026
 1- J.Uzm.Cvs. Mehmet KAYIP
 6/B Devriye Listesi
 25.07.2026
 1- J.Uzm.Cvs. Ahmet YOK
-''',
-    );
+''');
     await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
     await tester.pumpAndSettle();
 
@@ -176,8 +176,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Kompakt hata özetine tıklayınca wizard başlatılır',
-      (tester) async {
+  testWidgets('Kompakt hata özetine tıklayınca wizard başlatılır', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -197,14 +198,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byType(TextField).first,
-      '''
+    await tester.enterText(find.byType(TextField).first, '''
 6/B Heybet Listesi
 25.07.2026
 1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
-''',
-    );
+''');
     await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
     await tester.pumpAndSettle();
 
@@ -220,41 +218,85 @@ void main() {
   });
 
   testWidgets(
-      'İsimler tarihten önce gelse dahi tarih bloğa atanır ve engelleme oluşmaz',
-      (tester) async {
-    tester.view.physicalSize = const Size(1000, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+    'İsimler tarihten önce gelse dahi tarih bloğa atanır ve engelleme oluşmaz',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          home: Scaffold(
-            body: BulkImportDialog(
-              database: database,
-              activityRepository: ActivityRepository(database),
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: BulkImportDialog(
+                database: database,
+                activityRepository: ActivityRepository(database),
+              ),
             ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byType(TextField).first,
-      '''
+      await tester.enterText(find.byType(TextField).first, '''
 6/B Heybet Listesi
 Ali DENEME
 Veli SAĞLAM
 03 AĞUSTOS 2026
-''',
-    );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
-    await tester.pumpAndSettle();
+''');
+      await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+      await tester.pumpAndSettle();
 
-    // Tarih 2026-08-03 atanmış olmalı ve Kaydedilemiyor engelleyici mesajı çıkmamalı
-    expect(find.text('Kaydedilemiyor'), findsNothing);
-    expect(find.byKey(const Key('bulk-import-save-button')), findsOneWidget);
-  });
+      // Tarih 2026-08-03 atanmış olmalı ve Kaydedilemiyor engelleyici mesajı çıkmamalı
+      expect(find.text('Kaydedilemiyor'), findsNothing);
+      expect(find.byKey(const Key('bulk-import-save-button')), findsOneWidget);
+    },
+  );
+  testWidgets(
+    'son isim sorunu düzeltilince tüm kartlar yeniden incelenebilir',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: BulkImportDialog(
+                database: database,
+                activityRepository: ActivityRepository(database),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextField).first,
+        "6/B Heybet Listesi\n25.07.2026\n1- J.Uzm.Çvş. Mehmet BİLİNMEYEN\n6/B Devriye Listesi\n25.07.2026\n1- J.Uzm.Çvş. Veli SAĞLAM",
+      );
+      await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('bulk-goto-problem')));
+      await tester.pumpAndSettle();
+      final select = find.byKey(const Key('bulk-person-select')).first;
+      await tester.ensureVisible(select);
+      await tester.tap(select);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ali DENEME').last);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('bulk-focused-person-badge')), findsNothing);
+      final second = find.byKey(const Key('bulk-card-header-1'));
+      expect(second, findsOneWidget);
+      await tester.ensureVisible(second);
+      await tester.tap(second);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Veli SAĞLAM'), findsWidgets);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 10));
+      await tester.pump(const Duration(milliseconds: 10));
+    },
+  );
 }
