@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -102,8 +103,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       });
       return;
     }
-    final index =
-        _activeIssueFocusIndex < 0 ? 0 : _activeIssueFocusIndex % locs.length;
+    final index = _activeIssueFocusIndex < 0
+        ? 0
+        : _activeIssueFocusIndex % locs.length;
     _focusProblemAtIndex(locs, index);
   }
 
@@ -119,8 +121,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     }
     final index =
         _activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length
-            ? 0
-            : (_activeIssueFocusIndex + 1) % locs.length;
+        ? 0
+        : (_activeIssueFocusIndex + 1) % locs.length;
     _focusProblemAtIndex(locs, index);
   }
 
@@ -136,8 +138,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     }
     final index =
         _activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length
-            ? locs.length - 1
-            : (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
+        ? locs.length - 1
+        : (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
     _focusProblemAtIndex(locs, index);
   }
 
@@ -183,24 +185,23 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }
 
   void _syncParseIssuesWithBlocks() {
-    final newIssues =
-        _sourceParseIssues.where((issue) {
-          if (issue.code == 'no_blocks' || issue.code == 'empty_input') {
-            return _parsedBlocks.isEmpty;
-          }
-          if (issue.code == 'unknown_rank') {
-            // An identified personnel record supplies the missing/unknown rank.
-            return !_parsedBlocks.any(
-              (block) => block.personnelList.any(
-                (person) =>
-                    person.sourceLineNumber == issue.lineNumber &&
-                    person.isMatched &&
-                    (person.matchedRutbe?.trim().isNotEmpty ?? false),
-              ),
-            );
-          }
-          return true;
-        }).toList();
+    final newIssues = _sourceParseIssues.where((issue) {
+      if (issue.code == 'no_blocks' || issue.code == 'empty_input') {
+        return _parsedBlocks.isEmpty;
+      }
+      if (issue.code == 'unknown_rank') {
+        // An identified personnel record supplies the missing/unknown rank.
+        return !_parsedBlocks.any(
+          (block) => block.personnelList.any(
+            (person) =>
+                person.sourceLineNumber == issue.lineNumber &&
+                person.isMatched &&
+                (person.matchedRutbe?.trim().isNotEmpty ?? false),
+          ),
+        );
+      }
+      return true;
+    }).toList();
 
     for (var i = 0; i < _parsedBlocks.length; i++) {
       final block = _parsedBlocks[i];
@@ -296,8 +297,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }
 
   Future<void> _loadPersonnel() async {
-    final list =
-        await widget.database.select(widget.database.personelTable).get();
+    final list = await widget.database
+        .select(widget.database.personelTable)
+        .get();
     final squads = await widget.database.select(widget.database.timTable).get();
     if (!mounted) return;
     setState(() {
@@ -327,82 +329,85 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     final mediaQuery = MediaQuery.of(context);
     final isKeyboardVisible = mediaQuery.viewInsets.bottom > 0;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 600;
-        final borderRadius = isMobile ? 0.0 : 20.0;
-        return Dialog(
-          insetPadding:
-              isMobile
+    return PopScope(
+      canPop: !_isSaving,
+      child: AbsorbPointer(
+        absorbing: _isSaving,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            final borderRadius = isMobile ? 0.0 : 20.0;
+            return Dialog(
+              insetPadding: isMobile
                   ? EdgeInsets.zero
                   : EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: isKeyboardVisible ? 8 : 32,
-                  ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(borderRadius),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: isMobile ? mediaQuery.size.width : 1180,
-                maxHeight:
-                    isMobile
+                      horizontal: 24,
+                      vertical: isKeyboardVisible ? 8 : 32,
+                    ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(borderRadius),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(borderRadius),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: isMobile ? mediaQuery.size.width : 1180,
+                    maxHeight: isMobile
                         ? mediaQuery.size.height
                         : mediaQuery.size.height * 0.9,
-              ),
-              child: SizedBox(
-                width:
-                    isMobile
+                  ),
+                  child: SizedBox(
+                    width: isMobile
                         ? mediaQuery.size.width
                         : constraints.maxWidth * 0.85,
-                height: isMobile ? mediaQuery.size.height : double.infinity,
-                child: SafeArea(
-                  top: isMobile,
-                  bottom: isMobile,
-                  child: ColoredBox(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    child: TurkishFlagWatermarkBackground(
-                      child: Column(
-                        children: [
-                          BulkImportHeaderBanner(
-                            isKeyboardVisible: isKeyboardVisible,
-                            onOpenMemory:
-                                () => LearnedAliasesDialog.show(
+                    height: isMobile ? mediaQuery.size.height : double.infinity,
+                    child: SafeArea(
+                      top: isMobile,
+                      bottom: isMobile,
+                      child: ColoredBox(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        child: TurkishFlagWatermarkBackground(
+                          child: Column(
+                            children: [
+                              BulkImportHeaderBanner(
+                                isKeyboardVisible: isKeyboardVisible,
+                                onOpenMemory: () => LearnedAliasesDialog.show(
                                   context,
                                   widget.database,
                                 ),
-                            onClose: () => Navigator.pop(context),
-                          ),
-                          BulkImportStepper(
-                            currentStep: _currentStep,
-                            hasBlocks: _parsedBlocks.isNotEmpty,
-                            canProceedToSave: _canProceedToSave,
-                            onStepTapped: (int step) {
-                              if (step <= _currentStep ||
-                                  (step == 1 && _parsedBlocks.isNotEmpty) ||
-                                  (step == 2 && _canProceedToSave)) {
-                                setState(() => _currentStep = step);
-                              }
-                            },
-                          ),
-                          Expanded(
-                            child:
-                                isMobile
+                                onClose: _isSaving
+                                    ? null
+                                    : () => Navigator.pop(context),
+                              ),
+                              BulkImportStepper(
+                                currentStep: _currentStep,
+                                hasBlocks: _parsedBlocks.isNotEmpty,
+                                canProceedToSave: _canProceedToSave,
+                                onStepTapped: (int step) {
+                                  if (step <= _currentStep ||
+                                      (step == 1 && _parsedBlocks.isNotEmpty) ||
+                                      (step == 2 && _canProceedToSave)) {
+                                    setState(() => _currentStep = step);
+                                  }
+                                },
+                              ),
+                              Expanded(
+                                child: isMobile
                                     ? _buildMobileBody(isKeyboardVisible)
                                     : _buildDesktopBody(isKeyboardVisible),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -438,10 +443,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
           ],
           Expanded(
             flex: _currentStep == 0 ? 6 : 10,
-            child:
-                _currentStep == 2
-                    ? _buildConfirmStep(isMobile: false)
-                    : _buildPreviewSection(isMobile: false),
+            child: _currentStep == 2
+                ? _buildConfirmStep(isMobile: false)
+                : _buildPreviewSection(isMobile: false),
           ),
         ],
       ),
@@ -516,8 +520,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       isSaving: _isSaving,
       problemLocations: problemLocs,
       onClearAll: _confirmClearAll,
-      onToggleParseIssues:
-          () => setState(() => _parseIssuesExpanded = !_parseIssuesExpanded),
+      onToggleParseIssues: () =>
+          setState(() => _parseIssuesExpanded = !_parseIssuesExpanded),
       onStartWizard: problemLocs.isEmpty ? null : _focusCurrentProblem,
       onFocusPrevious: _focusPreviousProblem,
       onFocusNext: _focusNextProblem,
@@ -530,8 +534,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       onRemovePerson: _removePerson,
       onConfirmPersonnelSuggestion: _confirmPersonnelSuggestion,
       onAddNewPersonnel: _quickAddNewPersonnelToTim,
-      onConfirmAllSuggestions:
-          _hasReviewableSuggestions ? _confirmAllSuggestions : null,
+      onConfirmAllSuggestions: _hasReviewableSuggestions
+          ? _confirmAllSuggestions
+          : null,
       onSave: _saveAllToFaaliyet,
     );
   }

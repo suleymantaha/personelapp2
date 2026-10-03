@@ -18,12 +18,11 @@ Future<bool> showBackupRestoreSurface({
     return await showModalBottomSheet<bool>(
           context: context,
           isScrollControlled: true,
+          enableDrag: false,
           useSafeArea: true,
           backgroundColor: Colors.transparent,
-          builder: (context) => BackupRestoreDialog(
-            database: database,
-            isBottomSheet: true,
-          ),
+          builder: (context) =>
+              BackupRestoreDialog(database: database, isBottomSheet: true),
         ) ??
         false;
   }
@@ -71,7 +70,9 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
     super.dispose();
   }
 
-  void _close() => Navigator.pop(context, _didImport);
+  void _close() {
+    if (!_isLoading) Navigator.pop(context, _didImport);
+  }
 
   Future<void> _exportBackup() async {
     setState(() {
@@ -85,8 +86,9 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
       final box = context.findRenderObject() as RenderBox?;
       final saved = await _fileGateway.saveBackup(
         json,
-        shareOrigin:
-            box == null ? null : box.localToGlobal(Offset.zero) & box.size,
+        shareOrigin: box == null
+            ? null
+            : box.localToGlobal(Offset.zero) & box.size,
       );
       if (!mounted) return;
       setState(() {
@@ -161,8 +163,9 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
         _notice = null;
       });
       final result = await _service.restoreBackupJson(input);
-      final updatedSession =
-          await SessionStorage.loadValidatedSession(widget.database);
+      final updatedSession = await SessionStorage.loadValidatedSession(
+        widget.database,
+      );
       if (mounted) {
         ref.read(userSessionProvider.notifier).state = updatedSession;
         ref.invalidate(allPersonnelProvider);
@@ -179,8 +182,8 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
           message: result.legacy
               ? '${result.importedPersonnel} yeni personel eski yedekten aktarıldı.'
               : 'Geri yükleme tamamlandı: ${result.importedPersonnel} personel, '
-                  '${result.importedActivities} faaliyet ve '
-                  '${result.importedTemgundrapDocuments} TEMGÜNDRAP belgesi.',
+                    '${result.importedActivities} faaliyet ve '
+                    '${result.importedTemgundrapDocuments} TEMGÜNDRAP belgesi.',
         );
       });
     } on FormatException catch (error) {
@@ -261,11 +264,7 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
     });
   }
 
-  void _reportBackupError(
-    String context,
-    Object error,
-    StackTrace stackTrace,
-  ) {
+  void _reportBackupError(String context, Object error, StackTrace stackTrace) {
     FlutterError.reportError(
       FlutterErrorDetails(
         exception: error,
@@ -280,30 +279,39 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final keyboardVisible = mediaQuery.viewInsets.bottom > 0;
-    final maxHeight = (mediaQuery.size.height -
-            mediaQuery.viewInsets.bottom -
-            mediaQuery.padding.top -
-            (widget.isBottomSheet ? 12 : 48))
-        .clamp(
-            360.0, mediaQuery.size.height * (widget.isBottomSheet ? .94 : .88));
-    final surface = Material(
-      color: Theme.of(context).colorScheme.surface,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: const Radius.circular(24),
-          bottom: Radius.circular(widget.isBottomSheet ? 0 : 24),
-        ),
-      ),
-      child: SizedBox(
-        width: widget.isBottomSheet ? double.infinity : 620,
-        height: maxHeight,
-        child: Column(
-          children: [
-            _buildHeader(),
-            if (_isLoading) const LinearProgressIndicator(minHeight: 2),
-            Expanded(child: _buildContent(keyboardVisible)),
-          ],
+    final maxHeight =
+        (mediaQuery.size.height -
+                mediaQuery.viewInsets.bottom -
+                mediaQuery.padding.top -
+                (widget.isBottomSheet ? 12 : 48))
+            .clamp(
+              360.0,
+              mediaQuery.size.height * (widget.isBottomSheet ? .94 : .88),
+            );
+    final surface = PopScope<bool>(
+      canPop: !_isLoading,
+      child: AbsorbPointer(
+        absorbing: _isLoading,
+        child: Material(
+          color: Theme.of(context).colorScheme.surface,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              top: const Radius.circular(24),
+              bottom: Radius.circular(widget.isBottomSheet ? 0 : 24),
+            ),
+          ),
+          child: SizedBox(
+            width: widget.isBottomSheet ? double.infinity : 620,
+            height: maxHeight,
+            child: Column(
+              children: [
+                _buildHeader(),
+                if (_isLoading) const LinearProgressIndicator(minHeight: 2),
+                Expanded(child: _buildContent(keyboardVisible)),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -334,8 +342,10 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
               color: colors.primaryContainer,
               borderRadius: BorderRadius.circular(14),
             ),
-            child:
-                Icon(Icons.storage_rounded, color: colors.onPrimaryContainer),
+            child: Icon(
+              Icons.storage_rounded,
+              color: colors.onPrimaryContainer,
+            ),
           ),
           const SizedBox(width: 12),
           const Expanded(
@@ -352,7 +362,10 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
               ],
             ),
           ),
-          IconButton(onPressed: _close, icon: const Icon(Icons.close_rounded)),
+          IconButton(
+            onPressed: _isLoading ? null : _close,
+            icon: const Icon(Icons.close_rounded),
+          ),
         ],
       ),
     );
@@ -382,9 +395,9 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
             onSelectionChanged: _isLoading
                 ? null
                 : (selection) => setState(() {
-                      _mode = selection.first;
-                      _notice = null;
-                    }),
+                    _mode = selection.first;
+                    _notice = null;
+                  }),
           ),
           if (_notice != null) ...[
             const SizedBox(height: 12),
@@ -404,7 +417,8 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
         const _InfoCard(
           icon: Icons.inventory_2_outlined,
           title: 'Yedekte neler var?',
-          text: 'İsimler, timler, kullanıcılar, telefonlar, görevler, aylık '
+          text:
+              'İsimler, timler, kullanıcılar, telefonlar, görevler, aylık '
               'matris, faaliyet arşivi, raporlar, takma adlar, toplu aktarım '
               'geçmişi ve TEMGÜNDRAP belgeleri.',
         ),
@@ -412,14 +426,16 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
         const _InfoCard(
           icon: Icons.folder_outlined,
           title: 'Uygulama silinse de koruyun',
-          text: 'Açılan kaydet ekranından İndirilenler gibi cihazın yerel '
+          text:
+              'Açılan kaydet ekranından İndirilenler gibi cihazın yerel '
               'bir klasörünü seçin. Uygulamanın kendi klasörüne bırakmayın.',
         ),
         const SizedBox(height: 12),
         const _InfoCard(
           icon: Icons.privacy_tip_outlined,
           title: 'Dosyayı güvenli tutun',
-          text: 'Yedek kişisel bilgiler içerir. Yalnızca güvenilir bir yerel '
+          text:
+              'Yedek kişisel bilgiler içerir. Yalnızca güvenilir bir yerel '
               'klasörde saklayın ve başkalarıyla paylaşmayın.',
         ),
         const SizedBox(height: 20),
@@ -497,7 +513,8 @@ class _BackupPreviewCard extends StatelessWidget {
     return _InfoCard(
       icon: Icons.fact_check_outlined,
       title: preview.legacy ? 'Eski personel yedeği' : 'Doğrulanmış tam yedek',
-      text: '$date • ${preview.personnelCount} personel • '
+      text:
+          '$date • ${preview.personnelCount} personel • '
           '${preview.activityCount} faaliyet • '
           '${preview.assignmentCount} görev kaydı • '
           '${preview.temgundrapDocumentCount} TEMGÜNDRAP',
@@ -506,8 +523,11 @@ class _BackupPreviewCard extends StatelessWidget {
 }
 
 class _InfoCard extends StatelessWidget {
-  const _InfoCard(
-      {required this.icon, required this.title, required this.text});
+  const _InfoCard({
+    required this.icon,
+    required this.title,
+    required this.text,
+  });
 
   final IconData icon;
   final String title;
@@ -531,8 +551,10 @@ class _InfoCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 4),
                 Text(text),
               ],
@@ -554,13 +576,13 @@ class _NoticeCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final (icon, color) = switch (notice.type) {
       _BackupNoticeType.success => (
-          Icons.check_circle_outline,
-          context.approvedColor
-        ),
+        Icons.check_circle_outline,
+        context.approvedColor,
+      ),
       _BackupNoticeType.warning => (
-          Icons.warning_amber_rounded,
-          context.warningColor
-        ),
+        Icons.warning_amber_rounded,
+        context.warningColor,
+      ),
       _BackupNoticeType.error => (Icons.error_outline, colors.error),
     };
     return Container(

@@ -10,7 +10,7 @@ class BulkImportHeaderBanner extends StatelessWidget {
   });
 
   final bool isKeyboardVisible;
-  final VoidCallback onClose;
+  final VoidCallback? onClose;
   final VoidCallback? onOpenMemory;
 
   @override
@@ -72,8 +72,10 @@ class BulkImportHeaderBanner extends StatelessWidget {
           if (onOpenMemory != null)
             IconButton(
               tooltip: 'Sistem Hafızasını (Takma Adları) Yönet',
-              icon: Icon(Icons.psychology_rounded,
-                  color: context.onAccentOrOlive),
+              icon: Icon(
+                Icons.psychology_rounded,
+                color: context.onAccentOrOlive,
+              ),
               onPressed: onOpenMemory,
             ),
           IconButton(

@@ -474,7 +474,19 @@ void main() {
         } finally {
           release.complete();
           await transaction;
-          await tester.pumpAndSettle();
+          if (surface == 'activity-import') {
+            // The import stays busy until its result dialog is acknowledged.
+            // Settling an intentionally running progress indicator would hang.
+            for (
+              var frame = 0;
+              frame < 50 && find.text('Aktarım Tamamlandı').evaluate().isEmpty;
+              frame++
+            ) {
+              await tester.pump(const Duration(milliseconds: 20));
+            }
+          } else {
+            await tester.pumpAndSettle();
+          }
         }
         if (surface == 'activity-import') {
           expect(find.text('Aktarım Tamamlandı'), findsOneWidget);

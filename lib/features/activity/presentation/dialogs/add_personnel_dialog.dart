@@ -1,7 +1,9 @@
 import 'package:personelapp2/core/widgets/confirm_discard_changes.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../widgets/activity_assignment_details_editor.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -86,17 +88,23 @@ class _AddPersonnelToActivityDialogState
     FocusManager.instance.primaryFocus?.unfocus();
     if (_details) {
       setState(() => _details = false);
-    } else {
-      _confirming = true;
-      try {
-        if (_draft.selectedPersonnelIds.isNotEmpty &&
-            !await confirmDiscardChanges(context)) {
-          return;
-        }
-        await _leave(false);
-      } finally {
-        _confirming = false;
+      return;
+    }
+    await _close();
+  }
+
+  Future<void> _close() async {
+    if (_saving || _confirming) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    _confirming = true;
+    try {
+      if (_draft.selectedPersonnelIds.isNotEmpty &&
+          !await confirmDiscardChanges(context)) {
+        return;
       }
+      await _leave(false);
+    } finally {
+      _confirming = false;
     }
   }
 
@@ -125,19 +133,18 @@ class _AddPersonnelToActivityDialogState
       if (result.alreadyAssignedCount + result.conflictSkippedCount > 0) {
         await showDialog<void>(
           context: context,
-          builder:
-              (dialogContext) => AlertDialog(
-                title: const Text('Ekleme sonucu'),
-                content: Text(
-                  '${result.addedCount} personel eklendi.\n${result.alreadyAssignedCount} personel zaten kayıtlı.\n${result.conflictSkippedCount} personel çakışma nedeniyle eklenemedi.',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: const Text('Tamam'),
-                  ),
-                ],
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Ekleme sonucu'),
+            content: Text(
+              '${result.addedCount} personel eklendi.\n${result.alreadyAssignedCount} personel zaten kayıtlı.\n${result.conflictSkippedCount} personel çakışma nedeniyle eklenemedi.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Tamam'),
               ),
+            ],
+          ),
         );
       }
       await _leave(result.addedCount > 0);
@@ -155,28 +162,24 @@ class _AddPersonnelToActivityDialogState
     final session = ref.watch(userSessionProvider);
     final peopleAsync = ref.watch(allPersonnelProvider);
     final squadsAsync = ref.watch(allSquadsProvider);
-    final people =
-        (peopleAsync.value ?? <PersonelTableData>[])
-            .where(
-              (p) =>
-                  (widget.isAdmin ||
-                      (session?.timId != null && p.timId == session!.timId)),
-            )
-            .toList();
-    final squads =
-        (squadsAsync.value ?? <TimTableData>[])
-            .where((s) => widget.isAdmin || s.id == session?.timId)
-            .toList();
-    final selected =
-        people
-            .where((p) => _draft.selectedPersonnelIds.contains(p.id))
-            .toList();
-    final duties =
-        widget.isAdmin
-            ? kActivityAssignmentDuties
-            : kActivityAssignmentDuties
-                .where((duty) => !kActivityAdminOnlyDuties.contains(duty))
-                .toList(growable: false);
+    final people = (peopleAsync.value ?? <PersonelTableData>[])
+        .where(
+          (p) =>
+              (widget.isAdmin ||
+              (session?.timId != null && p.timId == session!.timId)),
+        )
+        .toList();
+    final squads = (squadsAsync.value ?? <TimTableData>[])
+        .where((s) => widget.isAdmin || s.id == session?.timId)
+        .toList();
+    final selected = people
+        .where((p) => _draft.selectedPersonnelIds.contains(p.id))
+        .toList();
+    final duties = widget.isAdmin
+        ? kActivityAssignmentDuties
+        : kActivityAssignmentDuties
+              .where((duty) => !kActivityAdminOnlyDuties.contains(duty))
+              .toList(growable: false);
     final colorScheme = Theme.of(context).colorScheme;
     return PopScope<bool>(
       canPop:
@@ -215,8 +218,7 @@ class _AddPersonnelToActivityDialogState
           actions: [
             IconButton(
               tooltip: 'Kapat',
-              onPressed:
-                  _saving ? null : () => Navigator.of(context).pop(false),
+              onPressed: _saving ? null : _close,
               icon: const Icon(Icons.close),
             ),
           ],
@@ -245,10 +247,9 @@ class _AddPersonnelToActivityDialogState
                         ),
                         Icon(
                           Icons.looks_two,
-                          color:
-                              _details
-                                  ? colorScheme.primary
-                                  : colorScheme.outline,
+                          color: _details
+                              ? colorScheme.primary
+                              : colorScheme.outline,
                         ),
                         const SizedBox(width: 8),
                         const Text('Görev'),
@@ -258,67 +259,65 @@ class _AddPersonnelToActivityDialogState
                   Expanded(
                     child: AbsorbPointer(
                       absorbing: _saving,
-                      child:
-                          _details && selected.isNotEmpty
-                              ? ActivityAssignmentDetailsEditor(
-                                people: selected,
-                                squadNames: {
-                                  for (final squad in squads)
-                                    squad.id: squad.timAdi,
-                                },
-                                draft: _draft,
-                                duties: duties,
-                                isAdmin: widget.isAdmin,
-                                onChangePerson: _back,
-                                onChanged: () => setState(() {}),
-                              )
-                              : FutureBuilder<Map<int, String>>(
-                                future: _reservations,
-                                builder: (context, snapshot) {
-                                  if (peopleAsync.hasError ||
-                                      squadsAsync.hasError ||
-                                      snapshot.hasError) {
-                                    return const Center(
-                                      child: Text(
-                                        'Personel bilgileri yüklenemedi. Ekranı kapatıp yeniden deneyin.',
-                                      ),
-                                    );
-                                  }
-                                  if (peopleAsync.isLoading ||
-                                      squadsAsync.isLoading ||
-                                      !snapshot.hasData) {
-                                    return const Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
-                                  if (people.isEmpty) {
-                                    return const Center(
-                                      child: Text(
-                                        'Eklenebilecek personel bulunamadı.',
-                                      ),
-                                    );
-                                  }
-                                  return PersonnelPickerSheet(
-                                    personnel: people,
-                                    squads: squads,
-                                    selectedPersonnelIds:
-                                        _draft.selectedPersonnelIds,
-                                    onToggleSquad:
-                                        (ids) => setState(
-                                          () => _draft.toggleSquad(ids),
-                                        ),
-                                    preferredTimId:
-                                        widget.isAdmin ? null : session?.timId,
-                                    disabledReasons: {
-                                      ...snapshot.data!,
-                                      for (final id
-                                          in widget.existingPersonnelIds)
-                                        id: 'Bu faaliyette zaten kayıtlı',
-                                    },
-                                    onSelected: _select,
+                      child: _details && selected.isNotEmpty
+                          ? ActivityAssignmentDetailsEditor(
+                              people: selected,
+                              squadNames: {
+                                for (final squad in squads)
+                                  squad.id: squad.timAdi,
+                              },
+                              draft: _draft,
+                              duties: duties,
+                              isAdmin: widget.isAdmin,
+                              onChangePerson: _back,
+                              onChanged: () => setState(() {}),
+                            )
+                          : FutureBuilder<Map<int, String>>(
+                              future: _reservations,
+                              builder: (context, snapshot) {
+                                if (peopleAsync.hasError ||
+                                    squadsAsync.hasError ||
+                                    snapshot.hasError) {
+                                  return const Center(
+                                    child: Text(
+                                      'Personel bilgileri yüklenemedi. Ekranı kapatıp yeniden deneyin.',
+                                    ),
                                   );
-                                },
-                              ),
+                                }
+                                if (peopleAsync.isLoading ||
+                                    squadsAsync.isLoading ||
+                                    !snapshot.hasData) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+                                if (people.isEmpty) {
+                                  return const Center(
+                                    child: Text(
+                                      'Eklenebilecek personel bulunamadı.',
+                                    ),
+                                  );
+                                }
+                                return PersonnelPickerSheet(
+                                  personnel: people,
+                                  squads: squads,
+                                  selectedPersonnelIds:
+                                      _draft.selectedPersonnelIds,
+                                  onToggleSquad: (ids) =>
+                                      setState(() => _draft.toggleSquad(ids)),
+                                  preferredTimId: widget.isAdmin
+                                      ? null
+                                      : session?.timId,
+                                  disabledReasons: {
+                                    ...snapshot.data!,
+                                    for (final id
+                                        in widget.existingPersonnelIds)
+                                      id: 'Bu faaliyette zaten kayıtlı',
+                                  },
+                                  onSelected: _select,
+                                );
+                              },
+                            ),
                     ),
                   ),
                   Padding(
@@ -341,16 +340,15 @@ class _AddPersonnelToActivityDialogState
                             ],
                             Expanded(
                               child: FilledButton(
-                                onPressed:
-                                    _saving || selected.isEmpty
-                                        ? null
-                                        : _details
-                                        ? _save
-                                        : () {
-                                          FocusManager.instance.primaryFocus
-                                              ?.unfocus();
-                                          setState(() => _details = true);
-                                        },
+                                onPressed: _saving || selected.isEmpty
+                                    ? null
+                                    : _details
+                                    ? _save
+                                    : () {
+                                        FocusManager.instance.primaryFocus
+                                            ?.unfocus();
+                                        setState(() => _details = true);
+                                      },
                                 child: Text(
                                   _saving
                                       ? 'Kaydediliyor…'
