@@ -20,6 +20,8 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       if (!mounted) return;
 
       _updateState(() {
+        _focusedIssue = null;
+        _activeIssueFocusIndex = -1;
         _cardKeys.clear();
         _personKeys.clear();
         _parsedBlocks = blocks;
@@ -336,6 +338,8 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         _parseIssuesExpanded = false;
         _deduplicatedPersonnelCount = 0;
         _ignoredLineCount = 0;
+        _focusedIssue = null;
+        _activeIssueFocusIndex = -1;
         _cardKeys.clear();
         _personKeys.clear();
         _currentStep = 0;

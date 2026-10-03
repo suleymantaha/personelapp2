@@ -67,12 +67,11 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
   @override
   void didUpdateWidget(covariant ActivityBlockCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.focusedIssue != oldWidget.focusedIssue) {
+    // A new wizard target opens this card once; later header taps stay in control.
+    if (!identical(widget.block.identity, oldWidget.block.identity) ||
+        (widget.focusedIssue != oldWidget.focusedIssue &&
+            (widget.focusedIssue?.matchesBlock(widget.blockIdx) ?? false))) {
       _userManualExpanded = null;
-    }
-    if (widget.isExpanded != oldWidget.isExpanded &&
-        widget.isExpanded != null) {
-      _userManualExpanded = widget.isExpanded;
     }
   }
 
@@ -87,11 +86,11 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
   }
 
   bool get _effectiveIsExpanded {
-    if (widget.focusedIssue != null) {
-      return widget.focusedIssue!.matchesBlock(widget.blockIdx);
-    }
     if (_userManualExpanded != null) {
       return _userManualExpanded!;
+    }
+    if (widget.focusedIssue != null) {
+      return widget.focusedIssue!.matchesBlock(widget.blockIdx);
     }
     if (widget.isExpanded != null) {
       return widget.isExpanded!;

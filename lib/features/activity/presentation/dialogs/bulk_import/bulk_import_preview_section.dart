@@ -257,6 +257,7 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                       final problemPersonnelIndexes =
                           problemState.personnelByBlock[originalBlockIndex];
                       return ActivityBlockCard(
+                        key: ValueKey(block.identity),
                         cardKey: widget.cardKeys.putIfAbsent(
                           originalBlockIndex,
                           () => GlobalKey(),

@@ -178,10 +178,52 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }
 
   void _updateState(VoidCallback callback) {
+    final focus = _focusedIssue;
+    final focusedBlock =
+        focus != null && focus.blockIndex < _parsedBlocks.length
+        ? _parsedBlocks[focus.blockIndex]
+        : null;
+    final personIndex = focus?.personIndex;
+    final focusedPersonOrder =
+        focusedBlock != null &&
+            personIndex != null &&
+            personIndex < focusedBlock.personnelList.length
+        ? focusedBlock.personnelList[personIndex].stableOrder
+        : null;
     setState(() {
       callback();
       _syncParseIssuesWithBlocks();
+      _syncIssueFocus(focusedBlock?.identity, focusedPersonOrder);
     });
+  }
+
+  void _syncIssueFocus(Object? blockIdentity, int? personOrder) {
+    final focus = _focusedIssue;
+    if (focus == null) return;
+    final locations = _getProblemLocations();
+    final index = locations.indexWhere((location) {
+      final block = _parsedBlocks[location.blockIndex];
+      if (!identical(block.identity, blockIdentity)) return false;
+      if (focus.isCard) return location.personIndex == null;
+      final personIndex = location.personIndex;
+      return personIndex != null &&
+          block.personnelList[personIndex].stableOrder == personOrder;
+    });
+    if (index < 0) {
+      _focusedIssue = null;
+      _activeIssueFocusIndex = -1;
+      if (locations.isEmpty && _previewFilter == _BulkPreviewFilter.problems) {
+        _previewFilter = _BulkPreviewFilter.all;
+      }
+      return;
+    }
+    final location = locations[index];
+    _activeIssueFocusIndex = index;
+    if (focus.blockIndex != location.blockIndex ||
+        focus.personIndex != location.personIndex ||
+        focus.isCritical != location.isCritical) {
+      _focusedIssue = location.toFocus();
+    }
   }
 
   void _syncParseIssuesWithBlocks() {
@@ -281,6 +323,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       _cardKeys.clear();
       _personKeys.clear();
       _previewFilter = filter;
+      _focusedIssue = null;
+      _activeIssueFocusIndex = -1;
       if (filter == _BulkPreviewFilter.problems &&
           _parseIssues.any((issue) => issue.isBlocking)) {
         _parseIssuesExpanded = true;
