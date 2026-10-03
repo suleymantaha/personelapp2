@@ -61,6 +61,10 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
+      - name: Run navigation dismissal regressions
+        timeout-minutes: 3
+        run: flutter test --reporter expanded --timeout 2m test/features/activity/navigation_dismissal_regression_test.dart
+
       - name: Run export permission regressions
         timeout-minutes: 3
         run: flutter test --reporter expanded --timeout 2m test/features/activity/approved_roster_export_test.dart
