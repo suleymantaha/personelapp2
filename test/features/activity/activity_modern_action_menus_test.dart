@@ -19,6 +19,7 @@ void main() {
         home: const Scaffold(
           body: ActivityPersonnelDutyRow(
             personnel: PersonelTableData(
+      aktif: true, isDemo: false,
               id: 1,
               adSoyad: 'Uzun İsimli Test Personeli',
               rutbe: 'J.Asb.Üçvş.',

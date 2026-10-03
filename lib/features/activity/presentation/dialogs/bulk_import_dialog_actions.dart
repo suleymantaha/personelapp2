@@ -20,11 +20,25 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       if (!mounted) return;
 
       _updateState(() {
+        _focusedIssue = null;
+        _activeIssueFocusIndex = -1;
         _cardKeys.clear();
         _personKeys.clear();
         _parsedBlocks = blocks;
+        const cardIssueCodes = {
+          'empty_block',
+          'missing_date',
+          'unknown_team',
+          'unknown_activity',
+          'unmatched_personnel',
+        };
+        _sourceParseIssues =
+            draft.issues
+                .where((issue) => !cardIssueCodes.contains(issue.code))
+                .toList();
         _parseIssues = List<BulkParseIssue>.from(draft.issues);
         _deduplicatedPersonnelCount = draft.deduplicatedPersonnelCount;
+        _ignoredLineCount = draft.ignoredLineCount;
         _previewFilter = _BulkPreviewFilter.all;
         _parseIssuesExpanded = _parseIssues.any((issue) => issue.isBlocking);
         if (_parsedBlocks.isNotEmpty || _parseIssues.isNotEmpty) {
@@ -51,9 +65,10 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         block.copyWith(
           parsedDate:
               block.parsedDate.trim().isEmpty ? target.tarih : block.parsedDate,
-          parsedActivityType: block.parsedActivityType.trim().isEmpty
-              ? target.faaliyetAdi
-              : block.parsedActivityType,
+          parsedActivityType:
+              block.parsedActivityType.trim().isEmpty
+                  ? target.faaliyetAdi
+                  : block.parsedActivityType,
         ),
     ];
   }
@@ -135,17 +150,24 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
     final assignments = <PersonnelAssignmentInput>[];
     for (final block in _parsedBlocks) {
-      final duty = block.parsedActivityType.trim().isEmpty
-          ? target.faaliyetAdi
-          : block.parsedActivityType.trim();
+      final duty =
+          block.parsedActivityType.trim().isEmpty
+              ? target.faaliyetAdi
+              : block.parsedActivityType.trim();
       for (final person in block.personnelList) {
         final personnelId = person.matchedPersonnelId;
         if (personnelId == null || duty.isEmpty) continue;
+        final timeRanges = {
+          ...person.sourceTimeRanges,
+          if (block.parsedTimeRange != null) block.parsedTimeRange!,
+        }.where((range) => range.trim().isNotEmpty).toList();
         assignments.add(
           PersonnelAssignmentInput(
             personnelId: personnelId,
             duty: duty,
-            teamId: person.matchedTimId,
+            note:
+                timeRanges.isEmpty ? null : 'Saat: ${timeRanges.join('; ')}',
+            teamId: block.taskTeamId ?? person.matchedTimId,
           ),
         );
       }
@@ -167,21 +189,9 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         actor: actor,
       );
 
-      final aliasPairs = _parsedBlocks
-          .expand((block) => block.personnelList)
-          .where(
-            (person) =>
-                person.matchedPersonnelId != null &&
-                person.rawName.trim().isNotEmpty,
-          )
-          .map(
-            (person) => (
-              rawName: person.rawName,
-              personnelId: person.matchedPersonnelId!,
-            ),
-          );
-      await BulkImportLearningService(widget.database)
-          .rememberAliases(aliasPairs);
+      await BulkImportLearningService(
+        widget.database,
+      ).rememberBlockAliases(_parsedBlocks);
 
       if (!mounted) return;
       final summaryLines = <String>[
@@ -193,16 +203,17 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       ];
       await showDialog<void>(
         context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: const Text('Aktarım Tamamlandı'),
-          content: Text(summaryLines.join('\n')),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('TAMAM'),
+        builder:
+            (dialogContext) => AlertDialog(
+              title: const Text('Aktarım Tamamlandı'),
+              content: Text(summaryLines.join('\n')),
+              actions: [
+                FilledButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('TAMAM'),
+                ),
+              ],
             ),
-          ],
-        ),
       );
       if (!mounted) return;
       Navigator.pop(context, true);
@@ -222,10 +233,11 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     return BulkImportSaveHandler.findDuplicateAssignments(_parsedBlocks);
   }
 
-  int get _unresolvedPersonnelCount => _parsedBlocks
-      .expand((block) => block.personnelList)
-      .where((person) => !person.isMatched)
-      .length;
+  int get _unresolvedPersonnelCount =>
+      _parsedBlocks
+          .expand((block) => block.personnelList)
+          .where((person) => !person.isMatched)
+          .length;
 
   Future<void> _removePerson(int blockIndex, int personIndex) async {
     final block = _parsedBlocks[blockIndex];
@@ -246,8 +258,9 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         if (currentBlockIndex < 0) return;
         _updateState(() {
           final current = _parsedBlocks[currentBlockIndex];
-          final restored =
-              List<ParsedPersonnelItem>.from(current.personnelList);
+          final restored = List<ParsedPersonnelItem>.from(
+            current.personnelList,
+          );
           restored.insert(
             _stableRestoreIndex(
               restored,
@@ -256,8 +269,9 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
             ),
             removed,
           );
-          _parsedBlocks[currentBlockIndex] =
-              current.copyWith(personnelList: restored);
+          _parsedBlocks[currentBlockIndex] = current.copyWith(
+            personnelList: restored,
+          );
         });
       },
     );
@@ -297,30 +311,35 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
   Future<void> _confirmClearAll() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Önizlemeyi temizle?'),
-        content: const Text(
-          'Oluşturulan tüm kartlar ve ayrıştırma uyarıları kaldırılacak.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('VAZGEÇ'),
+      builder:
+          (dialogContext) => AlertDialog(
+            title: const Text('Önizlemeyi temizle?'),
+            content: const Text(
+              'Oluşturulan tüm kartlar ve ayrıştırma uyarıları kaldırılacak.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('VAZGEÇ'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: const Text('TEMİZLE'),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('TEMİZLE'),
-          ),
-        ],
-      ),
     );
     if (confirmed == true && mounted) {
       _updateState(() {
         _parsedBlocks.clear();
         _parseIssues.clear();
+        _sourceParseIssues.clear();
         _previewFilter = _BulkPreviewFilter.all;
         _parseIssuesExpanded = false;
         _deduplicatedPersonnelCount = 0;
+        _ignoredLineCount = 0;
+        _focusedIssue = null;
+        _activeIssueFocusIndex = -1;
         _cardKeys.clear();
         _personKeys.clear();
         _currentStep = 0;
@@ -375,7 +394,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     });
 
     if (aliasPairs.isNotEmpty) {
-      await learningService.rememberAliases(aliasPairs);
+      await learningService.rememberBlockAliases(_parsedBlocks);
     }
 
     if (mounted) {
@@ -387,7 +406,9 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
   }
 
   Future<void> _quickAddNewPersonnelToTim(
-      int blockIndex, int personIndex) async {
+    int blockIndex,
+    int personIndex,
+  ) async {
     final block = _parsedBlocks[blockIndex];
     final item = block.personnelList[personIndex];
 
@@ -395,18 +416,20 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         .toLowerCase()
         .replaceAll('timi', '')
         .replaceAll(' ', '');
-    final timId = _allSquads
-        .where(
-          (team) => team.timAdi
-              .toLowerCase()
-              .replaceAll('timi', '')
-              .replaceAll(' ', '')
-              .contains(normalizedTeam),
-        )
-        .map((team) => team.id)
-        .firstOrNull;
+    final timId =
+        _allSquads
+            .where(
+              (team) => team.timAdi
+                  .toLowerCase()
+                  .replaceAll('timi', '')
+                  .replaceAll(' ', '')
+                  .contains(normalizedTeam),
+            )
+            .map((team) => team.id)
+            .firstOrNull;
 
-    final timName = _allSquads
+    final timName =
+        _allSquads
             .where((t) => t.id == timId)
             .map((t) => t.timAdi)
             .firstOrNull ??
@@ -414,16 +437,17 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
     final todayStr = DateTime.now().toIso8601String().split('T').first;
 
-    final newId =
-        await widget.database.into(widget.database.personelTable).insert(
-              PersonelTableCompanion.insert(
-                adSoyad: item.rawName,
-                rutbe: item.rawRank,
-                birlik: block.parsedTimName,
-                timId: Value(timId),
-                kayitTarihi: todayStr,
-              ),
-            );
+    final newId = await widget.database
+        .into(widget.database.personelTable)
+        .insert(
+          PersonelTableCompanion.insert(
+            adSoyad: item.rawName,
+            rutbe: item.rawRank,
+            birlik: block.parsedTimName,
+            timId: Value(timId),
+            kayitTarihi: todayStr,
+          ),
+        );
 
     await _loadPersonnel();
 
@@ -431,8 +455,9 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
     _updateState(() {
       final currentBlock = _parsedBlocks[blockIndex];
-      final updatedList =
-          List<ParsedPersonnelItem>.from(currentBlock.personnelList);
+      final updatedList = List<ParsedPersonnelItem>.from(
+        currentBlock.personnelList,
+      );
       updatedList[personIndex] = updatedList[personIndex].copyWith(
         matchedPersonnelId: newId,
         matchedAdSoyad: item.rawName,
@@ -442,12 +467,14 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         teamMismatch: false,
         reviewConfirmed: true,
       );
-      _parsedBlocks[blockIndex] =
-          currentBlock.copyWith(personnelList: updatedList);
+      _parsedBlocks[blockIndex] = currentBlock.copyWith(
+        personnelList: updatedList,
+      );
     });
 
     await BulkImportLearningService(widget.database).rememberAlias(
       rawName: item.rawName,
+      teamName: _parsedBlocks[blockIndex].parsedTimName,
       personnelId: newId,
     );
 
@@ -466,16 +493,17 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         .toLowerCase()
         .replaceAll('timi', '')
         .replaceAll(' ', '');
-    final preferredTeamId = _allSquads
-        .where(
-          (team) => team.timAdi
-              .toLowerCase()
-              .replaceAll('timi', '')
-              .replaceAll(' ', '')
-              .contains(normalizedTeam),
-        )
-        .map((team) => team.id)
-        .firstOrNull;
+    final preferredTeamId =
+        _allSquads
+            .where(
+              (team) => team.timAdi
+                  .toLowerCase()
+                  .replaceAll('timi', '')
+                  .replaceAll(' ', '')
+                  .contains(normalizedTeam),
+            )
+            .map((team) => team.id)
+            .firstOrNull;
     final disabledReasons = <int, String>{};
     for (final otherBlock in _parsedBlocks) {
       if (otherBlock.parsedDate != block.parsedDate) continue;
@@ -499,8 +527,9 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         personIndex < _parsedBlocks[blockIndex].personnelList.length) {
       _updateState(() {
         final currentBlock = _parsedBlocks[blockIndex];
-        final updatedList =
-            List<ParsedPersonnelItem>.from(currentBlock.personnelList);
+        final updatedList = List<ParsedPersonnelItem>.from(
+          currentBlock.personnelList,
+        );
         updatedList[personIndex] = updatedList[personIndex].copyWith(
           matchedPersonnelId: person.id,
           matchedAdSoyad: person.adSoyad,
@@ -510,11 +539,13 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
           teamMismatch: false,
           reviewConfirmed: true,
         );
-        _parsedBlocks[blockIndex] =
-            currentBlock.copyWith(personnelList: updatedList);
+        _parsedBlocks[blockIndex] = currentBlock.copyWith(
+          personnelList: updatedList,
+        );
       });
       await BulkImportLearningService(widget.database).rememberAlias(
         rawName: item.rawName,
+        teamName: _parsedBlocks[blockIndex].parsedTimName,
         personnelId: person.id,
       );
     }

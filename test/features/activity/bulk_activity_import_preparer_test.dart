@@ -30,6 +30,34 @@ void main() {
     );
   }
 
+  test('declared total mismatch blocks a truncated pasted list', () async {
+    final draft = await BulkActivityImportDraft.fromRawText(
+      '30.07.2026\n9/B Guluskur\n1) J.Asb.Cvs. Ahmet TINAS\nToplam 5 personel',
+      matchBlocks: (blocks) async => blocks,
+    );
+    expect(draft.declaredTotals.single.expectedCount, 5);
+    expect(
+      draft.issues.any(
+        (i) => i.code == 'declared_total_mismatch' && i.isBlocking,
+      ),
+      isTrue,
+    );
+  });
+  test('parsed shift survives in the persisted assignment note', () {
+    final result = BulkActivityImportPreparer.prepare([
+      block(
+        date: '2026-07-30',
+        duty: 'HEYBET',
+        time: '08:00 - 19:30',
+        person: person(1, 'Ali'),
+      ),
+    ]);
+    expect(
+      result.requests.single.personnelAssignments.single.note,
+      contains('08:00 - 19:30'),
+    );
+  });
+
   test('creates one activity card per duty for the same day', () {
     final result = BulkActivityImportPreparer.prepare([
       block(
@@ -59,7 +87,7 @@ void main() {
     expect(result.requests.first.personnelAssignments.first.duty, 'HAZIR KITA');
     expect(
       result.requests.first.personnelAssignments.first.note,
-      'Görev Türü: HAZIR KITA',
+      'Görev Türü: HAZIR KITA (08:00 - 19:30)',
     );
   });
 
@@ -104,7 +132,7 @@ void main() {
     ]);
   });
 
-  test('collapses repeated personnel in the same duty and discards shifts', () {
+  test('collapses repeated personnel while preserving both source shifts', () {
     final repeated = person(1, 'Ahmet TINAS', teamId: 9);
     final result = BulkActivityImportPreparer.prepare([
       block(
@@ -127,48 +155,50 @@ void main() {
     expect(result.requests.single.personnelAssignments, hasLength(1));
     expect(
       result.requests.single.personnelAssignments.single.note,
-      'Görev Türü: GULUSKUR',
+      'Görev Türü: GULUSKUR (08:00 - 19:30; 19:30 - 06:30)',
     );
   });
 
-  test('draft builds cards from raw text before preparing save requests',
-      () async {
-    final repeated = person(1, 'Ahmet TINAS', teamId: 9);
-    var matcherReceivedParsedBlocks = false;
+  test(
+    'draft builds cards from raw text before preparing save requests',
+    () async {
+      final repeated = person(1, 'Ahmet TINAS', teamId: 9);
+      var matcherReceivedParsedBlocks = false;
 
-    final draft = await BulkActivityImportDraft.fromRawText(
-      '''
+      final draft = await BulkActivityImportDraft.fromRawText(
+        '''
 2026-07-30
 9/B Guluskur
 1) J.Asb.Cvs. Ahmet TINAS
 ''',
-      matchBlocks: (blocks) async {
-        matcherReceivedParsedBlocks = blocks.isNotEmpty;
-        return [
-          block(
-            date: '2026-07-30',
-            duty: 'GULUSKUR',
-            time: '08:00 - 19:30',
-            person: repeated,
-          ),
-          block(
-            date: '2026-07-30',
-            duty: 'GULUSKUR',
-            time: '19:30 - 06:30',
-            person: repeated,
-          ),
-        ];
-      },
-    );
+        matchBlocks: (blocks) async {
+          matcherReceivedParsedBlocks = blocks.isNotEmpty;
+          return [
+            block(
+              date: '2026-07-30',
+              duty: 'GULUSKUR',
+              time: '08:00 - 19:30',
+              person: repeated,
+            ),
+            block(
+              date: '2026-07-30',
+              duty: 'GULUSKUR',
+              time: '19:30 - 06:30',
+              person: repeated,
+            ),
+          ];
+        },
+      );
 
-    expect(matcherReceivedParsedBlocks, isTrue);
-    expect(draft.blocks, hasLength(1));
-    expect(draft.deduplicatedPersonnelCount, 1);
-    expect(draft.blocks.first.personnelList, hasLength(1));
+      expect(matcherReceivedParsedBlocks, isTrue);
+      expect(draft.blocks, hasLength(1));
+      expect(draft.deduplicatedPersonnelCount, 1);
+      expect(draft.blocks.first.personnelList, hasLength(1));
 
-    final preparation = draft.toPreparation();
-    expect(preparation.duplicates, isEmpty);
-    expect(preparation.requests, hasLength(1));
-    expect(preparation.requests.single.personnelAssignments, hasLength(1));
-  });
+      final preparation = draft.toPreparation();
+      expect(preparation.duplicates, isEmpty);
+      expect(preparation.requests, hasLength(1));
+      expect(preparation.requests.single.personnelAssignments, hasLength(1));
+    },
+  );
 }

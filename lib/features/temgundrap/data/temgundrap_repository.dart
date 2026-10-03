@@ -17,23 +17,35 @@ class TemgundrapApproverDefaults {
   final String unitTitle;
 
   Map<String, String> toJson() => {
-        'name': name,
-        'rank': rank,
-        'duty': duty,
-        'unitTitle': unitTitle,
-      };
+    'name': name,
+    'rank': rank,
+    'duty': duty,
+    'unitTitle': unitTitle,
+  };
 
   factory TemgundrapApproverDefaults.fromJson(Map<String, dynamic> json) =>
       TemgundrapApproverDefaults(
         name: json['name'] as String? ?? '',
         rank: json['rank'] as String? ?? '',
         duty: json['duty'] as String? ?? '',
-        unitTitle: json['unitTitle'] as String? ??
+        unitTitle:
+            json['unitTitle'] as String? ??
             'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI',
       );
 }
 
 class TemgundrapRepository {
+  static Future<void> _pendingWrite = Future.value();
+
+  Future<T> _serialized<T>(Future<T> Function() action) {
+    final result = _pendingWrite.then((_) => action());
+    _pendingWrite = result.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace __) {},
+    );
+    return result;
+  }
+
   static const _storageKey = 'temgundrap_documents_v1';
   static const _defaultsKey = 'temgundrap_approver_defaults_v1';
 
@@ -41,14 +53,22 @@ class TemgundrapRepository {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_defaultsKey);
     if (raw == null || raw.isEmpty) return const TemgundrapApproverDefaults();
-    return TemgundrapApproverDefaults.fromJson(
-      jsonDecode(raw) as Map<String, dynamic>,
-    );
+    try {
+      return TemgundrapApproverDefaults.fromJson(
+        jsonDecode(raw) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      throw const FormatException(
+        'TEMGÜNDRAP onay bilgileri okunamadı. Kayıt korunuyor; yedeği kontrol edin.',
+      );
+    }
   }
 
   Future<void> saveApproverDefaults(TemgundrapApproverDefaults defaults) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_defaultsKey, jsonEncode(defaults.toJson()));
+    if (!await prefs.setString(_defaultsKey, jsonEncode(defaults.toJson()))) {
+      throw StateError('TEMGÜNDRAP onay bilgileri kaydedilemedi.');
+    }
   }
 
   Future<List<TemgundrapDocument>> getAll() async {
@@ -56,14 +76,23 @@ class TemgundrapRepository {
     final raw = prefs.getString(_storageKey);
     if (raw == null || raw.isEmpty) return [];
 
-    final decoded = jsonDecode(raw) as List<dynamic>;
-    final documents = decoded
-        .map((item) => TemgundrapDocument.fromJson(
-              (item as Map).cast<String, Object?>(),
-            ))
-        .toList();
-    documents.sort((a, b) => b.date.compareTo(a.date));
-    return documents;
+    try {
+      final decoded = jsonDecode(raw) as List<dynamic>;
+      final documents =
+          decoded
+              .map(
+                (item) => TemgundrapDocument.fromJson(
+                  (item as Map).cast<String, Object?>(),
+                ),
+              )
+              .toList();
+      documents.sort((a, b) => b.date.compareTo(a.date));
+      return documents;
+    } catch (_) {
+      throw const FormatException(
+        'TEMGÜNDRAP kayıtları okunamadı. Mevcut veri korunuyor; yedeği kontrol edin.',
+      );
+    }
   }
 
   Future<TemgundrapDocument?> getById(String id) async {
@@ -74,7 +103,10 @@ class TemgundrapRepository {
     return null;
   }
 
-  Future<void> save(TemgundrapDocument document) async {
+  Future<void> save(TemgundrapDocument document) => _serialized(() async {
+    final prefs = await SharedPreferences.getInstance();
+    final previousDocuments = prefs.getString(_storageKey);
+    final previousDefaults = prefs.getString(_defaultsKey);
     final documents = await getAll();
     final index = documents.indexWhere((item) => item.id == document.id);
     if (index == -1) {
@@ -82,33 +114,46 @@ class TemgundrapRepository {
     } else {
       documents[index] = document;
     }
-    await _write(documents);
-
-    if (document.approverName.isNotEmpty ||
-        document.approverRank.isNotEmpty ||
-        document.approverDuty.isNotEmpty ||
-        document.unitTitle.isNotEmpty) {
-      await saveApproverDefaults(TemgundrapApproverDefaults(
-        name: document.approverName,
-        rank: document.approverRank,
-        duty: document.approverDuty,
-        unitTitle: document.unitTitle,
-      ));
+    try {
+      await _write(documents);
+      await saveApproverDefaults(
+        TemgundrapApproverDefaults(
+          name: document.approverName,
+          rank: document.approverRank,
+          duty: document.approverDuty,
+          unitTitle: document.unitTitle,
+        ),
+      );
+    } catch (error) {
+      final documentsRestored =
+          previousDocuments == null
+              ? await prefs.remove(_storageKey)
+              : await prefs.setString(_storageKey, previousDocuments);
+      final defaultsRestored =
+          previousDefaults == null
+              ? await prefs.remove(_defaultsKey)
+              : await prefs.setString(_defaultsKey, previousDefaults);
+      if (!documentsRestored || !defaultsRestored) {
+        throw StateError(
+          'TEMGÜNDRAP kaydı ve geri alma tamamlanamadı. Yeniden denemeden önce kayıtları kontrol edin.',
+        );
+      }
+      rethrow;
     }
-  }
+  });
 
-  Future<void> delete(String id) async {
+  Future<void> delete(String id) => _serialized(() async {
     final documents = await getAll();
     documents.removeWhere((item) => item.id == id);
     await _write(documents);
-  }
+  });
 
   Future<void> _write(List<TemgundrapDocument> documents) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
+    final saved = await prefs.setString(
       _storageKey,
       jsonEncode(documents.map((item) => item.toJson()).toList()),
     );
+    if (!saved) throw StateError('TEMGÜNDRAP kaydedilemedi. Yeniden deneyin.');
   }
 }
-

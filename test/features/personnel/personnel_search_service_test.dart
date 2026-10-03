@@ -5,6 +5,8 @@ import 'package:personelapp2/features/activity/domain/parser/personnel_search_se
 void main() {
   const personnel = [
     PersonelTableData(
+      aktif: true,
+      isDemo: false,
       id: 1,
       adSoyad: 'Ahmet Yılmaz',
       rutbe: 'J.Asb.Çvş.',
@@ -12,6 +14,8 @@ void main() {
       kayitTarihi: '2026-01-01',
     ),
     PersonelTableData(
+      aktif: true,
+      isDemo: false,
       id: 2,
       adSoyad: 'Mehmet Demir',
       rutbe: 'J.Uzm.Çvş.',
@@ -20,19 +24,28 @@ void main() {
     ),
   ];
 
+  test('a one-letter typo remains above a strong confidence threshold', () {
+    final near = personnel.first.copyWith(adSoyad: 'Mahmet');
+    final distant = personnel.last.copyWith(adSoyad: 'Mxxmet');
+    expect(
+      PersonnelSearchService.searchPersonnel('Mehmet', [
+        distant,
+        near,
+      ], threshold: 0.65),
+      [near],
+    );
+  });
+
   test('personeli ad, rütbe ve birlik alanlarında arar', () {
-    expect(
-      PersonnelSearchService.searchPersonnel('yilmaz', personnel),
-      [personnel.first],
-    );
-    expect(
-      PersonnelSearchService.searchPersonnel('uzm', personnel),
-      [personnel.last],
-    );
-    expect(
-      PersonnelSearchService.searchPersonnel('1 b timi', personnel),
-      [personnel.last],
-    );
+    expect(PersonnelSearchService.searchPersonnel('yilmaz', personnel), [
+      personnel.first,
+    ]);
+    expect(PersonnelSearchService.searchPersonnel('uzm', personnel), [
+      personnel.last,
+    ]);
+    expect(PersonnelSearchService.searchPersonnel('1 b timi', personnel), [
+      personnel.last,
+    ]);
   });
 
   test('farklı alanlardan gelen kelimeleri birlikte eşleştirir', () {
@@ -49,21 +62,15 @@ void main() {
     );
 
     for (final query in ['meh', 'mehm', 'mehmet', 'mehmet uz']) {
-      expect(
-        PersonnelSearchService.searchPersonnel(query, personnel),
-        [personnel.last],
-        reason: '"$query" sorgusu Mehmet Demir sonucunu korumalı',
-      );
+      expect(PersonnelSearchService.searchPersonnel(query, personnel), [
+        personnel.last,
+      ], reason: '"$query" sorgusu Mehmet Demir sonucunu korumalı');
     }
   });
 
   test('iki harfli ilgisiz sorguyu yaklaşık eşleşme saymaz', () {
     expect(
-      PersonnelSearchService.searchPersonnel(
-        'zz',
-        personnel,
-        threshold: 0.3,
-      ),
+      PersonnelSearchService.searchPersonnel('zz', personnel, threshold: 0.3),
       isEmpty,
     );
   });

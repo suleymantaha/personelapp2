@@ -58,16 +58,23 @@ void main() {
     String duty = 'GÖREVLİ',
     String status = AssignmentStatus.onaylandi,
     String? note,
-  }) =>
-      db.into(db.faaliyetPersonelAtamaTable).insert(
+  }) async {
+    final person = await (db.select(db.personelTable)
+      ..where((p) => p.id.equals(personnelId))).getSingle();
+    final squad = person.timId == null ? null : await (db.select(db.timTable)
+      ..where((s) => s.id.equals(person.timId!))).getSingle();
+    return db.into(db.faaliyetPersonelAtamaTable).insert(
             FaaliyetPersonelAtamaTableCompanion.insert(
               faaliyetId: activityId,
               personelId: personnelId,
               gorevVeyaIzin: duty,
               durum: status,
               aciklama: Value(note),
+              gorevTimId: Value(person.timId),
+              gorevTimAdi: Value(squad?.timAdi ?? 'Tim dışı'),
             ),
           );
+  }
 
   Future<List<FaaliyetPersonelAtamaTableData>> assignmentsFor(
     int activityId,

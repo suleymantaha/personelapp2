@@ -342,6 +342,8 @@ HEYBET
     await tester.pumpAndSettle();
     expect(find.text('Düzelt'), findsOneWidget);
 
+    await tester.ensureVisible(find.widgetWithText(OutlinedButton, 'Düzelt'));
+    await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(OutlinedButton, 'Düzelt'));
     await tester.pumpAndSettle();
 

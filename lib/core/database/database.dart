@@ -25,7 +25,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -46,23 +46,70 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(topluAktarimGecmisiTable);
         }
         if (from < 4) {
-          final personnelTableExists = await customSelect(
-            "SELECT 1 FROM sqlite_master WHERE type = 'table' "
-            "AND name = 'personel_table';",
-          ).getSingleOrNull();
+          final personnelTableExists =
+              await customSelect(
+                "SELECT 1 FROM sqlite_master WHERE type = 'table' "
+                "AND name = 'personel_table';",
+              ).getSingleOrNull();
           if (personnelTableExists != null) {
             await m.addColumn(personelTable, personelTable.telefon);
+          }
+        }
+        if (from < 5) {
+          if (await _tableExists('personel_table')) {
+            await m.addColumn(personelTable, personelTable.aktif);
+            await m.addColumn(personelTable, personelTable.isDemo);
+          }
+          if (await _tableExists('faaliyet_personel_atama_table')) {
+            await m.addColumn(
+              faaliyetPersonelAtamaTable,
+              faaliyetPersonelAtamaTable.gorevTimId,
+            );
+            await m.addColumn(
+              faaliyetPersonelAtamaTable,
+              faaliyetPersonelAtamaTable.gorevTimAdi,
+            );
+            await backfillTaskTeamsFromHistory();
           }
         }
       },
     );
   }
 
+  Future<bool> _tableExists(String name) async =>
+      await customSelect(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+        variables: [Variable(name)],
+      ).getSingleOrNull() !=
+      null;
+
+  Future<void> backfillTaskTeamsFromHistory() async {
+    if (!await _tableExists('tim_uyelik_gecmisi_table') ||
+        !await _tableExists('gunluk_faaliyet_table') ||
+        !await _tableExists('tim_table')) {
+      return;
+    }
+    await customStatement("""
+      UPDATE faaliyet_personel_atama_table AS a SET gorev_tim_id = (
+        SELECT CASE WHEN h.islem = 'çıkarıldı' THEN NULL ELSE h.tim_id END
+        FROM tim_uyelik_gecmisi_table h JOIN gunluk_faaliyet_table f ON f.id = a.faaliyet_id
+        WHERE h.personel_id = a.personel_id AND substr(h.tarih, 1, 10) <= f.tarih
+        ORDER BY h.tarih DESC, h.id DESC LIMIT 1
+      ) WHERE gorev_tim_id IS NULL AND gorev_tim_adi IS NULL
+    """);
+    await customStatement("""
+      UPDATE faaliyet_personel_atama_table SET gorev_tim_adi = (
+        SELECT tim_adi FROM tim_table WHERE id = gorev_tim_id
+      ) WHERE gorev_tim_id IS NOT NULL AND gorev_tim_adi IS NULL
+    """);
+  }
+
   Future<void> _validateMembershipHistoryMigration() async {
-    final schemaObject = await customSelect(
-      "SELECT type FROM sqlite_master "
-      "WHERE name = 'tim_uyelik_gecmisi_table';",
-    ).getSingleOrNull();
+    final schemaObject =
+        await customSelect(
+          "SELECT type FROM sqlite_master "
+          "WHERE name = 'tim_uyelik_gecmisi_table';",
+        ).getSingleOrNull();
     if (schemaObject?.read<String>('type') != 'table') {
       throw StateError(
         'v2 migration failed: tim_uyelik_gecmisi_table was not created.',
@@ -71,11 +118,10 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// Safe asynchronous seeding method called after database connection is active
-  Future<void> ensureSeeded() async {
-    final adminUser = await (select(
-      kullaniciTable,
-    )..where((tbl) => tbl.kullaniciAdi.equals('admin')))
-        .getSingleOrNull();
+  Future<void> ensureSeeded() => transaction(() async {
+    final adminUser =
+        await (select(kullaniciTable)
+          ..where((tbl) => tbl.kullaniciAdi.equals('admin'))).getSingleOrNull();
     if (adminUser == null) {
       await into(kullaniciTable).insert(
         KullaniciTableCompanion.insert(
@@ -87,12 +133,13 @@ class AppDatabase extends _$AppDatabase {
     } else if (adminUser.sifre == '123456') {
       // Invalidate the legacy well-known credential. The existing first-login
       // flow will require a new password before creating a session.
-      await (update(kullaniciTable)
-            ..where((table) => table.id.equals(adminUser.id)))
-          .write(const KullaniciTableCompanion(sifre: Value('')));
+      await (update(kullaniciTable)..where(
+        (table) => table.id.equals(adminUser.id),
+      )).write(const KullaniciTableCompanion(sifre: Value('')));
     }
 
     final existingSquads = await select(timTable).get();
+    if (adminUser != null || existingSquads.isNotEmpty) return;
     final existingNames = existingSquads.map((s) => s.timAdi.trim()).toSet();
     final defaultSquads = [
       'K.H',
@@ -117,17 +164,14 @@ class AppDatabase extends _$AppDatabase {
     for (final name in defaultSquads) {
       if (!existingNames.contains(name)) {
         toInsert.add(
-          TimTableCompanion.insert(
-            timAdi: name,
-            olusturmaTarihi: nowStr,
-          ),
+          TimTableCompanion.insert(timAdi: name, olusturmaTarihi: nowStr),
         );
       }
     }
     if (toInsert.isNotEmpty) {
       await batch((b) => b.insertAll(timTable, toInsert));
     }
-  }
+  });
 }
 
 LazyDatabase _openConnection() {

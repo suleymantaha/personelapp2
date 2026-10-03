@@ -24,6 +24,9 @@ void main() {
     return ProviderScope(
       overrides: [
         databaseProvider.overrideWithValue(db),
+        historicalPersonnelProvider.overrideWith(
+          (ref) => Stream.value(const <PersonelTableData>[]),
+        ),
         allPersonnelProvider.overrideWith(
           (ref) => Stream.value(const <PersonelTableData>[]),
         ),

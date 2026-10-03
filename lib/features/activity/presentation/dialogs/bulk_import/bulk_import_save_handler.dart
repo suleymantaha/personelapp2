@@ -22,33 +22,35 @@ class BulkImportSaveHandler {
         if (id == null) continue;
         final key =
             '${blockEntry.value.parsedDate}:${blockEntry.value.parsedActivityType.trim().toUpperCase()}:$id';
-        occurrences.putIfAbsent(key, () => []).add(
-          (blockIndex: blockEntry.key, personIndex: personEntry.key),
-        );
+        occurrences.putIfAbsent(key, () => []).add((
+          blockIndex: blockEntry.key,
+          personIndex: personEntry.key,
+        ));
       }
     }
 
     final result = <String, List<String>>{};
-    for (final entries
-        in occurrences.values.where((items) => items.length > 1)) {
+    for (final entries in occurrences.values.where(
+      (items) => items.length > 1,
+    )) {
       for (final entry in entries) {
-        result['${entry.blockIndex}:${entry.personIndex}'] =
-            entries.where((other) => other != entry).map((other) {
-          final block = blocks[other.blockIndex];
-          final time = block.parsedTimeRange?.trim();
-          return time == null || time.isEmpty
-              ? block.parsedActivityType
-              : '${block.parsedActivityType} ($time)';
-        }).toList(growable: false);
+        result['${entry.blockIndex}:${entry.personIndex}'] = entries
+            .where((other) => other != entry)
+            .map((other) {
+              final block = blocks[other.blockIndex];
+              final time = block.parsedTimeRange?.trim();
+              return time == null || time.isEmpty
+                  ? block.parsedActivityType
+                  : '${block.parsedActivityType} ($time)';
+            })
+            .toList(growable: false);
       }
     }
     return result;
   }
 
-  static ({
-    List<ParsedActivityBlock> blocks,
-    int removedCount,
-  }) deduplicateSameDuty(List<ParsedActivityBlock> blocks) =>
+  static ({List<ParsedActivityBlock> blocks, int removedCount})
+  deduplicateSameDuty(List<ParsedActivityBlock> blocks) =>
       BulkActivityImportPreparer.deduplicateSameDuty(blocks);
 
   static Future<bool> confirmSavePreflight({
@@ -87,26 +89,27 @@ class BulkImportSaveHandler {
     if (!context.mounted) return false;
     final userChoice = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Bu Liste Daha Önce Aktarıldı'),
-        content: Text(
-          '${existingImport.tarihler} tarihli bu içerik '
-          '${existingImport.kayitTarihi} tarihinde '
-          '${existingImport.aktaranKullanici} tarafından kaydedilmiş.\n\n'
-          'Veritabanında bu listeye ait $activeCount personel kaydı aktif duruyor. '
-          'Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('İPTAL'),
+      builder:
+          (dialogContext) => AlertDialog(
+            title: const Text('Bu Liste Daha Önce Aktarıldı'),
+            content: Text(
+              '${existingImport.tarihler} tarihli bu içerik '
+              '${existingImport.kayitTarihi} tarihinde '
+              '${existingImport.aktaranKullanici} tarafından kaydedilmiş.\n\n'
+              'Veritabanında bu listeye ait $activeCount personel kaydı aktif duruyor. '
+              'Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('İPTAL'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: const Text('EKSİKLERİ TAMAMLA / YENİDEN AKTAR'),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('EKSİKLERİ TAMAMLA / YENİDEN AKTAR'),
-          ),
-        ],
-      ),
     );
     return userChoice == true;
   }
@@ -147,13 +150,7 @@ class BulkImportSaveHandler {
       actor: actor,
     );
 
-    final aliasPairs = blocks
-        .expand((b) => b.personnelList)
-        .where(
-          (p) => p.matchedPersonnelId != null && p.rawName.trim().isNotEmpty,
-        )
-        .map((p) => (rawName: p.rawName, personnelId: p.matchedPersonnelId!));
-    await learningService.rememberAliases(aliasPairs);
+    await learningService.rememberBlockAliases(blocks);
 
     await learningService.recordImport(
       fingerprint: fingerprint,
@@ -166,9 +163,10 @@ class BulkImportSaveHandler {
       if (result.skippedAssignmentCount > 0) {
         await showDialog<void>(
           context: context,
-          builder: (_) => ConflictPersonnelDialog(
-            descriptions: result.conflictDescriptions,
-          ),
+          builder:
+              (_) => ConflictPersonnelDialog(
+                descriptions: result.conflictDescriptions,
+              ),
         );
         if (!context.mounted) return null;
       }
@@ -186,16 +184,17 @@ class BulkImportSaveHandler {
 
       await showDialog<void>(
         context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: const Text('Aktarım Tamamlandı'),
-          content: Text(summaryLines.join('\n')),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('TAMAM'),
+        builder:
+            (dialogContext) => AlertDialog(
+              title: const Text('Aktarım Tamamlandı'),
+              content: Text(summaryLines.join('\n')),
+              actions: [
+                FilledButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('TAMAM'),
+                ),
+              ],
             ),
-          ],
-        ),
       );
       if (!context.mounted) return null;
       Navigator.pop(context, true);

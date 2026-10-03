@@ -64,7 +64,7 @@ void main() {
           filteredActivitiesProvider.overrideWith(
             (ref) => Stream.value(activities),
           ),
-          allPersonnelProvider.overrideWith((ref) => Stream.value(const [])),
+          historicalPersonnelProvider.overrideWith((ref) => Stream.value(const [])),
           allSquadsProvider.overrideWith((ref) => Stream.value(const [])),
           pendingAssignmentsProvider.overrideWith(
             (ref) => Stream.value(const []),

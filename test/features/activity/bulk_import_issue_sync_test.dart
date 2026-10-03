@@ -19,12 +19,14 @@ void main() {
 
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
-    final teamId = await database.into(database.timTable).insert(
-      TimTableCompanion.insert(
-        timAdi: '6-B Timi',
-        olusturmaTarihi: '2026-01-01',
-      ),
-    );
+    final teamId = await database
+        .into(database.timTable)
+        .insert(
+          TimTableCompanion.insert(
+            timAdi: '6-B Timi',
+            olusturmaTarihi: '2026-01-01',
+          ),
+        );
     await database.batch((batch) {
       batch.insertAll(database.personelTable, [
         PersonelTableCompanion.insert(
@@ -48,75 +50,114 @@ void main() {
   tearDown(() => database.close());
 
   testWidgets(
-      'editing a card reduces the issue count incrementally card-by-card',
-      (tester) async {
-    tester.view.physicalSize = const Size(1000, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+    'editing a card reduces the issue count incrementally card-by-card',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          home: Scaffold(
-            body: BulkImportDialog(
-              database: database,
-              activityRepository: ActivityRepository(database),
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: BulkImportDialog(
+                database: database,
+                activityRepository: ActivityRepository(database),
+              ),
             ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    // Paste two blocks without dates
-    await tester.enterText(
-      find.byType(TextField).first,
-      '''
+      // Paste two blocks without dates
+      await tester.enterText(find.byType(TextField).first, '''
 6/B Heybet Listesi
 Ali DENEME
 
 6/B Hazır Kıta Listesi
 Veli SAĞLAM
-''',
-    );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
-    await tester.pumpAndSettle();
+''');
+      await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+      await tester.pumpAndSettle();
 
-    // Initial state: 2 cards with missing dates => "2 kritik hata"
-    expect(find.textContaining('2 kritik hata'), findsOneWidget);
+      // Initial state: 2 cards with missing dates => "2 kritik hata"
+      expect(find.textContaining('2 kritik hata'), findsOneWidget);
 
-    // Open card menu for Card 0 and click "Kartı düzenle"
-    final cardMenu0 = find.byKey(const Key('bulk-card-menu-0'));
-    expect(cardMenu0, findsOneWidget);
-    await tester.tap(cardMenu0);
-    await tester.pumpAndSettle();
+      // Open card menu for Card 0 and click "Kartı düzenle"
+      final cardMenu0 = find.byKey(const Key('bulk-card-menu-0'));
+      expect(cardMenu0, findsOneWidget);
+      await tester.tap(cardMenu0);
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Kartı düzenle'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Kartı düzenle'));
+      await tester.pumpAndSettle();
 
-    // In EditDialog, select a date before saving.
-    await pickDefaultDate(tester);
-    await tester.tap(find.byKey(const Key('bulk-edit-save')));
-    await tester.pumpAndSettle();
+      // In EditDialog, select a date before saving.
+      await pickDefaultDate(tester);
+      await tester.tap(find.byKey(const Key('bulk-edit-save')));
+      await tester.pumpAndSettle();
 
-    // Issue count should decrease from 2 to 1 => "1 kritik hata"
-    expect(find.textContaining('1 kritik hata'), findsOneWidget);
+      // Issue count should decrease from 2 to 1 => "1 kritik hata"
+      expect(find.textContaining('1 kritik hata'), findsOneWidget);
 
-    // Open card menu for Card 1 and click "Kartı düzenle"
-    final cardMenu1 = find.byKey(const Key('bulk-card-menu-1'));
-    expect(cardMenu1, findsOneWidget);
-    await tester.tap(cardMenu1);
-    await tester.pumpAndSettle();
+      // Open card menu for Card 1 and click "Kartı düzenle"
+      final cardMenu1 = find.byKey(const Key('bulk-card-menu-1'));
+      expect(cardMenu1, findsOneWidget);
+      await tester.tap(cardMenu1);
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Kartı düzenle'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Kartı düzenle'));
+      await tester.pumpAndSettle();
 
-    await pickDefaultDate(tester);
-    await tester.tap(find.byKey(const Key('bulk-edit-save')));
-    await tester.pumpAndSettle();
+      await pickDefaultDate(tester);
+      await tester.tap(find.byKey(const Key('bulk-edit-save')));
+      await tester.pumpAndSettle();
 
-    // All issues resolved => "Tüm kontroller tamam"
-    expect(find.text('Tüm kontroller tamam'), findsOneWidget);
-  });
+      // All issues resolved => "Tüm kontroller tamam"
+      expect(find.text('Tüm kontroller tamam'), findsOneWidget);
+    },
+  );
+  testWidgets(
+    'invalid source time stays visible after creating matched cards',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: BulkImportDialog(
+                database: database,
+                activityRepository: ActivityRepository(database),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextField).first,
+        "6/B Heybet Listesi\n25.07.2026\n25:00-08:00\n1- J.Uzm.Çvş. Ali DENEME",
+      );
+      await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('1 kritik hata'), findsOneWidget);
+      expect(find.text('Tüm kontroller tamam'), findsNothing);
+
+      await tester.tap(find.text('Yapıştır'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextField).first,
+        "6/B Heybet Listesi\n25.07.2026\n08:00-19:00\n1- J.Uzm.Çvş. Ali DENEME",
+      );
+      await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('kritik hata'), findsNothing);
+      expect(find.text('Tüm kontroller tamam'), findsOneWidget);
+    },
+  );
 }

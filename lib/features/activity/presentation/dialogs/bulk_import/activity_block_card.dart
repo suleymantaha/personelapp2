@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/activity_metadata_label.dart';
+import 'activity_block_header.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
-import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_problem_wizard.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/personnel_match_card.dart';
@@ -68,12 +67,11 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
   @override
   void didUpdateWidget(covariant ActivityBlockCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.focusedIssue != oldWidget.focusedIssue) {
+    // A new wizard target opens this card once; later header taps stay in control.
+    if (!identical(widget.block.identity, oldWidget.block.identity) ||
+        (widget.focusedIssue != oldWidget.focusedIssue &&
+            (widget.focusedIssue?.matchesBlock(widget.blockIdx) ?? false))) {
       _userManualExpanded = null;
-    }
-    if (widget.isExpanded != oldWidget.isExpanded &&
-        widget.isExpanded != null) {
-      _userManualExpanded = widget.isExpanded;
     }
   }
 
@@ -88,11 +86,11 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
   }
 
   bool get _effectiveIsExpanded {
-    if (widget.focusedIssue != null) {
-      return widget.focusedIssue!.matchesBlock(widget.blockIdx);
-    }
     if (_userManualExpanded != null) {
       return _userManualExpanded!;
+    }
+    if (widget.focusedIssue != null) {
+      return widget.focusedIssue!.matchesBlock(widget.blockIdx);
     }
     if (widget.isExpanded != null) {
       return widget.isExpanded!;
@@ -128,11 +126,11 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
         warningCount > 0 ||
         widget.block.personnelList.isEmpty;
     final borderColor = isBlockFocused
-        ? (unmatchedCount > 0 ? Colors.red.shade700 : Colors.amber.shade800)
+        ? (unmatchedCount > 0 ? context.rejectedColor : context.warningColor)
         : (hasProblems
             ? (unmatchedCount > 0
-                ? Colors.red.shade300
-                : Colors.orange.shade300)
+                ? context.rejectedColor
+                : context.warningColor)
             : context.cardBorderColor);
 
     return AnimatedContainer(
@@ -147,7 +145,9 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
         boxShadow: isBlockFocused
             ? [
                 BoxShadow(
-                  color: (unmatchedCount > 0 ? Colors.red : Colors.amber)
+                  color: (unmatchedCount > 0
+                          ? context.rejectedColor
+                          : context.warningColor)
                       .withValues(alpha: 0.25),
                   blurRadius: 12,
                   spreadRadius: 2,
@@ -162,277 +162,18 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Row (Clickable InkWell to Collapse/Expand)
-            InkWell(
-              key: Key('bulk-card-header-${widget.blockIdx}'),
-              onTap: _toggleExpand,
-              borderRadius: BorderRadius.vertical(
-                top: const Radius.circular(12),
-                bottom: Radius.circular(effectiveIsExpanded ? 0 : 12),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              if (widget.block.parsedTimName.isNotEmpty) ...[
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: context.accentOrOlive
-                                        .withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    widget.block.parsedTimName,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                      color: context.accentOrOlive,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                              ] else ...[
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.amber.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    'Varsayılan Tim',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12,
-                                      color: Colors.amber.shade800,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                              ],
-                              Expanded(
-                                child: Text(
-                                  widget.block.parsedActivityType,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.fade,
-                                  softWrap: true,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              ActivityMetadataLabel(
-                                icon: Icons.calendar_today_rounded,
-                                text: widget.block.parsedDate,
-                              ),
-                              if (widget.block.parsedTimeRange
-                                      ?.trim()
-                                      .isNotEmpty ==
-                                  true)
-                                ActivityMetadataLabel(
-                                  icon: Icons.schedule_rounded,
-                                  text: widget.block.parsedTimeRange!,
-                                ),
-                              _PersonnelCountPill(
-                                text: widget.visiblePersonnelIndexes == null
-                                    ? '${widget.block.personnelList.length} personel'
-                                    : '$problemCount sorun / ${widget.block.personnelList.length} p.',
-                              ),
-                              if (isBlockFocused)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: (unmatchedCount > 0 ||
-                                            widget.block.personnelList.isEmpty)
-                                        ? Colors.red.shade800
-                                        : Colors.amber.shade900,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          (unmatchedCount > 0 ||
-                                                  widget.block.personnelList
-                                                      .isEmpty)
-                                              ? Icons.push_pin_rounded
-                                              : Icons.search_rounded,
-                                          size: 11,
-                                          color: Colors.white,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          (unmatchedCount > 0 ||
-                                                  widget.block.personnelList
-                                                      .isEmpty)
-                                              ? 'ODAKLANILAN HATA'
-                                              : 'İNCELENEN KART',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              if (widget.block.personnelList.isEmpty)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    'Boş Kart',
-                                    style: TextStyle(
-                                      color: Colors.red.shade800,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                )
-                              else if (unmatchedCount > 0)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    '$unmatchedCount Eşleşmedi',
-                                    style: TextStyle(
-                                      color: Colors.red.shade800,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                )
-                              else if (warningCount > 0)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        Colors.orange.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    '$warningCount Uyarı',
-                                    style: TextStyle(
-                                      color: Colors.orange.shade900,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                )
-                              else
-                                Icon(
-                                  Icons.check_circle_rounded,
-                                  color: context.approvedColor,
-                                  size: 18,
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-
-                    // Genişletme / Daraltma Oku (Expand Chevron)
-                    Icon(
-                      effectiveIsExpanded
-                          ? Icons.keyboard_arrow_up_rounded
-                          : Icons.keyboard_arrow_down_rounded,
-                      color: context.textSecondary,
-                      size: 22,
-                    ),
-
-                    PopupMenuButton<String>(
-                      key: Key('bulk-card-menu-${widget.blockIdx}'),
-                      tooltip: 'Kart işlemleri',
-                      elevation: 5,
-                      shadowColor: context.shadowColor,
-                      surfaceTintColor: context.colorScheme.surface,
-                      shape: modernPopupShape(context),
-                      constraints:
-                          const BoxConstraints(minWidth: 280, maxWidth: 320),
-                      onSelected: (value) {
-                        if (value == 'edit') {
-                          widget.onEditBlock(widget.blockIdx);
-                        } else if (value == 'delete') {
-                          widget.onRemoveBlock(widget.blockIdx);
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        const ModernMenuHeader<String>(
-                          title: 'Kart İşlemleri',
-                          subtitle: 'İçe aktarma kartını yönet',
-                          icon: Icons.view_agenda_outlined,
-                        ),
-                        const PopupMenuDivider(),
-                        ModernPopupMenuItem(
-                          option: const ModernActionOption(
-                            value: 'edit',
-                            title: 'Kartı düzenle',
-                            subtitle:
-                                'Faaliyet ve personel bilgilerini güncelle',
-                            icon: Icons.edit_outlined,
-                          ),
-                        ),
-                        const PopupMenuDivider(),
-                        ModernPopupMenuItem(
-                          option: const ModernActionOption(
-                            value: 'delete',
-                            title: 'Kartı sil',
-                            subtitle: 'Kartı içe aktarma listesinden kaldır',
-                            icon: Icons.delete_outline_rounded,
-                            isDestructive: true,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+            ActivityBlockHeader(
+              block: widget.block,
+              blockIdx: widget.blockIdx,
+              visiblePersonnelIndexes: widget.visiblePersonnelIndexes,
+              problemCount: problemCount,
+              unmatchedCount: unmatchedCount,
+              warningCount: warningCount,
+              isBlockFocused: isBlockFocused,
+              effectiveIsExpanded: effectiveIsExpanded,
+              onToggleExpand: _toggleExpand,
+              onEditBlock: widget.onEditBlock,
+              onRemoveBlock: widget.onRemoveBlock,
             ),
 
             // Body (Only rendered if expanded)
@@ -445,12 +186,12 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.06),
+                          color: context.rejectedColor.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Bu kartta personel kalmadı. Kartı silin veya metni yeniden ayrıştırın.',
-                          style: TextStyle(color: Colors.red),
+                          style: TextStyle(color: context.rejectedColor),
                         ),
                       )
                     : ListView.separated(
@@ -509,31 +250,6 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
               ),
             ],
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PersonnelCountPill extends StatelessWidget {
-  const _PersonnelCountPill({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: context.accentOrOlive,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: context.customColors.onAccentOrOlive,
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );

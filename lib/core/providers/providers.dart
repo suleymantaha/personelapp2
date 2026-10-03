@@ -35,6 +35,18 @@ final allPersonnelProvider = StreamProvider<List<PersonelTableData>>((ref) {
   return ref.watch(personnelRepositoryProvider).watchAllPersonnelSorted();
 });
 
+final historicalPersonnelProvider = StreamProvider<List<PersonelTableData>>(
+  (ref) => ref
+      .watch(personnelRepositoryProvider)
+      .watchAllPersonnelSorted(includeInactive: true),
+);
+
+final commanderAuthorityProvider = StreamProvider<int?>((ref) {
+  final session = ref.watch(userSessionProvider);
+  if (session == null || session.isAdmin) return Stream.value(null);
+  return ref.watch(personnelRepositoryProvider).watchCommanderTeam(session.username);
+});
+
 final allSquadsProvider = StreamProvider<List<TimTableData>>((ref) {
   return ref.watch(personnelRepositoryProvider).watchAllSquads();
 });
@@ -58,19 +70,9 @@ final filteredActivitiesProvider =
     StreamProvider<List<GunlukFaaliyetTableData>>((ref) {
       final session = ref.watch(userSessionProvider);
       final repo = ref.watch(activityRepositoryProvider);
-
-      if (session == null) {
-        return Stream.value(const <GunlukFaaliyetTableData>[]);
-      }
-
-      if (!session.isAdmin && session.timId == null) {
-        return Stream.value(const <GunlukFaaliyetTableData>[]);
-      }
-
-      if (!session.isAdmin && session.timId != null) {
-        return repo.watchActivitiesForTeam(session.timId!);
-      }
-      return repo.watchAllActivities();
+      if (session == null) return Stream.value(const []);
+      if (session.isAdmin) return repo.watchAllActivities();
+      return repo.watchActivitiesForCommander(session.username);
     });
 
 /// Matrix Repository & Monthly Matrix Provider
@@ -84,5 +86,10 @@ monthlyMatrixProvider =
       ref,
       yearMonth,
     ) {
-      return ref.watch(matrixRepositoryProvider).watchMonthlyMatrix(yearMonth);
+      final session = ref.watch(userSessionProvider);
+      final repo = ref.watch(matrixRepositoryProvider);
+      if (session == null) return Stream.value(const <int, Map<int, MatrixDayCell>>{});
+      return repo.watchMonthlyMatrix(yearMonth,
+        commanderUsername: session.isAdmin ? null : session.username);
+
     });

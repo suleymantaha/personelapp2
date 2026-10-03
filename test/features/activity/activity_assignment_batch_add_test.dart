@@ -26,15 +26,30 @@ void main() {
     database = AppDatabase(NativeDatabase.memory());
     repository = ActivityRepository(database);
     for (final name in ['1. Tim', '2. Tim']) {
-      await database.into(database.timTable).insert(
+      await database
+          .into(database.timTable)
+          .insert(
             TimTableCompanion.insert(
               timAdi: name,
               olusturmaTarihi: '2026-08-05',
             ),
           );
     }
+    final commanderId = await database
+        .into(database.kullaniciTable)
+        .insert(
+          KullaniciTableCompanion.insert(
+            kullaniciAdi: 'komutan',
+            rol: 'tim_komutani',
+            timId: Value(1),
+          ),
+        );
+    await (database.update(database.timTable)..where((t) => t.id.equals(1)))
+        .write(TimTableCompanion(timKomutaniId: Value(commanderId)));
     Future<int> addPerson(String name, int teamId) {
-      return database.into(database.personelTable).insert(
+      return database
+          .into(database.personelTable)
+          .insert(
             PersonelTableCompanion.insert(
               adSoyad: name,
               rutbe: 'J.Uzm.Çvş.',
@@ -48,7 +63,9 @@ void main() {
     ownTeamPersonId = await addPerson('Birinci Personel', 1);
     otherTeamPersonId = await addPerson('İkinci Personel', 2);
     conflictPersonId = await addPerson('Çakışan Personel', 1);
-    targetActivityId = await database.into(database.gunlukFaaliyetTable).insert(
+    targetActivityId = await database
+        .into(database.gunlukFaaliyetTable)
+        .insert(
           GunlukFaaliyetTableCompanion.insert(
             faaliyetAdi: 'Hedef Faaliyet',
             tarih: '2026-08-05',
@@ -56,16 +73,19 @@ void main() {
             olusturmaTarihi: '2026-08-05T08:00:00',
           ),
         );
-    final otherActivityId =
-        await database.into(database.gunlukFaaliyetTable).insert(
-              GunlukFaaliyetTableCompanion.insert(
-                faaliyetAdi: 'Diğer Faaliyet',
-                tarih: '2026-08-05',
-                olusturanKullanici: 'admin',
-                olusturmaTarihi: '2026-08-05T08:00:00',
-              ),
-            );
-    await database.into(database.faaliyetPersonelAtamaTable).insert(
+    final otherActivityId = await database
+        .into(database.gunlukFaaliyetTable)
+        .insert(
+          GunlukFaaliyetTableCompanion.insert(
+            faaliyetAdi: 'Diğer Faaliyet',
+            tarih: '2026-08-05',
+            olusturanKullanici: 'admin',
+            olusturmaTarihi: '2026-08-05T08:00:00',
+          ),
+        );
+    await database
+        .into(database.faaliyetPersonelAtamaTable)
+        .insert(
           FaaliyetPersonelAtamaTableCompanion.insert(
             faaliyetId: otherActivityId,
             personelId: conflictPersonId,
@@ -121,8 +141,9 @@ void main() {
       actor: commander,
     );
     expect(result.addedCount, 1);
-    final row =
-        await database.select(database.faaliyetPersonelAtamaTable).get();
+    final row = await database
+        .select(database.faaliyetPersonelAtamaTable)
+        .get();
     expect(
       row.singleWhere((item) => item.personelId == ownTeamPersonId).durum,
       AssignmentStatus.beklemede,

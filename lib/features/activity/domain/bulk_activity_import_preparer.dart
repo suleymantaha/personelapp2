@@ -28,24 +28,69 @@ class BulkActivityImportDraft {
     String? defaultDate,
     required Future<List<ParsedActivityBlock>> Function(
       List<ParsedActivityBlock> blocks,
-    ) matchBlocks,
+    )
+    matchBlocks,
   }) async {
-    final parseResult = BulkTextParser.parse(
-      rawText,
-      defaultDate: defaultDate,
-    );
+    final parseResult = BulkTextParser.parse(rawText, defaultDate: defaultDate);
     final matchedBlocks = await matchBlocks(parseResult.blocks);
-    final deduplicated =
-        BulkActivityImportPreparer.deduplicateSameDuty(matchedBlocks);
+    final deduplicated = BulkActivityImportPreparer.deduplicateSameDuty(
+      matchedBlocks,
+    );
 
     return BulkActivityImportDraft(
       blocks: List<ParsedActivityBlock>.unmodifiable(deduplicated.blocks),
-      issues: List<BulkParseIssue>.unmodifiable(parseResult.issues),
+      issues: List<BulkParseIssue>.unmodifiable([
+        ...parseResult.issues,
+        ...declaredTotalIssues(parseResult.blocks, parseResult.declaredTotals),
+      ]),
       deduplicatedPersonnelCount: deduplicated.removedCount,
       ignoredLineCount: parseResult.ignoredLineCount,
-      declaredTotals:
-          List<BulkDeclaredTotal>.unmodifiable(parseResult.declaredTotals),
+      declaredTotals: List<BulkDeclaredTotal>.unmodifiable(
+        parseResult.declaredTotals,
+      ),
     );
+  }
+
+  static List<BulkParseIssue> declaredTotalIssues(
+    Iterable<ParsedActivityBlock> blocks,
+    Iterable<BulkDeclaredTotal> totals,
+  ) {
+    final issues = <BulkParseIssue>[];
+    final previousLines = <String, int>{};
+    for (final total in totals) {
+      final key = '${total.date}|${total.teamName}|${total.activityType}';
+      final previous = previousLines[key] ?? 0;
+      final count =
+          blocks
+              .where(
+                (b) =>
+                    b.parsedDate == total.date &&
+                    b.parsedTimName == total.teamName &&
+                    b.parsedActivityType == total.activityType,
+              )
+              .expand((b) => b.personnelList)
+              .where(
+                (p) =>
+                    p.sourceLineNumber != null &&
+                    p.sourceLineNumber! > previous &&
+                    p.sourceLineNumber! < total.lineNumber,
+              )
+              .length;
+      if (count != total.expectedCount) {
+        issues.add(
+          BulkParseIssue(
+            lineNumber: total.lineNumber,
+            rawLine: 'Toplam ${total.expectedCount}',
+            code: 'declared_total_mismatch',
+            message:
+                '${total.teamName} ${total.activityType}: bildirilen ${total.expectedCount} kişi, ayrıştırılan $count kişi. Kaynak listeyi tamamlayıp yeniden ayrıştırın.',
+            severity: BulkParseIssueSeverity.error,
+          ),
+        );
+      }
+      previousLines[key] = total.lineNumber;
+    }
+    return issues;
   }
 }
 
@@ -80,11 +125,9 @@ class BulkImportPreparation {
 class BulkActivityImportPreparer {
   const BulkActivityImportPreparer._();
 
-  static ({
-    List<ParsedActivityBlock> blocks,
-    int removedCount,
-  }) deduplicateSameDuty(List<ParsedActivityBlock> blocks) {
-    final seen = <String>{};
+  static ({List<ParsedActivityBlock> blocks, int removedCount})
+  deduplicateSameDuty(List<ParsedActivityBlock> blocks) {
+    final seen = <String, ({int block, int person})>{};
     var removedCount = 0;
     final result = <ParsedActivityBlock>[];
     for (final block in blocks) {
@@ -95,11 +138,44 @@ class BulkActivityImportPreparer {
           personnel.add(person);
           continue;
         }
-        final key = '${block.parsedDate}:'
+        final key =
+            '${block.parsedDate}:'
             '${block.parsedActivityType.trim().toUpperCase()}:$id';
-        if (seen.add(key)) {
-          personnel.add(person);
+        final first = seen[key];
+        if (first == null) {
+          seen[key] = (block: result.length, person: personnel.length);
+          personnel.add(
+            person.copyWith(
+              sourceTimeRanges:
+                  {
+                    ...person.sourceTimeRanges,
+                    if (block.parsedTimeRange?.trim().isNotEmpty ?? false)
+                      block.parsedTimeRange!.trim(),
+                  }.toList(),
+            ),
+          );
         } else {
+          final firstPeople =
+              first.block == result.length
+                  ? personnel
+                  : List<ParsedPersonnelItem>.of(
+                    result[first.block].personnelList,
+                  );
+          final original = firstPeople[first.person];
+          firstPeople[first.person] = original.copyWith(
+            sourceTimeRanges:
+                {
+                  ...original.sourceTimeRanges,
+                  ...person.sourceTimeRanges,
+                  if (block.parsedTimeRange?.trim().isNotEmpty ?? false)
+                    block.parsedTimeRange!.trim(),
+                }.toList(),
+          );
+          if (first.block != result.length) {
+            result[first.block] = result[first.block].copyWith(
+              personnelList: firstPeople,
+            );
+          }
           removedCount++;
         }
       }
@@ -110,9 +186,7 @@ class BulkActivityImportPreparer {
     return (blocks: result, removedCount: removedCount);
   }
 
-  static BulkImportPreparation prepare(
-    Iterable<ParsedActivityBlock> blocks,
-  ) {
+  static BulkImportPreparation prepare(Iterable<ParsedActivityBlock> blocks) {
     final byDate = <String, List<ParsedActivityBlock>>{};
     for (final block in blocks) {
       byDate.putIfAbsent(block.parsedDate, () => []).add(block);
@@ -122,45 +196,57 @@ class BulkActivityImportPreparer {
     final duplicates = <BulkImportDuplicate>[];
 
     for (final entry in byDate.entries) {
-      final occurrences = <int,
-          List<
-              ({
-                ParsedActivityBlock block,
-                ParsedPersonnelItem person,
-              })>>{};
+      final occurrences =
+          <
+            int,
+            List<({ParsedActivityBlock block, ParsedPersonnelItem person})>
+          >{};
       for (final block in entry.value) {
         for (final person in block.personnelList) {
           final id = person.matchedPersonnelId;
           if (id == null) continue;
-          occurrences
-              .putIfAbsent(id, () => [])
-              .add((block: block, person: person));
+          occurrences.putIfAbsent(id, () => []).add((
+            block: block,
+            person: person,
+          ));
         }
       }
 
-      final uniqueOccurrences = <int,
-          List<
-              ({
-                ParsedActivityBlock block,
-                ParsedPersonnelItem person,
-              })>>{};
+      final uniqueOccurrences =
+          <
+            int,
+            List<({ParsedActivityBlock block, ParsedPersonnelItem person})>
+          >{};
       for (final occurrence in occurrences.entries) {
-        final byDuty = <String,
-            ({
-          ParsedActivityBlock block,
-          ParsedPersonnelItem person,
-        })>{};
+        final byDuty =
+            <
+              String,
+              ({ParsedActivityBlock block, ParsedPersonnelItem person})
+            >{};
         for (final item in occurrence.value) {
-          byDuty.putIfAbsent(
-            item.block.parsedActivityType.trim().toUpperCase(),
-            () => item,
+          final dutyKey = item.block.parsedActivityType.trim().toUpperCase();
+          final previous = byDuty[dutyKey];
+          final times = {
+            ...?previous?.person.sourceTimeRanges,
+            ...item.person.sourceTimeRanges,
+            if (previous?.block.parsedTimeRange?.trim().isNotEmpty ?? false)
+              previous!.block.parsedTimeRange!.trim(),
+            if (item.block.parsedTimeRange?.trim().isNotEmpty ?? false)
+              item.block.parsedTimeRange!.trim(),
+          };
+          byDuty[dutyKey] = (
+            block: previous?.block ?? item.block,
+            person: (previous?.person ?? item.person).copyWith(
+              sourceTimeRanges: times.toList(),
+            ),
           );
         }
         uniqueOccurrences[occurrence.key] = byDuty.values.toList();
       }
 
-      for (final occurrence in uniqueOccurrences.entries
-          .where((entry) => entry.value.length > 1)) {
+      for (final occurrence in uniqueOccurrences.entries.where(
+        (entry) => entry.value.length > 1,
+      )) {
         final first = occurrence.value.first.person;
         duplicates.add(
           BulkImportDuplicate(
@@ -184,12 +270,15 @@ class BulkActivityImportPreparer {
         if (duty.isEmpty) continue;
         final dutyKey = duty.toUpperCase();
         displayDutyByKey.putIfAbsent(dutyKey, () => duty);
-        payloadByDuty.putIfAbsent(dutyKey, () => []).add(
+        payloadByDuty
+            .putIfAbsent(dutyKey, () => [])
+            .add(
               PersonnelAssignmentInput(
                 personnelId: item.person.matchedPersonnelId!,
                 duty: duty,
-                note: 'Görev Türü: $duty',
-                teamId: item.person.matchedTimId,
+                note:
+                    'Görev Türü: $duty${item.person.sourceTimeRanges.isEmpty ? '' : ' (${item.person.sourceTimeRanges.join('; ')})'}',
+                teamId: item.block.taskTeamId ?? item.person.matchedTimId,
               ),
             );
       }
@@ -207,10 +296,7 @@ class BulkActivityImportPreparer {
       }
     }
 
-    return BulkImportPreparation(
-      requests: requests,
-      duplicates: duplicates,
-    );
+    return BulkImportPreparation(requests: requests, duplicates: duplicates);
   }
 
   static String _assignmentLabel(ParsedActivityBlock block) {

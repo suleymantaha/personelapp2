@@ -1,6 +1,8 @@
+import 'package:personelapp2/core/utils/password_policy.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
@@ -19,60 +21,104 @@ class DashboardSettings {
     String username,
   ) async {
     final passCtrl = TextEditingController();
+    bool saving = false;
+    String? errorText;
     try {
       await showDialog<void>(
         context: context,
         builder: (ctx) {
-          return AlertDialog(
-            title: const Text('Şifremi Değiştir'),
-            content: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Kullanıcı: $username',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: passCtrl,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Yeni Şifreniz',
-                        prefixIcon: Icon(Icons.lock),
+          return StatefulBuilder(
+            builder:
+                (ctx, updateDialog) => PopScope(
+                  canPop: !saving,
+                  child: AlertDialog(
+                    title: const Text('Şifremi Değiştir'),
+                    content: SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 400),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Kullanıcı: $username',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: passCtrl,
+                              obscureText: true,
+                              decoration: InputDecoration(
+                                errorText: errorText,
+                                labelText: 'Yeni Şifreniz',
+                                prefixIcon: const Icon(Icons.lock),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ],
+                    actions: [
+                      TextButton(
+                        onPressed:
+                            saving ? null : () => Navigator.of(ctx).pop(),
+                        child: const Text('İPTAL'),
+                      ),
+                      ElevatedButton(
+                        onPressed:
+                            saving
+                                ? null
+                                : () async {
+                                  final newPass = passCtrl.text.trim();
+                                  if (!PasswordPolicy.isValid(newPass)) {
+                                    updateDialog(
+                                      () => errorText = PasswordPolicy.message,
+                                    );
+                                    return;
+                                  }
+                                  updateDialog(() {
+                                    saving = true;
+                                    errorText = null;
+                                  });
+                                  try {
+                                    final changed = await ref
+                                        .read(personnelRepositoryProvider)
+                                        .updateUserPassword(
+                                          kullaniciAdi: username,
+                                          newPassword: newPass,
+                                        );
+                                    if (changed != 1) {
+                                      throw StateError('Kullanıcı bulunamadı.');
+                                    }
+                                    if (ctx.mounted) {
+                                      updateDialog(() => saving = false);
+                                      await WidgetsBinding.instance.endOfFrame;
+                                      if (!ctx.mounted) return;
+                                      Navigator.of(ctx).pop();
+                                      AppNotifications.success(
+                                        'Şifreniz başarıyla güncellendi!',
+                                      );
+                                    }
+                                  } catch (error) {
+                                    if (ctx.mounted) {
+                                      updateDialog(
+                                        () =>
+                                            errorText =
+                                                'Şifre güncellenemedi: $error',
+                                      );
+                                    }
+                                  } finally {
+                                    if (ctx.mounted) {
+                                      updateDialog(() => saving = false);
+                                    }
+                                  }
+                                },
+                        child: const Text('GÜNCELLE'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('İPTAL'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final newPass = passCtrl.text.trim();
-                  if (newPass.length >= 4) {
-                    final repo = ref.read(personnelRepositoryProvider);
-                    await repo.updateUserPassword(
-                      kullaniciAdi: username,
-                      newPassword: newPass,
-                    );
-                    if (ctx.mounted) {
-                      Navigator.of(ctx).pop();
-                      AppNotifications.success(
-                        'Şifreniz başarıyla güncellendi!',
-                      );
-                    }
-                  }
-                },
-                child: const Text('GÜNCELLE'),
-              ),
-            ],
           );
         },
       );
@@ -184,8 +230,9 @@ class DashboardSettings {
                                     ),
                                   ],
                                   selected: {themeMode},
-                                  onSelectionChanged:
-                                      (Set<ThemeMode> selection) async {
+                                  onSelectionChanged: (
+                                    Set<ThemeMode> selection,
+                                  ) async {
                                     final newMode = selection.first;
                                     ref.read(themeModeProvider.notifier).state =
                                         newMode;
@@ -235,82 +282,87 @@ class DashboardSettings {
                               }
                             },
                           ),
-                          ListTile(
-                            leading: Icon(
-                              Icons.group_add,
-                              color: context.accentOrOlive,
-                            ),
-                            title: const Text("10'ar Test Personeli Ekle"),
-                            subtitle: const Text(
-                              'Her time 10 adet sahte personel oluşturur',
-                            ),
-                            onTap: () async {
-                              Navigator.pop(ctx);
-                              final repo = ref.read(
-                                personnelRepositoryProvider,
-                              );
-                              final count =
-                                  await repo.seedTestPersonnelPerSquad();
-                              if (context.mounted) {
-                                AppNotifications.success(
-                                  '$count adet test personeli başarıyla eklendi!',
-                                );
-                              }
-                            },
-                          ),
-                          ListTile(
-                            leading: Icon(
-                              Icons.delete_sweep,
-                              color: context.rejectedColor,
-                            ),
-                            title: Text(
-                              'Tüm Personelleri Sil (Sıfırla)',
-                              style: TextStyle(color: context.rejectedColor),
-                            ),
-                            subtitle: const Text(
-                              'Eklenen tüm personelleri temizler',
-                            ),
-                            onTap: () async {
-                              Navigator.pop(ctx);
-                              final confirm = await showDialog<bool>(
-                                context: context,
-                                builder: (dCtx) => AlertDialog(
-                                  title: const Text('Personelleri Sil'),
-                                  content: const Text(
-                                    'Veritabanındaki tüm personel kayıtları silinecektir. Emin misiniz?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(dCtx, false),
-                                      child: const Text('İPTAL'),
-                                    ),
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: context.rejectedColor,
-                                        foregroundColor: Colors.white,
-                                      ),
-                                      onPressed: () =>
-                                          Navigator.pop(dCtx, true),
-                                      child: const Text('SİL'),
-                                    ),
-                                  ],
-                                ),
-                              );
-
-                              if (confirm == true) {
+                          if (kDebugMode)
+                            ListTile(
+                              leading: Icon(
+                                Icons.group_add,
+                                color: context.accentOrOlive,
+                              ),
+                              title: const Text("10'ar Test Personeli Ekle"),
+                              subtitle: const Text(
+                                'Her time 10 adet sahte personel oluşturur',
+                              ),
+                              onTap: () async {
+                                Navigator.pop(ctx);
                                 final repo = ref.read(
                                   personnelRepositoryProvider,
                                 );
-                                await repo.deleteAllPersonnel();
+                                final count =
+                                    await repo.seedTestPersonnelPerSquad();
                                 if (context.mounted) {
-                                  AppNotifications.info(
-                                    'Tüm personel verileri temizlendi!',
+                                  AppNotifications.success(
+                                    '$count adet test personeli başarıyla eklendi!',
                                   );
                                 }
-                              }
-                            },
-                          ),
+                              },
+                            ),
+                          if (kDebugMode)
+                            ListTile(
+                              leading: Icon(
+                                Icons.delete_sweep,
+                                color: context.rejectedColor,
+                              ),
+                              title: Text(
+                                'Test Personellerini Temizle',
+                                style: TextStyle(color: context.rejectedColor),
+                              ),
+                              subtitle: const Text(
+                                'Yalnızca işaretlenmiş test personellerini temizler',
+                              ),
+                              onTap: () async {
+                                Navigator.pop(ctx);
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder:
+                                      (dCtx) => AlertDialog(
+                                        title: const Text('Personelleri Sil'),
+                                        content: const Text(
+                                          'Yalnızca test olarak işaretlenmiş personel kayıtları silinecektir. Emin misiniz?',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed:
+                                                () =>
+                                                    Navigator.pop(dCtx, false),
+                                            child: const Text('İPTAL'),
+                                          ),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  context.rejectedColor,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                            onPressed:
+                                                () => Navigator.pop(dCtx, true),
+                                            child: const Text('SİL'),
+                                          ),
+                                        ],
+                                      ),
+                                );
+
+                                if (confirm == true) {
+                                  final repo = ref.read(
+                                    personnelRepositoryProvider,
+                                  );
+                                  await repo.deleteAllPersonnel();
+                                  if (context.mounted) {
+                                    AppNotifications.info(
+                                      'İşaretlenmiş test personelleri temizlendi!',
+                                    );
+                                  }
+                                }
+                              },
+                            ),
                         ],
                         ListTile(
                           leading: Icon(

@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/utils/password_policy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -78,10 +79,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final db = ref.read(databaseProvider);
     var timId = user.timId;
     if (user.rol == 'tim_komutani' && timId == null) {
-      final squad = await (db.select(
-        db.timTable,
-      )..where((tbl) => tbl.timKomutaniId.equals(user.id)))
-          .getSingleOrNull();
+      final squad =
+          await (db.select(db.timTable)..where(
+            (tbl) => tbl.timKomutaniId.equals(user.id),
+          )).getSingleOrNull();
       timId = squad?.id;
     }
 
@@ -109,10 +110,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (username.isEmpty) return;
 
     final db = ref.read(databaseProvider);
-    final user = await (db.select(
-      db.kullaniciTable,
-    )..where((tbl) => tbl.kullaniciAdi.equals(username)))
-        .getSingleOrNull();
+    final user =
+        await (db.select(
+          db.kullaniciTable,
+        )..where((tbl) => tbl.kullaniciAdi.equals(username))).getSingleOrNull();
 
     if (user != null) {
       if (user.sifre.isEmpty) {
@@ -185,17 +186,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const SizedBox(height: 16),
                       Text(
                         'Nizam',
-                        style:
-                            Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: context.accentOrOlive,
-                                ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: context.accentOrOlive,
+                        ),
                         textAlign: TextAlign.center,
                       ),
-                      Text(
-                        'Görev Yönetimi',
-                        style: context.textStyleSecondary,
-                      ),
+                      Text('Görev Yönetimi', style: context.textStyleSecondary),
                       const SizedBox(height: 32),
                       TextField(
                         controller: _usernameController,
@@ -260,8 +259,8 @@ class _PasswordCreationDialogState extends State<_PasswordCreationDialog> {
     final password = _passwordController.text.trim();
     final confirmation = _confirmationController.text.trim();
 
-    if (password.length < 12) {
-      setState(() => _errorText = 'Parola en az 12 karakter olmalıdır.');
+    if (!PasswordPolicy.isValid(password)) {
+      setState(() => _errorText = PasswordPolicy.message);
       return;
     }
     if (password != confirmation) {

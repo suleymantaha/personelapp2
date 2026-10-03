@@ -15,6 +15,7 @@ class ParsedPersonnelItem {
     this.teamMismatch = false,
     this.reviewConfirmed = false,
     this.sourceLineNumber,
+    this.sourceTimeRanges = const [],
     int? stableOrder,
   }) : stableOrder = stableOrder ?? _nextStableOrder++;
   final int rawIndex;
@@ -28,6 +29,7 @@ class ParsedPersonnelItem {
   final bool teamMismatch;
   final bool reviewConfirmed;
   final int? sourceLineNumber;
+  final List<String> sourceTimeRanges;
   final int stableOrder;
 
   bool get isMatched => matchedPersonnelId != null;
@@ -47,6 +49,7 @@ class ParsedPersonnelItem {
     bool? teamMismatch,
     bool? reviewConfirmed,
     int? sourceLineNumber,
+    List<String>? sourceTimeRanges,
   }) {
     return ParsedPersonnelItem(
       rawIndex: rawIndex ?? this.rawIndex,
@@ -60,6 +63,7 @@ class ParsedPersonnelItem {
       teamMismatch: teamMismatch ?? this.teamMismatch,
       reviewConfirmed: reviewConfirmed ?? this.reviewConfirmed,
       sourceLineNumber: sourceLineNumber ?? this.sourceLineNumber,
+      sourceTimeRanges: sourceTimeRanges ?? this.sourceTimeRanges,
       stableOrder: stableOrder,
     );
   }
@@ -75,15 +79,17 @@ class ParsedActivityBlock {
     required this.parsedDate,
     required this.personnelList,
     this.parsedTimeRange,
+    this.taskTeamId,
     Object? identity,
     int? stableOrder,
-  })  : identity = identity ?? Object(),
-        stableOrder = stableOrder ?? _nextStableOrder++;
+  }) : identity = identity ?? Object(),
+       stableOrder = stableOrder ?? _nextStableOrder++;
   final String rawTitle;
   final String parsedTimName; // e.g. "6/B"
   final String
-      parsedActivityType; // e.g. "Gülüşkür", "Hazır Kıta", "Heybet", "İhtiyat"
+  parsedActivityType; // e.g. "Gülüşkür", "Hazır Kıta", "Heybet", "İhtiyat"
   final String parsedDate; // YYYY-AA-DD
+  final int? taskTeamId;
   final String? parsedTimeRange; // e.g. "08:00 - 19:30"
   final List<ParsedPersonnelItem> personnelList;
   final Object identity;
@@ -95,6 +101,8 @@ class ParsedActivityBlock {
     String? parsedActivityType,
     String? parsedDate,
     String? parsedTimeRange,
+    bool clearParsedTimeRange = false,
+    int? taskTeamId,
     List<ParsedPersonnelItem>? personnelList,
   }) {
     return ParsedActivityBlock(
@@ -102,7 +110,12 @@ class ParsedActivityBlock {
       parsedTimName: parsedTimName ?? this.parsedTimName,
       parsedActivityType: parsedActivityType ?? this.parsedActivityType,
       parsedDate: parsedDate ?? this.parsedDate,
-      parsedTimeRange: parsedTimeRange ?? this.parsedTimeRange,
+      parsedTimeRange: clearParsedTimeRange ? null : parsedTimeRange ?? this.parsedTimeRange,
+      taskTeamId:
+          taskTeamId ??
+          (parsedTimName == null || parsedTimName == this.parsedTimName
+              ? this.taskTeamId
+              : null),
       personnelList: personnelList ?? this.personnelList,
       identity: identity,
       stableOrder: stableOrder,

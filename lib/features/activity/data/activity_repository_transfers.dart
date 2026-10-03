@@ -10,34 +10,28 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
     _requireAdmin(actor);
     return db.transaction(() async {
       // Load both activities
-      final sourceActivity = await (db.select(db.gunlukFaaliyetTable)
-            ..where((tbl) => tbl.id.equals(sourceActivityId)))
-          .getSingleOrNull();
+      final sourceActivity =
+          await (db.select(
+            db.gunlukFaaliyetTable,
+          )..where((tbl) => tbl.id.equals(sourceActivityId))).getSingleOrNull();
       if (sourceActivity == null) {
         throw ArgumentError('Kaynak faaliyet bulunamadı: $sourceActivityId');
       }
-      final targetActivity = await (db.select(db.gunlukFaaliyetTable)
-            ..where((tbl) => tbl.id.equals(targetActivityId)))
-          .getSingleOrNull();
+      final targetActivity =
+          await (db.select(
+            db.gunlukFaaliyetTable,
+          )..where((tbl) => tbl.id.equals(targetActivityId))).getSingleOrNull();
       if (targetActivity == null) {
         throw ArgumentError('Hedef faaliyet bulunamadı: $targetActivityId');
       }
 
       // Find source assignments that belong to the given squad
-      final allSourceAssignments = await (db.select(
-        db.faaliyetPersonelAtamaTable,
-      )..where((tbl) => tbl.faaliyetId.equals(sourceActivityId)))
-          .get();
+      final allSourceAssignments =
+          await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((tbl) => tbl.faaliyetId.equals(sourceActivityId))).get();
 
-      // Filter by squadId via personnelTable
-      final squadPersonnel = await (db.select(db.personelTable)
-            ..where((tbl) => tbl.timId.equals(squadId)))
-          .get();
-      final squadPersonnelIds = squadPersonnel.map((p) => p.id).toSet();
-
-      final toTransfer = allSourceAssignments
-          .where((a) => squadPersonnelIds.contains(a.personelId))
-          .toList();
+      final toTransfer =
+          allSourceAssignments.where((a) => a.gorevTimId == squadId).toList();
 
       if (toTransfer.isEmpty) {
         return const SquadTransferResult(
@@ -59,14 +53,12 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
 
       for (final assignment in toTransfer) {
         // Check if the personnel already has an assignment in the target activity
-        final alreadyInTarget = await (db.select(
-          db.faaliyetPersonelAtamaTable,
-        )..where(
-                (tbl) =>
-                    tbl.faaliyetId.equals(targetActivityId) &
-                    tbl.personelId.equals(assignment.personelId),
-              ))
-            .getSingleOrNull();
+        final alreadyInTarget =
+            await (db.select(db.faaliyetPersonelAtamaTable)..where(
+              (tbl) =>
+                  tbl.faaliyetId.equals(targetActivityId) &
+                  tbl.personelId.equals(assignment.personelId),
+            )).getSingleOrNull();
         if (alreadyInTarget != null) {
           // Personnel already assigned to target; skip to avoid duplicate
           skippedPersonnelIds.add(assignment.personelId);
@@ -87,17 +79,19 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
 
         // Delete from source
         await (db.delete(db.faaliyetPersonelAtamaTable)
-              ..where((tbl) => tbl.id.equals(assignment.id)))
-            .go();
+          ..where((tbl) => tbl.id.equals(assignment.id))).go();
 
         // Insert into target
-        await db.into(db.faaliyetPersonelAtamaTable).insert(
-              FaaliyetPersonelAtamaTableCompanion.insert(
+        await db
+            .into(db.faaliyetPersonelAtamaTable)
+            .insert(
+              await _newAssignment(
                 faaliyetId: targetActivityId,
                 personelId: assignment.personelId,
                 gorevVeyaIzin: assignment.gorevVeyaIzin,
                 durum: status,
                 aciklama: Value(assignment.aciklama),
+                sourceAssignment: assignment,
               ),
             );
         movedCount++;
@@ -125,9 +119,10 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
       throw ArgumentError.value(activityName, 'activityName', 'Boş olamaz.');
     }
     return db.transaction(() async {
-      final source = await (db.select(db.gunlukFaaliyetTable)
-            ..where((table) => table.id.equals(sourceActivityId)))
-          .getSingleOrNull();
+      final source =
+          await (db.select(db.gunlukFaaliyetTable)..where(
+            (table) => table.id.equals(sourceActivityId),
+          )).getSingleOrNull();
       if (source == null) {
         throw ArgumentError('Kaynak faaliyet bulunamadı: $sourceActivityId');
       }
@@ -148,8 +143,7 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
       );
       if (result.movedCount == 0) {
         await (db.delete(db.gunlukFaaliyetTable)
-              ..where((table) => table.id.equals(targetId)))
-            .go();
+          ..where((table) => table.id.equals(targetId))).go();
       }
       return result;
     });
@@ -172,29 +166,29 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
     _requireAdmin(actor);
     return db.transaction(() async {
       // 1. Kaynak atamayı yükle
-      final assignment = await (db.select(db.faaliyetPersonelAtamaTable)
-            ..where((tbl) => tbl.id.equals(assignmentId)))
-          .getSingleOrNull();
+      final assignment =
+          await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((tbl) => tbl.id.equals(assignmentId))).getSingleOrNull();
       if (assignment == null) {
         throw ArgumentError('Atama bulunamadı: $assignmentId');
       }
 
       // 2. Hedef faaliyeti yükle
-      final target = await (db.select(db.gunlukFaaliyetTable)
-            ..where((tbl) => tbl.id.equals(targetActivityId)))
-          .getSingleOrNull();
+      final target =
+          await (db.select(
+            db.gunlukFaaliyetTable,
+          )..where((tbl) => tbl.id.equals(targetActivityId))).getSingleOrNull();
       if (target == null) {
         throw ArgumentError('Hedef faaliyet bulunamadı: $targetActivityId');
       }
 
       // 3. Hedefte zaten var mı?
-      final alreadyInTarget = await (db.select(db.faaliyetPersonelAtamaTable)
-            ..where(
-              (tbl) =>
-                  tbl.faaliyetId.equals(targetActivityId) &
-                  tbl.personelId.equals(assignment.personelId),
-            ))
-          .getSingleOrNull();
+      final alreadyInTarget =
+          await (db.select(db.faaliyetPersonelAtamaTable)..where(
+            (tbl) =>
+                tbl.faaliyetId.equals(targetActivityId) &
+                tbl.personelId.equals(assignment.personelId),
+          )).getSingleOrNull();
       if (alreadyInTarget != null) {
         return const PersonnelTransferResult(
           moved: false,
@@ -216,16 +210,18 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
 
       // 5. Sil & ekle
       await (db.delete(db.faaliyetPersonelAtamaTable)
-            ..where((tbl) => tbl.id.equals(assignment.id)))
-          .go();
+        ..where((tbl) => tbl.id.equals(assignment.id))).go();
 
-      await db.into(db.faaliyetPersonelAtamaTable).insert(
-            FaaliyetPersonelAtamaTableCompanion.insert(
+      await db
+          .into(db.faaliyetPersonelAtamaTable)
+          .insert(
+            await _newAssignment(
               faaliyetId: targetActivityId,
               personelId: assignment.personelId,
               gorevVeyaIzin: assignment.gorevVeyaIzin,
               durum: status,
               aciklama: Value(assignment.aciklama),
+              sourceAssignment: assignment,
             ),
           );
 
@@ -246,18 +242,21 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
       throw ArgumentError.value(activityName, 'activityName', 'Boş olamaz.');
     }
     return db.transaction(() async {
-      final assignment = await (db.select(db.faaliyetPersonelAtamaTable)
-            ..where((table) => table.id.equals(assignmentId)))
-          .getSingleOrNull();
+      final assignment =
+          await (db.select(
+            db.faaliyetPersonelAtamaTable,
+          )..where((table) => table.id.equals(assignmentId))).getSingleOrNull();
       if (assignment == null) {
         throw ArgumentError('Atama bulunamadı: $assignmentId');
       }
-      final source = await (db.select(db.gunlukFaaliyetTable)
-            ..where((table) => table.id.equals(assignment.faaliyetId)))
-          .getSingleOrNull();
+      final source =
+          await (db.select(db.gunlukFaaliyetTable)..where(
+            (table) => table.id.equals(assignment.faaliyetId),
+          )).getSingleOrNull();
       if (source == null) {
         throw ArgumentError(
-            'Kaynak faaliyet bulunamadı: ${assignment.faaliyetId}');
+          'Kaynak faaliyet bulunamadı: ${assignment.faaliyetId}',
+        );
       }
       final targetId = await _createActivityWithinTransaction(
         ActivityCreateRequest(
@@ -289,7 +288,8 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
       var day = DateTime.parse(raporBaslangic);
       final lastDay = DateTime.parse(raporBitis);
       while (!day.isAfter(lastDay)) {
-        final date = '${day.year.toString().padLeft(4, '0')}-'
+        final date =
+            '${day.year.toString().padLeft(4, '0')}-'
             '${day.month.toString().padLeft(2, '0')}-'
             '${day.day.toString().padLeft(2, '0')}';
         final status = ConflictChecker.evaluateAssignmentStatus(
@@ -307,7 +307,9 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
         }
         day = day.add(const Duration(days: 1));
       }
-      return db.into(db.raporKayitTable).insert(
+      return db
+          .into(db.raporKayitTable)
+          .insert(
             RaporKayitTableCompanion.insert(
               personelId: personelId,
               raporBaslangic: raporBaslangic,

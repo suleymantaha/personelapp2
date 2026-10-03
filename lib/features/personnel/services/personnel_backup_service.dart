@@ -38,6 +38,8 @@ class PersonnelBackupService {
               'rutbe': p.rutbe,
               'birlik': p.birlik,
               'telefon': p.telefon,
+              'aktif': p.aktif,
+              'isDemo': p.isDemo,
               'timId': p.timId,
               'kayitTarihi': p.kayitTarihi,
             },
@@ -143,6 +145,8 @@ class PersonnelBackupService {
           final newPersonnelId = await db.into(db.personelTable).insert(
                 PersonelTableCompanion.insert(
                   adSoyad: adSoyad,
+                  aktif: Value(p['aktif'] as bool? ?? true),
+                  isDemo: Value(p['isDemo'] as bool? ?? false),
                   rutbe: rutbe,
                   birlik: birlik,
                   telefon: Value(

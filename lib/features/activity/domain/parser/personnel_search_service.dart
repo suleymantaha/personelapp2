@@ -81,7 +81,7 @@ class PersonnelSearchService {
             ));
         final results = fuzzy.search(cleanQuery);
         if (results.isNotEmpty) {
-          score = results.first.score * 0.8; // Weight fuzzy match lower
+          score = (1 - results.first.score).clamp(0.0, 1.0).toDouble() * 0.8; // Weight fuzzy match lower
         }
       }
       // 6. Token overlap (partial match)
@@ -117,7 +117,14 @@ class PersonnelSearchService {
     // Sort by score descending
     scoredResults.sort((a, b) => b.score.compareTo(a.score));
 
-    return scoredResults.take(maxResults).map((s) => s.personnel).toList();
+    // Prefer direct matches while typing. Approximate candidates are a fallback
+    // when no name, rank or unit matches the entered text directly.
+    final hasDirectMatch = scoredResults.any((result) => result.score >= 0.9);
+    return scoredResults
+        .where((result) => !hasDirectMatch || result.score >= 0.9)
+        .take(maxResults)
+        .map((result) => result.personnel)
+        .toList();
   }
 
   static double _jaroWinklerStatic(String s1, String s2) {

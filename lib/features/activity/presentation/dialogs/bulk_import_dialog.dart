@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,11 +54,14 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   final TextEditingController _textController = TextEditingController();
   List<ParsedActivityBlock> _parsedBlocks = [];
   List<BulkParseIssue> _parseIssues = [];
+  // Preserve source rows that never became editable card fields until reparse.
+  List<BulkParseIssue> _sourceParseIssues = [];
   List<PersonelTableData> _allPersonnel = [];
   List<TimTableData> _allSquads = [];
   bool _isParsing = false;
   bool _isSaving = false;
   int _deduplicatedPersonnelCount = 0;
+  int _ignoredLineCount = 0;
   bool _keepAuditText = false;
   bool _keepAuditTextChanged = false;
   bool _parseIssuesExpanded = false;
@@ -99,8 +103,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       });
       return;
     }
-    final index =
-        _activeIssueFocusIndex < 0 ? 0 : _activeIssueFocusIndex % locs.length;
+    final index = _activeIssueFocusIndex < 0
+        ? 0
+        : _activeIssueFocusIndex % locs.length;
     _focusProblemAtIndex(locs, index);
   }
 
@@ -116,8 +121,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     }
     final index =
         _activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length
-            ? 0
-            : (_activeIssueFocusIndex + 1) % locs.length;
+        ? 0
+        : (_activeIssueFocusIndex + 1) % locs.length;
     _focusProblemAtIndex(locs, index);
   }
 
@@ -133,8 +138,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     }
     final index =
         _activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length
-            ? locs.length - 1
-            : (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
+        ? locs.length - 1
+        : (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
     _focusProblemAtIndex(locs, index);
   }
 
@@ -173,19 +178,72 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }
 
   void _updateState(VoidCallback callback) {
+    final focus = _focusedIssue;
+    final focusedBlock =
+        focus != null && focus.blockIndex < _parsedBlocks.length
+        ? _parsedBlocks[focus.blockIndex]
+        : null;
+    final personIndex = focus?.personIndex;
+    final focusedPersonOrder =
+        focusedBlock != null &&
+            personIndex != null &&
+            personIndex < focusedBlock.personnelList.length
+        ? focusedBlock.personnelList[personIndex].stableOrder
+        : null;
     setState(() {
       callback();
       _syncParseIssuesWithBlocks();
+      _syncIssueFocus(focusedBlock?.identity, focusedPersonOrder);
     });
   }
 
-  void _syncParseIssuesWithBlocks() {
-    if (_parsedBlocks.isEmpty) {
-      _parseIssues = [];
+  void _syncIssueFocus(Object? blockIdentity, int? personOrder) {
+    final focus = _focusedIssue;
+    if (focus == null) return;
+    final locations = _getProblemLocations();
+    final index = locations.indexWhere((location) {
+      final block = _parsedBlocks[location.blockIndex];
+      if (!identical(block.identity, blockIdentity)) return false;
+      if (focus.isCard) return location.personIndex == null;
+      final personIndex = location.personIndex;
+      return personIndex != null &&
+          block.personnelList[personIndex].stableOrder == personOrder;
+    });
+    if (index < 0) {
+      _focusedIssue = null;
+      _activeIssueFocusIndex = -1;
+      if (locations.isEmpty && _previewFilter == _BulkPreviewFilter.problems) {
+        _previewFilter = _BulkPreviewFilter.all;
+      }
       return;
     }
+    final location = locations[index];
+    _activeIssueFocusIndex = index;
+    if (focus.blockIndex != location.blockIndex ||
+        focus.personIndex != location.personIndex ||
+        focus.isCritical != location.isCritical) {
+      _focusedIssue = location.toFocus();
+    }
+  }
 
-    final newIssues = <BulkParseIssue>[];
+  void _syncParseIssuesWithBlocks() {
+    final newIssues = _sourceParseIssues.where((issue) {
+      if (issue.code == 'no_blocks' || issue.code == 'empty_input') {
+        return _parsedBlocks.isEmpty;
+      }
+      if (issue.code == 'unknown_rank') {
+        // An identified personnel record supplies the missing/unknown rank.
+        return !_parsedBlocks.any(
+          (block) => block.personnelList.any(
+            (person) =>
+                person.sourceLineNumber == issue.lineNumber &&
+                person.isMatched &&
+                (person.matchedRutbe?.trim().isNotEmpty ?? false),
+          ),
+        );
+      }
+      return true;
+    }).toList();
 
     for (var i = 0; i < _parsedBlocks.length; i++) {
       final block = _parsedBlocks[i];
@@ -265,6 +323,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       _cardKeys.clear();
       _personKeys.clear();
       _previewFilter = filter;
+      _focusedIssue = null;
+      _activeIssueFocusIndex = -1;
       if (filter == _BulkPreviewFilter.problems &&
           _parseIssues.any((issue) => issue.isBlocking)) {
         _parseIssuesExpanded = true;
@@ -281,8 +341,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }
 
   Future<void> _loadPersonnel() async {
-    final list =
-        await widget.database.select(widget.database.personelTable).get();
+    final list = await widget.database
+        .select(widget.database.personelTable)
+        .get();
     final squads = await widget.database.select(widget.database.timTable).get();
     if (!mounted) return;
     setState(() {
@@ -312,83 +373,94 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     final mediaQuery = MediaQuery.of(context);
     final isKeyboardVisible = mediaQuery.viewInsets.bottom > 0;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 600;
-        final borderRadius = isMobile ? 0.0 : 20.0;
-        return Dialog(
-          insetPadding: isMobile
-              ? EdgeInsets.zero
-              : EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: isKeyboardVisible ? 8 : 32,
-                ),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(borderRadius)),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(borderRadius),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: isMobile ? mediaQuery.size.width : 1180,
-                maxHeight: isMobile
-                    ? mediaQuery.size.height
-                    : mediaQuery.size.height * 0.9,
+    return PopScope(
+      canPop: !_isSaving,
+      child: AbsorbPointer(
+        absorbing: _isSaving,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            final borderRadius = isMobile ? 0.0 : 20.0;
+            return Dialog(
+              insetPadding: isMobile
+                  ? EdgeInsets.zero
+                  : EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: isKeyboardVisible ? 8 : 32,
+                    ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(borderRadius),
               ),
-              child: SizedBox(
-                width: isMobile
-                    ? mediaQuery.size.width
-                    : constraints.maxWidth * 0.85,
-                height: isMobile ? mediaQuery.size.height : double.infinity,
-                child: SafeArea(
-                  top: isMobile,
-                  bottom: isMobile,
-                  child: ColoredBox(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    child: TurkishFlagWatermarkBackground(
-                      child: Column(
-                        children: [
-                          BulkImportHeaderBanner(
-                            isKeyboardVisible: isKeyboardVisible,
-                            onOpenMemory: () => LearnedAliasesDialog.show(
-                              context,
-                              widget.database,
-                            ),
-                            onClose: () => Navigator.pop(context),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(borderRadius),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: isMobile ? mediaQuery.size.width : 1180,
+                    maxHeight: isMobile
+                        ? mediaQuery.size.height
+                        : mediaQuery.size.height * 0.9,
+                  ),
+                  child: SizedBox(
+                    width: isMobile
+                        ? mediaQuery.size.width
+                        : constraints.maxWidth * 0.85,
+                    height: isMobile ? mediaQuery.size.height : double.infinity,
+                    child: SafeArea(
+                      top: isMobile,
+                      bottom: isMobile,
+                      child: ColoredBox(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        child: TurkishFlagWatermarkBackground(
+                          child: Column(
+                            children: [
+                              BulkImportHeaderBanner(
+                                isKeyboardVisible: isKeyboardVisible,
+                                onOpenMemory: () => LearnedAliasesDialog.show(
+                                  context,
+                                  widget.database,
+                                ),
+                                onClose: _isSaving
+                                    ? null
+                                    : () => Navigator.pop(context),
+                              ),
+                              BulkImportStepper(
+                                currentStep: _currentStep,
+                                hasBlocks: _parsedBlocks.isNotEmpty,
+                                canProceedToSave: _canProceedToSave,
+                                onStepTapped: (int step) {
+                                  if (step <= _currentStep ||
+                                      (step == 1 && _parsedBlocks.isNotEmpty) ||
+                                      (step == 2 && _canProceedToSave)) {
+                                    setState(() => _currentStep = step);
+                                  }
+                                },
+                              ),
+                              Expanded(
+                                child: isMobile
+                                    ? _buildMobileBody(isKeyboardVisible)
+                                    : _buildDesktopBody(isKeyboardVisible),
+                              ),
+                            ],
                           ),
-                          BulkImportStepper(
-                            currentStep: _currentStep,
-                            hasBlocks: _parsedBlocks.isNotEmpty,
-                            canProceedToSave: _canProceedToSave,
-                            onStepTapped: (int step) {
-                              if (step <= _currentStep ||
-                                  (step == 1 && _parsedBlocks.isNotEmpty) ||
-                                  (step == 2 && _canProceedToSave)) {
-                                setState(() => _currentStep = step);
-                              }
-                            },
-                          ),
-                          Expanded(
-                            child: isMobile
-                                ? _buildMobileBody(isKeyboardVisible)
-                                : _buildDesktopBody(isKeyboardVisible),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 
   Widget _buildMobileBody(bool isKeyboardVisible) {
     return switch (_currentStep) {
       0 => _buildInputSection(
-          isMobile: true, isKeyboardVisible: isKeyboardVisible),
+        isMobile: true,
+        isKeyboardVisible: isKeyboardVisible,
+      ),
       1 => _buildPreviewSection(isMobile: true),
       _ => _buildConfirmStep(isMobile: true),
     };
@@ -442,25 +514,30 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       .any((p) => p.hasWarning && p.isMatched && p.matchedPersonnelId != null);
 
   Future<void> _confirmPersonnelSuggestion(
-      int blockIndex, int personIndex) async {
+    int blockIndex,
+    int personIndex,
+  ) async {
     final currentBlock = _parsedBlocks[blockIndex];
     final item = currentBlock.personnelList[personIndex];
     if (!item.isMatched || item.matchedPersonnelId == null) return;
 
     setState(() {
-      final updatedList =
-          List<ParsedPersonnelItem>.from(currentBlock.personnelList);
+      final updatedList = List<ParsedPersonnelItem>.from(
+        currentBlock.personnelList,
+      );
       updatedList[personIndex] = updatedList[personIndex].copyWith(
         matchConfidence: 1.0,
         teamMismatch: false,
         reviewConfirmed: true,
       );
-      _parsedBlocks[blockIndex] =
-          currentBlock.copyWith(personnelList: updatedList);
+      _parsedBlocks[blockIndex] = currentBlock.copyWith(
+        personnelList: updatedList,
+      );
     });
 
     await BulkImportLearningService(widget.database).rememberAlias(
       rawName: item.rawName,
+      teamName: currentBlock.parsedTimName,
       personnelId: item.matchedPersonnelId!,
     );
   }
@@ -470,6 +547,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     final problemLocs = _getProblemLocations();
     return BulkImportPreviewSection(
       blocks: _parsedBlocks,
+      ignoredLineCount: _ignoredLineCount,
       issues: _parseIssues,
       duplicates: duplicates,
       allSquads: _allSquads,
@@ -486,9 +564,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       isSaving: _isSaving,
       problemLocations: problemLocs,
       onClearAll: _confirmClearAll,
-      onToggleParseIssues: () => setState(
-        () => _parseIssuesExpanded = !_parseIssuesExpanded,
-      ),
+      onToggleParseIssues: () =>
+          setState(() => _parseIssuesExpanded = !_parseIssuesExpanded),
       onStartWizard: problemLocs.isEmpty ? null : _focusCurrentProblem,
       onFocusPrevious: _focusPreviousProblem,
       onFocusNext: _focusNextProblem,
@@ -501,8 +578,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       onRemovePerson: _removePerson,
       onConfirmPersonnelSuggestion: _confirmPersonnelSuggestion,
       onAddNewPersonnel: _quickAddNewPersonnelToTim,
-      onConfirmAllSuggestions:
-          _hasReviewableSuggestions ? _confirmAllSuggestions : null,
+      onConfirmAllSuggestions: _hasReviewableSuggestions
+          ? _confirmAllSuggestions
+          : null,
       onSave: _saveAllToFaaliyet,
     );
   }

@@ -257,4 +257,52 @@ Veli SAĞLAM
     expect(find.text('Kaydedilemiyor'), findsNothing);
     expect(find.byKey(const Key('bulk-import-save-button')), findsOneWidget);
   });
+  testWidgets(
+    'son isim sorunu düzeltilince tüm kartlar yeniden incelenebilir',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: BulkImportDialog(
+                database: database,
+                activityRepository: ActivityRepository(database),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextField).first,
+        "6/B Heybet Listesi\n25.07.2026\n1- J.Uzm.Çvş. Mehmet BİLİNMEYEN\n6/B Devriye Listesi\n25.07.2026\n1- J.Uzm.Çvş. Veli SAĞLAM",
+      );
+      await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('bulk-goto-problem')));
+      await tester.pumpAndSettle();
+      final select = find.byKey(const Key('bulk-person-select-btn')).first;
+      await tester.ensureVisible(select);
+      await tester.tap(select);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('personnel-search-field')), 'Ali');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('personnel-option-1')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('bulk-focused-person-badge')), findsNothing);
+      final second = find.byKey(const Key('bulk-card-header-1'));
+      expect(second, findsOneWidget);
+      await tester.ensureVisible(second);
+      await tester.tap(second);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Veli SAĞLAM'), findsWidgets);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 10));
+      await tester.pump(const Duration(milliseconds: 10));
+    },
+  );
 }

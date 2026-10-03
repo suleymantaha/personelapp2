@@ -6,7 +6,8 @@ class KullaniciTable extends Table {
   TextColumn get kullaniciAdi => text().unique()();
   TextColumn get sifre => text().withDefault(const Constant(''))();
   TextColumn get rol => text()(); // 'yönetici' veya 'tim_komutani'
-  IntColumn get timId => integer().nullable().references(
+  IntColumn get timId =>
+      integer().nullable().references(
         TimTable,
         #id,
         onDelete: KeyAction.setNull,
@@ -17,7 +18,8 @@ class KullaniciTable extends Table {
 class TimTable extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get timAdi => text()();
-  IntColumn get timKomutaniId => integer().nullable().references(
+  IntColumn get timKomutaniId =>
+      integer().nullable().references(
         KullaniciTable,
         #id,
         onDelete: KeyAction.setNull,
@@ -27,12 +29,15 @@ class TimTable extends Table {
 
 /// 3. Personel Tablosu
 class PersonelTable extends Table {
+  BoolColumn get aktif => boolean().withDefault(const Constant(true))();
+  BoolColumn get isDemo => boolean().withDefault(const Constant(false))();
   IntColumn get id => integer().autoIncrement()();
   TextColumn get adSoyad => text()();
   TextColumn get rutbe => text()();
   TextColumn get birlik => text()();
   TextColumn get telefon => text().nullable()();
-  IntColumn get timId => integer().nullable().references(
+  IntColumn get timId =>
+      integer().nullable().references(
         TimTable,
         #id,
         onDelete: KeyAction.setNull,
@@ -51,8 +56,16 @@ class GunlukFaaliyetTable extends Table {
 
 /// 5. Faaliyet-Personel Atama Tablosu
 class FaaliyetPersonelAtamaTable extends Table {
+  IntColumn get gorevTimId =>
+      integer().nullable().references(
+        TimTable,
+        #id,
+        onDelete: KeyAction.setNull,
+      )();
+  TextColumn get gorevTimAdi => text().nullable()();
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get faaliyetId => integer().references(
+  IntColumn get faaliyetId =>
+      integer().references(
         GunlukFaaliyetTable,
         #id,
         onDelete: KeyAction.cascade,

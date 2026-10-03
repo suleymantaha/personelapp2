@@ -11,10 +11,7 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 
 class PersonnelFormDialog extends ConsumerStatefulWidget {
-  const PersonnelFormDialog({
-    super.key,
-    this.personnelToEdit,
-  });
+  const PersonnelFormDialog({super.key, this.personnelToEdit});
 
   final PersonelTableData? personnelToEdit;
 
@@ -31,6 +28,8 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
 
   String? _selectedRank;
   int? _selectedSquadId;
+
+  bool _saving = false;
 
   bool get _isEditing => widget.personnelToEdit != null;
 
@@ -67,6 +66,7 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
   }
 
   Future<void> _onSave() async {
+    if (_saving) return;
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       AppNotifications.warning('Lütfen ad soyad giriniz.');
@@ -96,33 +96,42 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
 
     final repo = ref.read(personnelRepositoryProvider);
 
-    if (_isEditing) {
-      final p = widget.personnelToEdit!;
-      await repo.updatePersonnel(
-        p.copyWith(
+    setState(() => _saving = true);
+    try {
+      if (_isEditing) {
+        final p = widget.personnelToEdit!;
+        await repo.updatePersonnel(
+          p.copyWith(
+            adSoyad: name,
+            rutbe: finalRank.isEmpty ? 'J.Er' : finalRank,
+            birlik: birlik,
+            telefon: Value(
+              _phoneController.text.trim().isEmpty
+                  ? null
+                  : _phoneController.text.trim(),
+            ),
+            timId: Value(_selectedSquadId),
+          ),
+        );
+      } else {
+        await repo.addPersonnel(
           adSoyad: name,
           rutbe: finalRank.isEmpty ? 'J.Er' : finalRank,
           birlik: birlik,
-          telefon: Value(_phoneController.text.trim().isEmpty
+          timId: _selectedSquadId,
+          kayitTarihi: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+          telefon: _phoneController.text.trim().isEmpty
               ? null
-              : _phoneController.text.trim()),
-          timId: Value(_selectedSquadId),
-        ),
-      );
-    } else {
-      await repo.addPersonnel(
-        adSoyad: name,
-        rutbe: finalRank.isEmpty ? 'J.Er' : finalRank,
-        birlik: birlik,
-        timId: _selectedSquadId,
-        kayitTarihi: DateFormat('yyyy-MM-dd').format(DateTime.now()),
-        telefon: _phoneController.text.trim().isEmpty
-            ? null
-            : _phoneController.text.trim(),
-      );
-    }
+              : _phoneController.text.trim(),
+        );
+      }
 
-    if (mounted) Navigator.of(context).pop();
+      if (mounted) Navigator.of(context).pop();
+    } catch (error) {
+      if (mounted) AppNotifications.error('Personel kaydedilemedi: $error');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -130,162 +139,176 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
     final squadsAsync = ref.watch(allSquadsProvider);
     final p = widget.personnelToEdit;
 
-    return AlertDialog(
-      title: Text(
-        _isEditing
-            ? '${p?.rutbe} ${p?.adSoyad} - Düzenle'
-            : 'Yeni Personel Ekle',
-      ),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Ad Soyad'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              key: const Key('personnel-phone-field'),
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Telefon',
-                hintText: '533 158 35 97',
-                prefixIcon: Icon(Icons.phone_outlined),
-              ),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              menuMaxHeight: modernDropdownMenuMaxHeight(context),
-              borderRadius: modernDropdownBorderRadius,
-              dropdownColor: modernDropdownColor(context),
-              initialValue: _selectedRank,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Rütbe Seçiniz'),
-              items: [
-                ...kAskeriRutbeler.map(
-                  (r) => DropdownMenuItem(value: r, child: Text(r)),
+    return PopScope(
+      canPop: !_saving,
+      child: AbsorbPointer(
+        absorbing: _saving,
+        child: AlertDialog(
+          title: Text(
+            _isEditing
+                ? '${p?.rutbe} ${p?.adSoyad} - Düzenle'
+                : 'Yeni Personel Ekle',
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: 'Ad Soyad'),
                 ),
-                const DropdownMenuItem(
-                  value: 'DİĞER / ÖZEL RÜTBE',
-                  child: Text('DİĞER / ÖZEL RÜTBE (Elle Gir)'),
-                ),
-              ],
-              onChanged: (val) {
-                setState(() => _selectedRank = val);
-              },
-            ),
-            if (_selectedRank == 'DİĞER / ÖZEL RÜTBE') ...[
-              const SizedBox(height: 12),
-              TextField(
-                controller: _customRankController,
-                decoration: const InputDecoration(
-                  labelText: 'Özel Rütbe Metni',
-                  hintText: 'Örn: J.Uz.Çvş. (Kıd.Kd.Çvş)',
-                ),
-              ),
-            ],
-            const SizedBox(height: 12),
-            squadsAsync.when(
-              data: (squads) => DropdownButtonFormField<int?>(
-                menuMaxHeight: modernDropdownMenuMaxHeight(context),
-                borderRadius: modernDropdownBorderRadius,
-                dropdownColor: modernDropdownColor(context),
-                initialValue: _selectedSquadId,
-                isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Bağlı Olduğu Tim',
-                ),
-                items: [
-                  const DropdownMenuItem<int?>(
-                    child: Text('Bağımsız / Tim Dışı'),
+                const SizedBox(height: 12),
+                TextField(
+                  key: const Key('personnel-phone-field'),
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: 'Telefon',
+                    hintText: '533 158 35 97',
+                    prefixIcon: Icon(Icons.phone_outlined),
                   ),
-                  ...squads.map(
-                    (sq) => DropdownMenuItem<int?>(
-                      value: sq.id,
-                      child: Text(
-                        '${sq.timAdi} (${MilitaryStructureHelper.getBolukName(sq.timAdi)})',
-                      ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  menuMaxHeight: modernDropdownMenuMaxHeight(context),
+                  borderRadius: modernDropdownBorderRadius,
+                  dropdownColor: modernDropdownColor(context),
+                  initialValue: _selectedRank,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Rütbe Seçiniz'),
+                  items: [
+                    ...kAskeriRutbeler.map(
+                      (r) => DropdownMenuItem(value: r, child: Text(r)),
+                    ),
+                    const DropdownMenuItem(
+                      value: 'DİĞER / ÖZEL RÜTBE',
+                      child: Text('DİĞER / ÖZEL RÜTBE (Elle Gir)'),
+                    ),
+                  ],
+                  onChanged: (val) {
+                    setState(() => _selectedRank = val);
+                  },
+                ),
+                if (_selectedRank == 'DİĞER / ÖZEL RÜTBE') ...[
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _customRankController,
+                    decoration: const InputDecoration(
+                      labelText: 'Özel Rütbe Metni',
+                      hintText: 'Örn: J.Uz.Çvş. (Kıd.Kd.Çvş)',
                     ),
                   ),
                 ],
-                onChanged: (val) {
-                  setState(() => _selectedSquadId = val);
-                },
-              ),
-              loading: () => const CircularProgressIndicator(),
-              error: (err, st) => Text('Timler yüklenemedi: $err'),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _unitController,
+                const SizedBox(height: 12),
+                squadsAsync.when(
+                  data: (squads) => DropdownButtonFormField<int?>(
+                    menuMaxHeight: modernDropdownMenuMaxHeight(context),
+                    borderRadius: modernDropdownBorderRadius,
+                    dropdownColor: modernDropdownColor(context),
+                    initialValue: _selectedSquadId,
+                    isExpanded: true,
                     decoration: const InputDecoration(
-                      labelText: 'Birlik / Bölük',
-                      hintText: "Örn: 1'inci Bl.",
+                      labelText: 'Bağlı Olduğu Tim',
                     ),
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.arrow_drop_down),
-                  tooltip: 'Birlik seç',
-                  elevation: 5,
-                  shadowColor: context.shadowColor,
-                  surfaceTintColor: context.colorScheme.surface,
-                  shape: modernPopupShape(context),
-                  constraints:
-                      const BoxConstraints(minWidth: 250, maxWidth: 300),
-                  onSelected: (val) {
-                    _unitController.text = val;
-                  },
-                  itemBuilder: (ctx) => [
-                    const ModernMenuHeader<String>(
-                      title: 'Birlik seç',
-                      subtitle: 'Sık kullanılan birlikler',
-                      icon: Icons.domain_outlined,
-                    ),
-                    const PopupMenuDivider(),
-                    ...const [
-                      "1'inci Bl.",
-                      "2'nci Bl.",
-                      "3'üncü Bl.",
-                      "1'inci Bl. K.H",
-                      "2'nci Bl. K.H",
-                      "3'üncü Bl. K.H",
-                      'K.H',
-                    ].map(
-                      (unit) => ModernPopupMenuItem(
-                        option: ModernActionOption(
-                          value: unit,
-                          title: unit,
-                          icon: Icons.business_outlined,
+                    items: [
+                      const DropdownMenuItem<int?>(
+                        child: Text('Bağımsız / Tim Dışı'),
+                      ),
+                      ...squads.map(
+                        (sq) => DropdownMenuItem<int?>(
+                          value: sq.id,
+                          child: Text(
+                            '${sq.timAdi} (${MilitaryStructureHelper.getBolukName(sq.timAdi)})',
+                          ),
                         ),
                       ),
+                    ],
+                    onChanged: (val) {
+                      setState(() => _selectedSquadId = val);
+                    },
+                  ),
+                  loading: () => const CircularProgressIndicator(),
+                  error: (err, st) => Text('Timler yüklenemedi: $err'),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _unitController,
+                        decoration: const InputDecoration(
+                          labelText: 'Birlik / Bölük',
+                          hintText: "Örn: 1'inci Bl.",
+                        ),
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.arrow_drop_down),
+                      tooltip: 'Birlik seç',
+                      elevation: 5,
+                      shadowColor: context.shadowColor,
+                      surfaceTintColor: context.colorScheme.surface,
+                      shape: modernPopupShape(context),
+                      constraints: const BoxConstraints(
+                        minWidth: 250,
+                        maxWidth: 300,
+                      ),
+                      onSelected: (val) {
+                        _unitController.text = val;
+                      },
+                      itemBuilder: (ctx) => [
+                        const ModernMenuHeader<String>(
+                          title: 'Birlik seç',
+                          subtitle: 'Sık kullanılan birlikler',
+                          icon: Icons.domain_outlined,
+                        ),
+                        const PopupMenuDivider(),
+                        ...const [
+                          "1'inci Bl.",
+                          "2'nci Bl.",
+                          "3'üncü Bl.",
+                          "1'inci Bl. K.H",
+                          "2'nci Bl. K.H",
+                          "3'üncü Bl. K.H",
+                          'K.H',
+                        ].map(
+                          (unit) => ModernPopupMenuItem(
+                            option: ModernActionOption(
+                              value: unit,
+                              title: unit,
+                              icon: Icons.business_outlined,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ],
             ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: _saving ? null : () => Navigator.of(context).pop(),
+              child: const Text('İPTAL'),
+            ),
+            ElevatedButton(
+              onPressed: _saving ? null : _onSave,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.accentOrOlive,
+                foregroundColor: context.onAccentOrOlive,
+              ),
+              child: Text(
+                _saving
+                    ? 'KAYDEDİLİYOR…'
+                    : _isEditing
+                    ? 'GÜNCELLE'
+                    : 'KAYDET',
+              ),
+            ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('İPTAL'),
-        ),
-        ElevatedButton(
-          onPressed: _onSave,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: context.accentOrOlive,
-            foregroundColor: context.onAccentOrOlive,
-          ),
-          child: Text(_isEditing ? 'GÜNCELLE' : 'KAYDET'),
-        ),
-      ],
     );
   }
 }

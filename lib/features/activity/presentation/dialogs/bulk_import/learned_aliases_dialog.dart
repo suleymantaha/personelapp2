@@ -76,7 +76,10 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
             child: const Text('İPTAL'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            style: FilledButton.styleFrom(
+              backgroundColor: context.rejectedColor,
+              foregroundColor: context.onStatusColor(context.rejectedColor),
+            ),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('SİL'),
           ),
@@ -152,12 +155,12 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: context.onAccentOrOlive.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.psychology_rounded,
-                          color: Colors.white,
+                          color: context.onAccentOrOlive,
                           size: 22,
                         ),
                       ),
@@ -166,18 +169,18 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Sistem Hafızası',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: context.onAccentOrOlive,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
                               '${_allAliases.length} Öğrenilmiş İsim Takma Adı',
-                              style: const TextStyle(
-                                color: Colors.white70,
+                              style: TextStyle(
+                                color: context.onAccentOrOlive,
                                 fontSize: 12,
                               ),
                             ),
@@ -185,7 +188,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
+                        icon: Icon(Icons.close, color: context.onAccentOrOlive),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -236,7 +239,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                           ? Icons.search_off_rounded
                                           : Icons.auto_awesome_outlined,
                                       size: 48,
-                                      color: Colors.grey.shade400,
+                                      color: context.textMuted,
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
@@ -246,7 +249,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                               'Toplu aktarımlarda onayladığınız eşleşmeler otomatik hafızaya alınır.',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        color: Colors.grey.shade600,
+                                        color: context.textMuted,
                                         fontSize: 13,
                                       ),
                                     ),
@@ -322,7 +325,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                             Text(
                                               'Metindeki ad',
                                               style: TextStyle(
-                                                color: Colors.grey.shade700,
+                                                color: context.textMuted,
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w600,
                                               ),
@@ -340,7 +343,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                             Text(
                                               'Eşleştiği personel',
                                               style: TextStyle(
-                                                color: Colors.grey.shade700,
+                                                color: context.textMuted,
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w600,
                                               ),
@@ -350,7 +353,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                               maxLines: 2,
                                               overflow: TextOverflow.fade,
                                               style: TextStyle(
-                                                color: Colors.grey.shade800,
+                                                color: context.textMuted,
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w600,
                                               ),
@@ -362,7 +365,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                         tooltip: 'Takma adı hafızadan sil',
                                         icon: Icon(
                                           Icons.delete_outline_rounded,
-                                          color: Colors.red.shade400,
+                                          color: context.rejectedColor,
                                           size: 20,
                                         ),
                                         onPressed: () => _deleteAlias(item),

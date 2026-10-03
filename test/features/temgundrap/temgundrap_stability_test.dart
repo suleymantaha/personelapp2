@@ -1,0 +1,220 @@
+import 'dart:io';
+import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
+import 'package:personelapp2/features/temgundrap/presentation/temgundrap_form_screen.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
+import 'package:personelapp2/features/temgundrap/services/temgundrap_excel_exporter.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  testWidgets('back asks before discarding an edited document', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder:
+              (context) => Scaffold(
+                body: TextButton(
+                  onPressed:
+                      () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const TemgundrapFormScreen(),
+                        ),
+                      ),
+                  child: const Text('AÇ'),
+                ),
+              ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('AÇ'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('document-unit-title')),
+      'DÜZENLENEN BİRLİK',
+    );
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text('Değişikliklerden vazgeçilsin mi?'), findsOneWidget);
+    expect(find.byType(TemgundrapFormScreen), findsOneWidget);
+    await tester.tap(find.text('DÜZENLEMEYE DEVAM ET'));
+    await tester.pumpAndSettle();
+    expect(find.text('DÜZENLENEN BİRLİK'), findsOneWidget);
+  });
+
+  testWidgets('failed save preserves fields and allows a successful retry', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final repository = _FailOnceRepository();
+    final operation = TemgundrapOperation(
+      id: 'op',
+      issuingUnit: 'BİRLİK',
+      operationArea: 'ELAZIĞ',
+      commander: const CommanderSnapshot(
+        personnelId: null,
+        name: 'KOMUTAN',
+        rank: 'J.Ütğm.',
+        phone: '',
+      ),
+      strength: const TemgundrapStrength(officer: 1),
+      vehicles: const [],
+      startAt: DateTime(2026, 10, 2, 9),
+      endAt: DateTime(2026, 10, 2, 10),
+      purpose: 'GÖREV',
+      description: '',
+    );
+    final document = TemgundrapDocument(
+      id: 'retry',
+      date: DateTime(2026, 10, 2),
+      unitTitle: 'BİRLİK',
+      approverName: '',
+      approverRank: '',
+      approverDuty: '',
+      operations: [operation],
+      isDraft: true,
+      updatedAt: DateTime(2026, 10, 2),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder:
+              (context) => Scaffold(
+                body: TextButton(
+                  onPressed:
+                      () => Navigator.of(context).push(
+                        MaterialPageRoute<bool>(
+                          builder:
+                              (_) => TemgundrapFormScreen(
+                                initialDocument: document,
+                                repository: repository,
+                              ),
+                        ),
+                      ),
+                  child: const Text('AÇ'),
+                ),
+              ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('AÇ'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('document-unit-title')),
+      'KORUNAN BİRLİK',
+    );
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('save-document')), 300, scrollable: find.byType(Scrollable).first);
+    await tester.ensureVisible(find.byKey(const Key('save-document')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('save-document')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Çizelge kaydedilemedi'), findsOneWidget);
+    expect(find.byType(TemgundrapFormScreen), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('save-document')))
+          .onPressed,
+      isNotNull,
+    );
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('save-document')));
+    await tester.pumpAndSettle();
+    expect(find.byType(TemgundrapFormScreen), findsNothing);
+    expect(
+      (await TemgundrapRepository().getById('retry'))!.unitTitle,
+      'KORUNAN BİRLİK',
+    );
+  });
+
+  test(
+    'corrupt stored documents produce a recoverable error without overwrite',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        'temgundrap_documents_v1': '{broken',
+      });
+      await expectLater(
+        TemgundrapRepository().getAll(),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            contains('TEMGÜNDRAP'),
+          ),
+        ),
+      );
+      expect(
+        (await SharedPreferences.getInstance()).getString(
+          'temgundrap_documents_v1',
+        ),
+        '{broken',
+      );
+    },
+  );
+  testWidgets(
+    'repeated TEMGUN Excel shares have immutable attachment names',
+    (tester) async {
+      await tester.runAsync(() async {
+      final directory = await Directory.systemTemp.createTemp('temgun_test_');
+      addTearDown(() => directory.delete(recursive: true));
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      const paths = MethodChannel('plugins.flutter.io/path_provider');
+      const share = MethodChannel('dev.fluttercommunity.plus/share');
+      final attachments = <String>[];
+      messenger.setMockMethodCallHandler(paths, (_) async => directory.path);
+      messenger.setMockMethodCallHandler(share, (call) async {
+        attachments.add(
+          ((call.arguments as Map)['paths'] as List).single as String,
+        );
+        return 'dev.test.viewer';
+      });
+      addTearDown(() {
+        messenger.setMockMethodCallHandler(paths, null);
+        messenger.setMockMethodCallHandler(share, null);
+      });
+      final document = TemgundrapDocument(
+        id: 'same',
+        date: DateTime(2026, 10, 2),
+        unitTitle: 'BİRLİK',
+        approverName: '',
+        approverRank: '',
+        approverDuty: '',
+        operations: const [],
+        isDraft: true,
+        updatedAt: DateTime(2026, 10, 2),
+      );
+      await TemgundrapExcelExporter.share(document);
+      final original = await File(attachments.single).readAsBytes();
+      await TemgundrapExcelExporter.share(
+        TemgundrapDocument.fromJson({
+          ...document.toJson(),
+          'approverName': 'YENİ KOMUTAN',
+        }),
+      );
+      expect(
+        attachments.last.split(Platform.pathSeparator).last,
+        isNot(attachments.first.split(Platform.pathSeparator).last),
+      );
+      expect(await File(attachments.first).readAsBytes(), original);
+      });
+    },
+  );
+}
+
+class _FailOnceRepository extends TemgundrapRepository {
+  bool _failed = false;
+  @override
+  Future<void> save(TemgundrapDocument document) async {
+    if (!_failed) {
+      _failed = true;
+      throw StateError('Depolama kullanılamıyor');
+    }
+    await super.save(document);
+  }
+}

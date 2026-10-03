@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'package:drift/drift.dart' show Value;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,13 +49,21 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
   @override
   Widget build(BuildContext context) {
     final yearMonthStr = DateFormat('yyyy-MM').format(_selectedMonth);
-    final personnelAsync = ref.watch(allPersonnelProvider);
+    final personnelAsync = ref.watch(historicalPersonnelProvider);
     final squads = ref.watch(allSquadsProvider).valueOrNull ?? const [];
     final matrixAsync = ref.watch(monthlyMatrixProvider(yearMonthStr));
-    final session = ref.watch(userSessionProvider);
+    final storedSession = ref.watch(userSessionProvider);
+    final authorizedTeam = storedSession?.isAdmin == false
+      ? ref.watch(commanderAuthorityProvider).valueOrNull : null;
+    final session = storedSession != null && !storedSession.isAdmin
+      ? UserSessionState(username: storedSession.username,
+          role: storedSession.role, timId: authorizedTeam) : storedSession;
+    final matrixData = matrixAsync.isLoading
+      ? <int, Map<int, MatrixDayCell>>{} : matrixAsync.valueOrNull ?? {};
+
     final availablePersonnel = personnelAsync.valueOrNull == null
         ? <PersonelTableData>[]
-        : _personnelAvailableToSession(personnelAsync.valueOrNull!, session);
+        : _personnelAvailableToSession(personnelAsync.valueOrNull!, session, matrixData);
     final visiblePersonnelCount =
         availablePersonnel.where(_matchesPersonnelSearch).length;
 
@@ -69,13 +77,14 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
         ? null
         : () => _exportMatrix(
               personnel: orderMatrixPersonnel(availablePersonnel, squads),
-              matrixData: matrixAsync.value ?? {},
+              matrixData: matrixData,
             );
     final body = personnelAsync.when(
       data: (rawPersonnelList) {
         final filteredPersonnel = _personnelAvailableToSession(
           rawPersonnelList,
           session,
+          matrixData,
         ).where(_matchesPersonnelSearch).toList();
         final personnelList = orderMatrixPersonnel(filteredPersonnel, squads);
 
@@ -83,7 +92,6 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
           return _buildEmptyPersonnelState(context);
         }
 
-        final matrixData = matrixAsync.value ?? {};
         final squadNames = {
           for (final squad in squads) squad.id: squad.timAdi,
         };

@@ -168,7 +168,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: context.approvedColor,
-                                foregroundColor: Colors.white,
+                                foregroundColor: context.onStatusColor(context.approvedColor),
                               ),
                               onPressed: () async {
                                 final repo = ref.read(

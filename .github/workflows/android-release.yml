@@ -49,11 +49,53 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Regenerate Drift database
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Upload generated database source
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-database
+          path: lib/core/database/database.g.dart
+
       - name: Analyze
         run: flutter analyze
 
+      - name: Run bulk import navigation regressions
+        timeout-minutes: 3
+        run: >-
+          flutter test --reporter expanded --timeout 2m
+          test/features/activity/bulk_import_card_expansion_test.dart
+          test/features/activity/bulk_import_wizard_test.dart
+
+      - name: Run navigation dismissal regressions
+        timeout-minutes: 3
+        run: flutter test --reporter expanded --timeout 2m test/features/activity/navigation_dismissal_regression_test.dart
+
+      - name: Run export permission regressions
+        timeout-minutes: 3
+        run: flutter test --reporter expanded --timeout 2m test/features/activity/approved_roster_export_test.dart
+
+      - name: Run stability regressions
+        timeout-minutes: 8
+        run: >-
+          flutter test --reporter expanded --timeout 2m
+          test/features/personnel/personnel_search_service_test.dart
+          test/features/activity/edit_activity_block_dialog_test.dart
+          test/features/matrix/monthly_matrix_team_groups_test.dart
+          test/features/activity/bulk_add_personnel_to_activity_test.dart
+          test/unit/stability_regression_test.dart
+          test/unit/personnel_identity_regression_test.dart
+          test/unit/history_and_ledger_regression_test.dart
+          test/features/activity/bulk_activity_import_preparer_test.dart
+          test/core/database/database_migration_test.dart
+          test/core/services/commander_scope_provider_test.dart
+          test/core/services/app_backup_service_test.dart
+          test/features/temgundrap/temgundrap_stability_test.dart
+
       - name: Run tests
-        run: flutter test --reporter expanded
+        timeout-minutes: 8
+        run: flutter test --reporter expanded --timeout 2m
 
       - name: Calculate app version
         id: version

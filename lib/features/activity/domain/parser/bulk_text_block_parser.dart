@@ -112,6 +112,19 @@ BulkParseResult _parseBulkText(
         final title = _parseBulkTitle(line, currentDate);
         final newDate = dateMatch ?? currentDate;
         final newTeam = title.timName;
+        final headerTimeMatch = _timeRangePattern.firstMatch(line);
+        final newTimeRange = headerTimeMatch == null
+            ? null
+            : _parseTimeRange(headerTimeMatch);
+        if (headerTimeMatch != null && newTimeRange == null) {
+          addIssue(
+            line: lineNumber,
+            raw: rawSubLine,
+            code: 'invalid_time',
+            message: 'Saat aralığı geçerli değil.',
+            severity: BulkParseIssueSeverity.error,
+          );
+        }
         final newActivity = title.activityTypeKnown
             ? _mapBulkActivityTypeToDutyOrLeave(title.activityType)
             : (title.activityType.isNotEmpty ? title.activityType : null);
@@ -123,7 +136,10 @@ BulkParseResult _parseBulkText(
               newTeam == currentTeam &&
               (currentActivity == null ||
                   newActivity == null ||
-                  currentActivity == newActivity);
+                  currentActivity == newActivity) &&
+              (newTimeRange == null ||
+                  currentTimeRange == null ||
+                  currentTimeRange == newTimeRange);
 
           if (isSameBlock) {
             currentTeam = newTeam ?? currentTeam;
@@ -131,6 +147,7 @@ BulkParseResult _parseBulkText(
                 title.activityTypeKnown || currentActivityKnown;
             currentActivity = newActivity ?? currentActivity;
             currentDate = newDate;
+            currentTimeRange = newTimeRange ?? currentTimeRange;
             if (currentTitle.isEmpty) currentTitle = line;
             continue;
           }
@@ -147,6 +164,7 @@ BulkParseResult _parseBulkText(
             currentActivity = newActivity ?? currentActivity;
             currentDate = newDate;
             currentTitle = line;
+            currentTimeRange = newTimeRange ?? currentTimeRange;
             flushBlock();
             currentTitle = '';
             currentTimeRange = null;
@@ -160,7 +178,7 @@ BulkParseResult _parseBulkText(
         currentTitle = line;
         currentHeaderLine = lineNumber;
         currentHeaderRawLine = rawSubLine;
-        currentTimeRange = null;
+        currentTimeRange = newTimeRange;
         currentTeam = newTeam;
         currentActivityKnown = title.activityTypeKnown;
         currentActivity = newActivity;

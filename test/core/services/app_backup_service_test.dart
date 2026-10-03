@@ -22,6 +22,60 @@ void main() {
 
   tearDown(() => db.close());
 
+  test(
+    'v4 backups restore missing active and demo flags without data loss',
+    () async {
+      await _seedAllData(db);
+      final decoded =
+          jsonDecode(await service.exportBackupJson()) as Map<String, dynamic>;
+      final payload = decoded['payload'] as Map<String, dynamic>;
+      final tables = payload['tables'] as Map<String, dynamic>;
+      for (final row in tables['personnel'] as List) {
+        (row as Map).remove('aktif');
+        row.remove('isDemo');
+      }
+      for (final row in tables['assignments'] as List) {
+        (row as Map).remove('gorevTimId');
+        row.remove('gorevTimAdi');
+      }
+      payload['databaseSchemaVersion'] = 4;
+      decoded['checksum'] = AppBackupService.computeCanonicalChecksum(payload);
+      await service.restoreBackupJson(jsonEncode(decoded));
+      final people = await db.select(db.personelTable).get();
+      expect(people, hasLength(1));
+      expect(people.single.aktif, isTrue);
+      expect(people.single.isDemo, isFalse);
+      expect(
+        await db.select(db.faaliyetPersonelAtamaTable).get(),
+        hasLength(1),
+      );
+      expect(await db.select(db.raporKayitTable).get(), hasLength(1));
+    },
+  );
+
+  test(
+    'backup restores approver defaults and all dated archive card orders',
+    () async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        'temgundrap_approver_defaults_v1',
+        '{"name":"ALİ"}',
+      );
+      await prefs.setStringList('activity_card_order_2026-10-02', ['2', '1']);
+      final backup = await service.exportBackupJson();
+      await prefs.setString('temgundrap_approver_defaults_v1', '{}');
+      await prefs.setStringList('activity_card_order_2026-10-02', ['1', '2']);
+      await prefs.setStringList('activity_card_order_2026-10-03', ['9']);
+      await service.restoreBackupJson(backup);
+      expect(
+        prefs.getString('temgundrap_approver_defaults_v1'),
+        contains('ALİ'),
+      );
+      expect(prefs.getStringList('activity_card_order_2026-10-02'), ['2', '1']);
+      expect(prefs.containsKey('activity_card_order_2026-10-03'), isFalse);
+    },
+  );
+
   test('exports and replaces every durable application data source', () async {
     await _seedAllData(db);
     final prefs = await SharedPreferences.getInstance();
@@ -138,7 +192,8 @@ void main() {
   });
 
   test('legacy version 1 personnel backups remain importable', () async {
-    const legacy = '{"version":1,"squads":[],"personnel":['
+    const legacy =
+        '{"version":1,"squads":[],"personnel":['
         '{"id":1,"adSoyad":"Eski Personel","rutbe":"Astsubay",'
         '"birlik":"Merkez","timId":null,"kayitTarihi":"2026-08-01"}'
         '],"aliases":[]}';
@@ -149,13 +204,17 @@ void main() {
     expect(preview.legacy, isTrue);
     expect(result.legacy, isTrue);
     expect(result.importedPersonnel, 1);
-    expect((await db.select(db.personelTable).get()).single.adSoyad,
-        'Eski Personel');
+    expect(
+      (await db.select(db.personelTable).get()).single.adSoyad,
+      'Eski Personel',
+    );
   });
 }
 
 Future<void> _seedAllData(AppDatabase db) async {
-  await db.into(db.kullaniciTable).insert(
+  await db
+      .into(db.kullaniciTable)
+      .insert(
         KullaniciTableCompanion.insert(
           id: const Value(1),
           kullaniciAdi: 'admin',
@@ -163,7 +222,9 @@ Future<void> _seedAllData(AppDatabase db) async {
           rol: 'yönetici',
         ),
       );
-  await db.into(db.timTable).insert(
+  await db
+      .into(db.timTable)
+      .insert(
         TimTableCompanion.insert(
           id: const Value(10),
           timAdi: '1-B Timi',
@@ -171,9 +232,12 @@ Future<void> _seedAllData(AppDatabase db) async {
           olusturmaTarihi: '2026-08-01',
         ),
       );
-  await (db.update(db.kullaniciTable)..where((table) => table.id.equals(1)))
-      .write(const KullaniciTableCompanion(timId: Value(10)));
-  await db.into(db.personelTable).insert(
+  await (db.update(db.kullaniciTable)..where(
+    (table) => table.id.equals(1),
+  )).write(const KullaniciTableCompanion(timId: Value(10)));
+  await db
+      .into(db.personelTable)
+      .insert(
         PersonelTableCompanion.insert(
           id: const Value(100),
           adSoyad: 'Ahmet KAYA',
@@ -184,7 +248,9 @@ Future<void> _seedAllData(AppDatabase db) async {
           kayitTarihi: '2026-08-01',
         ),
       );
-  await db.into(db.gunlukFaaliyetTable).insert(
+  await db
+      .into(db.gunlukFaaliyetTable)
+      .insert(
         GunlukFaaliyetTableCompanion.insert(
           id: const Value(200),
           faaliyetAdi: 'Devriye',
@@ -193,7 +259,9 @@ Future<void> _seedAllData(AppDatabase db) async {
           olusturmaTarihi: '2026-08-07T08:00:00',
         ),
       );
-  await db.into(db.faaliyetPersonelAtamaTable).insert(
+  await db
+      .into(db.faaliyetPersonelAtamaTable)
+      .insert(
         FaaliyetPersonelAtamaTableCompanion.insert(
           id: const Value(300),
           faaliyetId: 200,
@@ -203,7 +271,9 @@ Future<void> _seedAllData(AppDatabase db) async {
           aciklama: const Value('Gece'),
         ),
       );
-  await db.into(db.raporKayitTable).insert(
+  await db
+      .into(db.raporKayitTable)
+      .insert(
         RaporKayitTableCompanion.insert(
           id: const Value(400),
           personelId: 100,
@@ -212,7 +282,9 @@ Future<void> _seedAllData(AppDatabase db) async {
           aciklama: const Value('Kontrol'),
         ),
       );
-  await db.into(db.timUyelikGecmisiTable).insert(
+  await db
+      .into(db.timUyelikGecmisiTable)
+      .insert(
         TimUyelikGecmisiTableCompanion.insert(
           id: const Value(500),
           personelId: 100,
@@ -221,7 +293,9 @@ Future<void> _seedAllData(AppDatabase db) async {
           islem: 'eklendi',
         ),
       );
-  await db.into(db.personelIsimTakmaAdTable).insert(
+  await db
+      .into(db.personelIsimTakmaAdTable)
+      .insert(
         PersonelIsimTakmaAdTableCompanion.insert(
           id: const Value(600),
           normalizeTakmaAd: 'ahmet',
@@ -230,7 +304,9 @@ Future<void> _seedAllData(AppDatabase db) async {
           kayitTarihi: '2026-08-01',
         ),
       );
-  await db.into(db.topluAktarimGecmisiTable).insert(
+  await db
+      .into(db.topluAktarimGecmisiTable)
+      .insert(
         TopluAktarimGecmisiTableCompanion.insert(
           id: const Value(700),
           parmakIzi: 'fingerprint',
