@@ -218,6 +218,11 @@ void main() {
             ),
           );
         });
+        await tester.enterText(
+          find.byKey(const Key('personnel-search-field')),
+          'yilmaz',
+        );
+        await tester.pumpAndSettle();
         await tester.tap(find.byKey(const Key('personnel-option-1')));
         await tester.pumpAndSettle();
         if (details) {
@@ -418,6 +423,7 @@ void main() {
             find.byKey(const Key('bulk-personnel-text-field')),
             '1. J.Asb.Çvş. Mehmet KAYA',
           );
+          await tester.pumpAndSettle();
           await tester.tap(
             find.byKey(const Key('bulk-personnel-preview-button')),
           );
