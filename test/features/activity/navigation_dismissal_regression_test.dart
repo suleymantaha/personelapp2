@@ -11,6 +11,9 @@ import 'package:personelapp2/core/services/backup_file_gateway.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/presentation/activity_assignment_preview_screen.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
+import 'package:personelapp2/features/personnel/presentation/dialogs/bulk_personnel_import_dialog.dart';
+import 'package:personelapp2/features/personnel/presentation/widgets/personnel_form_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_squad_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
@@ -44,6 +47,18 @@ const _person = PersonelTableData(
 Future<AppDatabase> _database(WidgetTester tester) async {
   final db = AppDatabase(NativeDatabase.memory());
   await db.customSelect('SELECT 1').get();
+  await db
+      .into(db.timTable)
+      .insert(
+        const TimTableData(
+          id: 1,
+          timAdi: '1. Tim',
+          olusturmaTarihi: '2026-10-03',
+        ).toCompanion(true),
+      );
+  await db.into(db.personelTable).insert(_person.toCompanion(true));
+  await db.into(db.gunlukFaaliyetTable).insert(_source.toCompanion(true));
+  await db.into(db.gunlukFaaliyetTable).insert(_target.toCompanion(true));
   addTearDown(() async {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -172,7 +187,9 @@ void main() {
       await tester.tap(find.byKey(const Key('preview-confirm-button')));
       await tester.pump();
       await tester.binding.handlePopRoute();
+      await tester.pump();
       await tester.pump(const Duration(milliseconds: 350));
+      await tester.pump();
       expect(find.byType(ActivityAssignmentPreviewScreen), findsOneWidget);
       save.complete(saveSuccess);
       await tester.pumpAndSettle();
@@ -194,6 +211,19 @@ void main() {
       tester,
     ) async {
       final db = await _database(tester);
+      await db
+          .into(db.faaliyetPersonelAtamaTable)
+          .insert(
+            const FaaliyetPersonelAtamaTableData(
+              id: 1,
+              faaliyetId: 1,
+              personelId: 1,
+              gorevVeyaIzin: 'GÖREVLİ',
+              durum: 'onaylandi',
+              gorevTimId: 1,
+              gorevTimAdi: '1. Tim',
+            ).toCompanion(true),
+          );
       await _open(tester, db, (context) async {
         if (squad) {
           await showTransferSquadDialog(
@@ -240,14 +270,18 @@ void main() {
         );
         await tester.pump();
         await tester.binding.handlePopRoute();
+        await tester.pump();
         await tester.pump(const Duration(milliseconds: 350));
+        await tester.pump();
         expect(
           find.byType(squad ? TransferSquadDialog : TransferPersonnelDialog),
           findsOneWidget,
         );
         // The dismissible barrier must obey the same guard as system back.
         await tester.tapAt(const Offset(5, 5));
+        await tester.pump();
         await tester.pump(const Duration(milliseconds: 350));
+        await tester.pump();
         expect(
           find.byType(squad ? TransferSquadDialog : TransferPersonnelDialog),
           findsOneWidget,
@@ -262,6 +296,115 @@ void main() {
     });
   }
 
+  for (final surface in ['personnel', 'personnel-import', 'activity-import']) {
+    for (final dismiss in ['button', 'back', 'barrier']) {
+      testWidgets('$surface protects pending save from $dismiss', (
+        tester,
+      ) async {
+        final db = await _database(tester);
+        await _open(tester, db, (context) async {
+          await showDialog<Object?>(
+            context: context,
+            builder: (_) {
+              if (surface == 'personnel') {
+                return const PersonnelFormDialog(personnelToEdit: _person);
+              }
+              if (surface == 'personnel-import')
+                return const BulkPersonnelImportDialog();
+              return BulkImportDialog(
+                database: db,
+                activityRepository: ActivityRepository(db),
+                targetActivity: _source,
+              );
+            },
+          );
+        });
+        Finder saveButton;
+        if (surface == 'personnel') {
+          await tester.enterText(
+            find.widgetWithText(TextField, 'Ad Soyad'),
+            'Ahmet Güncel',
+          );
+          saveButton = find.text('GÜNCELLE');
+        } else if (surface == 'personnel-import') {
+          await tester.enterText(
+            find.byKey(const Key('bulk-personnel-text-field')),
+            '1. J.Asb.Çvş. Mehmet KAYA',
+          );
+          await tester.tap(
+            find.byKey(const Key('bulk-personnel-preview-button')),
+          );
+          await tester.pumpAndSettle();
+          saveButton = find.byKey(const Key('bulk-personnel-save-button'));
+        } else {
+          await tester.enterText(
+            find.byType(TextField).first,
+            '03.10.2026\n1. Tim HEYBET\n1- J.Asb. Ahmet YILMAZ',
+          );
+          await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+          await tester.pumpAndSettle();
+          saveButton = find.byKey(const Key('bulk-import-save-button'));
+        }
+        await tester.ensureVisible(saveButton);
+        final entered = Completer<void>();
+        final release = Completer<void>();
+        final transaction = db.transaction(() async {
+          entered.complete();
+          await release.future;
+        });
+        await entered.future;
+        try {
+          await tester.tap(saveButton);
+          await tester.pump();
+          if (dismiss == 'back') {
+            await tester.binding.handlePopRoute();
+          } else if (dismiss == 'barrier') {
+            await tester.tapAt(const Offset(5, 5));
+          } else if (surface == 'activity-import') {
+            await tester.tap(find.byIcon(Icons.close));
+          } else {
+            await tester.tap(find.text('İPTAL'));
+          }
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 350));
+          await tester.pump();
+          expect(
+            find.byType(
+              surface == 'personnel'
+                  ? PersonnelFormDialog
+                  : surface == 'personnel-import'
+                  ? BulkPersonnelImportDialog
+                  : BulkImportDialog,
+            ),
+            findsOneWidget,
+          );
+        } finally {
+          release.complete();
+          await transaction;
+          await tester.pumpAndSettle();
+        }
+        if (surface == 'activity-import') {
+          expect(find.text('Aktarım Tamamlandı'), findsOneWidget);
+          await tester.tap(find.text('TAMAM'));
+          await tester.pumpAndSettle();
+          expect(
+            await db.select(db.faaliyetPersonelAtamaTable).get(),
+            hasLength(1),
+          );
+        } else if (surface == 'personnel') {
+          expect(
+            (await db.select(db.personelTable).get()).single.adSoyad,
+            'Ahmet Güncel',
+          );
+        } else {
+          expect(await db.select(db.personelTable).get(), hasLength(2));
+        }
+        expect(find.text('Aç'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
   for (final dismiss in ['close', 'back', 'barrier']) {
     testWidgets('backup stays open during file save: $dismiss', (tester) async {
       final db = await _database(tester);
@@ -270,7 +413,7 @@ void main() {
         if (!gateway.saved.isCompleted) gateway.saved.complete(false);
       });
       await _open(tester, db, (context) async {
-        await showDialog<void>(
+        await showDialog<Object?>(
           context: context,
           builder: (_) =>
               BackupRestoreDialog(database: db, fileGateway: gateway),
@@ -289,7 +432,9 @@ void main() {
       } else {
         await tester.tapAt(const Offset(5, 5));
       }
+      await tester.pump();
       await tester.pump(const Duration(milliseconds: 350));
+      await tester.pump();
       expect(find.byType(BackupRestoreDialog), findsOneWidget);
       gateway.saved.complete(true);
       await tester.pumpAndSettle();
