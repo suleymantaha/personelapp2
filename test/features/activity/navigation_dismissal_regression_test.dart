@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/navigation/app_router.dart';
+import 'package:personelapp2/features/activity/presentation/activity_form_screen.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/backup_file_gateway.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
@@ -116,6 +118,75 @@ Future<void> _open(
 void main() {
   setUpAll(() => initializeDateFormatting('tr_TR'));
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  for (final systemBack in [false, true]) {
+    testWidgets(
+      'real router returns from details and closes form: system=$systemBack',
+      (tester) async {
+        final db = await _database(tester);
+        const session = UserSessionState(
+          username: 'admin',
+          role: UserRole.admin,
+        );
+        final router = createAppRouter(session: session);
+        addTearDown(router.dispose);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              databaseProvider.overrideWithValue(db),
+              userSessionProvider.overrideWith((ref) => session),
+              allPersonnelProvider.overrideWith(
+                (ref) => Stream.value([_person]),
+              ),
+              allSquadsProvider.overrideWith(
+                (ref) => Stream.value(const [
+                  TimTableData(
+                    id: 1,
+                    timAdi: '1. Tim',
+                    olusturmaTarihi: '2026-10-03',
+                  ),
+                ]),
+              ),
+            ],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+        await tester.pumpAndSettle();
+        unawaited(router.push('/activity-form'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('squad-select-1. Tim')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('continue-to-details-button')));
+        await tester.pumpAndSettle();
+        Future<void> back() async {
+          if (systemBack) {
+            await tester.binding.handlePopRoute();
+          } else {
+            await tester.tap(find.byType(BackButton));
+          }
+          await tester.pumpAndSettle();
+        }
+
+        await back();
+        expect(
+          find.byKey(const Key('personnel-selection-step')),
+          findsOneWidget,
+        );
+        await back();
+        expect(find.text('Değişiklikler silinsin mi?'), findsOneWidget);
+        await tester.tap(find.text('Devam et'));
+        await tester.pumpAndSettle();
+        expect(find.byType(ActivityFormScreen), findsOneWidget);
+        await back();
+        await tester.tap(find.text('Çık'));
+        await tester.pumpAndSettle();
+        expect(find.byType(ActivityFormScreen), findsNothing);
+        expect(router.routeInformationProvider.value.uri.path, '/dashboard');
+        expect(await db.select(db.faaliyetPersonelAtamaTable).get(), isEmpty);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   for (final details in [false, true]) {
     testWidgets('close asks before discarding personnel at details=$details', (
@@ -309,8 +380,9 @@ void main() {
               if (surface == 'personnel') {
                 return const PersonnelFormDialog(personnelToEdit: _person);
               }
-              if (surface == 'personnel-import')
+              if (surface == 'personnel-import') {
                 return const BulkPersonnelImportDialog();
+              }
               return BulkImportDialog(
                 database: db,
                 activityRepository: ActivityRepository(db),
