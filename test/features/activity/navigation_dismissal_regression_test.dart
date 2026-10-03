@@ -61,11 +61,7 @@ Future<AppDatabase> _database(WidgetTester tester) async {
   await db.into(db.personelTable).insert(_person.toCompanion(true));
   await db.into(db.gunlukFaaliyetTable).insert(_source.toCompanion(true));
   await db.into(db.gunlukFaaliyetTable).insert(_target.toCompanion(true));
-  addTearDown(() async {
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-    await db.close();
-  });
+  addTearDown(db.close);
   return db;
 }
 
@@ -115,12 +111,29 @@ Future<void> _open(
   await tester.pumpAndSettle();
 }
 
+void _navigationTest(
+  String description,
+  Future<void> Function(WidgetTester) body,
+) {
+  testWidgets(description, (tester) async {
+    try {
+      await body(tester);
+    } finally {
+      // Unmount and drain Drift's deferred stream disposal before the binding
+      // checks pending timers; teardown callbacks run after that check.
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 10));
+      await tester.pump(const Duration(milliseconds: 10));
+    }
+  });
+}
+
 void main() {
   setUpAll(() => initializeDateFormatting('tr_TR'));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   for (final systemBack in [false, true]) {
-    testWidgets(
+    _navigationTest(
       'real router returns from details and closes form: system=$systemBack',
       (tester) async {
         final db = await _database(tester);
@@ -189,96 +202,98 @@ void main() {
   }
 
   for (final details in [false, true]) {
-    testWidgets('close asks before discarding personnel at details=$details', (
-      tester,
-    ) async {
-      final db = await _database(tester);
-      bool? result;
-      await _open(tester, db, (context) async {
-        result = await Navigator.of(context).push<bool>(
-          MaterialPageRoute(
-            builder: (_) => const AddPersonnelToActivityDialog(
-              activity: _source,
-              isAdmin: true,
-              existingPersonnelIds: {},
+    _navigationTest(
+      'close asks before discarding personnel at details=$details',
+      (tester) async {
+        final db = await _database(tester);
+        bool? result;
+        await _open(tester, db, (context) async {
+          result = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => const AddPersonnelToActivityDialog(
+                activity: _source,
+                isAdmin: true,
+                existingPersonnelIds: {},
+              ),
             ),
-          ),
-        );
-      });
-      await tester.tap(find.byKey(const Key('personnel-option-1')));
-      await tester.pumpAndSettle();
-      if (details) {
-        await tester.tap(find.text('Devam et'));
+          );
+        });
+        await tester.tap(find.byKey(const Key('personnel-option-1')));
         await tester.pumpAndSettle();
-      }
-      await tester.tap(find.byTooltip('Kapat'));
-      await tester.pumpAndSettle();
-      expect(find.text('Değişikliklerden vazgeçilsin mi?'), findsOneWidget);
-      await tester.tap(find.text('DÜZENLEMEYE DEVAM ET'));
-      await tester.pumpAndSettle();
-      expect(find.byType(AddPersonnelToActivityDialog), findsOneWidget);
-      await tester.tap(find.byTooltip('Kapat'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('VAZGEÇ VE ÇIK'));
-      await tester.pumpAndSettle();
-      expect(find.byType(AddPersonnelToActivityDialog), findsNothing);
-      expect(find.text('Aç'), findsOneWidget);
-      expect(result, false);
-      expect(await db.select(db.faaliyetPersonelAtamaTable).get(), isEmpty);
-      expect(tester.takeException(), isNull);
-    });
+        if (details) {
+          await tester.tap(find.text('Devam et'));
+          await tester.pumpAndSettle();
+        }
+        await tester.tap(find.byTooltip('Kapat'));
+        await tester.pumpAndSettle();
+        expect(find.text('Değişikliklerden vazgeçilsin mi?'), findsOneWidget);
+        await tester.tap(find.text('DÜZENLEMEYE DEVAM ET'));
+        await tester.pumpAndSettle();
+        expect(find.byType(AddPersonnelToActivityDialog), findsOneWidget);
+        await tester.tap(find.byTooltip('Kapat'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('VAZGEÇ VE ÇIK'));
+        await tester.pumpAndSettle();
+        expect(find.byType(AddPersonnelToActivityDialog), findsNothing);
+        expect(find.text('Aç'), findsOneWidget);
+        expect(result, false);
+        expect(await db.select(db.faaliyetPersonelAtamaTable).get(), isEmpty);
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 
   for (final saveSuccess in [false, true]) {
-    testWidgets('preview waits for save before back, success=$saveSuccess', (
-      tester,
-    ) async {
-      final db = await _database(tester);
-      final save = Completer<bool>();
-      addTearDown(() {
-        if (!save.isCompleted) save.complete(false);
-      });
-      bool? result;
-      await _open(tester, db, (context) async {
-        result = await Navigator.of(context).push<bool>(
-          MaterialPageRoute(
-            builder: (_) => ActivityAssignmentPreviewScreen(
-              activityName: 'Test',
-              date: DateTime(2026, 10, 3),
-              preview: const ActivityAssignmentPreview(
-                squadNames: {},
-                items: [],
+    _navigationTest(
+      'preview waits for save before back, success=$saveSuccess',
+      (tester) async {
+        final db = await _database(tester);
+        final save = Completer<bool>();
+        addTearDown(() {
+          if (!save.isCompleted) save.complete(false);
+        });
+        bool? result;
+        await _open(tester, db, (context) async {
+          result = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => ActivityAssignmentPreviewScreen(
+                activityName: 'Test',
+                date: DateTime(2026, 10, 3),
+                preview: const ActivityAssignmentPreview(
+                  squadNames: {},
+                  items: [],
+                ),
+                requiresAdminApproval: false,
+                onConfirm: () => save.future,
               ),
-              requiresAdminApproval: false,
-              onConfirm: () => save.future,
             ),
-          ),
-        );
-      });
-      await tester.tap(find.byKey(const Key('preview-confirm-button')));
-      await tester.pump();
-      await tester.binding.handlePopRoute();
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 350));
-      await tester.pump();
-      expect(find.byType(ActivityAssignmentPreviewScreen), findsOneWidget);
-      save.complete(saveSuccess);
-      await tester.pumpAndSettle();
-      if (!saveSuccess) {
-        expect(find.byType(ActivityAssignmentPreviewScreen), findsOneWidget);
+          );
+        });
+        await tester.tap(find.byKey(const Key('preview-confirm-button')));
+        await tester.pump();
         await tester.binding.handlePopRoute();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 350));
+        await tester.pump();
+        expect(find.byType(ActivityAssignmentPreviewScreen), findsOneWidget);
+        save.complete(saveSuccess);
         await tester.pumpAndSettle();
-      } else {
-        expect(result, true);
-      }
-      expect(find.byType(ActivityAssignmentPreviewScreen), findsNothing);
-      expect(find.text('Aç'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
+        if (!saveSuccess) {
+          expect(find.byType(ActivityAssignmentPreviewScreen), findsOneWidget);
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
+        } else {
+          expect(result, true);
+        }
+        expect(find.byType(ActivityAssignmentPreviewScreen), findsNothing);
+        expect(find.text('Aç'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 
   for (final squad in [false, true]) {
-    testWidgets('transfer protects pending transaction, squad=$squad', (
+    _navigationTest('transfer protects pending transaction, squad=$squad', (
       tester,
     ) async {
       final db = await _database(tester);
@@ -369,7 +384,7 @@ void main() {
 
   for (final surface in ['personnel', 'personnel-import', 'activity-import']) {
     for (final dismiss in ['button', 'back', 'barrier']) {
-      testWidgets('$surface protects pending save from $dismiss', (
+      _navigationTest('$surface protects pending save from $dismiss', (
         tester,
       ) async {
         final db = await _database(tester);
@@ -478,7 +493,9 @@ void main() {
   }
 
   for (final dismiss in ['close', 'back', 'barrier']) {
-    testWidgets('backup stays open during file save: $dismiss', (tester) async {
+    _navigationTest('backup stays open during file save: $dismiss', (
+      tester,
+    ) async {
       final db = await _database(tester);
       final gateway = _PendingBackupGateway();
       addTearDown(() {
