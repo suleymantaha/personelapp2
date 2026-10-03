@@ -289,7 +289,9 @@ Veli SAĞLAM
       await tester.ensureVisible(select);
       await tester.tap(select);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Ali DENEME').last);
+      await tester.enterText(find.byKey(const Key('personnel-search-field')), 'Ali');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('personnel-option-1')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('bulk-focused-person-badge')), findsNothing);
       final second = find.byKey(const Key('bulk-card-header-1'));
