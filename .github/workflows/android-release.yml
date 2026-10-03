@@ -61,6 +61,13 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
+      - name: Run bulk import navigation regressions
+        timeout-minutes: 3
+        run: >-
+          flutter test --reporter expanded --timeout 2m
+          test/features/activity/bulk_import_card_expansion_test.dart
+          test/features/activity/bulk_import_wizard_test.dart
+
       - name: Run navigation dismissal regressions
         timeout-minutes: 3
         run: flutter test --reporter expanded --timeout 2m test/features/activity/navigation_dismissal_regression_test.dart

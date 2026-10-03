@@ -285,7 +285,7 @@ Veli SAĞLAM
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('bulk-goto-problem')));
       await tester.pumpAndSettle();
-      final select = find.byKey(const Key('bulk-person-select')).first;
+      final select = find.byKey(const Key('bulk-person-select-btn')).first;
       await tester.ensureVisible(select);
       await tester.tap(select);
       await tester.pumpAndSettle();
