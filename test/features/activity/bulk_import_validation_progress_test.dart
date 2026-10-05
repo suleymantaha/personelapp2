@@ -121,6 +121,45 @@ void main() {
     },
   );
 
+  test(
+    'rank and name on adjacent source lines form one valid personnel row',
+    () {
+      final result = BulkTextParser.parse(
+        '6/B Heybet Listesi\n25.07.2026\n1-) J.Asb.Üçvş.\nOnur GÜNER\n2-) J.Uzm.Çvş. Ali DENEME\nToplam 2 personel',
+      );
+      expect(result.hasBlockingIssues, isFalse);
+      expect(result.issues, isEmpty);
+      expect(result.blocks.single.personnelList.map((p) => p.rawName), [
+        'Onur GÜNER',
+        'Ali DENEME',
+      ]);
+      expect(result.blocks.single.personnelList.first.rawRank, 'J.Asb.Üçvş.');
+      expect(result.blocks.single.personnelList.first.sourceLineNumber, 3);
+    },
+  );
+  test('personnel-only parser handles a line break after rank', () {
+    final result = BulkTextParser.parsePersonnelList(
+      '1-) J.Uzm.Çvş.\nAli DENEME\n2-) J.Uzm.Çvş. Veli SAĞLAM',
+    );
+    expect(result.issues, isEmpty);
+    expect(result.personnel.map((p) => p.rawName), [
+      'Ali DENEME',
+      'Veli SAĞLAM',
+    ]);
+    expect(result.personnel.first.rawRank, 'J.Uzm.Çvş.');
+  });
+  test(
+    'orphan rank is kept as an error instead of stealing a new numbered row',
+    () {
+      final result = BulkTextParser.parse(
+        '6/B Heybet Listesi\n25.07.2026\n1-) J.Uzm.Çvş.\n2-) J.Uzm.Çvş. Ali DENEME',
+      );
+      expect(result.hasBlockingIssues, isTrue);
+      expect(result.blocks.single.personnelList.single.rawIndex, 2);
+      expect(result.blocks.single.personnelList.single.rawName, 'Ali DENEME');
+    },
+  );
+
   late AppDatabase database;
   Future<void> pumpImport(WidgetTester tester, String text) async {
     tester.view.physicalSize = const Size(360, 900);
@@ -218,6 +257,31 @@ void main() {
               .text,
           contains('25:00-08:00'),
         );
+      } finally {
+        await clean(tester);
+      }
+    },
+  );
+  testWidgets(
+    'wrapped rank list reaches confirmation without phantom source errors',
+    (tester) async {
+      await pumpImport(
+        tester,
+        '6/B Heybet Listesi\n25.07.2026\n1-) J.Uzm.Çvş.\nAli DENEME',
+      );
+      try {
+        expect(find.textContaining('kritik hata'), findsNothing);
+        expect(
+          tester
+              .widget<FilledButton>(
+                find.byKey(const Key('bulk-import-save-button')),
+              )
+              .onPressed,
+          isNotNull,
+        );
+        await tester.tap(find.text('Kaydet'));
+        await tester.pumpAndSettle();
+        expect(find.text('Kayda Hazır'), findsOneWidget);
       } finally {
         await clean(tester);
       }
