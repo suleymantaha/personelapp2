@@ -10,6 +10,7 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/previous_day_excel_picker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/edit_assignment_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_personnel_dialog.dart';
@@ -119,16 +120,30 @@ class ActivityAssignmentDetails extends ConsumerWidget {
               (selectedSquadId == null || p.timId == selectedSquadId))
             p.id: p,
       };
-      final rows =
-          await CombinedHeybetExcelService(ref.read(databaseProvider)).build(
+      final service = CombinedHeybetExcelService(ref.read(databaseProvider));
+      final previousActivities = await service.listPreviousActivities(activity);
+      if (!context.mounted) return;
+      final selectedIds = await showDialog<Set<int>>(
+        context: context,
+        builder: (_) => PreviousDayExcelPicker(activities: previousActivities),
+      );
+      if (selectedIds == null || selectedIds.isEmpty || !context.mounted) {
+        return;
+      }
+      final rows = await service.build(
         activity: activity,
+        selectedPreviousActivityIds: selectedIds,
         currentRows: rosterRows,
         personnelById: visiblePersonnel,
         squadNames: squadMap,
       );
       if (!context.mounted) return;
+      if (!await confirmCombinedExcelPreview(context, rows) || !context.mounted) {
+        return;
+      }
       await MilitaryRosterExporter.shareExcelRoster(
-        faaliyetAdi: '${activity.faaliyetAdi} + Önceki Gün Heyeti',
+        faaliyetAdi:
+            '${activity.faaliyetAdi} + Seçilen Önceki Gün Faaliyetleri',
         tarih: activity.tarih,
         rows: rows,
       );
@@ -226,7 +241,8 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                         if (imageResult == null || !context.mounted) return;
 
                         final db = ref.read(databaseProvider);
-                        final activityRepo = ref.read(activityRepositoryProvider);
+                        final activityRepo =
+                            ref.read(activityRepositoryProvider);
                         final result = await showDialog<bool>(
                           context: context,
                           builder: (dialogContext) => BulkImportDialog(
@@ -342,9 +358,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                     ModernPopupMenuItem(
                       option: const ModernActionOption(
                         value: 'combinedExcel',
-                        title: 'Önceki Gün Heyetiyle Ayrı Excel',
+                        title: 'Önceki Gün Kartlarıyla Ayrı Excel',
                         subtitle:
-                            'Heybet ve önceki gün heyetini ayrı dosyada paylaş',
+                            'Önceki günün kartlarını seçerek ayrı dosyada paylaş',
                         icon: Icons.table_chart_outlined,
                       ),
                     ),

@@ -69,6 +69,7 @@ void main() {
     for (var repeat = 0; repeat < 2; repeat++) {
       final rows = await service.build(
           activity: activity,
+          selectedPreviousActivityIds: {2},
           currentRows: normalRows,
           personnelById: people,
           squadNames: {});
@@ -76,9 +77,10 @@ void main() {
         'Bugünün Heybeti',
         'Bugünün Hazır Kıtası',
         'Personel 3',
-        'Personel 2'
+        'Personel 2',
+        'Personel 5'
       ]);
-      expect(rows.map((r) => r.sNu), [1, 2, 3, 4]);
+      expect(rows.map((r) => r.sNu), [1, 2, 3, 4, 5]);
       expect(rows.map((r) => r.diger), everyElement(''));
       expect(rows.first.birligi, 'J.Komd.Öz.Hrk.Tb.Klığı');
       expect(rows[1].birligi, '');
@@ -97,8 +99,25 @@ void main() {
     expect(matrix[2]?[1]?.entries, hasLength(1));
     expect(matrix[2]?[1]?.entries.single.isContinuationDay, isTrue);
     expect(matrix[2]?[2], isNull);
+    expect(
+        (await service.listPreviousActivities(activity)).map((a) => a.id), [2]);
+    final none = await service.build(
+        activity: activity,
+        selectedPreviousActivityIds: {},
+        currentRows: [],
+        personnelById: people,
+        squadNames: {});
+    expect(none, isEmpty);
+    final invalid = await service.build(
+        activity: activity,
+        selectedPreviousActivityIds: {1, 3, 999},
+        currentRows: [],
+        personnelById: people,
+        squadNames: {});
+    expect(invalid, isEmpty);
     final filtered = await service.build(
         activity: activity,
+        selectedPreviousActivityIds: {2},
         currentRows: [],
         personnelById: {3: people[3]!},
         squadNames: {});

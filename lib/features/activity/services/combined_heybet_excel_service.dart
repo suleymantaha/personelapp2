@@ -15,8 +15,22 @@ class CombinedHeybetExcelService {
   static bool isHeybet(String name) =>
       RegExp(r'(^|\s)HEYBET(\s|$)').hasMatch(name.toUpperCase().trim());
 
+  Future<List<GunlukFaaliyetTableData>> listPreviousActivities(
+    GunlukFaaliyetTableData activity,
+  ) async {
+    final date = DateTime.tryParse(activity.tarih);
+    if (date == null) return [];
+    final previousDate = DateFormat('yyyy-MM-dd')
+        .format(DateTime(date.year, date.month, date.day - 1));
+    return (db.select(db.gunlukFaaliyetTable)
+          ..where((t) => t.tarih.equals(previousDate))
+          ..orderBy([(t) => OrderingTerm.asc(t.id)]))
+        .get();
+  }
+
   Future<List<MilitaryRosterRow>> build({
     required GunlukFaaliyetTableData activity,
+    required Set<int> selectedPreviousActivityIds,
     required List<MilitaryRosterRow> currentRows,
     required Map<int, PersonelTableData> personnelById,
     required Map<int, String> squadNames,
@@ -37,13 +51,12 @@ class CombinedHeybetExcelService {
           groupCode: row.groupCode,
         ),
     ];
-    final date = DateTime.tryParse(activity.tarih);
-    if (date == null || personnelById.isEmpty) return result;
-    final previousDate = DateFormat('yyyy-MM-dd')
-        .format(DateTime(date.year, date.month, date.day - 1));
-    final previousActivities = await (db.select(db.gunlukFaaliyetTable)
-          ..where((t) => t.tarih.equals(previousDate)))
-        .get();
+    if (selectedPreviousActivityIds.isEmpty || personnelById.isEmpty) {
+      return result;
+    }
+    final previousActivities = (await listPreviousActivities(activity))
+        .where((a) => selectedPreviousActivityIds.contains(a.id))
+        .toList();
     if (previousActivities.isEmpty) return result;
     // Source assignments are read into a separate local collection only.
     final previousAssignments = await (db.select(db.faaliyetPersonelAtamaTable)
@@ -53,11 +66,8 @@ class CombinedHeybetExcelService {
               t.durum.equals(AssignmentStatus.onaylandi)))
         .get();
     final ordered = orderAssignmentsForExport(
-      previousAssignments.where((a) {
-        final code =
-            MilitaryStructureHelper.getRosterGroupCode(a.gorevVeyaIzin);
-        return code == 'HAZIR_KITA' || code == 'NOBET_HEYETI';
-      }),
+      previousAssignments
+          .where((a) => DutyOrLeaveType.isOperationalDuty(a.gorevVeyaIzin)),
       personnelById,
       squadNames,
     );

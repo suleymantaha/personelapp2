@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:excel/excel.dart' hide Border;
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -54,7 +54,14 @@ void main() {
               aciklama: const Value('Eklenmemeli'),
             ),
           );
-      final activity = (await db.select(db.gunlukFaaliyetTable).get()).last;
+      await db.into(db.gunlukFaaliyetTable).insert(
+          GunlukFaaliyetTableCompanion.insert(
+              faaliyetAdi: 'Devriye',
+              tarih: '2026-08-01',
+              olusturanKullanici: 'admin',
+              olusturmaTarihi: '2026-08-01'));
+      final activity = (await db.select(db.gunlukFaaliyetTable).get())
+          .singleWhere((a) => a.id == 2);
       final assignments = await db.select(db.faaliyetPersonelAtamaTable).get();
       final personnel = await db.select(db.personelTable).get();
       final dir = Directory.systemTemp.createTempSync('separate_heybet_');
@@ -108,6 +115,41 @@ void main() {
           final expectedShares = shares.length + 1;
           await tester.tap(find.text(label));
           await tester.pumpAndSettle();
+          if (label == 'Önceki Gün Kartlarıyla Ayrı Excel') {
+            for (var wait = 0;
+                wait < 100 &&
+                    find
+                        .text('Önceki Günün Tüm Faaliyetleri')
+                        .evaluate()
+                        .isEmpty;
+                wait++) {
+              await Future<void>.delayed(const Duration(milliseconds: 10));
+              await tester.pump();
+            }
+            expect(find.text('Devriye'), findsOneWidget);
+            expect(shares.length, expectedShares - 1);
+            expect(
+                tester
+                    .widget<FilledButton>(
+                        find.widgetWithText(FilledButton, 'Önizleme (0)'))
+                    .onPressed,
+                isNull);
+            await tester.tap(find.byKey(const ValueKey('previous-activity-1')));
+            await tester.pump();
+            await tester.tap(find.text('Önizleme (1)'));
+            for (var wait = 0;
+                wait < 100 &&
+                    find.text('Ayrı Excel Önizlemesi').evaluate().isEmpty;
+                wait++) {
+              await Future<void>.delayed(const Duration(milliseconds: 10));
+              await tester.pump();
+            }
+            expect(find.text('Ayrı Excel Önizlemesi'), findsOneWidget);
+            expect(find.textContaining('Önceki gün personeli'), findsOneWidget);
+            expect(shares.length, expectedShares - 1);
+            await tester.tap(find.text('Excel’i Paylaş'));
+            await tester.pumpAndSettle();
+          }
           for (var wait = 0;
               wait < 100 && shares.length < expectedShares;
               wait++) {
@@ -140,7 +182,7 @@ void main() {
       expect(normalExcel, contains('HAZIR KITA'));
       final combinedPaths = <String>[];
       for (var repeat = 0; repeat < 2; repeat++) {
-        await choose('Önceki Gün Heyetiyle Ayrı Excel');
+        await choose('Önceki Gün Kartlarıyla Ayrı Excel');
         final path = (shares.last['paths'] as List).single as String;
         combinedPaths.add(path);
         final workbook = Excel.decodeBytes(File(path).readAsBytesSync());
@@ -155,7 +197,8 @@ void main() {
         expect(values, isNot(contains('Eski birlik')));
         expect(values, isNot(contains('Eklenmemeli')));
         expect(values, isNot(contains('HAZIR KITA')));
-        expect(shares.last['text'], contains('Önceki Gün Heyeti'));
+        expect(
+            shares.last['text'], contains('Seçilen Önceki Gün Faaliyetleri'));
       }
       expect(combinedPaths.first, isNot(combinedPaths.last));
       await choose('Excel’e aktar');
