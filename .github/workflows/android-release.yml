@@ -67,6 +67,7 @@ jobs:
           flutter test --reporter expanded --timeout 2m
           test/features/activity/bulk_import_card_expansion_test.dart
           test/features/activity/bulk_import_wizard_test.dart
+          test/features/activity/bulk_import_validation_progress_test.dart
 
       - name: Run navigation dismissal regressions
         timeout-minutes: 3
