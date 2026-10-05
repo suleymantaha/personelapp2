@@ -4,6 +4,7 @@ List<int> _generateMilitaryExcelBytes({
   required String faaliyetAdi,
   required String tarih,
   required List<MilitaryRosterRow> rows,
+  bool mergeCells = true,
 }) {
   final excel = Excel.createExcel();
   const sheetName = 'İsim Listesi';
@@ -216,6 +217,37 @@ List<int> _generateMilitaryExcelBytes({
     ..setColumnWidth(3, 30)
     ..setColumnWidth(4, 25)
     ..setColumnWidth(5, 7);
+
+  if (!mergeCells) {
+    // Keep the title merged; all personnel and summary cells remain independent.
+    // Restore values and full borders after removing the data merged ranges.
+    for (final range in sheet.spannedItems.toList()) {
+      if (range != 'A1:E1') {
+        sheet.unMerge(range);
+      }
+    }
+    for (var index = 0; index < rows.length; index++) {
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: index + 2))
+          .value = TextCellValue(rows[index].birligi);
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: index + 2))
+          .value = TextCellValue(rows[index].diger);
+      final styles = [
+        cellCenterStyle,
+        cellCenterBoldStyle,
+        cellCenterStyle,
+        cellLeftStyle,
+        cellLeftStyle
+      ];
+      for (var column = 0; column < styles.length; column++) {
+        sheet
+            .cell(CellIndex.indexByColumnRow(
+                columnIndex: column, rowIndex: index + 2))
+            .cellStyle = styles[column];
+      }
+    }
+  }
 
   final encoded = excel.encode();
   if (encoded == null) return <int>[];
