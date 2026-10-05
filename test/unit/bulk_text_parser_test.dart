@@ -177,5 +177,23 @@ Bilinmeyen Liste
       expect(invalid.hasBlockingIssues, isTrue);
       expect(invalid.blocks.single.parsedDate, isEmpty);
     });
+
+    test('parses METİ Timi header correctly', () {
+      const rawText = '''
+METİ Timi Gülüşkür İsim Listesi
+25.07.2026 Cumartesi
+1- J.Asb.Üçvş. Ahmet YILMAZ
+2- J.Uzm.Çvş. Mehmet DEMİR
+''';
+
+      final result = BulkTextParser.parse(rawText);
+      expect(result.hasBlockingIssues, isFalse);
+      expect(result.blocks, hasLength(1));
+      expect(result.blocks.single.parsedTimName, 'METİ');
+      expect(result.blocks.single.parsedActivityType, DutyOrLeaveType.guluskur);
+      expect(result.blocks.single.personnelList, hasLength(2));
+      expect(result.blocks.single.personnelList[0].rawName, 'Ahmet YILMAZ');
+      expect(result.blocks.single.personnelList[1].rawName, 'Mehmet DEMİR');
+    });
   });
 }

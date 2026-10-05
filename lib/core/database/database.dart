@@ -139,7 +139,22 @@ class AppDatabase extends _$AppDatabase {
     }
 
     final existingSquads = await select(timTable).get();
-    if (adminUser != null || existingSquads.isNotEmpty) return;
+    if (adminUser != null || existingSquads.isNotEmpty) {
+      final hasMeti = existingSquads.any((s) {
+        final u = s.timAdi.toUpperCase();
+        return u.contains('METİ') || u.contains('METI');
+      });
+      if (!hasMeti && existingSquads.isNotEmpty) {
+        final nowStr = DateTime.now().toIso8601String();
+        await into(timTable).insert(
+          TimTableCompanion.insert(
+            timAdi: 'METİ Timi',
+            olusturmaTarihi: nowStr,
+          ),
+        );
+      }
+      return;
+    }
     final existingNames = existingSquads.map((s) => s.timAdi.trim()).toSet();
     final defaultSquads = [
       'K.H',
@@ -158,6 +173,7 @@ class AppDatabase extends _$AppDatabase {
       '10-B Timi',
       '11-B Timi',
       '12-B Timi',
+      'METİ Timi',
     ];
     final nowStr = DateTime.now().toIso8601String();
     final toInsert = <TimTableCompanion>[];

@@ -104,5 +104,39 @@ void main() {
         lessThan(MilitaryStructureHelper.getSquadOrderWeight("3'üncü Bl.")),
       );
     });
+
+    test('recognizes METİ Timi under K.H and gives it official order', () {
+      expect(MilitaryStructureHelper.getBolukName('METİ Timi'), 'K.H');
+      expect(MilitaryStructureHelper.getBolukName('METİ'), 'K.H');
+      expect(
+        MilitaryStructureHelper.getOfficialBirlikName('METİ Timi'),
+        'METİ Timi',
+      );
+      expect(MilitaryStructureHelper.getOfficialBirlikName('METİ'), 'METİ Timi');
+      expect(
+        MilitaryStructureHelper.getRosterBirlikName(
+          timName: 'METİ Timi',
+          birlik: '',
+          duty: 'DEVRİYE',
+        ),
+        'METİ Timi',
+      );
+      expect(
+        MilitaryStructureHelper.getRosterBirlikName(
+          timName: 'METİ Timi',
+          birlik: '',
+          duty: 'HAZIR KITA',
+        ),
+        'K.H',
+      );
+      expect(
+        MilitaryStructureHelper.officialSquadOrder.contains('METİ Timi'),
+        isTrue,
+      );
+      expect(
+        MilitaryStructureHelper.getSquadOrderWeight('METİ Timi'),
+        lessThan(999),
+      );
+    });
   });
 }

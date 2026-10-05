@@ -30,7 +30,9 @@ class MilitaryStructureHelper {
     if (s == 'K.H' ||
         s == 'KH' ||
         s.contains('TABUR K.H') ||
-        s.contains('KARARGAH')) {
+        s.contains('KARARGAH') ||
+        s.contains('METİ') ||
+        s.contains('METI')) {
       return 'K.H';
     }
 
@@ -208,11 +210,16 @@ class MilitaryStructureHelper {
       return 'K.H';
     }
 
-    // 4. Tim matches (1-B, 1/B, "1 / B", "1. Tim", etc.)
+    // 4. METİ Timi match
+    if (upper.contains('METİ') || upper.contains('METI')) {
+      return 'METİ Timi';
+    }
+
+    // 5. Tim matches (1-B, 1/B, "1 / B", "1. Tim", etc.)
     final teamNumber = _teamNumber(upper);
     if (teamNumber != null) return '$teamNumber-B Timi';
 
-    // 5. Exact match fallback with officialSquadOrder
+    // 6. Exact match fallback with officialSquadOrder
     for (final official in officialSquadOrder) {
       if (official.toLowerCase() == s.toLowerCase()) {
         return official;
@@ -268,6 +275,7 @@ class MilitaryStructureHelper {
     '10-B Timi',
     '11-B Timi',
     '12-B Timi',
+    'METİ Timi',
   ];
 
   /// Returns weight/index for sorting squads according to official military order
