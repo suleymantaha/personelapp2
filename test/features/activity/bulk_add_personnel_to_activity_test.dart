@@ -243,6 +243,8 @@ void main() {
       );
       await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Kaydet'));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('bulk-import-save-button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));

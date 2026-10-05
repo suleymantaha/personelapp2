@@ -92,19 +92,17 @@ _PreviewMetrics _buildPreviewMetrics({
     0,
     (count, block) => count + block.personnelList.length,
   );
-  final criticalCount = problemLocations.where((loc) => loc.isCritical).length;
-  final blockingParseIssueCount =
-      issues.where((issue) => issue.isBlocking).length;
-
+  final summary = BulkImportIssueSummary(
+    locations: problemLocations,
+    issues: issues,
+  );
   return _PreviewMetrics(
     personnelCount: personnelCount,
     dayCount: blocks.map((b) => b.parsedDate).toSet().length,
-    reviewCount: problemLocations.where((loc) => !loc.isCritical).length,
-    actionCount:
-        problemLocations.isNotEmpty ? problemLocations.length : issues.length,
-    displayCriticalCount:
-        criticalCount > 0 ? criticalCount : blockingParseIssueCount,
-    hasBlocking: criticalCount > 0 || blockingParseIssueCount > 0,
+    reviewCount: summary.reviewCount,
+    actionCount: summary.totalCount,
+    displayCriticalCount: summary.criticalCount,
+    hasBlocking: summary.hasBlocking,
   );
 }
 

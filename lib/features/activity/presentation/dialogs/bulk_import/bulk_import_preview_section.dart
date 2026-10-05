@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import 'bulk_import_issue_summary.dart';
+
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
@@ -141,7 +144,8 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                             '${widget.ignoredLineCount} başlık, toplam veya not satırı personel kaydı olarak alınmadı.',
                           ),
                         ),
-                      if (widget.blocks.isNotEmpty) ...[
+                      if (widget.blocks.isNotEmpty ||
+                          widget.issues.isNotEmpty) ...[
                         _CorrectnessPanel(
                           cardCount: widget.blocks.length,
                           personnelCount: metrics.personnelCount,
@@ -158,12 +162,11 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                         ),
                         const SizedBox(height: 12),
                         _FilterSearchStrip(
-                          selected:
-                              widget.previewFilterIsProblems
-                                  ? _PreviewFilter.problems
-                                  : widget.previewFilterIsReady
-                                  ? _PreviewFilter.ready
-                                  : _PreviewFilter.all,
+                          selected: widget.previewFilterIsProblems
+                              ? _PreviewFilter.problems
+                              : widget.previewFilterIsReady
+                              ? _PreviewFilter.ready
+                              : _PreviewFilter.all,
                           problemCount: metrics.actionCount,
                           allCount: widget.blocks.length,
                           readyCount: problemState.readyBlockCount,
@@ -176,7 +179,9 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                         const SizedBox(height: 10),
                         if (!widget.previewFilterIsReady &&
                             (widget.isMobile ||
-                                widget.activeIssueFocusIndex >= 0)) ...[
+                                widget.activeIssueFocusIndex >= 0 ||
+                                (widget.problemLocations.isEmpty &&
+                                    widget.issues.isNotEmpty))) ...[
                           _ActiveIssueCard(
                             problemLocations: widget.problemLocations,
                             parseIssues: widget.issues,
@@ -276,9 +281,9 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                                 hasBlockProblems),
                         visiblePersonnelIndexes:
                             widget.previewFilterIsProblems &&
-                                    problemPersonnelIndexes?.isNotEmpty == true
-                                ? problemPersonnelIndexes
-                                : null,
+                                problemPersonnelIndexes?.isNotEmpty == true
+                            ? problemPersonnelIndexes
+                            : null,
                         onEditBlock: widget.onEditBlock,
                         onRemoveBlock: widget.onRemoveBlock,
                         onSelectPersonnel: widget.onSelectPersonnel,
@@ -294,6 +299,7 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
           ),
           const SizedBox(height: 10),
           SmartSaveBar(
+            actionLabel: 'Kaydetme Adımına Geç',
             problemCount: metrics.actionCount,
             problemLocs: widget.problemLocations,
             activeIssueFocusIndex: widget.activeIssueFocusIndex,

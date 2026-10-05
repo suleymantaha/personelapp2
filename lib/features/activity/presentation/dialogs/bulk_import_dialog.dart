@@ -96,6 +96,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   void _focusCurrentProblem() {
     final locs = _getProblemLocations();
     if (locs.isEmpty) {
+      if (_parseIssues.isNotEmpty) {
+        _openSourceText();
+        return;
+      }
       setState(() {
         _activeIssueFocusIndex = -1;
         _focusedIssue = null;
@@ -112,6 +116,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   void _focusNextProblem() {
     final locs = _getProblemLocations();
     if (locs.isEmpty) {
+      if (_parseIssues.isNotEmpty) {
+        _openSourceText();
+        return;
+      }
       setState(() {
         _activeIssueFocusIndex = -1;
         _focusedIssue = null;
@@ -129,6 +137,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   void _focusPreviousProblem() {
     final locs = _getProblemLocations();
     if (locs.isEmpty) {
+      if (_parseIssues.isNotEmpty) {
+        _openSourceText();
+        return;
+      }
       setState(() {
         _activeIssueFocusIndex = -1;
         _focusedIssue = null;
@@ -496,6 +508,19 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     );
   }
 
+  void _openSourceText() {
+    setState(() {
+      _currentStep = 0;
+      _focusedIssue = null;
+      _activeIssueFocusIndex = -1;
+    });
+  }
+
+  void _proceedToConfirmation() {
+    if (!_canProceedToSave || _isSaving) return;
+    setState(() => _currentStep = 2);
+  }
+
   bool get _canProceedToSave {
     if (_parsedBlocks.isEmpty) return false;
     final problemLocs = _getProblemLocations();
@@ -521,7 +546,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     final item = currentBlock.personnelList[personIndex];
     if (!item.isMatched || item.matchedPersonnelId == null) return;
 
-    setState(() {
+    _updateState(() {
       final updatedList = List<ParsedPersonnelItem>.from(
         currentBlock.personnelList,
       );
@@ -566,7 +591,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       onClearAll: _confirmClearAll,
       onToggleParseIssues: () =>
           setState(() => _parseIssuesExpanded = !_parseIssuesExpanded),
-      onStartWizard: problemLocs.isEmpty ? null : _focusCurrentProblem,
+      onStartWizard: problemLocs.isEmpty && _parseIssues.isEmpty
+          ? null
+          : _focusCurrentProblem,
       onFocusPrevious: _focusPreviousProblem,
       onFocusNext: _focusNextProblem,
       onShowAll: () => _setPreviewFilter(_BulkPreviewFilter.all),
@@ -581,7 +608,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       onConfirmAllSuggestions: _hasReviewableSuggestions
           ? _confirmAllSuggestions
           : null,
-      onSave: _saveAllToFaaliyet,
+      onSave: _proceedToConfirmation,
     );
   }
 

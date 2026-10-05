@@ -93,12 +93,9 @@ BulkParseResult _parseBulkText(
     nextIndex = 1;
   }
 
-  final rawLines =
-      rawText.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
-
-  for (var lineIndex = 0; lineIndex < rawLines.length; lineIndex++) {
-    final rawLine = rawLines[lineIndex];
-    final lineNumber = lineIndex + 1;
+  for (final source in _personnelSourceLines(rawText)) {
+    final rawLine = source.text;
+    final lineNumber = source.lineNumber;
     final subLines = _splitLineIfMultiplePersonnel(rawLine);
 
     for (final rawSubLine in subLines) {

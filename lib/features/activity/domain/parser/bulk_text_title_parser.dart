@@ -49,7 +49,7 @@ final RegExp _teamPattern = RegExp(
   caseSensitive: false,
 );
 final RegExp _numberedPersonnelPattern = RegExp(
-  r'^\s*(\d+)\s*([.)\-:]|(?=J\s*[.]?\s*(?:Asb|Uzm|Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm|Yzb|Bçvş|Bcvs)))\s*(.+)$',
+  r'^\s*(\d+)\s*([.)\-:]+|(?=J\s*[.]?\s*(?:Asb|Uzm|Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm|Yzb|Bçvş|Bcvs)))\s*(.+)$',
   caseSensitive: false,
 );
 final RegExp _bulletPattern = RegExp(r'^\s*[•●▪◦]\s*');
@@ -214,7 +214,7 @@ String _mapBulkActivityTypeToDutyOrLeave(String activityType) =>
 
 List<String> _splitLineIfMultiplePersonnel(String line) {
   final splitPattern = RegExp(
-    r'(?<=\S)\s+(?=\d+\s*[.)\-:]?\s*J\s*[.]?\s*(?:Asb|Uzm|Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm|Yzb|Bçvş|Bcvs))',
+    r'(?<=\S)\s+(?=\d+\s*[.)\-:]*\s*J\s*[.]?\s*(?:Asb|Uzm|Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm|Yzb|Bçvş|Bcvs))',
     caseSensitive: false,
   );
   final parts = line.split(splitPattern);

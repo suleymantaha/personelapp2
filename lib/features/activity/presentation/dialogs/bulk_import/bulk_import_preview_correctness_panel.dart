@@ -40,7 +40,9 @@ class _CorrectnessPanel extends StatelessWidget {
   Widget _buildPanel(BuildContext context, bool compact) {
     final actionText = actionCount == 0
         ? 'Tüm kontroller tamam'
-        : 'Kaydetmeden önce $actionCount işlem tamamlanmalı';
+        : hasBlocking
+            ? 'Kaydetmeden önce $actionCount işlem tamamlanmalı'
+            : '$actionCount isteğe bağlı inceleme';
     if (compact) {
       return Container(
         padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),

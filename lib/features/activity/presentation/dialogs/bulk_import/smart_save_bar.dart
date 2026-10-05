@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import 'bulk_import_issue_summary.dart';
+
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
@@ -27,8 +30,8 @@ class BulkImportSaveButton extends StatelessWidget {
       key: const Key('bulk-import-save-button'),
       onPressed:
           blocks.isEmpty || isSaving || isBlocked || hasUnresolvedProblems
-              ? null
-              : onPressed,
+          ? null
+          : onPressed,
       icon: isSaving
           ? SizedBox(
               width: 20,
@@ -57,9 +60,7 @@ class BulkImportSaveButton extends StatelessWidget {
         backgroundColor: context.approvedColor,
         foregroundColor: context.onStatusColor(context.approvedColor),
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       ),
     );
@@ -78,9 +79,11 @@ class SmartSaveBar extends StatelessWidget {
     required this.blocks,
     required this.issues,
     required this.hasUnresolvedProblems,
+    this.actionLabel,
     super.key,
   });
 
+  final String? actionLabel;
   final int problemCount;
   final List<ProblemLocation> problemLocs;
   final int activeIssueFocusIndex;
@@ -94,26 +97,21 @@ class SmartSaveBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isBlocked = issues.any((issue) => issue.isBlocking);
-    final criticalLocs = problemLocs.where((l) => l.isCritical).toList();
-    final warningLocs = problemLocs.where((l) => !l.isCritical).toList();
-    final blockingIssues = issues.where((i) => i.isBlocking).toList();
-
-    final criticalCount = problemLocs.isNotEmpty
-        ? criticalLocs.length
-        : (blockingIssues.length + problemCount);
-    final reviewWarningCount = problemLocs.isNotEmpty ? warningLocs.length : 0;
-    final hasCritical = isBlocked || criticalCount > 0;
+    final summary = BulkImportIssueSummary(
+      locations: problemLocs,
+      issues: issues,
+    );
+    final reviewWarningCount = summary.reviewCount;
+    final hasCritical = summary.hasBlocking;
     final canSave = blocks.isNotEmpty && !hasCritical && !hasUnresolvedProblems;
-    final displayTotal = problemLocs.isNotEmpty
-        ? problemLocs.length
-        : (criticalCount + reviewWarningCount);
+    final displayTotal = summary.totalCount;
     final displayIndex = activeIssueFocusIndex < 0
         ? 1
         : (displayTotal > 0 ? (activeIssueFocusIndex % displayTotal) + 1 : 1);
 
-    final wizardButtonColor =
-        hasCritical ? context.rejectedColor : context.pendingColor;
+    final wizardButtonColor = hasCritical
+        ? context.rejectedColor
+        : context.pendingColor;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -146,7 +144,8 @@ class SmartSaveBar extends StatelessWidget {
                 label: Text(
                   isSaving
                       ? 'Kaydediliyor...'
-                      : 'Faaliyetleri Kaydet (${blocks.length} Kart)',
+                      : actionLabel ??
+                            'Faaliyetleri Kaydet (${blocks.length} Kart)',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -206,8 +205,10 @@ class SmartSaveBar extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child:
-                        const Icon(Icons.keyboard_arrow_up_rounded, size: 22),
+                    child: const Icon(
+                      Icons.keyboard_arrow_up_rounded,
+                      size: 22,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),

@@ -5,11 +5,9 @@ PersonnelListParseResult _parsePersonnelList(String rawText) {
   final issues = <BulkParseIssue>[];
   var nextIndex = 1;
 
-  final rawLines =
-      rawText.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
-  for (var lineIndex = 0; lineIndex < rawLines.length; lineIndex++) {
-    final rawLine = rawLines[lineIndex];
-    final lineNumber = lineIndex + 1;
+  for (final source in _personnelSourceLines(rawText)) {
+    final rawLine = source.text;
+    final lineNumber = source.lineNumber;
     for (final rawSubLine in _splitLineIfMultiplePersonnel(rawLine)) {
       final line = _normalizeLine(rawSubLine);
       if (line.isEmpty ||
@@ -59,6 +57,51 @@ PersonnelListParseResult _parsePersonnelList(String rawText) {
     personnel: List.unmodifiable(personnel),
     issues: List.unmodifiable(issues),
   );
+}
+
+Iterable<({String text, int lineNumber})> _personnelSourceLines(
+  String rawText,
+) sync* {
+  final lines = rawText
+      .replaceAll('\r\n', '\n')
+      .replaceAll('\r', '\n')
+      .split('\n');
+  for (var i = 0; i < lines.length; i++) {
+    final originalLineNumber = i + 1;
+    final line = _normalizeLine(lines[i]);
+    final candidate = _personnelCandidate(line);
+    final rank = candidate == null
+        ? null
+        : _rankPattern.firstMatch(candidate.content);
+    final rankOnly =
+        rank != null && candidate!.content.substring(rank.end).trim().isEmpty;
+    if (rankOnly) {
+      var nextIndex = i + 1;
+      while (nextIndex < lines.length &&
+          _normalizeLine(lines[nextIndex]).isEmpty) {
+        nextIndex++;
+      }
+      if (nextIndex < lines.length) {
+        final next = _normalizeLine(lines[nextIndex]);
+        final nextCandidate = _personnelCandidate(next);
+        final isNameContinuation =
+            nextCandidate != null &&
+            nextCandidate.index == null &&
+            !_rankPattern.hasMatch(next) &&
+            !_isHeader(next) &&
+            !_summaryPattern.hasMatch(next) &&
+            !_isCommentOrNoteLine(next) &&
+            RegExp(r"^[A-Za-zÇĞİÖŞÜçğıöşü][A-Za-zÇĞİÖŞÜçğıöşü .'’-]*$")
+                .hasMatch(next);
+        if (isNameContinuation) {
+          yield (text: '$line $next', lineNumber: originalLineNumber);
+          i = nextIndex;
+          continue;
+        }
+      }
+    }
+    yield (text: lines[i], lineNumber: originalLineNumber);
+  }
 }
 
 String _normalizeLine(String input) => input
