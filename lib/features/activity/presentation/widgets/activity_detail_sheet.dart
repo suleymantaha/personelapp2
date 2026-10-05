@@ -18,7 +18,6 @@ import 'package:personelapp2/features/activity/presentation/widgets/activity_ass
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
-import 'package:personelapp2/features/activity/services/heybet_roster_projection.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/roster_image_import_service.dart';
 
@@ -90,19 +89,17 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                 : '';
             return MilitaryRosterRow(
               sNu: i + 1,
-              birligi: MilitaryStructureHelper.getRosterGroupCode(
-                        atama.gorevVeyaIzin,
-                      ) ==
-                      'HAZIR_KITA'
-                  ? ''
-                  : MilitaryStructureHelper.getRosterBirlikName(
-                      timName: timName,
-                      birlik: p?.birlik ?? '',
-                      duty: atama.gorevVeyaIzin,
-                    ),
+              birligi: MilitaryStructureHelper.getRosterBirlikName(
+                timName: timName,
+                birlik: p?.birlik ?? '',
+                duty: atama.gorevVeyaIzin,
+              ),
               rutbe: p?.rutbe ?? '',
               adSoyad: p?.adSoyad ?? 'Personel #${atama.personelId}',
-              diger: '',
+              diger: MilitaryStructureHelper.getDigerCellText(
+                atama.gorevVeyaIzin,
+                aciklama: atama.aciklama,
+              ),
               groupCode: MilitaryStructureHelper.getRosterGroupCode(
                 atama.gorevVeyaIzin,
               ),
@@ -280,31 +277,13 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                 surfaceTintColor: context.colorScheme.surface,
                 shape: modernPopupShape(context),
                 constraints: const BoxConstraints(minWidth: 290, maxWidth: 330),
-                onSelected: (val) async {
-                  final visiblePersonnel = {
-                    for (final p in personnelList)
-                      if ((isAdmin ||
-                              (session?.timId != null &&
-                                  p.timId == session!.timId)) &&
-                          (selectedSquadId == null ||
-                              p.timId == selectedSquadId))
-                        p.id: p,
-                  };
-                  final exportRows =
-                      await HeybetRosterProjection(ref.read(databaseProvider))
-                          .appendPreviousDay(
-                    activities: [activity],
-                    rows: rosterRows,
-                    personnelById: visiblePersonnel,
-                    squadNames: squadMap,
-                  );
-                  if (!context.mounted) return;
+                onSelected: (val) {
                   if (val == 'excel') {
                     unawaited(
                       MilitaryRosterExporter.shareExcelRoster(
                         faaliyetAdi: activity.faaliyetAdi,
                         tarih: activity.tarih,
-                        rows: exportRows,
+                        rows: rosterRows,
                       ),
                     );
                   } else if (val == 'pdf') {
@@ -313,7 +292,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                         context,
                         faaliyetAdi: activity.faaliyetAdi,
                         tarih: activity.tarih,
-                        rows: exportRows,
+                        rows: rosterRows,
                       ),
                     );
                   } else if (val == 'text') {
@@ -321,7 +300,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       MilitaryRosterExporter.shareTextRoster(
                         faaliyetAdi: activity.faaliyetAdi,
                         tarih: activity.tarih,
-                        rows: exportRows,
+                        rows: rosterRows,
                       ),
                     );
                   }

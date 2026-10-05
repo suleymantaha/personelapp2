@@ -17,7 +17,6 @@ import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/services/activity_order_preferences.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
-import 'package:personelapp2/features/activity/services/heybet_roster_projection.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 

@@ -18,8 +18,6 @@ class MilitaryRosterRow {
     required this.adSoyad,
     required this.diger,
     this.groupCode = 'DIGER',
-    this.sourceAssignmentId,
-    this.sourceDate,
   });
 
   final int sNu;
@@ -28,9 +26,6 @@ class MilitaryRosterRow {
   final String adSoyad;
   final String diger;
   final String groupCode; // DIGER, NOBET_HEYETI, HAZIR_KITA, GULUSKUR
-  // Export-only provenance. These rows never become persisted assignments.
-  final int? sourceAssignmentId;
-  final String? sourceDate;
 }
 
 class MasterActivityData {

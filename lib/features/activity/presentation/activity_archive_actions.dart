@@ -143,16 +143,15 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
       final timName = (p?.timId != null && squadMap.containsKey(p!.timId))
           ? squadMap[p.timId]!
           : '';
-      final birligi =
-          MilitaryStructureHelper.getRosterGroupCode(atama.gorevVeyaIzin) ==
-                  'HAZIR_KITA'
-              ? ''
-              : MilitaryStructureHelper.getRosterBirlikName(
-                  timName: timName,
-                  birlik: p?.birlik ?? '',
-                  duty: atama.gorevVeyaIzin,
-                );
-      const digerNote = '';
+      final birligi = MilitaryStructureHelper.getRosterBirlikName(
+        timName: timName,
+        birlik: p?.birlik ?? '',
+        duty: atama.gorevVeyaIzin,
+      );
+      final digerNote = MilitaryStructureHelper.getDigerCellText(
+        atama.gorevVeyaIzin,
+        aciklama: atama.aciklama,
+      );
 
       final groupCode = MilitaryStructureHelper.getRosterGroupCode(
         atama.gorevVeyaIzin,
@@ -169,16 +168,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
         ),
       );
     }
-    return HeybetRosterProjection(db).appendPreviousDay(
-      activities: activities,
-      rows: rosterRows,
-      personnelById: {
-        for (final p in personnelList)
-          if (_selectedSquadFilter == null || p.timId == _selectedSquadFilter)
-            p.id: p,
-      },
-      squadNames: squadMap,
-    );
+    return rosterRows;
   }
 
   Future<void> _exportMasterExcel(

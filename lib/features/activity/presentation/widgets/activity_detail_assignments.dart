@@ -46,25 +46,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                   );
                 },
           onExportSelected: (selectedAssignments) async {
-            final selectedTeamIdsForExport = selectedAssignments
-                .map((a) => pMap[a.personelId]?.timId)
-                .toSet();
-            final selectedRows =
-                await HeybetRosterProjection(ref.read(databaseProvider))
-                    .appendPreviousDay(
-              activities: [activity],
-              rows: buildRosterRows(selectedAssignments),
-              personnelById: {
-                for (final p in pMap.values)
-                  if (selectedTeamIdsForExport.contains(p.timId) &&
-                      (isAdmin ||
-                          (session?.timId != null &&
-                              p.timId == session!.timId)))
-                    p.id: p,
-              },
-              squadNames: squadMap,
-            );
-            if (!context.mounted) return;
+            final selectedRows = buildRosterRows(selectedAssignments);
             if (selectedRows.isEmpty) {
               AppNotifications.info(
                 'Seçilen timlerde yazdırılabilir personel bulunamadı.',
