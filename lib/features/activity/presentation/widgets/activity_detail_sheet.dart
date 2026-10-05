@@ -11,6 +11,7 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/previous_day_excel_picker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/edit_assignment_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_personnel_dialog.dart';
@@ -19,6 +20,7 @@ import 'package:personelapp2/features/activity/presentation/widgets/activity_ass
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
+import 'package:personelapp2/features/activity/services/combined_heybet_excel_service.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/roster_image_import_service.dart';
 
@@ -132,6 +134,47 @@ class ActivityAssignmentDetails extends ConsumerWidget {
         (selectedSquadId == null || a.gorevTimId == selectedSquadId)));
     }
 
+    Future<void> shareSeparateCombinedExcel() async {
+      final visiblePersonnel = {
+        for (final p in personnelList)
+          if ((isAdmin ||
+                  (session?.timId != null && p.timId == session!.timId)) &&
+              (selectedSquadId == null || p.timId == selectedSquadId))
+            p.id: p,
+      };
+      final service = CombinedHeybetExcelService(ref.read(databaseProvider));
+      final previousActivities = await service.listPreviousActivities(activity);
+      if (!context.mounted) return;
+      final selectedIds = await showDialog<Set<int>>(
+        context: context,
+        builder: (_) => PreviousDayExcelPicker(activities: previousActivities),
+      );
+      if (selectedIds == null || selectedIds.isEmpty || !context.mounted) {
+        return;
+      }
+      final currentRows = await loadCurrentRows(filteredAssignments);
+      if (!context.mounted || currentRows.isEmpty) return;
+      final rows = await service.build(
+        activity: activity,
+        selectedPreviousActivityIds: selectedIds,
+        currentRows: currentRows,
+        personnelById: visiblePersonnel,
+        squadNames: squadMap,
+      );
+      if (!context.mounted) return;
+      if (!await confirmCombinedExcelPreview(context, rows) ||
+          !context.mounted) {
+        return;
+      }
+      await MilitaryRosterExporter.shareExcelRoster(
+        faaliyetAdi:
+            '${activity.faaliyetAdi} + Seçilen Önceki Gün Faaliyetleri',
+        tarih: activity.tarih,
+        rows: rows,
+        mergeCells: false,
+      );
+    }
+
     return Container(
       color: context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -233,9 +276,8 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                         if (imageResult == null || !context.mounted) return;
 
                         final db = ref.read(databaseProvider);
-                        final activityRepo = ref.read(
-                          activityRepositoryProvider,
-                        );
+                        final activityRepo =
+                            ref.read(activityRepositoryProvider);
                         final result = await showDialog<bool>(
                           context: context,
                           builder:
@@ -320,6 +362,10 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                 constraints: const BoxConstraints(minWidth: 290, maxWidth: 330),
                 onSelected: (val) async {
                   try {
+                    if (val == 'combinedExcel') {
+                      await shareSeparateCombinedExcel();
+                      return;
+                    }
                     final rows = await loadCurrentRows(filteredAssignments);
                     if (!context.mounted || rows.isEmpty) return;
                     if (val == 'excel') {
@@ -355,6 +401,16 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                         icon: Icons.ios_share_rounded,
                       ),
                       const PopupMenuDivider(),
+                      if (CombinedHeybetExcelService.isHeybet(activity.faaliyetAdi))
+                        ModernPopupMenuItem(
+                          option: const ModernActionOption(
+                            value: 'combinedExcel',
+                            title: 'Önceki Gün Kartlarıyla Ayrı Excel',
+                            subtitle:
+                                'Önceki günün kartlarını seçerek ayrı dosyada paylaş',
+                            icon: Icons.table_chart_outlined,
+                          ),
+                        ),
                       ModernPopupMenuItem(
                         option: const ModernActionOption(
                           value: 'excel',

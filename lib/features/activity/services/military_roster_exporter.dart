@@ -147,11 +147,13 @@ class MilitaryRosterExporter {
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
+    bool mergeCells = true,
   }) =>
       ExcelXlsxGenerator.generateMilitaryExcelBytes(
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
         rows: rows,
+        mergeCells: mergeCells,
       );
 
   /// Generates native binary .xlsx spreadsheet for all daily activities combined
@@ -169,11 +171,13 @@ class MilitaryRosterExporter {
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
+    bool mergeCells = true,
   }) async {
     final bytes = generateMilitaryExcelBytes(
       faaliyetAdi: faaliyetAdi,
       tarih: tarih,
       rows: rows,
+      mergeCells: mergeCells,
     );
 
     final fileName = formatExportFileName(

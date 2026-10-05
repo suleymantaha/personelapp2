@@ -238,7 +238,10 @@ class MilitaryStructureHelper {
         dutyUpper.contains('HAZIRKITA') ||
         dutyUpper.contains('GÜLÜŞKÜR') ||
         dutyUpper.contains('GULUSKUR');
-    final teamOrFallback = timName.trim().isNotEmpty ? timName : birlik;
+    final teamOrFallback =
+        (timName.trim().isNotEmpty && timName != 'Tim geçmişi bilinmiyor')
+            ? timName
+            : (birlik.trim().isNotEmpty ? birlik : 'Tim geçmişi bilinmiyor');
 
     if (isCompanyDuty) {
       return getBolukName(teamOrFallback);
