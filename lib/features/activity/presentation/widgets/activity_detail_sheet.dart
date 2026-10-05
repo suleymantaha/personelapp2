@@ -18,6 +18,7 @@ import 'package:personelapp2/features/activity/presentation/widgets/activity_ass
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
+import 'package:personelapp2/features/activity/services/combined_heybet_excel_service.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/roster_image_import_service.dart';
 
@@ -109,6 +110,29 @@ class ActivityAssignmentDetails extends ConsumerWidget {
     }
 
     final rosterRows = buildRosterRows(filteredAssignments);
+
+    Future<void> shareSeparateCombinedExcel() async {
+      final visiblePersonnel = {
+        for (final p in personnelList)
+          if ((isAdmin ||
+                  (session?.timId != null && p.timId == session!.timId)) &&
+              (selectedSquadId == null || p.timId == selectedSquadId))
+            p.id: p,
+      };
+      final rows =
+          await CombinedHeybetExcelService(ref.read(databaseProvider)).build(
+        activity: activity,
+        currentRows: rosterRows,
+        personnelById: visiblePersonnel,
+        squadNames: squadMap,
+      );
+      if (!context.mounted) return;
+      await MilitaryRosterExporter.shareExcelRoster(
+        faaliyetAdi: '${activity.faaliyetAdi} + Önceki Gün Heyeti',
+        tarih: activity.tarih,
+        rows: rows,
+      );
+    }
 
     return Container(
       color: context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
@@ -278,7 +302,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                 shape: modernPopupShape(context),
                 constraints: const BoxConstraints(minWidth: 290, maxWidth: 330),
                 onSelected: (val) {
-                  if (val == 'excel') {
+                  if (val == 'combinedExcel') {
+                    unawaited(shareSeparateCombinedExcel());
+                  } else if (val == 'excel') {
                     unawaited(
                       MilitaryRosterExporter.shareExcelRoster(
                         faaliyetAdi: activity.faaliyetAdi,
@@ -312,6 +338,16 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                     icon: Icons.ios_share_rounded,
                   ),
                   const PopupMenuDivider(),
+                  if (CombinedHeybetExcelService.isHeybet(activity.faaliyetAdi))
+                    ModernPopupMenuItem(
+                      option: const ModernActionOption(
+                        value: 'combinedExcel',
+                        title: 'Önceki Gün Heyetiyle Ayrı Excel',
+                        subtitle:
+                            'Heybet ve önceki gün heyetini ayrı dosyada paylaş',
+                        icon: Icons.table_chart_outlined,
+                      ),
+                    ),
                   ModernPopupMenuItem(
                     option: const ModernActionOption(
                       value: 'excel',
