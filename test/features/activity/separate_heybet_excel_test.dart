@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:excel/excel.dart' hide Border;
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide BorderStyle;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -187,8 +187,19 @@ void main() {
         combinedPaths.add(path);
         final workbook = Excel.decodeBytes(File(path).readAsBytesSync());
         final sheet = workbook['İsim Listesi'];
-        expect(sheet.spannedItems, isEmpty);
+        expect(sheet.spannedItems, ['A1:E1']);
         for (var index = 2; index < 4; index++) {
+          for (var column = 0; column < 5; column++) {
+            final style = sheet
+                .cell(CellIndex.indexByColumnRow(
+                    columnIndex: column, rowIndex: index))
+                .cellStyle;
+            expect(style?.leftBorder.borderStyle, BorderStyle.Thin,
+                reason: 'row=$index column=$column');
+            expect(style?.rightBorder.borderStyle, BorderStyle.Thin);
+            expect(style?.topBorder.borderStyle, BorderStyle.Thin);
+            expect(style?.bottomBorder.borderStyle, BorderStyle.Thin);
+          }
           expect(
               sheet
                   .cell(CellIndex.indexByColumnRow(

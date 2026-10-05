@@ -219,10 +219,12 @@ List<int> _generateMilitaryExcelBytes({
     ..setColumnWidth(5, 7);
 
   if (!mergeCells) {
-    // The separate combined list needs independent cells, including its title
-    // and summary. Restore every personnel value after removing merged ranges.
+    // Keep the title merged; all personnel and summary cells remain independent.
+    // Restore values and full borders after removing the data merged ranges.
     for (final range in sheet.spannedItems.toList()) {
-      sheet.unMerge(range);
+      if (range != 'A1:E1') {
+        sheet.unMerge(range);
+      }
     }
     for (var index = 0; index < rows.length; index++) {
       sheet
@@ -231,13 +233,20 @@ List<int> _generateMilitaryExcelBytes({
       sheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: index + 2))
           .value = TextCellValue(rows[index].diger);
+      final styles = [
+        cellCenterStyle,
+        cellCenterBoldStyle,
+        cellCenterStyle,
+        cellLeftStyle,
+        cellLeftStyle
+      ];
+      for (var column = 0; column < styles.length; column++) {
+        sheet
+            .cell(CellIndex.indexByColumnRow(
+                columnIndex: column, rowIndex: index + 2))
+            .cellStyle = styles[column];
+      }
     }
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =
-        null;
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0))
-      ..value = TextCellValue(titleHeader)
-      ..cellStyle = titleStyle;
-    sheet.setRowHeight(0, 90);
   }
 
   final encoded = excel.encode();
