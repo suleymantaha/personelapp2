@@ -17,11 +17,13 @@ class ExcelXlsxGenerator {
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
+    bool mergeCells = true,
   }) =>
       _generateMilitaryExcelBytes(
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
         rows: rows,
+        mergeCells: mergeCells,
       );
 
   static List<int> generateMasterDailyExcelBytes({

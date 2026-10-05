@@ -43,8 +43,7 @@ class CombinedHeybetExcelService {
       for (final row in currentRows)
         MilitaryRosterRow(
           sNu: row.sNu,
-          birligi:
-              row.groupCode == 'HAZIR_KITA' ? '' : 'J.Komd.Öz.Hrk.Tb.Klığı',
+          birligi: 'J.Komd.Öz.Hrk.Tb.Klığı',
           rutbe: row.rutbe,
           adSoyad: row.adSoyad,
           diger: '',

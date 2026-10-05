@@ -186,6 +186,25 @@ void main() {
         final path = (shares.last['paths'] as List).single as String;
         combinedPaths.add(path);
         final workbook = Excel.decodeBytes(File(path).readAsBytesSync());
+        final sheet = workbook['İsim Listesi'];
+        expect(sheet.spannedItems, isEmpty);
+        for (var index = 2; index < 4; index++) {
+          expect(
+              sheet
+                  .cell(CellIndex.indexByColumnRow(
+                      columnIndex: 1, rowIndex: index))
+                  .value
+                  ?.toString(),
+              'J.Komd.Öz.Hrk.Tb.Klığı');
+          expect(
+              sheet
+                      .cell(CellIndex.indexByColumnRow(
+                          columnIndex: 4, rowIndex: index))
+                      .value
+                      ?.toString() ??
+                  '',
+              '');
+        }
         final values = workbook['İsim Listesi']
             .rows
             .expand((r) => r)

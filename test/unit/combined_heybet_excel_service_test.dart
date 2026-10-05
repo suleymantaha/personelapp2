@@ -83,7 +83,7 @@ void main() {
       expect(rows.map((r) => r.sNu), [1, 2, 3, 4, 5]);
       expect(rows.map((r) => r.diger), everyElement(''));
       expect(rows.first.birligi, 'J.Komd.Öz.Hrk.Tb.Klığı');
-      expect(rows[1].birligi, '');
+      expect(rows[1].birligi, 'J.Komd.Öz.Hrk.Tb.Klığı');
       expect(rows.skip(2).map((r) => r.birligi),
           everyElement('J.Komd.Öz.Hrk.Tb.Klığı'));
     }

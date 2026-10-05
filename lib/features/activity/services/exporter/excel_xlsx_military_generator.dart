@@ -4,6 +4,7 @@ List<int> _generateMilitaryExcelBytes({
   required String faaliyetAdi,
   required String tarih,
   required List<MilitaryRosterRow> rows,
+  bool mergeCells = true,
 }) {
   final excel = Excel.createExcel();
   const sheetName = 'İsim Listesi';
@@ -216,6 +217,28 @@ List<int> _generateMilitaryExcelBytes({
     ..setColumnWidth(3, 30)
     ..setColumnWidth(4, 25)
     ..setColumnWidth(5, 7);
+
+  if (!mergeCells) {
+    // The separate combined list needs independent cells, including its title
+    // and summary. Restore every personnel value after removing merged ranges.
+    for (final range in sheet.spannedItems.toList()) {
+      sheet.unMerge(range);
+    }
+    for (var index = 0; index < rows.length; index++) {
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: index + 2))
+          .value = TextCellValue(rows[index].birligi);
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: index + 2))
+          .value = TextCellValue(rows[index].diger);
+    }
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value =
+        null;
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0))
+      ..value = TextCellValue(titleHeader)
+      ..cellStyle = titleStyle;
+    sheet.setRowHeight(0, 90);
+  }
 
   final encoded = excel.encode();
   if (encoded == null) return <int>[];

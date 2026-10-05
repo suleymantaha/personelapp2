@@ -138,7 +138,8 @@ class ActivityAssignmentDetails extends ConsumerWidget {
         squadNames: squadMap,
       );
       if (!context.mounted) return;
-      if (!await confirmCombinedExcelPreview(context, rows) || !context.mounted) {
+      if (!await confirmCombinedExcelPreview(context, rows) ||
+          !context.mounted) {
         return;
       }
       await MilitaryRosterExporter.shareExcelRoster(
@@ -146,6 +147,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
             '${activity.faaliyetAdi} + Seçilen Önceki Gün Faaliyetleri',
         tarih: activity.tarih,
         rows: rows,
+        mergeCells: false,
       );
     }
 
