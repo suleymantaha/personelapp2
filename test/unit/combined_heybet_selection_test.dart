@@ -14,6 +14,11 @@ void main() {
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
     service = CombinedHeybetExcelService(db);
+    for (final name in ['1-B', '2-B']) {
+      await db
+          .into(db.timTable)
+          .insert(TimTableCompanion.insert(timAdi: name, olusturmaTarihi: ''));
+    }
     for (var i = 1; i <= 5; i++) {
       await db
           .into(db.personelTable)

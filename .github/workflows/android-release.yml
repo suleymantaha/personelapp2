@@ -58,6 +58,10 @@ jobs:
           name: generated-database
           path: lib/core/database/database.g.dart
 
+      - name: Run Heybet identity regression
+        timeout-minutes: 3
+        run: flutter test --reporter expanded --timeout 2m test/unit/combined_heybet_identity_test.dart
+
       - name: Analyze
         run: flutter analyze
 
