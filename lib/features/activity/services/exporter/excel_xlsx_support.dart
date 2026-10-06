@@ -11,13 +11,14 @@ final _tableBorder = Border(
   borderColorHex: ExcelColor.fromHexString('#000000'),
 );
 
-final _noneBorder = Border(
-  borderStyle: BorderStyle.None,
-);
+final _noneBorder = Border(borderStyle: BorderStyle.None);
 
 double _excelRowHeightFor(String name, String detail, String rank) {
-  final longest = [name.length, detail.length, rank.length]
-      .fold<int>(0, (max, length) => length > max ? length : max);
+  final longest = [
+    name.length,
+    detail.length,
+    rank.length,
+  ].fold<int>(0, (max, length) => length > max ? length : max);
   return longest > 32 ? 32 : 20;
 }
 
@@ -86,9 +87,7 @@ int _writeThreeBoxSummary({
         : rows.where((row) => row.groupCode == group.$2).toList();
     return (
       group.$1,
-      RankSummaryCounts.calculate(
-        groupRows.map((row) => row.rutbe).toList(),
-      )
+      RankSummaryCounts.calculate(groupRows.map((row) => row.rutbe).toList()),
     );
   }).toList();
 
@@ -153,10 +152,10 @@ void _writeMergedSummaryCell(
   required CellStyle style,
 }) {
   sheet
-      .cell(
-        CellIndex.indexByColumnRow(columnIndex: startColumn, rowIndex: row),
-      )
-      .value = TextCellValue(value);
+      .cell(CellIndex.indexByColumnRow(columnIndex: startColumn, rowIndex: row))
+      .value = TextCellValue(
+    value,
+  );
 
   _mergeAndSetOuterBorders(
     sheet,
@@ -174,6 +173,8 @@ List<int> _applyPrintSettings(
   required int endRow,
   required String endColumn,
   required String repeatHeaderRange,
+  int? printScale,
+  List<int> pageBreakRows = const [],
 }) {
   final archive = ZipDecoder().decodeBytes(bytes);
   final workbookFile = archive.findFile('xl/workbook.xml');
@@ -215,19 +216,12 @@ List<int> _applyPrintSettings(
     final definedNames = '<definedNames>$printArea$printTitles</definedNames>';
     workbookXml = workbookXml.contains('<calcPr')
         ? workbookXml.replaceFirst('<calcPr', '$definedNames<calcPr')
-        : workbookXml.replaceFirst(
-            '</workbook>',
-            '$definedNames</workbook>',
-          );
+        : workbookXml.replaceFirst('</workbook>', '$definedNames</workbook>');
   }
 
   final workbookBytes = utf8.encode(workbookXml);
   archive.addFile(
-    ArchiveFile(
-      'xl/workbook.xml',
-      workbookBytes.length,
-      workbookBytes,
-    ),
+    ArchiveFile('xl/workbook.xml', workbookBytes.length, workbookBytes),
   );
 
   final worksheetFile = archive.files.cast<ArchiveFile?>().firstWhere(
@@ -257,7 +251,7 @@ List<int> _applyPrintSettings(
       '<pageMargins left="0.25" right="0.25" top="0.5" bottom="0.5" '
       'header="0.2" footer="0.2"/>'
       '<pageSetup paperSize="9" orientation="portrait" '
-      'fitToWidth="1" fitToHeight="0"/>',
+      '${printScale == null ? 'fitToWidth="1" fitToHeight="0"' : 'scale="$printScale"'}/>',
     );
     if (!worksheetXml.contains('<printOptions')) {
       worksheetXml = worksheetXml.replaceFirst(
@@ -269,17 +263,21 @@ List<int> _applyPrintSettings(
     if (!worksheetXml.contains('<sheetPr')) {
       worksheetXml = worksheetXml.replaceFirstMapped(
         RegExp(r'<worksheet\b[^>]*>'),
-        (match) => '${match.group(0)}<sheetPr><pageSetUpPr fitToPage="1"/>'
+        (match) =>
+            '${match.group(0)}<sheetPr><pageSetUpPr fitToPage="${printScale == null ? 1 : 0}"/>'
             '</sheetPr>',
       );
     }
+    if (pageBreakRows.isNotEmpty) {
+      final breaks = pageBreakRows
+          .map((row) => '<brk id="$row" min="0" max="16383" man="1"/>')
+          .join();
+      worksheetXml = worksheetXml.replaceFirst('</worksheet>',
+          '<rowBreaks count="${pageBreakRows.length}" manualBreakCount="${pageBreakRows.length}">$breaks</rowBreaks></worksheet>');
+    }
     final worksheetBytes = utf8.encode(worksheetXml);
     archive.addFile(
-      ArchiveFile(
-        worksheetFile.name,
-        worksheetBytes.length,
-        worksheetBytes,
-      ),
+      ArchiveFile(worksheetFile.name, worksheetBytes.length, worksheetBytes),
     );
   }
   return ZipEncoder().encode(archive) ?? bytes;
@@ -292,4 +290,33 @@ bool _sameBirlik(String first, String second) {
       .replaceAll('İ', 'I')
       .replaceAll(RegExp(r'\s+'), ' ');
   return normalize(first) == normalize(second);
+}
+
+int _writeRosterSignatures(Sheet sheet, int startRow) {
+  final style = CellStyle(
+    fontSize: 10,
+    fontFamily: getFontFamily(FontFamily.Calibri),
+    horizontalAlign: HorizontalAlign.Center,
+    verticalAlign: VerticalAlign.Center,
+    textWrapping: TextWrapping.WrapText,
+  );
+  for (var index = 0; index < heybetRosterSigners.length; index++) {
+    final signer = heybetRosterSigners[index];
+    final column = index == 0 ? 1 : 3;
+    final lines = [signer.title, '', signer.name, signer.rank, signer.role];
+    for (var offset = 0; offset < lines.length; offset++) {
+      sheet.cell(
+        CellIndex.indexByColumnRow(
+          columnIndex: column,
+          rowIndex: startRow + offset,
+        ),
+      )
+        ..value = TextCellValue(lines[offset])
+        ..cellStyle = style;
+    }
+  }
+  for (var offset = 0; offset < 5; offset++) {
+    sheet.setRowHeight(startRow + offset, offset == 1 ? 28 : 18);
+  }
+  return startRow + 4;
 }

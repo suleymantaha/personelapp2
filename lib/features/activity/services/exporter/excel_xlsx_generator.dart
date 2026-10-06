@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:personelapp2/features/activity/services/roster_signature.dart';
+
 import 'package:archive/archive.dart';
 import 'package:excel/excel.dart';
 import 'package:personelapp2/core/utils/official_roster_title.dart';
@@ -18,12 +20,14 @@ class ExcelXlsxGenerator {
     required String tarih,
     required List<MilitaryRosterRow> rows,
     bool mergeCells = true,
+    bool includeSignatures = false,
   }) =>
       _generateMilitaryExcelBytes(
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
         rows: rows,
         mergeCells: mergeCells,
+        includeSignatures: includeSignatures,
       );
 
   static List<int> generateMasterDailyExcelBytes({

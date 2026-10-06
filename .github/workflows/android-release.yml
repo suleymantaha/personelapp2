@@ -58,6 +58,17 @@ jobs:
           name: generated-database
           path: lib/core/database/database.g.dart
 
+      - name: Run Heybet identity regression
+        timeout-minutes: 3
+        run: flutter test --reporter expanded --timeout 2m test/unit/combined_heybet_identity_test.dart
+
+      - name: Run Heybet output regressions
+        timeout-minutes: 4
+        run: >-
+          flutter test --reporter expanded --timeout 2m
+          test/unit/heybet_print_layout_test.dart
+          test/features/activity/separate_heybet_excel_test.dart
+
       - name: Analyze
         run: flutter analyze
 
@@ -97,6 +108,22 @@ jobs:
       - name: Run tests
         timeout-minutes: 8
         run: flutter test --reporter expanded --timeout 2m
+
+      - name: Verify rendered Heybet print layout
+        timeout-minutes: 5
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libreoffice-calc poppler-utils fonts-crosextra-carlito
+          python3 tool/verify_heybet_print.py
+
+      - name: Upload Heybet print previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heybet-print-previews
+          path: build/heybet-previews/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Calculate app version
         id: version

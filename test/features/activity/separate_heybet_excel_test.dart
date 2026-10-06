@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:excel/excel.dart' hide Border;
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
 
 void main() {
@@ -55,11 +57,31 @@ void main() {
             ),
           );
       await db.into(db.gunlukFaaliyetTable).insert(
-          GunlukFaaliyetTableCompanion.insert(
+            GunlukFaaliyetTableCompanion.insert(
               faaliyetAdi: 'Devriye',
               tarih: '2026-08-01',
               olusturanKullanici: 'admin',
-              olusturmaTarihi: '2026-08-01'));
+              olusturmaTarihi: '2026-08-01',
+            ),
+          );
+      await db.into(db.gunlukFaaliyetTable).insert(
+            GunlukFaaliyetTableCompanion.insert(
+              faaliyetAdi: 'Bugünkü Devriye',
+              tarih: '2026-08-02',
+              olusturanKullanici: 'admin',
+              olusturmaTarihi: '2026-08-02',
+            ),
+          );
+      for (final id in [1, 2]) {
+        await db.into(db.faaliyetPersonelAtamaTable).insert(
+              FaaliyetPersonelAtamaTableCompanion.insert(
+                faaliyetId: 4,
+                personelId: id,
+                gorevVeyaIzin: 'HAZIR KITA',
+                durum: 'onaylandi',
+              ),
+            );
+      }
       final activity = (await db.select(db.gunlukFaaliyetTable).get())
           .singleWhere((a) => a.id == 2);
       final assignments = await db.select(db.faaliyetPersonelAtamaTable).get();
@@ -108,56 +130,77 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Önceki gün personeli'), findsNothing);
-      Future<void> choose(String label) async {
+      Future<void> choose(String label,
+          {Future<void> Function()? afterPreview}) async {
+        while (AppNotifications.controller.current != null) {
+          AppNotifications.controller.dismiss();
+        }
         await tester.tap(find.byTooltip('Bu Faaliyeti Dışa Aktar'));
         await tester.pumpAndSettle();
-        await tester.runAsync(() async {
-          final expectedShares = shares.length + 1;
-          await tester.tap(find.text(label));
-          await tester.pumpAndSettle();
-          if (label == 'Önceki Gün Kartlarıyla Ayrı Excel') {
-            for (var wait = 0;
-                wait < 100 &&
-                    find
-                        .text('Önceki Günün Tüm Faaliyetleri')
-                        .evaluate()
-                        .isEmpty;
-                wait++) {
-              await Future<void>.delayed(const Duration(milliseconds: 10));
-              await tester.pump();
-            }
-            expect(find.text('Devriye'), findsOneWidget);
-            expect(shares.length, expectedShares - 1);
-            expect(
-                tester
-                    .widget<FilledButton>(
-                        find.widgetWithText(FilledButton, 'Önizleme (0)'))
-                    .onPressed,
-                isNull);
-            await tester.tap(find.byKey(const ValueKey('previous-activity-1')));
-            await tester.pump();
-            await tester.tap(find.text('Önizleme (1)'));
-            for (var wait = 0;
-                wait < 100 &&
-                    find.text('Ayrı Excel Önizlemesi').evaluate().isEmpty;
-                wait++) {
-              await Future<void>.delayed(const Duration(milliseconds: 10));
-              await tester.pump();
-            }
-            expect(find.text('Ayrı Excel Önizlemesi'), findsOneWidget);
-            expect(find.textContaining('Önceki gün personeli'), findsOneWidget);
-            expect(shares.length, expectedShares - 1);
-            await tester.tap(find.text('Excel’i Paylaş'));
-            await tester.pumpAndSettle();
-          }
+        debugPrint(
+            'Heybet flow start: $label, mutation=${afterPreview != null}');
+        final expectedShares = shares.length + 1;
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+        if (label == 'Kartları Birleştir ve Çıktı Al') {
           for (var wait = 0;
-              wait < 100 && shares.length < expectedShares;
+              wait < 100 &&
+                  find.text('Çıktıya Eklenecek Kartlar').evaluate().isEmpty;
               wait++) {
-            await Future<void>.delayed(const Duration(milliseconds: 10));
+            await tester.runAsync(
+                () => Future<void>.delayed(const Duration(milliseconds: 10)));
             await tester.pump();
           }
-          expect(shares.length, expectedShares);
-        });
+          expect(find.text('Devriye'), findsOneWidget);
+          expect(shares.length, expectedShares - 1);
+          expect(
+            tester
+                .widget<FilledButton>(
+                  find.widgetWithText(FilledButton, 'Önizleme (0)'),
+                )
+                .onPressed,
+            isNotNull,
+          );
+          await tester.tap(find.byKey(const ValueKey('previous-activity-1')));
+          await tester.pump();
+          await tester.tap(find.byKey(const ValueKey('current-activity-4')));
+          await tester.pump();
+          await tester.tap(find.text('Önizleme (2)'));
+          for (var wait = 0;
+              wait < 100 &&
+                  find.text('Birleşik Çıktı Önizlemesi').evaluate().isEmpty;
+              wait++) {
+            await tester.runAsync(
+                () => Future<void>.delayed(const Duration(milliseconds: 10)));
+            await tester.pump();
+          }
+          expect(find.text('Birleşik Çıktı Önizlemesi'), findsOneWidget);
+          expect(find.textContaining('Önceki gün personeli'), findsOneWidget);
+          expect(shares.length, expectedShares - 1);
+          if (afterPreview != null) {
+            debugPrint('Heybet preview mutation start');
+            await afterPreview();
+            debugPrint('Heybet preview mutation complete');
+          }
+          await tester.tap(find.text('Çıktı Seç'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Excel Olarak Aktar (.xlsx)'));
+          await tester.pumpAndSettle();
+        }
+        for (var wait = 0;
+            wait < 100 && shares.length < expectedShares;
+            wait++) {
+          await tester.runAsync(
+              () => Future<void>.delayed(const Duration(milliseconds: 10)));
+          await tester.pump();
+        }
+        expect(shares.length,
+            afterPreview == null ? expectedShares : expectedShares - 1);
+        if (afterPreview != null) {
+          expect(AppNotifications.controller.current?.message,
+              contains('Önizlemeyi yeniden açın'));
+        }
+        debugPrint('Heybet flow complete: $label, shares=${shares.length}');
         await tester.pumpAndSettle();
       }
 
@@ -182,7 +225,7 @@ void main() {
       expect(normalExcel, contains('HAZIR KITA'));
       final combinedPaths = <String>[];
       for (var repeat = 0; repeat < 2; repeat++) {
-        await choose('Önceki Gün Kartlarıyla Ayrı Excel');
+        await choose('Kartları Birleştir ve Çıktı Al');
         final path = (shares.last['paths'] as List).single as String;
         combinedPaths.add(path);
         final workbook = Excel.decodeBytes(File(path).readAsBytesSync());
@@ -191,44 +234,63 @@ void main() {
         for (var index = 2; index < 4; index++) {
           for (var column = 0; column < 5; column++) {
             final style = sheet
-                .cell(CellIndex.indexByColumnRow(
-                    columnIndex: column, rowIndex: index))
+                .cell(
+                  CellIndex.indexByColumnRow(
+                    columnIndex: column,
+                    rowIndex: index,
+                  ),
+                )
                 .cellStyle;
-            expect(style?.leftBorder.borderStyle, BorderStyle.Thin,
-                reason: 'row=$index column=$column');
+            expect(
+              style?.leftBorder.borderStyle,
+              BorderStyle.Thin,
+              reason: 'row=$index column=$column',
+            );
             expect(style?.rightBorder.borderStyle, BorderStyle.Thin);
             expect(style?.topBorder.borderStyle, BorderStyle.Thin);
             expect(style?.bottomBorder.borderStyle, BorderStyle.Thin);
           }
           expect(
-              sheet
-                  .cell(CellIndex.indexByColumnRow(
-                      columnIndex: 1, rowIndex: index))
-                  .value
-                  ?.toString(),
-              'J.Komd.Öz.Hrk.Tb.Klığı');
+            sheet
+                .cell(
+                  CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: index),
+                )
+                .value
+                ?.toString(),
+            'J.Komd.Öz.Hrk.Tb.Klığı',
+          );
           expect(
-              sheet
-                      .cell(CellIndex.indexByColumnRow(
-                          columnIndex: 4, rowIndex: index))
-                      .value
-                      ?.toString() ??
-                  '',
-              '');
+            sheet
+                    .cell(
+                      CellIndex.indexByColumnRow(
+                        columnIndex: 4,
+                        rowIndex: index,
+                      ),
+                    )
+                    .value
+                    ?.toString() ??
+                '',
+            '',
+          );
         }
         final values = workbook['İsim Listesi']
             .rows
             .expand((r) => r)
             .map((cell) => cell?.value?.toString() ?? '')
             .toList();
-        expect(values.indexOf('Bugünün personeli'),
-            lessThan(values.indexOf('Önceki gün personeli')));
+        expect(
+          values.indexOf('Bugünün personeli'),
+          lessThan(values.indexOf('Önceki gün personeli')),
+        );
+        expect(values.where((v) => v == 'Bugünün personeli'), hasLength(1));
+        expect(values.where((v) => v == 'Önceki gün personeli'), hasLength(1));
+        expect(values, contains('İhsan DAĞLI'));
+        expect(values, contains('Serdar YILDIZ'));
         expect(values, contains('J.Komd.Öz.Hrk.Tb.Klığı'));
         expect(values, isNot(contains('Eski birlik')));
         expect(values, isNot(contains('Eklenmemeli')));
         expect(values, isNot(contains('HAZIR KITA')));
-        expect(
-            shares.last['text'], contains('Seçilen Önceki Gün Faaliyetleri'));
+        expect(shares.last['text'], contains('Seçilen Kartlar'));
       }
       expect(combinedPaths.first, isNot(combinedPaths.last));
       await choose('Excel’e aktar');
@@ -236,6 +298,31 @@ void main() {
       await choose('Metin olarak paylaş');
       expect(shares.last['text'], shares.first['text']);
       expect(await db.select(db.faaliyetPersonelAtamaTable).get(), assignments);
+      await choose('Kartları Birleştir ve Çıktı Al', afterPreview: () async {
+        final id = await db.into(db.personelTable).insert(
+              PersonelTableCompanion.insert(
+                  adSoyad: 'Yeni ana kart personeli',
+                  rutbe: 'J.Uzm.Çvş.',
+                  birlik: '',
+                  kayitTarihi: ''),
+            );
+        await db.into(db.faaliyetPersonelAtamaTable).insert(
+              FaaliyetPersonelAtamaTableCompanion.insert(
+                  faaliyetId: 2,
+                  personelId: id,
+                  gorevVeyaIzin: 'HAZIR KITA',
+                  durum: 'onaylandi'),
+            );
+      });
+      await choose('Kartları Birleştir ve Çıktı Al', afterPreview: () async {
+        // This card only supplies duplicate people: row fingerprints alone
+        // cannot detect its disappearance after the preview.
+        await (db.delete(db.faaliyetPersonelAtamaTable)
+              ..where((a) => a.faaliyetId.equals(4)))
+            .go();
+        await (db.delete(db.gunlukFaaliyetTable)..where((a) => a.id.equals(4)))
+            .go();
+      });
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(milliseconds: 100));
     },

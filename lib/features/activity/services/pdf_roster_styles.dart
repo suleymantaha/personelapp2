@@ -18,14 +18,8 @@ String pdfFormatOfficialTitle(String faaliyetAdi, String rawDate) {
 
 pw.Widget pdfBuilderSummaryBox(List<MilitaryRosterRow> rows) {
   final groups = [
-    (
-      'Hazır Kıta',
-      rows.where((row) => row.groupCode == 'HAZIR_KITA').toList(),
-    ),
-    (
-      'Gülüşkür',
-      rows.where((row) => row.groupCode == 'GULUSKUR').toList(),
-    ),
+    ('Hazır Kıta', rows.where((row) => row.groupCode == 'HAZIR_KITA').toList()),
+    ('Gülüşkür', rows.where((row) => row.groupCode == 'GULUSKUR').toList()),
     (
       'Diğer Tüm Personel',
       rows
@@ -55,10 +49,7 @@ pw.Widget pdfBuilderSummaryBox(List<MilitaryRosterRow> rows) {
   );
 }
 
-pw.Widget _buildSummaryColumn(
-  String title,
-  RankSummaryCounts counts,
-) {
+pw.Widget _buildSummaryColumn(String title, RankSummaryCounts counts) {
   final lines = [
     if (counts.subayCount > 0) 'SB. ${counts.subayCount}',
     if (counts.astsubayCount > 0) 'ASB. ${counts.astsubayCount}',
@@ -77,10 +68,7 @@ pw.Widget _buildSummaryColumn(
           child: pw.Text(
             title,
             textAlign: pw.TextAlign.center,
-            style: pw.TextStyle(
-              fontSize: 9,
-              fontWeight: pw.FontWeight.bold,
-            ),
+            style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
           ),
         ),
         pw.Padding(
@@ -112,6 +100,9 @@ pw.Widget _buildSummaryColumn(
 pw.Widget pdfBuildTable(
   List<MilitaryRosterRow> rows, {
   PdfRosterStyle style = PdfRosterStyle.verticalBlock,
+  bool compact = false,
+  bool mergeCells = true,
+  bool showHeader = true,
 }) {
   final headerStyle = pw.TextStyle(
     fontSize: 9.5,
@@ -119,43 +110,56 @@ pw.Widget pdfBuildTable(
   );
 
   final tableRows = <pw.TableRow>[
-    pw.TableRow(
-      repeat: true,
-      decoration: const pw.BoxDecoration(color: PdfColors.grey300),
-      children: [
-        pw.Container(
-          padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
-          alignment: pw.Alignment.center,
-          child: pw.Text('S. NU', style: headerStyle),
-        ),
-        pw.Container(
-          padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
-          alignment: pw.Alignment.center,
-          child: pw.Text('BİRLİĞİ', style: headerStyle),
-        ),
-        pw.Container(
-          padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
-          alignment: pw.Alignment.center,
-          child: pw.Text('RÜTBE', style: headerStyle),
-        ),
-        pw.Container(
-          padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 4),
-          alignment: pw.Alignment.center,
-          child: pw.Text('ADI SOYADI', style: headerStyle),
-        ),
-        pw.Container(
-          padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 2),
-          alignment: pw.Alignment.center,
-          child: pw.Text('DİĞER', style: headerStyle),
-        ),
-      ],
-    ),
+    if (showHeader)
+      pw.TableRow(
+        repeat: true,
+        decoration: const pw.BoxDecoration(color: PdfColors.grey300),
+        children: [
+          pw.Container(
+            padding: pw.EdgeInsets.symmetric(
+              vertical: compact ? 3 : 5,
+              horizontal: 2,
+            ),
+            alignment: pw.Alignment.center,
+            child: pw.Text('S. NU', style: headerStyle),
+          ),
+          pw.Container(
+            padding: pw.EdgeInsets.symmetric(
+              vertical: compact ? 3 : 5,
+              horizontal: 2,
+            ),
+            alignment: pw.Alignment.center,
+            child: pw.Text('BİRLİĞİ', style: headerStyle),
+          ),
+          pw.Container(
+            padding: pw.EdgeInsets.symmetric(
+              vertical: compact ? 3 : 5,
+              horizontal: 2,
+            ),
+            alignment: pw.Alignment.center,
+            child: pw.Text('RÜTBE', style: headerStyle),
+          ),
+          pw.Container(
+            padding: pw.EdgeInsets.symmetric(
+              vertical: compact ? 3 : 5,
+              horizontal: 4,
+            ),
+            alignment: pw.Alignment.center,
+            child: pw.Text('ADI SOYADI', style: headerStyle),
+          ),
+          pw.Container(
+            padding: pw.EdgeInsets.symmetric(
+              vertical: compact ? 3 : 5,
+              horizontal: 2,
+            ),
+            alignment: pw.Alignment.center,
+            child: pw.Text('DİĞER', style: headerStyle),
+          ),
+        ],
+      ),
   ];
 
   final n = rows.length;
-  if (n == 0) {
-    return pw.Table(children: tableRows);
-  }
 
   final birlikStart = List<int>.filled(n, 0);
   final birlikEnd = List<int>.filled(n, 0);
@@ -235,7 +239,7 @@ pw.Widget pdfBuildTable(
     // appearance inside that chunk so a group split across pages starts a
     // fresh, correctly labelled merged block on the next page.
     final birlikMiddle = bSt + (bEn - bSt) ~/ 2;
-    final birlikCellText = i == birlikMiddle ? r.birligi : '';
+    final birlikCellText = !mergeCells || i == birlikMiddle ? r.birligi : '';
     const birlikAlignment = pw.Alignment.center;
 
     // Special duty merge boundaries
@@ -256,10 +260,11 @@ pw.Widget pdfBuildTable(
           )
         : cellBorder;
 
-    var specialCellText = r.diger.trim().isEmpty ? '-' : r.diger;
+    var specialCellText =
+        compact ? r.diger : (r.diger.trim().isEmpty ? '-' : r.diger);
     var specialAlignment = pw.Alignment.center;
 
-    if (isSpSpecialGroup) {
+    if (isSpSpecialGroup && mergeCells) {
       final specialMiddle = spSt + (spEn - spSt) ~/ 2;
       specialCellText = i == specialMiddle ? r.diger : '';
       specialAlignment = pw.Alignment.center;
@@ -275,10 +280,10 @@ pw.Widget pdfBuildTable(
         children: [
           // S. NU
           pw.Container(
-            constraints: const pw.BoxConstraints(minHeight: 18),
+            constraints: pw.BoxConstraints(minHeight: compact ? 14 : 18),
             decoration: const pw.BoxDecoration(border: cellBorder),
-            padding: const pw.EdgeInsets.symmetric(
-              vertical: 2,
+            padding: pw.EdgeInsets.symmetric(
+              vertical: compact ? 1 : 2,
               horizontal: 2,
             ),
             alignment: pw.Alignment.center,
@@ -289,19 +294,19 @@ pw.Widget pdfBuildTable(
           ),
           // BİRLİĞİ (Dynamically Merged Cell)
           pw.Container(
-            constraints: const pw.BoxConstraints(minHeight: 18),
+            constraints: pw.BoxConstraints(minHeight: compact ? 14 : 18),
             decoration: pw.BoxDecoration(
-              border: birlikBorder,
+              border: mergeCells ? birlikBorder : cellBorder,
               color: rowBgColor,
             ),
-            padding: const pw.EdgeInsets.symmetric(
-              vertical: 2,
+            padding: pw.EdgeInsets.symmetric(
+              vertical: compact ? 1 : 2,
               horizontal: 3,
             ),
             alignment: birlikAlignment,
             child: pw.Text(
               birlikCellText,
-              maxLines: 2,
+              maxLines: compact ? null : 2,
               textAlign: pw.TextAlign.center,
               style: pw.TextStyle(
                 fontSize: 8.5,
@@ -313,31 +318,31 @@ pw.Widget pdfBuildTable(
           ),
           // RÜTBE
           pw.Container(
-            constraints: const pw.BoxConstraints(minHeight: 18),
+            constraints: pw.BoxConstraints(minHeight: compact ? 14 : 18),
             decoration: const pw.BoxDecoration(border: cellBorder),
-            padding: const pw.EdgeInsets.symmetric(
-              vertical: 2,
+            padding: pw.EdgeInsets.symmetric(
+              vertical: compact ? 1 : 2,
               horizontal: 2,
             ),
             alignment: pw.Alignment.center,
             child: pw.Text(
               r.rutbe,
-              maxLines: 2,
+              maxLines: compact ? null : 2,
               style: const pw.TextStyle(fontSize: 8.5),
             ),
           ),
           // ADI SOYADI
           pw.Container(
-            constraints: const pw.BoxConstraints(minHeight: 18),
+            constraints: pw.BoxConstraints(minHeight: compact ? 14 : 18),
             decoration: const pw.BoxDecoration(border: cellBorder),
-            padding: const pw.EdgeInsets.symmetric(
-              vertical: 2,
+            padding: pw.EdgeInsets.symmetric(
+              vertical: compact ? 1 : 2,
               horizontal: 4,
             ),
             alignment: pw.Alignment.centerLeft,
             child: pw.Text(
               r.adSoyad,
-              maxLines: 2,
+              maxLines: compact ? null : 2,
               style: pw.TextStyle(
                 fontSize: 8.5,
                 fontWeight: pw.FontWeight.bold,
@@ -346,19 +351,19 @@ pw.Widget pdfBuildTable(
           ),
           // DİĞER (Dynamically Merged Cell for Special Duties)
           pw.Container(
-            constraints: const pw.BoxConstraints(minHeight: 18),
+            constraints: pw.BoxConstraints(minHeight: compact ? 14 : 18),
             decoration: pw.BoxDecoration(
-              border: specialBorder,
+              border: mergeCells ? specialBorder : cellBorder,
               color: rowBgColor,
             ),
-            padding: const pw.EdgeInsets.symmetric(
-              vertical: 2,
+            padding: pw.EdgeInsets.symmetric(
+              vertical: compact ? 1 : 2,
               horizontal: 2,
             ),
             alignment: specialAlignment,
             child: pw.Text(
               specialCellText,
-              maxLines: 2,
+              maxLines: compact ? null : 2,
               textAlign: (isSpSpecialGroup || r.diger.trim().isEmpty)
                   ? pw.TextAlign.center
                   : pw.TextAlign.left,
@@ -427,9 +432,9 @@ List<pw.Widget> _buildPaginatedTables(
   return tables;
 }
 
-pw.Widget _buildPageTitle(String titleText) {
+pw.Widget _buildPageTitle(String titleText, {bool compact = false}) {
   return pw.Container(
-    padding: const pw.EdgeInsets.all(8),
+    padding: pw.EdgeInsets.all(compact ? 4 : 8),
     decoration: pw.BoxDecoration(
       color: PdfColors.grey200,
       border: pw.Border.all(),
@@ -438,7 +443,7 @@ pw.Widget _buildPageTitle(String titleText) {
       child: pw.Text(
         titleText,
         style: pw.TextStyle(
-          fontSize: 12,
+          fontSize: compact ? 10 : 12,
           fontWeight: pw.FontWeight.bold,
         ),
       ),

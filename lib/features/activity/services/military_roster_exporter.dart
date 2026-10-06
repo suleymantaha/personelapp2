@@ -1,4 +1,5 @@
 import 'roster_share_file.dart';
+
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -18,9 +19,11 @@ class MilitaryRosterRow {
     required this.adSoyad,
     required this.diger,
     this.groupCode = 'DIGER',
+    this.personelId,
   });
 
   final int sNu;
+  final int? personelId;
   final String birligi;
   final String rutbe;
   final String adSoyad;
@@ -148,12 +151,14 @@ class MilitaryRosterExporter {
     required String tarih,
     required List<MilitaryRosterRow> rows,
     bool mergeCells = true,
+    bool includeSignatures = false,
   }) =>
       ExcelXlsxGenerator.generateMilitaryExcelBytes(
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
         rows: rows,
         mergeCells: mergeCells,
+        includeSignatures: includeSignatures,
       );
 
   /// Generates native binary .xlsx spreadsheet for all daily activities combined
@@ -172,12 +177,14 @@ class MilitaryRosterExporter {
     required String tarih,
     required List<MilitaryRosterRow> rows,
     bool mergeCells = true,
+    bool includeSignatures = false,
   }) async {
     final bytes = generateMilitaryExcelBytes(
       faaliyetAdi: faaliyetAdi,
       tarih: tarih,
       rows: rows,
       mergeCells: mergeCells,
+      includeSignatures: includeSignatures,
     );
 
     final fileName = formatExportFileName(
@@ -190,9 +197,11 @@ class MilitaryRosterExporter {
     await SharePlus.instance.share(
       ShareParams(
         files: [
-          XFile(file.path,
-              mimeType:
-                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+          XFile(
+            file.path,
+            mimeType:
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          ),
         ],
         text: '$faaliyetAdi - Resmi İsim Listesi Excel Dökümanı',
       ),
@@ -275,9 +284,11 @@ class MilitaryRosterExporter {
     await SharePlus.instance.share(
       ShareParams(
         files: [
-          XFile(file.path,
-              mimeType:
-                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+          XFile(
+            file.path,
+            mimeType:
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          ),
         ],
         text: '$title - Günlük Tüm Faaliyetler Birleşik Excel Dökümanı',
       ),
@@ -295,8 +306,6 @@ class MilitaryRosterExporter {
       tarih: tarih,
       rows: rows,
     );
-    await SharePlus.instance.share(
-      ShareParams(text: text),
-    );
+    await SharePlus.instance.share(ShareParams(text: text));
   }
 }

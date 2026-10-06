@@ -1,4 +1,6 @@
 import 'roster_share_file.dart';
+import 'roster_signature.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
@@ -43,12 +45,14 @@ class PdfRosterExporter {
     required String tarih,
     required List<MilitaryRosterRow> rows,
     PdfRosterStyle style = PdfRosterStyle.verticalBlock,
+    bool includeSignatures = false,
   }) =>
       pdfGenerateRoster(
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
         rows: rows,
         style: style,
+        includeSignatures: includeSignatures,
       );
 
   static Future<void> sharePdfRoster({
@@ -56,12 +60,14 @@ class PdfRosterExporter {
     required String tarih,
     required List<MilitaryRosterRow> rows,
     PdfRosterStyle style = PdfRosterStyle.verticalBlock,
+    bool includeSignatures = false,
   }) =>
       pdfShareRoster(
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
         rows: rows,
         style: style,
+        includeSignatures: includeSignatures,
       );
 
   static Future<void> printPdfRoster({
@@ -69,12 +75,14 @@ class PdfRosterExporter {
     required String tarih,
     required List<MilitaryRosterRow> rows,
     PdfRosterStyle style = PdfRosterStyle.verticalBlock,
+    bool includeSignatures = false,
   }) =>
       pdfPrintRoster(
         faaliyetAdi: faaliyetAdi,
         tarih: tarih,
         rows: rows,
         style: style,
+        includeSignatures: includeSignatures,
       );
 
   static Future<void> showStylePickerAndSharePdf(
@@ -83,6 +91,7 @@ class PdfRosterExporter {
     required String tarih,
     required List<MilitaryRosterRow> rows,
     Future<List<MilitaryRosterRow>> Function()? loadRows,
+    bool includeSignatures = false,
     bool printDirectly = false,
   }) =>
       pdfShowStylePickerAndShare(
@@ -91,6 +100,7 @@ class PdfRosterExporter {
         tarih: tarih,
         rows: rows,
         loadRows: loadRows,
+        includeSignatures: includeSignatures,
         printDirectly: printDirectly,
       );
 
@@ -100,6 +110,7 @@ class PdfRosterExporter {
     required String tarih,
     required List<MilitaryRosterRow> rows,
     Future<List<MilitaryRosterRow>> Function()? loadRows,
+    bool includeSignatures = false,
   }) =>
       pdfShowStylePickerAndPrint(
         context,
@@ -107,5 +118,6 @@ class PdfRosterExporter {
         tarih: tarih,
         rows: rows,
         loadRows: loadRows,
+        includeSignatures: includeSignatures,
       );
 }
