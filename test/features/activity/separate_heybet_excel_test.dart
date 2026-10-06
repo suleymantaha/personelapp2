@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
 
 void main() {
@@ -131,62 +132,75 @@ void main() {
       expect(find.text('Önceki gün personeli'), findsNothing);
       Future<void> choose(String label,
           {Future<void> Function()? afterPreview}) async {
+        while (AppNotifications.controller.current != null) {
+          AppNotifications.controller.dismiss();
+        }
         await tester.tap(find.byTooltip('Bu Faaliyeti Dışa Aktar'));
         await tester.pumpAndSettle();
-        await tester.runAsync(() async {
-          final expectedShares = shares.length + 1;
-          await tester.tap(find.text(label));
-          await tester.pumpAndSettle();
-          if (label == 'Kartları Birleştir ve Çıktı Al') {
-            for (var wait = 0;
-                wait < 100 &&
-                    find.text('Çıktıya Eklenecek Kartlar').evaluate().isEmpty;
-                wait++) {
-              await Future<void>.delayed(const Duration(milliseconds: 10));
-              await tester.pump();
-            }
-            expect(find.text('Devriye'), findsOneWidget);
-            expect(shares.length, expectedShares - 1);
-            expect(
-              tester
-                  .widget<FilledButton>(
-                    find.widgetWithText(FilledButton, 'Önizleme (0)'),
-                  )
-                  .onPressed,
-              isNotNull,
-            );
-            await tester.tap(find.byKey(const ValueKey('previous-activity-1')));
-            await tester.pump();
-            await tester.tap(find.byKey(const ValueKey('current-activity-4')));
-            await tester.pump();
-            await tester.tap(find.text('Önizleme (2)'));
-            for (var wait = 0;
-                wait < 100 &&
-                    find.text('Birleşik Çıktı Önizlemesi').evaluate().isEmpty;
-                wait++) {
-              await Future<void>.delayed(const Duration(milliseconds: 10));
-              await tester.pump();
-            }
-            expect(find.text('Birleşik Çıktı Önizlemesi'), findsOneWidget);
-            expect(find.textContaining('Önceki gün personeli'), findsOneWidget);
-            expect(shares.length, expectedShares - 1);
-            if (afterPreview != null) {
-              await afterPreview();
-            }
-            await tester.tap(find.text('Çıktı Seç'));
-            await tester.pumpAndSettle();
-            await tester.tap(find.text('Excel Olarak Aktar (.xlsx)'));
-            await tester.pumpAndSettle();
-          }
+        debugPrint(
+            'Heybet flow start: $label, mutation=${afterPreview != null}');
+        final expectedShares = shares.length + 1;
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+        if (label == 'Kartları Birleştir ve Çıktı Al') {
           for (var wait = 0;
-              wait < 100 && shares.length < expectedShares;
+              wait < 100 &&
+                  find.text('Çıktıya Eklenecek Kartlar').evaluate().isEmpty;
               wait++) {
-            await Future<void>.delayed(const Duration(milliseconds: 10));
+            await tester.runAsync(
+                () => Future<void>.delayed(const Duration(milliseconds: 10)));
             await tester.pump();
           }
-          expect(shares.length,
-              afterPreview == null ? expectedShares : expectedShares - 1);
-        });
+          expect(find.text('Devriye'), findsOneWidget);
+          expect(shares.length, expectedShares - 1);
+          expect(
+            tester
+                .widget<FilledButton>(
+                  find.widgetWithText(FilledButton, 'Önizleme (0)'),
+                )
+                .onPressed,
+            isNotNull,
+          );
+          await tester.tap(find.byKey(const ValueKey('previous-activity-1')));
+          await tester.pump();
+          await tester.tap(find.byKey(const ValueKey('current-activity-4')));
+          await tester.pump();
+          await tester.tap(find.text('Önizleme (2)'));
+          for (var wait = 0;
+              wait < 100 &&
+                  find.text('Birleşik Çıktı Önizlemesi').evaluate().isEmpty;
+              wait++) {
+            await tester.runAsync(
+                () => Future<void>.delayed(const Duration(milliseconds: 10)));
+            await tester.pump();
+          }
+          expect(find.text('Birleşik Çıktı Önizlemesi'), findsOneWidget);
+          expect(find.textContaining('Önceki gün personeli'), findsOneWidget);
+          expect(shares.length, expectedShares - 1);
+          if (afterPreview != null) {
+            debugPrint('Heybet preview mutation start');
+            await afterPreview();
+            debugPrint('Heybet preview mutation complete');
+          }
+          await tester.tap(find.text('Çıktı Seç'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Excel Olarak Aktar (.xlsx)'));
+          await tester.pumpAndSettle();
+        }
+        for (var wait = 0;
+            wait < 100 && shares.length < expectedShares;
+            wait++) {
+          await tester.runAsync(
+              () => Future<void>.delayed(const Duration(milliseconds: 10)));
+          await tester.pump();
+        }
+        expect(shares.length,
+            afterPreview == null ? expectedShares : expectedShares - 1);
+        if (afterPreview != null) {
+          expect(AppNotifications.controller.current?.message,
+              contains('Önizlemeyi yeniden açın'));
+        }
+        debugPrint('Heybet flow complete: $label, shares=${shares.length}');
         await tester.pumpAndSettle();
       }
 
