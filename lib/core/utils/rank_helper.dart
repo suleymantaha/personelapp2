@@ -40,8 +40,8 @@ String normalizeRank(String rawRutbe) {
   if (upper.contains('BNB')) return 'J.Bnb.';
   if (upper.contains('YZB') || upper.contains('YÜZBAŞI')) return 'J.Yzb.';
   if (upper.contains('ÜTĞM')) return 'J.Ütğm.';
-  if (upper.contains('TĞM') || upper.contains('TEĞMEN')) return 'J.Tğm.';
   if (upper.contains('ASTĞM')) return 'J.Astğm.';
+  if (upper.contains('TĞM') || upper.contains('TEĞMEN')) return 'J.Tğm.';
   if (upper.contains('KDBÇVŞ')) return 'J.Asb.Kd.Bçvş.';
   if (upper.contains('BÇVŞ')) return 'J.Asb.Bçvş.';
   if (upper.contains('KDÜÇVŞ')) return 'J.Asb.Kd.Üçvş.';
