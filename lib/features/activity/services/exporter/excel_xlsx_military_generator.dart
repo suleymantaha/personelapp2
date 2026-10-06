@@ -117,6 +117,7 @@ List<int> _generateMilitaryExcelBytes({
   }
   sheet.setRowHeight(1, 24);
 
+  final signedRowHeights = rows.map(_signedRosterRowHeight).toList();
   var currentRow = 2;
   var i = 0;
   final n = rows.length;
@@ -171,7 +172,7 @@ List<int> _generateMilitaryExcelBytes({
       sheet.setRowHeight(
         rIndex,
         includeSignatures
-            ? (r.adSoyad.length > 32 || r.rutbe.length > 22 ? 26 : 14)
+            ? signedRowHeights[i + j]
             : _excelRowHeightFor(r.adSoyad, r.diger, r.rutbe),
       );
     }
@@ -204,6 +205,7 @@ List<int> _generateMilitaryExcelBytes({
 
   var lastPrintRowNumber = currentRow;
   if (includeSignatures) {
+    sheet.setRowHeight(currentRow, 14);
     currentRow += 1;
     lastPrintRowNumber = _writeRosterSignatures(sheet, currentRow) + 1;
     currentRow = lastPrintRowNumber;
@@ -273,5 +275,72 @@ List<int> _generateMilitaryExcelBytes({
     endRow: lastPrintRowNumber,
     endColumn: 'E',
     repeatHeaderRange: r'$1:$2',
+    printScale: includeSignatures ? 90 : null,
+    pageBreakRows: includeSignatures
+        ? _signedRosterPageBreaks(signedRowHeights)
+        : const [],
   );
+}
+
+// Reserve printable A4 height at 90% scale, after repeated title/header rows.
+// The final two personnel rows, gap and all five signature rows form one block.
+List<int> _signedRosterPageBreaks(List<double> heights) {
+  const pageBodyHeight = 780.0;
+  final breaks = <int>[];
+  var used = 0.0;
+  final tailStart = heights.length > 2 ? heights.length - 2 : 0;
+  for (var i = 0; i < tailStart; i++) {
+    if (used > 0 && used + heights[i] > pageBodyHeight) {
+      breaks.add(i + 2);
+      used = 0;
+    }
+    used += heights[i];
+  }
+  final tailHeight = heights.skip(tailStart).fold(114.0, (a, b) => a + b);
+  if (used > 0 && used + tailHeight > pageBodyHeight) {
+    breaks.add(tailStart + 2);
+  }
+  return breaks;
+}
+
+double _signedRosterRowHeight(MilitaryRosterRow row) {
+  // Calibri 10pt estimates include word wrapping, explicit newlines and wide
+  // glyphs. Grow rows without a line cap rather than shrinking the type.
+  double glyphWidth(String c) {
+    if ('ilI.,:;!| '.contains(c)) return 2.6;
+    if ('MW@%ĞÖÜ'.contains(c)) return 9;
+    if (c.toUpperCase() == c && c.toLowerCase() != c) return 6.8;
+    return 5.2;
+  }
+
+  int lines(String text, double width) {
+    var count = 0;
+    for (final paragraph in text.split('\n')) {
+      var used = 0.0;
+      count++;
+      for (final word in paragraph.split(' ')) {
+        final wordWidth = word.split('').fold(0.0, (a, c) => a + glyphWidth(c));
+        if (used > 0 && used + 2.6 + wordWidth > width) {
+          count++;
+          used = 0;
+        }
+        if (wordWidth > width) {
+          count += (wordWidth / width).ceil() - 1;
+          used = wordWidth % width;
+        } else {
+          used += (used == 0 ? 0 : 2.6) + wordWidth;
+        }
+      }
+    }
+    return count;
+  }
+
+  final counts = [
+    lines(row.birligi, 114),
+    lines(row.rutbe, 90),
+    lines(row.adSoyad, 153),
+    lines(row.diger, 126)
+  ];
+  final maxLines = counts.reduce((a, b) => a > b ? a : b);
+  return maxLines * 12.0 + 2;
 }

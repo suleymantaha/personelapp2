@@ -260,7 +260,8 @@ pw.Widget pdfBuildTable(
           )
         : cellBorder;
 
-    var specialCellText = r.diger.trim().isEmpty ? '-' : r.diger;
+    var specialCellText =
+        compact ? r.diger : (r.diger.trim().isEmpty ? '-' : r.diger);
     var specialAlignment = pw.Alignment.center;
 
     if (isSpSpecialGroup && mergeCells) {
@@ -305,7 +306,7 @@ pw.Widget pdfBuildTable(
             alignment: birlikAlignment,
             child: pw.Text(
               birlikCellText,
-              maxLines: 2,
+              maxLines: compact ? null : 2,
               textAlign: pw.TextAlign.center,
               style: pw.TextStyle(
                 fontSize: 8.5,
@@ -326,7 +327,7 @@ pw.Widget pdfBuildTable(
             alignment: pw.Alignment.center,
             child: pw.Text(
               r.rutbe,
-              maxLines: 2,
+              maxLines: compact ? null : 2,
               style: const pw.TextStyle(fontSize: 8.5),
             ),
           ),
@@ -341,7 +342,7 @@ pw.Widget pdfBuildTable(
             alignment: pw.Alignment.centerLeft,
             child: pw.Text(
               r.adSoyad,
-              maxLines: 2,
+              maxLines: compact ? null : 2,
               style: pw.TextStyle(
                 fontSize: 8.5,
                 fontWeight: pw.FontWeight.bold,
@@ -362,7 +363,7 @@ pw.Widget pdfBuildTable(
             alignment: specialAlignment,
             child: pw.Text(
               specialCellText,
-              maxLines: 2,
+              maxLines: compact ? null : 2,
               textAlign: (isSpSpecialGroup || r.diger.trim().isEmpty)
                   ? pw.TextAlign.center
                   : pw.TextAlign.left,

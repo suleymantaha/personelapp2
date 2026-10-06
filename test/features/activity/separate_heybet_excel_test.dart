@@ -300,6 +300,15 @@ void main() {
                   durum: 'onaylandi'),
             );
       });
+      await choose('Kartları Birleştir ve Çıktı Al', afterPreview: () async {
+        // This card only supplies duplicate people: row fingerprints alone
+        // cannot detect its disappearance after the preview.
+        await (db.delete(db.faaliyetPersonelAtamaTable)
+              ..where((a) => a.faaliyetId.equals(4)))
+            .go();
+        await (db.delete(db.gunlukFaaliyetTable)..where((a) => a.id.equals(4)))
+            .go();
+      });
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(milliseconds: 100));
     },

@@ -80,9 +80,14 @@ void main() {
     final zip = ZipDecoder().decodeBytes(bytes);
     final xml = utf8
         .decode(zip.findFile('xl/worksheets/sheet1.xml')!.content as List<int>);
-    final height = double.parse(
-        RegExp(r'<row[^>]*r="3"[^>]*ht="([^"]+)"').firstMatch(xml)!.group(1)!);
+    final height = double.parse(RegExp(r'<row[^>]*r="3"[^>]*\bht="([^"]+)"')
+        .firstMatch(xml)!
+        .group(1)!);
     expect(height, greaterThanOrEqualTo(50));
+    if (Platform.environment['CI'] == 'true') {
+      Directory('build/heybet-previews').createSync(recursive: true);
+      File('build/heybet-previews/heybet-long.xlsx').writeAsBytesSync(bytes);
+    }
     expect(xml, contains('<rowBreaks'));
     expect(xml, contains('man="1"'));
     expect(xml, contains('scale="90"'));

@@ -173,6 +173,8 @@ List<int> _applyPrintSettings(
   required int endRow,
   required String endColumn,
   required String repeatHeaderRange,
+  int? printScale,
+  List<int> pageBreakRows = const [],
 }) {
   final archive = ZipDecoder().decodeBytes(bytes);
   final workbookFile = archive.findFile('xl/workbook.xml');
@@ -249,7 +251,7 @@ List<int> _applyPrintSettings(
       '<pageMargins left="0.25" right="0.25" top="0.5" bottom="0.5" '
       'header="0.2" footer="0.2"/>'
       '<pageSetup paperSize="9" orientation="portrait" '
-      'fitToWidth="1" fitToHeight="0"/>',
+      '${printScale == null ? 'fitToWidth="1" fitToHeight="0"' : 'scale="$printScale"'}/>',
     );
     if (!worksheetXml.contains('<printOptions')) {
       worksheetXml = worksheetXml.replaceFirst(
@@ -261,9 +263,17 @@ List<int> _applyPrintSettings(
     if (!worksheetXml.contains('<sheetPr')) {
       worksheetXml = worksheetXml.replaceFirstMapped(
         RegExp(r'<worksheet\b[^>]*>'),
-        (match) => '${match.group(0)}<sheetPr><pageSetUpPr fitToPage="1"/>'
+        (match) =>
+            '${match.group(0)}<sheetPr><pageSetUpPr fitToPage="${printScale == null ? 1 : 0}"/>'
             '</sheetPr>',
       );
+    }
+    if (pageBreakRows.isNotEmpty) {
+      final breaks = pageBreakRows
+          .map((row) => '<brk id="$row" min="0" max="16383" man="1"/>')
+          .join();
+      worksheetXml = worksheetXml.replaceFirst('</worksheet>',
+          '<rowBreaks count="${pageBreakRows.length}" manualBreakCount="${pageBreakRows.length}">$breaks</rowBreaks></worksheet>');
     }
     final worksheetBytes = utf8.encode(worksheetXml);
     archive.addFile(

@@ -115,8 +115,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
     }
 
     Future<List<MilitaryRosterRow>> loadCurrentRows(
-      Iterable<FaaliyetPersonelAtamaTableData> selected,
-    ) async {
+      Iterable<FaaliyetPersonelAtamaTableData> selected, {
+      bool allCurrentAssignments = false,
+    }) async {
       final currentSession = ref.read(userSessionProvider);
       if (currentSession == null) throw StateError('Oturum doğrulanamadı.');
       final team = currentSession.isAdmin
@@ -131,7 +132,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
       final db = ref.read(databaseProvider);
       final current = await (db.select(
         db.faaliyetPersonelAtamaTable,
-      )..where((a) => a.faaliyetId.equals(activity.id) & a.id.isIn(ids)))
+      )..where((a) =>
+              a.faaliyetId.equals(activity.id) &
+              (allCurrentAssignments ? const Constant(true) : a.id.isIn(ids))))
           .get();
       final people = await db.select(db.personelTable).get();
       return buildRosterRows(
@@ -182,13 +185,28 @@ class ActivityAssignmentDetails extends ConsumerWidget {
             : await ref
                 .read(personnelRepositoryProvider)
                 .currentCommanderTeam(currentSession.username);
-        if (!currentSession.isAdmin && team == null)
+        if (!currentSession.isAdmin && team == null) {
           throw StateError('Tim yetkiniz sona erdi.');
+        }
         final freshPersonnel = await ref
             .read(databaseProvider)
             .select(ref.read(databaseProvider).personelTable)
             .get();
-        final currentRows = await loadCurrentRows(filteredAssignments);
+        final db = ref.read(databaseProvider);
+        final sources = await (db.select(db.gunlukFaaliyetTable)
+              ..where((a) => a.id.isIn(selectedSources.map((a) => a.id))))
+            .get();
+        for (final selected in selectedSources) {
+          if (!sources.any((a) =>
+              a.id == selected.id &&
+              a.tarih == selected.tarih &&
+              a.faaliyetAdi == selected.faaliyetAdi)) {
+            throw StateError(
+                'Seçilen kart değişti veya silindi. Önizlemeyi yeniden açın.');
+          }
+        }
+        final currentRows = await loadCurrentRows(filteredAssignments,
+            allCurrentAssignments: true);
         return service.build(
           activity: activity,
           selectedCurrentActivityIds: currentIds,
@@ -214,7 +232,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
             rows,
             sources: selectedSources,
           ) ||
-          !context.mounted) return;
+          !context.mounted) {
+        return;
+      }
       final action = await showArchiveExportSheet(
         context,
         subtitle:
@@ -476,8 +496,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       );
                     }
                   } catch (error) {
-                    if (context.mounted)
+                    if (context.mounted) {
                       AppNotifications.error('Dışa aktarılamadı: $error');
+                    }
                   }
                 },
                 itemBuilder: (ctx) => [
