@@ -1,6 +1,7 @@
 import 'package:fuzzy/fuzzy.dart';
 import 'package:drift/drift.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/utils/military_rank_normalizer.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/personnel_search_service.dart';
@@ -92,8 +93,21 @@ class PersonnelFuzzyMatcher {
           dbList
               .where((personnel) => personnel.id == aliasPersonnelId)
               .firstOrNull;
+      // Zehirlenmiş Alias Kalkanı (Identity Hijacking Protection):
+      // Eğer rawName, veritabanında mevcut olan BAŞKA bir gerçek personelin adıyla tam veya
+      // ters token olarak uyuşuyorsa, alias bu gerçek personelin adını gasbedemez!
+      final conflictsWithRealPerson = dbList.any((p) {
+        if (p.id == aliasPersonnelId) return false;
+        final dbClean = _sanitizeString(p.adSoyad);
+        if (dbClean == rawNameClean) return true;
+        final dbTokens = _nameTokens(dbClean);
+        return dbTokens.length >= 2 && _nameTokens(rawNameClean).containsAll(dbTokens);
+      });
+
+      final isAliasSafe = aliasMatch != null && !conflictsWithRealPerson;
+
       final isLegacySafe =
-          aliasMatch != null &&
+          isAliasSafe &&
           dbList
                   .where(
                     (p) =>
@@ -107,7 +121,7 @@ class PersonnelFuzzyMatcher {
                   BulkImportLearningService.normalizeTeam(
                     teamNames[aliasMatch.timId] ?? '',
                   ));
-      if (aliasMatch != null && (scopedAlias != null || isLegacySafe)) {
+      if (isAliasSafe && (scopedAlias != null || isLegacySafe)) {
         return _withMatch(
           item,
           aliasMatch,
@@ -126,6 +140,25 @@ class PersonnelFuzzyMatcher {
       List<PersonelTableData> candidates,
       double confidence,
     ) {
+      if (candidates.length > 1 && item.rawRank.trim().isNotEmpty) {
+        final normalizedItemRank = MilitaryRankNormalizer.normalizeRank(item.rawRank);
+        if (normalizedItemRank.isNotEmpty) {
+          final inRank =
+              candidates
+                  .where(
+                    (p) =>
+                        MilitaryRankNormalizer.normalizeRank(p.rutbe) ==
+                        normalizedItemRank,
+                  )
+                  .toList();
+          if (inRank.length == 1) {
+            candidates = inRank;
+          } else if (inRank.isNotEmpty) {
+            candidates = inRank;
+          }
+        }
+      }
+
       if (candidates.length > 1 && parsedTeamName.trim().isNotEmpty) {
         final inTeam =
             candidates
@@ -137,7 +170,11 @@ class PersonnelFuzzyMatcher {
                       BulkImportLearningService.normalizeTeam(parsedTeamName),
                 )
                 .toList();
-        if (inTeam.length == 1) candidates = inTeam;
+        if (inTeam.length == 1) {
+          candidates = inTeam;
+        } else if (inTeam.isNotEmpty) {
+          candidates = inTeam;
+        }
       }
       return candidates.length == 1
           ? _withMatch(
@@ -164,6 +201,16 @@ class PersonnelFuzzyMatcher {
               rawTokens.containsAll(dbTokens);
         }).toList();
     if (tokenMatches.isNotEmpty) return resolve(tokenMatches, 0.95);
+
+    // Reverse token containment:
+    // If raw name contains extra rank tokens (e.g. J.Per.Asb...), but contains
+    // all tokens of a db personnel's clean name, match it with full confidence.
+    final reverseTokenMatches =
+        dbList.where((p) {
+          final dbTokens = _nameTokens(_sanitizeString(p.adSoyad));
+          return dbTokens.length >= 2 && rawTokens.containsAll(dbTokens);
+        }).toList();
+    if (reverseTokenMatches.isNotEmpty) return resolve(reverseTokenMatches, 1.0);
 
     // An initial requires the remaining name tokens AND the surname to match.
     // Do not use fuzzy/partial fallback when that explicit abbreviation fails.

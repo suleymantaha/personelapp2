@@ -1,3 +1,5 @@
+import 'package:personelapp2/core/utils/military_rank_normalizer.dart';
+
 class RosterOcrExtractedName {
   const RosterOcrExtractedName({
     required this.rawName,
@@ -103,6 +105,18 @@ class RosterOcrNameExtractor {
 
       final candidate = _extractNameCandidate(normalized, lineNumber);
       if (candidate == null) {
+        if (names.isNotEmpty && _isPotentialSurnameLine(normalized)) {
+          final prev = names.removeLast();
+          names.add(
+            RosterOcrExtractedName(
+              rawName: '${prev.rawName} ${normalized.trim()}',
+              rawRank: prev.rawRank,
+              activityHint: prev.activityHint,
+              sourceLineNumber: prev.sourceLineNumber,
+            ),
+          );
+          continue;
+        }
         ignored++;
         continue;
       }
@@ -216,10 +230,13 @@ class RosterOcrNameExtractor {
           .trim();
     }
 
+    // OCR harf/rakam kaymalarını düzelt (örn. 0sman -> Osman, Y1LMAZ -> YILMAZ)
+    working = MilitaryRankNormalizer.cleanOcrDigits(working);
+
     String? rank;
     final rankMatch = _rankPattern.firstMatch(working);
     if (rankMatch != null) {
-      rank = _normalizeRank(rankMatch.group(0)!);
+      rank = MilitaryRankNormalizer.normalizeRank(rankMatch.group(0)!);
       working = working.substring(rankMatch.end).trim();
     }
 
@@ -231,7 +248,7 @@ class RosterOcrNameExtractor {
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
 
-    if (!_looksLikePersonName(working)) return null;
+    if (!_looksLikePersonName(working, hasRank: rank != null)) return null;
     return RosterOcrExtractedName(
       rawName: working,
       rawRank: rank,
@@ -241,7 +258,8 @@ class RosterOcrNameExtractor {
   }
 
   static final RegExp _rankPattern = RegExp(
-    r'^(J\s*[.]?\s*(?:(?:Asb|Uzm)\s*[.]?\s*(?:Kd\s*[.]?\s*)?'
+    r'^(J\s*[.]?\s*(?:(?:Per|İkm|Ikm|Mu|Mhb|Bkm|Asyş|Asys|İst|Ist|Uls|Mly|Tbp|Sağ|Sag|Hrk)\s*[.]?\s*)?'
+    r'(?:(?:Asb|Uzm)\s*[.]?\s*(?:Kd\s*[.]?\s*)?'
     r'(?:Ü[.]?Çvş|U[.]?Cv[sş]|Üçvş|Ucv[sş]?|Çvş|Cv[sş]?|Bçvş|Bcvs)|'
     r'Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm|Yzb)\s*[.]?)\s*',
     caseSensitive: false,
@@ -290,15 +308,17 @@ class RosterOcrNameExtractor {
         '${day.toString().padLeft(2, '0')}';
   }
 
-  static bool _looksLikePersonName(String value) {
-    if (value.length < 5) return false;
+  static bool _looksLikePersonName(String value, {bool hasRank = false}) {
+    final minLen = hasRank ? 3 : 5;
+    if (value.length < minLen) return false;
     if (RegExp(r'\d').hasMatch(value)) return false;
     if (!RegExp(r'[A-Za-zÇĞİÖŞÜçğıöşü]').hasMatch(value)) return false;
     final words = value
         .split(RegExp(r'\s+'))
         .where((word) => word.trim().length >= 2)
         .toList();
-    if (words.length < 2 || words.length > 4) return false;
+    final minWords = hasRank ? 1 : 2;
+    if (words.length < minWords || words.length > 4) return false;
     final folded = words.map(fold).toSet();
     const blocked = {
       'adi',
@@ -320,23 +340,6 @@ class RosterOcrNameExtractor {
     return true;
   }
 
-  static String _normalizeRank(String rank) {
-    final folded = fold(rank).replaceAll(RegExp(r'[\s.]'), '');
-    if (folded.contains('asb')) {
-      if (folded.contains('kd') && folded.contains('uc')) {
-        return 'J.Asb.Kd.Üçvş.';
-      }
-      if (folded.contains('kd')) return 'J.Asb.Kd.Çvş.';
-      if (folded.contains('uc')) return 'J.Asb.Üçvş.';
-      return 'J.Asb.Çvş.';
-    }
-    if (folded.contains('yzb')) return 'J.Yzb.';
-    if (folded.contains('ast')) return 'J.Astğm.';
-    if (folded.contains('utg')) return 'J.Ütğm.';
-    if (folded.contains('tg')) return 'J.Tğm.';
-    return 'J.Uzm.Çvş.';
-  }
-
   static List<RosterOcrExtractedName> _deduplicate(
     List<RosterOcrExtractedName> names,
   ) {
@@ -347,5 +350,16 @@ class RosterOcrNameExtractor {
       if (seen.add(key)) result.add(name);
     }
     return result;
+  }
+
+  static bool _isPotentialSurnameLine(String line) {
+    if (_isNonPersonnelLine(line)) return false;
+    final cleaned = MilitaryRankNormalizer.cleanOcrDigits(line.trim()).replaceAll(RegExp(r'^\d+[.)\-:]?\s*'), '');
+    final words = cleaned.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    if (words.length == 1) {
+      final word = words.first;
+      return word.length >= 2 && RegExp(r'^[A-Za-zÇĞİÖŞÜçğıöşü]+$').hasMatch(word);
+    }
+    return false;
   }
 }

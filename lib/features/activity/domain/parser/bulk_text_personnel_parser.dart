@@ -329,10 +329,10 @@ bool _looksLikeBrokenPersonnel(String line) =>
   int index,
   int lineNumber,
 ) {
-  final rankMatch = _rankPattern.firstMatch(content);
-  final rankKnown = rankMatch != null;
-  final rank = rankKnown ? _normalizeRank(rankMatch.group(1)!) : '';
-  final name = (rankKnown ? content.substring(rankMatch.end) : content).trim();
+  final extracted = MilitaryRankNormalizer.extractRankAndName(content);
+  final rankKnown = extracted.hasRank;
+  final rank = extracted.standardRank ?? '';
+  final name = extracted.cleanName.trim();
   if (name.isEmpty || !RegExp(r'[A-Za-zÇĞİÖŞÜçğıöşü]').hasMatch(name)) {
     return null;
   }
@@ -345,47 +345,6 @@ bool _looksLikeBrokenPersonnel(String line) =>
     ),
     rankKnown: rankKnown,
   );
-}
-
-String _normalizeRank(String rank) {
-  final clean = _fold(rank).replaceAll(RegExp(r'[\s.]'), '');
-  if (clean.contains('ütğm') || clean.contains('utgm')) {
-    return 'J.Ütğm.';
-  }
-  if (clean.contains('astğm') || clean.contains('astgm')) {
-    return 'J.Astğm.';
-  }
-  if (clean.contains('tğm') || clean.contains('tgm')) {
-    return 'J.Tğm.';
-  }
-  if (clean.contains('yzb')) {
-    return 'J.Yzb.';
-  }
-  if (clean.contains('asbkdüçvş') ||
-      clean.contains('asbkducvs') ||
-      clean.contains('asbkdüçvs')) {
-    return 'J.Asb.Kd.Üçvş.';
-  }
-  if (clean.contains('asbkdçvş') ||
-      clean.contains('asbkdcvs') ||
-      clean.contains('asbkdçvs')) {
-    return 'J.Asb.Kd.Çvş.';
-  }
-  if (clean.contains('asbüçvş') ||
-      clean.contains('asbucvs') ||
-      clean.contains('asbüçvs') ||
-      clean.contains('asbücvs')) {
-    return 'J.Asb.Üçvş.';
-  }
-  if (clean.contains('asbçvş') ||
-      clean.contains('asbcvs') ||
-      clean.contains('asbçvs')) {
-    return 'J.Asb.Çvş.';
-  }
-  if (clean.contains('bçvş') || clean.contains('bcvs')) {
-    return 'J.Bçvş.';
-  }
-  return 'J.Uzm.Çvş.';
 }
 
 String _formatDate(DateTime date) => '${date.year.toString().padLeft(4, '0')}-'
