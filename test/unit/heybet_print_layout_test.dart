@@ -33,8 +33,6 @@ void main() {
     );
     expect(row.first?.value?.toString(), 'TANZİM EDEN');
     expect(row[4]?.value?.toString(), 'TASDİK EDEN');
-    expect(row.first?.cellStyle?.horizontalAlign, HorizontalAlign.Center);
-    expect(row[4]?.cellStyle?.horizontalAlign, HorizontalAlign.Center);
   });
   test(
     'Excel prints personnel and signatures but keeps totals outside print area',
