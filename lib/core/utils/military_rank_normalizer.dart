@@ -1,4 +1,4 @@
-import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/core/utils/rank_helper.dart' as rank_helper;
 
 class ParsedRankAndName {
   const ParsedRankAndName({
@@ -16,6 +16,8 @@ class ParsedRankAndName {
 
 class MilitaryRankNormalizer {
   const MilitaryRankNormalizer._();
+
+  static String normalizeRank(String rank) => rank_helper.normalizeRank(rank);
 
   /// Jandarma ve TSK sınıf ekleri:
   /// Per (Personel), İkm (İkmal), Mu/Mhb (Muhabere), Bkm (Bakım), Asyş (Asayiş),
