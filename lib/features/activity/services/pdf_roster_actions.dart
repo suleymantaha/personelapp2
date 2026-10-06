@@ -6,6 +6,7 @@ Future<void> pdfShareRoster({
   required List<MilitaryRosterRow> rows,
   PdfRosterStyle style = PdfRosterStyle.verticalBlock,
   bool includeSignatures = false,
+  String? timeRange,
 }) async {
   final pdf = await pdfGenerateRoster(
     faaliyetAdi: faaliyetAdi,
@@ -13,6 +14,7 @@ Future<void> pdfShareRoster({
     rows: rows,
     style: style,
     includeSignatures: includeSignatures,
+    timeRange: timeRange,
   );
 
   final fileName = formatExportFileName(
@@ -36,6 +38,7 @@ Future<void> pdfPrintRoster({
   required List<MilitaryRosterRow> rows,
   PdfRosterStyle style = PdfRosterStyle.verticalBlock,
   bool includeSignatures = false,
+  String? timeRange,
 }) async {
   final pdf = await pdfGenerateRoster(
     faaliyetAdi: faaliyetAdi,
@@ -43,6 +46,7 @@ Future<void> pdfPrintRoster({
     rows: rows,
     style: style,
     includeSignatures: includeSignatures,
+    timeRange: timeRange,
   );
   final bytes = await pdf.save();
   await Printing.layoutPdf(
@@ -60,6 +64,7 @@ Future<void> pdfShowStylePickerAndShare(
   Future<List<MilitaryRosterRow>> Function()? loadRows,
   bool includeSignatures = false,
   bool printDirectly = false,
+  String? timeRange,
 }) async {
   final selectedStyle = await showModalBottomSheet<PdfRosterStyle>(
     context: context,
@@ -155,6 +160,7 @@ Future<void> pdfShowStylePickerAndShare(
         rows: currentRows,
         style: selectedStyle,
         includeSignatures: includeSignatures,
+        timeRange: timeRange,
       );
     } else {
       await pdfShareRoster(
@@ -163,6 +169,7 @@ Future<void> pdfShowStylePickerAndShare(
         rows: currentRows,
         style: selectedStyle,
         includeSignatures: includeSignatures,
+        timeRange: timeRange,
       );
     }
   }
@@ -175,6 +182,7 @@ Future<void> pdfShowStylePickerAndPrint(
   required List<MilitaryRosterRow> rows,
   Future<List<MilitaryRosterRow>> Function()? loadRows,
   bool includeSignatures = false,
+  String? timeRange,
 }) {
   return pdfShowStylePickerAndShare(
     context,
@@ -184,5 +192,6 @@ Future<void> pdfShowStylePickerAndPrint(
     printDirectly: true,
     loadRows: loadRows,
     includeSignatures: includeSignatures,
+    timeRange: timeRange,
   );
 }

@@ -6,6 +6,7 @@ List<int> _generateMilitaryExcelBytes({
   required List<MilitaryRosterRow> rows,
   bool mergeCells = true,
   bool includeSignatures = false,
+  String? timeRange,
 }) {
   final excel = Excel.createExcel();
   const sheetName = 'İsim Listesi';
@@ -15,7 +16,11 @@ List<int> _generateMilitaryExcelBytes({
     excel.delete('Sheet1');
   }
 
-  final titleHeader = OfficialRosterTitle.format(faaliyetAdi, tarih);
+  final titleHeader = OfficialRosterTitle.format(
+    faaliyetAdi,
+    tarih,
+    timeRange: timeRange,
+  );
 
   final titleStyle = CellStyle(
     bold: true,

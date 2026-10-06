@@ -187,31 +187,51 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
     List<GunlukFaaliyetTableData> cards,
     List<int> ids,
     String prefix,
-  ) => [
-    Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Text(title, style: Theme.of(context).textTheme.titleMedium),
-    ),
-    if (cards.isEmpty) const Text('Bu güne ait kart bulunamadı.'),
-    for (final card in cards)
-      Card(
-        child: CheckboxListTile(
-          key: ValueKey('$prefix-activity-${card.id}'),
-          title: Text(card.faaliyetAdi),
-          subtitle: Text(card.tarih),
-          value: ids.contains(card.id),
-          onChanged: _working
-              ? null
-              : (value) => setState(() {
-                  if (value == true) {
-                    if (!ids.contains(card.id)) ids.add(card.id);
-                  } else {
-                    ids.remove(card.id);
-                  }
-                }),
-        ),
+  ) {
+    final unselected = cards.where((c) => !ids.contains(c.id)).toList();
+    return [
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Text(title, style: Theme.of(context).textTheme.titleMedium),
       ),
-  ];
+      if (cards.isEmpty)
+        const Text('Bu güne ait kart bulunamadı.')
+      else if (unselected.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Icon(
+                Icons.check_circle_outline,
+                size: 16,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Bu güne ait tüm kartlar çıktıya eklendi.',
+                  style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+                ),
+              ),
+            ],
+          ),
+        ),
+      for (final card in unselected)
+        Card(
+          child: ListTile(
+            key: ValueKey('$prefix-activity-${card.id}'),
+            title: Text(card.faaliyetAdi),
+            subtitle: Text(card.tarih),
+            trailing: const Icon(Icons.add_circle_outline),
+            onTap: _working
+                ? null
+                : () => setState(() {
+                    if (!ids.contains(card.id)) ids.add(card.id);
+                  }),
+          ),
+        ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(

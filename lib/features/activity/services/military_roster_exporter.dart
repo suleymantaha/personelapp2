@@ -70,8 +70,16 @@ class MilitaryRosterExporter {
         .replaceAll('"', '&quot;');
   }
 
-  static String formatOfficialTitle(String faaliyetAdi, String rawDate) {
-    return OfficialRosterTitle.format(faaliyetAdi, rawDate);
+  static String formatOfficialTitle(
+    String faaliyetAdi,
+    String rawDate, {
+    String? timeRange,
+  }) {
+    return OfficialRosterTitle.format(
+      faaliyetAdi,
+      rawDate,
+      timeRange: timeRange,
+    );
   }
 
   static String specialDutyRankSummary(
@@ -120,8 +128,13 @@ class MilitaryRosterExporter {
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
+    String? timeRange,
   }) {
-    final titleHeader = formatOfficialTitle(faaliyetAdi, tarih);
+    final titleHeader = formatOfficialTitle(
+      faaliyetAdi,
+      tarih,
+      timeRange: timeRange,
+    );
     final sb = StringBuffer()
       ..writeln('==============================================')
       ..writeln(titleHeader)
@@ -152,6 +165,7 @@ class MilitaryRosterExporter {
     required List<MilitaryRosterRow> rows,
     bool mergeCells = true,
     bool includeSignatures = false,
+    String? timeRange,
   }) =>
       ExcelXlsxGenerator.generateMilitaryExcelBytes(
         faaliyetAdi: faaliyetAdi,
@@ -159,6 +173,7 @@ class MilitaryRosterExporter {
         rows: rows,
         mergeCells: mergeCells,
         includeSignatures: includeSignatures,
+        timeRange: timeRange,
       );
 
   /// Generates native binary .xlsx spreadsheet for all daily activities combined
@@ -178,6 +193,7 @@ class MilitaryRosterExporter {
     required List<MilitaryRosterRow> rows,
     bool mergeCells = true,
     bool includeSignatures = false,
+    String? timeRange,
   }) async {
     final bytes = generateMilitaryExcelBytes(
       faaliyetAdi: faaliyetAdi,
@@ -185,6 +201,7 @@ class MilitaryRosterExporter {
       rows: rows,
       mergeCells: mergeCells,
       includeSignatures: includeSignatures,
+      timeRange: timeRange,
     );
 
     final fileName = formatExportFileName(
@@ -213,11 +230,13 @@ class MilitaryRosterExporter {
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
+    String? timeRange,
   }) async {
     final bytes = generateMilitaryExcelBytes(
       faaliyetAdi: faaliyetAdi,
       tarih: tarih,
       rows: rows,
+      timeRange: timeRange,
     );
 
     final fileName = formatExportFileName(
@@ -300,11 +319,13 @@ class MilitaryRosterExporter {
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
+    String? timeRange,
   }) async {
     final text = generateMilitaryText(
       faaliyetAdi: faaliyetAdi,
       tarih: tarih,
       rows: rows,
+      timeRange: timeRange,
     );
     await SharePlus.instance.share(ShareParams(text: text));
   }

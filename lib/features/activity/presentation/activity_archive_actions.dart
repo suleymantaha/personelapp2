@@ -289,7 +289,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     final action = await showArchiveExportSheet(context, subtitle: subtitle);
     if (!mounted || action == null) return;
     try {
-    switch (action) {
+    switch (action.type) {
       case ArchiveExportType.excel:
         await _exportMasterExcel(activities, personnelList);
         return;

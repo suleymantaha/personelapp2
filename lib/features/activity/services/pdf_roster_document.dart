@@ -6,6 +6,7 @@ Future<pw.Document> pdfGenerateRoster({
   required List<MilitaryRosterRow> rows,
   PdfRosterStyle style = PdfRosterStyle.verticalBlock,
   bool includeSignatures = false,
+  String? timeRange,
 }) async {
   pw.Font? font;
   pw.Font? boldFont;
@@ -33,7 +34,11 @@ Future<pw.Document> pdfGenerateRoster({
         : null,
   );
 
-  final titleText = pdfFormatOfficialTitle(faaliyetAdi, tarih);
+  final titleText = pdfFormatOfficialTitle(
+    faaliyetAdi,
+    tarih,
+    timeRange: timeRange,
+  );
 
   if (includeSignatures) {
     final tailCount = rows.length < 2 ? rows.length : 2;

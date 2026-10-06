@@ -84,14 +84,7 @@ void main() {
         ),
       );
       await waitFor(tester, find.byKey(const ValueKey('current-activity-2')));
-      expect(
-        tester
-            .widget<CheckboxListTile>(
-              find.byKey(const ValueKey('current-activity-1')),
-            )
-            .value,
-        false,
-      );
+      expect(find.byKey(const ValueKey('current-activity-1')), findsOneWidget);
       expect(
         tester
             .widget<FilledButton>(find.byKey(const Key('roster-preview')))
@@ -104,11 +97,21 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('previous-activity-3')));
       await tester.pumpAndSettle();
+
+      // Seçilen kart alttaki havuzdan eksildi
+      expect(find.byKey(const ValueKey('previous-activity-3')), findsNothing);
+
       await tester.ensureVisible(
         find.byKey(const ValueKey('current-activity-2')),
       );
       await tester.tap(find.byKey(const ValueKey('current-activity-2')));
       await tester.pumpAndSettle();
+
+      // Seçilen kart alttaki havuzdan eksildi
+      expect(find.byKey(const ValueKey('current-activity-2')), findsNothing);
+      // Seçilmeyen kart halen havuzda
+      expect(find.byKey(const ValueKey('current-activity-1')), findsOneWidget);
+
       expect(find.byKey(const ValueKey('selected-card-1')), findsNothing);
       await tester.tap(find.byKey(const Key('roster-preview')));
       await waitFor(tester, find.text('Birleşik Çıktı Önizlemesi'));
@@ -120,9 +123,17 @@ void main() {
       expect(find.text('Çıktı Hazırla'), findsOneWidget);
       expect(find.byKey(const ValueKey('selected-card-2')), findsOneWidget);
       expect(find.byKey(const ValueKey('selected-card-3')), findsOneWidget);
+      // Geri dönüldüğünde de seçilenler altta bulunmamalı
+      expect(find.byKey(const ValueKey('current-activity-2')), findsNothing);
+
       await tester.ensureVisible(find.byKey(const Key('remove-card-2')));
       await tester.tap(find.byKey(const Key('remove-card-2')));
       await tester.pumpAndSettle();
+
+      // Üstten kaldırılan kart alttaki seçim havuzuna geri döndü
+      expect(find.byKey(const ValueKey('selected-card-2')), findsNothing);
+      expect(find.byKey(const ValueKey('current-activity-2')), findsOneWidget);
+
       await tester.tap(find.byKey(const Key('roster-preview')));
       await waitFor(tester, find.text('Birleşik Çıktı Önizlemesi'));
       expect(find.text('1. A Personel'), findsOneWidget);

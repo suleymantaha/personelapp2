@@ -34,6 +34,20 @@ void main() {
     expect(row.first?.value?.toString(), 'TANZİM EDEN');
     expect(row[4]?.value?.toString(), 'TASDİK EDEN');
   });
+  test('signed Excel includes time range in header when provided', () {
+    final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
+      faaliyetAdi: 'Heybet',
+      tarih: '2026-10-01',
+      rows: roster(1),
+      timeRange: '06.00-08.00',
+    );
+    final sheet = Excel.decodeBytes(bytes)['İsim Listesi'];
+    final title = sheet.cell(CellIndex.indexByString('A1')).value.toString();
+    expect(
+      title,
+      contains('(06.00-08.00 SAATLERİ ARASI)'),
+    );
+  });
   test(
     'Excel prints personnel and signatures but keeps totals outside print area',
     () {

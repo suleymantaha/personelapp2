@@ -54,7 +54,7 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
       );
       if (!mounted || action == null) return;
       const title = 'Seçilen Kartlar';
-      switch (action) {
+      switch (action.type) {
         case ArchiveExportType.excel:
           final rows = await _validatedRows();
           await MilitaryRosterExporter.shareExcelRoster(
@@ -63,6 +63,7 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
             rows: rows,
             mergeCells: false,
             includeSignatures: true,
+            timeRange: action.timeRange,
           );
         case ArchiveExportType.pdf:
           await PdfRosterExporter.showStylePickerAndSharePdf(
@@ -72,6 +73,7 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
             rows: widget.rows,
             loadRows: _validatedRows,
             includeSignatures: true,
+            timeRange: action.timeRange,
           );
         case ArchiveExportType.print:
           await PdfRosterExporter.showStylePickerAndPrintPdf(
@@ -81,6 +83,7 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
             rows: widget.rows,
             loadRows: _validatedRows,
             includeSignatures: true,
+            timeRange: action.timeRange,
           );
         case ArchiveExportType.text:
           final rows = await _validatedRows();
@@ -88,6 +91,7 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
             faaliyetAdi: title,
             tarih: widget.date,
             rows: rows,
+            timeRange: action.timeRange,
           );
       }
     } catch (error) {
