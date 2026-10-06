@@ -28,8 +28,12 @@ enum PdfRosterStyle {
 }
 
 class PdfRosterExporter {
-  static String formatOfficialTitle(String faaliyetAdi, String rawDate) =>
-      pdfFormatOfficialTitle(faaliyetAdi, rawDate);
+  static String formatOfficialTitle(
+    String faaliyetAdi,
+    String rawDate, {
+    String? timeRange,
+  }) =>
+      pdfFormatOfficialTitle(faaliyetAdi, rawDate, timeRange: timeRange);
 
   static pw.Widget builderSummaryBox(List<MilitaryRosterRow> rows) =>
       pdfBuilderSummaryBox(rows);
@@ -46,6 +50,7 @@ class PdfRosterExporter {
     required List<MilitaryRosterRow> rows,
     PdfRosterStyle style = PdfRosterStyle.verticalBlock,
     bool includeSignatures = false,
+    String? timeRange,
   }) =>
       pdfGenerateRoster(
         faaliyetAdi: faaliyetAdi,
@@ -53,6 +58,7 @@ class PdfRosterExporter {
         rows: rows,
         style: style,
         includeSignatures: includeSignatures,
+        timeRange: timeRange,
       );
 
   static Future<void> sharePdfRoster({
@@ -61,6 +67,7 @@ class PdfRosterExporter {
     required List<MilitaryRosterRow> rows,
     PdfRosterStyle style = PdfRosterStyle.verticalBlock,
     bool includeSignatures = false,
+    String? timeRange,
   }) =>
       pdfShareRoster(
         faaliyetAdi: faaliyetAdi,
@@ -68,6 +75,7 @@ class PdfRosterExporter {
         rows: rows,
         style: style,
         includeSignatures: includeSignatures,
+        timeRange: timeRange,
       );
 
   static Future<void> printPdfRoster({
@@ -76,6 +84,7 @@ class PdfRosterExporter {
     required List<MilitaryRosterRow> rows,
     PdfRosterStyle style = PdfRosterStyle.verticalBlock,
     bool includeSignatures = false,
+    String? timeRange,
   }) =>
       pdfPrintRoster(
         faaliyetAdi: faaliyetAdi,
@@ -83,6 +92,7 @@ class PdfRosterExporter {
         rows: rows,
         style: style,
         includeSignatures: includeSignatures,
+        timeRange: timeRange,
       );
 
   static Future<void> showStylePickerAndSharePdf(
@@ -93,6 +103,7 @@ class PdfRosterExporter {
     Future<List<MilitaryRosterRow>> Function()? loadRows,
     bool includeSignatures = false,
     bool printDirectly = false,
+    String? timeRange,
   }) =>
       pdfShowStylePickerAndShare(
         context,
@@ -102,6 +113,7 @@ class PdfRosterExporter {
         loadRows: loadRows,
         includeSignatures: includeSignatures,
         printDirectly: printDirectly,
+        timeRange: timeRange,
       );
 
   static Future<void> showStylePickerAndPrintPdf(
@@ -111,6 +123,7 @@ class PdfRosterExporter {
     required List<MilitaryRosterRow> rows,
     Future<List<MilitaryRosterRow>> Function()? loadRows,
     bool includeSignatures = false,
+    String? timeRange,
   }) =>
       pdfShowStylePickerAndPrint(
         context,
@@ -119,5 +132,6 @@ class PdfRosterExporter {
         rows: rows,
         loadRows: loadRows,
         includeSignatures: includeSignatures,
+        timeRange: timeRange,
       );
 }

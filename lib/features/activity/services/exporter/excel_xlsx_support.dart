@@ -79,11 +79,12 @@ int _writeThreeBoxSummary({
   final summaries = _summaryGroups.map((group) {
     final groupRows = group.$2 == 'DIGER_TUM_PERSONEL'
         ? rows
-            .where(
-              (row) =>
-                  row.groupCode != 'HAZIR_KITA' && row.groupCode != 'GULUSKUR',
-            )
-            .toList()
+              .where(
+                (row) =>
+                    row.groupCode != 'HAZIR_KITA' &&
+                    row.groupCode != 'GULUSKUR',
+              )
+              .toList()
         : rows.where((row) => row.groupCode == group.$2).toList();
     return (
       group.$1,
@@ -104,8 +105,9 @@ int _writeThreeBoxSummary({
     );
   }
 
-  final detailRows =
-      summaries.map((summary) => _rankSummaryLines(summary.$2)).toList();
+  final detailRows = summaries
+      .map((summary) => _rankSummaryLines(summary.$2))
+      .toList();
   final maxRankLines = detailRows
       .map((lines) => lines.length)
       .fold<int>(0, (maximum, length) => length > maximum ? length : maximum);
@@ -136,12 +138,12 @@ int _writeThreeBoxSummary({
 }
 
 List<String> _rankSummaryLines(RankSummaryCounts counts) => [
-      if (counts.subayCount > 0) 'SB. ${counts.subayCount}',
-      if (counts.astsubayCount > 0) 'ASB. ${counts.astsubayCount}',
-      if (counts.uzmanJandarmaCount > 0) 'UZM.J. ${counts.uzmanJandarmaCount}',
-      if (counts.uzmanErbasCount > 0) 'J.UZM.ÇVŞ. ${counts.uzmanErbasCount}',
-      if (counts.erCount > 0) 'ER/SÖZ.ER ${counts.erCount}',
-    ];
+  if (counts.subayCount > 0) 'SB. ${counts.subayCount}',
+  if (counts.astsubayCount > 0) 'ASB. ${counts.astsubayCount}',
+  if (counts.uzmanJandarmaCount > 0) 'UZM.J. ${counts.uzmanJandarmaCount}',
+  if (counts.uzmanErbasCount > 0) 'J.UZM.ÇVŞ. ${counts.uzmanErbasCount}',
+  if (counts.erCount > 0) 'ER/SÖZ.ER ${counts.erCount}',
+];
 
 void _writeMergedSummaryCell(
   Sheet sheet, {
@@ -196,10 +198,12 @@ List<int> _applyPrintSettings(
     '',
   );
   final escapedSheetName = sheetName.replaceAll("'", "''");
-  final printArea = '<definedName name="_xlnm.Print_Area" localSheetId="0">'
+  final printArea =
+      '<definedName name="_xlnm.Print_Area" localSheetId="0">'
       "'$escapedSheetName'!\$A\$1:\$$endColumn\$$endRow"
       '</definedName>';
-  final printTitles = '<definedName name="_xlnm.Print_Titles" localSheetId="0">'
+  final printTitles =
+      '<definedName name="_xlnm.Print_Titles" localSheetId="0">'
       "'$escapedSheetName'!$repeatHeaderRange"
       '</definedName>';
   if (workbookXml.contains('<definedNames/>')) {
@@ -225,12 +229,12 @@ List<int> _applyPrintSettings(
   );
 
   final worksheetFile = archive.files.cast<ArchiveFile?>().firstWhere(
-        (file) =>
-            file != null &&
-            file.name.startsWith('xl/worksheets/sheet') &&
-            file.name.endsWith('.xml'),
-        orElse: () => null,
-      );
+    (file) =>
+        file != null &&
+        file.name.startsWith('xl/worksheets/sheet') &&
+        file.name.endsWith('.xml'),
+    orElse: () => null,
+  );
   if (worksheetFile != null) {
     var worksheetXml = utf8.decode(worksheetFile.content as List<int>);
     worksheetXml = worksheetXml.replaceFirstMapped(
@@ -238,7 +242,9 @@ List<int> _applyPrintSettings(
       (match) {
         final attributes = (match.group(1) ?? '').trimRight();
         if (attributes.contains('showGridLines=')) {
-          return match.group(0)!.replaceFirst(
+          return match
+              .group(0)!
+              .replaceFirst(
                 RegExp(r'showGridLines="[^"]*"'),
                 'showGridLines="0"',
               );
@@ -272,8 +278,10 @@ List<int> _applyPrintSettings(
       final breaks = pageBreakRows
           .map((row) => '<brk id="$row" min="0" max="16383" man="1"/>')
           .join();
-      worksheetXml = worksheetXml.replaceFirst('</worksheet>',
-          '<rowBreaks count="${pageBreakRows.length}" manualBreakCount="${pageBreakRows.length}">$breaks</rowBreaks></worksheet>');
+      worksheetXml = worksheetXml.replaceFirst(
+        '</worksheet>',
+        '<rowBreaks count="${pageBreakRows.length}" manualBreakCount="${pageBreakRows.length}">$breaks</rowBreaks></worksheet>',
+      );
     }
     final worksheetBytes = utf8.encode(worksheetXml);
     archive.addFile(
@@ -302,15 +310,27 @@ int _writeRosterSignatures(Sheet sheet, int startRow) {
   );
   for (var index = 0; index < heybetRosterSigners.length; index++) {
     final signer = heybetRosterSigners[index];
-    final column = index == 0 ? 1 : 3;
+    final column = index == 0 ? 0 : 4;
     final lines = [signer.title, '', signer.name, signer.rank, signer.role];
     for (var offset = 0; offset < lines.length; offset++) {
+      if (index == 0) {
+        sheet.merge(
+          CellIndex.indexByColumnRow(
+            columnIndex: 0,
+            rowIndex: startRow + offset,
+          ),
+          CellIndex.indexByColumnRow(
+            columnIndex: 1,
+            rowIndex: startRow + offset,
+          ),
+        );
+      }
       sheet.cell(
-        CellIndex.indexByColumnRow(
-          columnIndex: column,
-          rowIndex: startRow + offset,
-        ),
-      )
+          CellIndex.indexByColumnRow(
+            columnIndex: column,
+            rowIndex: startRow + offset,
+          ),
+        )
         ..value = TextCellValue(lines[offset])
         ..cellStyle = style;
     }

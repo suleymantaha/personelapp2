@@ -2,6 +2,7 @@
 from pathlib import Path
 import re
 import subprocess
+import xml.etree.ElementTree as ET
 
 root = Path('build/heybet-previews')
 rendered = root / 'excel-rendered'
@@ -30,6 +31,28 @@ def check(path, count=None):
     else:
         assert 'SONSATIR' in text, (path, 'truncated long name')
         assert 'ÜÇÜNCÜ' in text, (path, 'truncated long name')
+    bbox = subprocess.run(['pdftotext', '-bbox', str(path), '-'],
+                          check=True, capture_output=True, text=True)
+    document = ET.fromstring(bbox.stdout)
+    last_page = [node for node in document.iter() if node.tag.endswith('page')][-1]
+    words = [node for node in last_page.iter() if node.tag.endswith('word')]
+    width = float(last_page.attrib['width'])
+    for token, left in [('TANZİM', True), ('TASDİK', False)]:
+        anchor = next(word for word in words if word.text == token)
+        y = float(anchor.attrib['yMin'])
+        line = [word for word in words if abs(float(word.attrib['yMin']) - y) < 1
+                and (float(word.attrib['xMin']) < width / 2) == left]
+        center = (min(float(word.attrib['xMin']) for word in line)
+                  + max(float(word.attrib['xMax']) for word in line)) / 2
+        assert center < width * .22 if left else center > width * .78, (path, 'signature not at edge', token, center)
+        for name in (['İhsan', 'J.Asb.Kd.Bçvş.'] if left else ['Serdar', 'J.Yb.']):
+            word = next(word for word in words if word.text == name)
+            line_y = float(word.attrib['yMin'])
+            name_line = [item for item in words if abs(float(item.attrib['yMin']) - line_y) < 1
+                         and (float(item.attrib['xMin']) < width / 2) == left]
+            name_center = (min(float(item.attrib['xMin']) for item in name_line)
+                           + max(float(item.attrib['xMax']) for item in name_line)) / 2
+            assert abs(name_center - center) < 7, (path, 'signature text not centered', name)
     print(f'{path.name}: {len(pages)} A4 pages; complete personnel, signatures together, no totals')
 
 

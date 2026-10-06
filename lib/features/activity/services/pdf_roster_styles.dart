@@ -12,8 +12,12 @@ bool _sameGroupLabel(String first, String second) =>
     _normalizeGroupLabel(first) == _normalizeGroupLabel(second);
 
 /// Formats the single official title used by PDF and Excel exports.
-String pdfFormatOfficialTitle(String faaliyetAdi, String rawDate) {
-  return OfficialRosterTitle.format(faaliyetAdi, rawDate);
+String pdfFormatOfficialTitle(
+  String faaliyetAdi,
+  String rawDate, {
+  String? timeRange,
+}) {
+  return OfficialRosterTitle.format(faaliyetAdi, rawDate, timeRange: timeRange);
 }
 
 pw.Widget pdfBuilderSummaryBox(List<MilitaryRosterRow> rows) {

@@ -77,12 +77,13 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
             try {
             final currentRows = await loadCurrentRows(selectedAssignments);
             if (!context.mounted || currentRows.isEmpty) return;
-            switch (action) {
+            switch (action.type) {
               case ArchiveExportType.excel:
                 await MilitaryRosterExporter.shareExcelRoster(
                   faaliyetAdi: activity.faaliyetAdi,
                   tarih: activity.tarih,
                   rows: currentRows,
+                  timeRange: action.timeRange,
                 );
                 return;
               case ArchiveExportType.pdf:
@@ -92,6 +93,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                   tarih: activity.tarih,
                   rows: currentRows,
                   loadRows: () => loadCurrentRows(selectedAssignments),
+                  timeRange: action.timeRange,
                 );
                 return;
               case ArchiveExportType.print:
@@ -101,6 +103,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                   tarih: activity.tarih,
                   rows: currentRows,
                   loadRows: () => loadCurrentRows(selectedAssignments),
+                  timeRange: action.timeRange,
                 );
                 return;
               case ArchiveExportType.text:
@@ -108,6 +111,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                   faaliyetAdi: activity.faaliyetAdi,
                   tarih: activity.tarih,
                   rows: currentRows,
+                  timeRange: action.timeRange,
                 );
                 return;
             }

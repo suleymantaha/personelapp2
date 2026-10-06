@@ -19,7 +19,9 @@ void main() {
       final db = AppDatabase(NativeDatabase.memory());
       addTearDown(db.close);
       for (final name in ['Bugünün personeli', 'Önceki gün personeli']) {
-        await db.into(db.personelTable).insert(
+        await db
+            .into(db.personelTable)
+            .insert(
               PersonelTableCompanion.insert(
                 adSoyad: name,
                 rutbe: 'J.Uzm.Çvş.',
@@ -29,7 +31,9 @@ void main() {
             );
       }
       for (final date in ['2026-08-01', '2026-08-02']) {
-        await db.into(db.gunlukFaaliyetTable).insert(
+        await db
+            .into(db.gunlukFaaliyetTable)
+            .insert(
               GunlukFaaliyetTableCompanion.insert(
                 faaliyetAdi: 'Heybet',
                 tarih: date,
@@ -38,7 +42,9 @@ void main() {
               ),
             );
       }
-      await db.into(db.faaliyetPersonelAtamaTable).insert(
+      await db
+          .into(db.faaliyetPersonelAtamaTable)
+          .insert(
             FaaliyetPersonelAtamaTableCompanion.insert(
               faaliyetId: 1,
               personelId: 2,
@@ -47,7 +53,9 @@ void main() {
               aciklama: const Value('Eklenmemeli'),
             ),
           );
-      await db.into(db.faaliyetPersonelAtamaTable).insert(
+      await db
+          .into(db.faaliyetPersonelAtamaTable)
+          .insert(
             FaaliyetPersonelAtamaTableCompanion.insert(
               faaliyetId: 2,
               personelId: 1,
@@ -56,7 +64,9 @@ void main() {
               aciklama: const Value('Eklenmemeli'),
             ),
           );
-      await db.into(db.gunlukFaaliyetTable).insert(
+      await db
+          .into(db.gunlukFaaliyetTable)
+          .insert(
             GunlukFaaliyetTableCompanion.insert(
               faaliyetAdi: 'Devriye',
               tarih: '2026-08-01',
@@ -64,7 +74,9 @@ void main() {
               olusturmaTarihi: '2026-08-01',
             ),
           );
-      await db.into(db.gunlukFaaliyetTable).insert(
+      await db
+          .into(db.gunlukFaaliyetTable)
+          .insert(
             GunlukFaaliyetTableCompanion.insert(
               faaliyetAdi: 'Bugünkü Devriye',
               tarih: '2026-08-02',
@@ -73,7 +85,9 @@ void main() {
             ),
           );
       for (final id in [1, 2]) {
-        await db.into(db.faaliyetPersonelAtamaTable).insert(
+        await db
+            .into(db.faaliyetPersonelAtamaTable)
+            .insert(
               FaaliyetPersonelAtamaTableCompanion.insert(
                 faaliyetId: 4,
                 personelId: id,
@@ -130,48 +144,69 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Önceki gün personeli'), findsNothing);
-      Future<void> choose(String label,
-          {Future<void> Function()? afterPreview}) async {
+      Future<void> choose(
+        String label, {
+        Future<void> Function()? afterPreview,
+      }) async {
         while (AppNotifications.controller.current != null) {
           AppNotifications.controller.dismiss();
         }
         await tester.tap(find.byTooltip('Bu Faaliyeti Dışa Aktar'));
         await tester.pumpAndSettle();
         debugPrint(
-            'Heybet flow start: $label, mutation=${afterPreview != null}');
+          'Heybet flow start: $label, mutation=${afterPreview != null}',
+        );
         final expectedShares = shares.length + 1;
         await tester.tap(find.text(label));
         await tester.pumpAndSettle();
         if (label == 'Kartları Birleştir ve Çıktı Al') {
-          for (var wait = 0;
-              wait < 100 &&
-                  find.text('Çıktıya Eklenecek Kartlar').evaluate().isEmpty;
-              wait++) {
+          for (
+            var wait = 0;
+            wait < 100 &&
+                find
+                    .byKey(const ValueKey('current-activity-4'))
+                    .evaluate()
+                    .isEmpty;
+            wait++
+          ) {
             await tester.runAsync(
-                () => Future<void>.delayed(const Duration(milliseconds: 10)));
+              () => Future<void>.delayed(const Duration(milliseconds: 10)),
+            );
             await tester.pump();
           }
-          expect(find.text('Devriye'), findsOneWidget);
+          expect(find.text('Devriye', skipOffstage: false), findsOneWidget);
           expect(shares.length, expectedShares - 1);
           expect(
             tester
-                .widget<FilledButton>(
-                  find.widgetWithText(FilledButton, 'Önizleme (0)'),
-                )
+                .widget<FilledButton>(find.byKey(const Key('roster-preview')))
                 .onPressed,
-            isNotNull,
+            isNull,
+          );
+          await tester.ensureVisible(
+            find.byKey(const ValueKey('current-activity-2')),
+          );
+          await tester.tap(find.byKey(const ValueKey('current-activity-2')));
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(
+            find.byKey(const ValueKey('previous-activity-1')),
           );
           await tester.tap(find.byKey(const ValueKey('previous-activity-1')));
           await tester.pump();
+          await tester.ensureVisible(
+            find.byKey(const ValueKey('current-activity-4')),
+          );
           await tester.tap(find.byKey(const ValueKey('current-activity-4')));
           await tester.pump();
-          await tester.tap(find.text('Önizleme (2)'));
-          for (var wait = 0;
-              wait < 100 &&
-                  find.text('Birleşik Çıktı Önizlemesi').evaluate().isEmpty;
-              wait++) {
+          await tester.tap(find.byKey(const Key('roster-preview')));
+          for (
+            var wait = 0;
+            wait < 100 &&
+                find.text('Birleşik Çıktı Önizlemesi').evaluate().isEmpty;
+            wait++
+          ) {
             await tester.runAsync(
-                () => Future<void>.delayed(const Duration(milliseconds: 10)));
+              () => Future<void>.delayed(const Duration(milliseconds: 10)),
+            );
             await tester.pump();
           }
           expect(find.text('Birleşik Çıktı Önizlemesi'), findsOneWidget);
@@ -182,23 +217,36 @@ void main() {
             await afterPreview();
             debugPrint('Heybet preview mutation complete');
           }
-          await tester.tap(find.text('Çıktı Seç'));
+          await tester.tap(find.text('Çıktı Al'));
           await tester.pumpAndSettle();
           await tester.tap(find.text('Excel Olarak Aktar (.xlsx)'));
           await tester.pumpAndSettle();
         }
-        for (var wait = 0;
-            wait < 100 && shares.length < expectedShares;
-            wait++) {
+        for (
+          var wait = 0;
+          wait < 100 && shares.length < expectedShares;
+          wait++
+        ) {
           await tester.runAsync(
-              () => Future<void>.delayed(const Duration(milliseconds: 10)));
+            () => Future<void>.delayed(const Duration(milliseconds: 10)),
+          );
           await tester.pump();
         }
-        expect(shares.length,
-            afterPreview == null ? expectedShares : expectedShares - 1);
+        expect(
+          shares.length,
+          afterPreview == null ? expectedShares : expectedShares - 1,
+        );
         if (afterPreview != null) {
-          expect(AppNotifications.controller.current?.message,
-              contains('Önizlemeyi yeniden açın'));
+          expect(
+            AppNotifications.controller.current?.message,
+            contains('Önizlemeyi yeniden açın'),
+          );
+        }
+        if (label == 'Kartları Birleştir ve Çıktı Al') {
+          while (find.byType(AppBar).evaluate().isNotEmpty) {
+            await tester.pageBack();
+            await tester.pumpAndSettle();
+          }
         }
         debugPrint('Heybet flow complete: $label, shares=${shares.length}');
         await tester.pumpAndSettle();
@@ -230,7 +278,14 @@ void main() {
         combinedPaths.add(path);
         final workbook = Excel.decodeBytes(File(path).readAsBytesSync());
         final sheet = workbook['İsim Listesi'];
-        expect(sheet.spannedItems, ['A1:E1']);
+        expect(sheet.spannedItems, [
+          'A1:E1',
+          'A6:B6',
+          'A7:B7',
+          'A8:B8',
+          'A9:B9',
+          'A10:B10',
+        ]);
         for (var index = 2; index < 4; index++) {
           for (var column = 0; column < 5; column++) {
             final style = sheet
@@ -273,8 +328,7 @@ void main() {
             '',
           );
         }
-        final values = workbook['İsim Listesi']
-            .rows
+        final values = workbook['İsim Listesi'].rows
             .expand((r) => r)
             .map((cell) => cell?.value?.toString() ?? '')
             .toList();
@@ -298,31 +352,44 @@ void main() {
       await choose('Metin olarak paylaş');
       expect(shares.last['text'], shares.first['text']);
       expect(await db.select(db.faaliyetPersonelAtamaTable).get(), assignments);
-      await choose('Kartları Birleştir ve Çıktı Al', afterPreview: () async {
-        final id = await db.into(db.personelTable).insert(
-              PersonelTableCompanion.insert(
+      await choose(
+        'Kartları Birleştir ve Çıktı Al',
+        afterPreview: () async {
+          final id = await db
+              .into(db.personelTable)
+              .insert(
+                PersonelTableCompanion.insert(
                   adSoyad: 'Yeni ana kart personeli',
                   rutbe: 'J.Uzm.Çvş.',
                   birlik: '',
-                  kayitTarihi: ''),
-            );
-        await db.into(db.faaliyetPersonelAtamaTable).insert(
-              FaaliyetPersonelAtamaTableCompanion.insert(
+                  kayitTarihi: '',
+                ),
+              );
+          await db
+              .into(db.faaliyetPersonelAtamaTable)
+              .insert(
+                FaaliyetPersonelAtamaTableCompanion.insert(
                   faaliyetId: 2,
                   personelId: id,
                   gorevVeyaIzin: 'HAZIR KITA',
-                  durum: 'onaylandi'),
-            );
-      });
-      await choose('Kartları Birleştir ve Çıktı Al', afterPreview: () async {
-        // This card only supplies duplicate people: row fingerprints alone
-        // cannot detect its disappearance after the preview.
-        await (db.delete(db.faaliyetPersonelAtamaTable)
-              ..where((a) => a.faaliyetId.equals(4)))
-            .go();
-        await (db.delete(db.gunlukFaaliyetTable)..where((a) => a.id.equals(4)))
-            .go();
-      });
+                  durum: 'onaylandi',
+                ),
+              );
+        },
+      );
+      await choose(
+        'Kartları Birleştir ve Çıktı Al',
+        afterPreview: () async {
+          // This card only supplies duplicate people: row fingerprints alone
+          // cannot detect its disappearance after the preview.
+          await (db.delete(
+            db.faaliyetPersonelAtamaTable,
+          )..where((a) => a.faaliyetId.equals(4))).go();
+          await (db.delete(
+            db.gunlukFaaliyetTable,
+          )..where((a) => a.id.equals(4))).go();
+        },
+      );
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(milliseconds: 100));
     },

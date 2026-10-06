@@ -4,9 +4,18 @@ class OfficialRosterTitle {
   static const unitName = 'KOVANCILAR JÖH TB.K.LIĞI';
   static const defaultActivityName = 'HEYBET TEPE PUSU FAALİYETİ';
 
-  static String format(String _, String rawDate) {
+  static String format(
+    String _,
+    String rawDate, {
+    String? timeRange,
+  }) {
     final formattedDate = _formatDate(rawDate);
-    return '$unitName $defaultActivityName İSİM LİSTESİ - $formattedDate';
+    final cleanTime = timeRange?.trim();
+    final timePart =
+        (cleanTime != null && cleanTime.isNotEmpty)
+            ? ' ($cleanTime SAATLERİ ARASI)'
+            : '';
+    return '$unitName $formattedDate TARİHİ$timePart $defaultActivityName PERSONEL İSİM LİSTESİ';
   }
 
   static String _formatDate(String rawDate) {
