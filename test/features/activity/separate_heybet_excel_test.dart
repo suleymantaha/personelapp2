@@ -129,7 +129,8 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Önceki gün personeli'), findsNothing);
-      Future<void> choose(String label) async {
+      Future<void> choose(String label,
+          {Future<void> Function()? afterPreview}) async {
         await tester.tap(find.byTooltip('Bu Faaliyeti Dışa Aktar'));
         await tester.pumpAndSettle();
         await tester.runAsync(() async {
@@ -169,6 +170,9 @@ void main() {
             expect(find.text('Birleşik Çıktı Önizlemesi'), findsOneWidget);
             expect(find.textContaining('Önceki gün personeli'), findsOneWidget);
             expect(shares.length, expectedShares - 1);
+            if (afterPreview != null) {
+              await afterPreview();
+            }
             await tester.tap(find.text('Çıktı Seç'));
             await tester.pumpAndSettle();
             await tester.tap(find.text('Excel Olarak Aktar (.xlsx)'));
@@ -180,7 +184,8 @@ void main() {
             await Future<void>.delayed(const Duration(milliseconds: 10));
             await tester.pump();
           }
-          expect(shares.length, expectedShares);
+          expect(shares.length,
+              afterPreview == null ? expectedShares : expectedShares - 1);
         });
         await tester.pumpAndSettle();
       }
@@ -279,6 +284,22 @@ void main() {
       await choose('Metin olarak paylaş');
       expect(shares.last['text'], shares.first['text']);
       expect(await db.select(db.faaliyetPersonelAtamaTable).get(), assignments);
+      await choose('Kartları Birleştir ve Çıktı Al', afterPreview: () async {
+        final id = await db.into(db.personelTable).insert(
+              PersonelTableCompanion.insert(
+                  adSoyad: 'Yeni ana kart personeli',
+                  rutbe: 'J.Uzm.Çvş.',
+                  birlik: '',
+                  kayitTarihi: ''),
+            );
+        await db.into(db.faaliyetPersonelAtamaTable).insert(
+              FaaliyetPersonelAtamaTableCompanion.insert(
+                  faaliyetId: 2,
+                  personelId: id,
+                  gorevVeyaIzin: 'HAZIR KITA',
+                  durum: 'onaylandi'),
+            );
+      });
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(milliseconds: 100));
     },

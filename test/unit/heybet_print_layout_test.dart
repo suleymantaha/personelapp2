@@ -62,6 +62,32 @@ void main() {
     },
   );
 
+  test('signed Excel expands multiline names and protects signature pagination',
+      () {
+    final rows = roster(48);
+    rows[0] = MilitaryRosterRow(
+        sNu: 1,
+        birligi: rows[0].birligi,
+        rutbe: 'J.Uzm.Çvş.',
+        adSoyad: 'UZUN BİRİNCİ SATIR\nİKİNCİ SATIR\nÜÇÜNCÜ SATIR\nSONSATIR',
+        diger: '');
+    final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
+        faaliyetAdi: 'Heybet',
+        tarih: '2026-10-06',
+        rows: rows,
+        mergeCells: false,
+        includeSignatures: true);
+    final zip = ZipDecoder().decodeBytes(bytes);
+    final xml = utf8
+        .decode(zip.findFile('xl/worksheets/sheet1.xml')!.content as List<int>);
+    final height = double.parse(
+        RegExp(r'<row[^>]*r="3"[^>]*ht="([^"]+)"').firstMatch(xml)!.group(1)!);
+    expect(height, greaterThanOrEqualTo(50));
+    expect(xml, contains('<rowBreaks'));
+    expect(xml, contains('man="1"'));
+    expect(xml, contains('scale="90"'));
+  });
+
   test('ordinary Excel retains existing output without Heybet signers', () {
     final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
       faaliyetAdi: 'Devriye',
@@ -74,6 +100,40 @@ void main() {
         .map((c) => c?.value?.toString() ?? '')
         .join('\n');
     expect(text, isNot(contains('İhsan DAĞLI')));
+  });
+
+  for (final count in [48, 55, 95, 100]) {
+    test('signed Excel renderer fixture $count', () {
+      if (Platform.environment['CI'] != 'true') return;
+      Directory('build/heybet-previews').createSync(recursive: true);
+      final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
+          faaliyetAdi: 'Heybet',
+          tarih: '2026-10-06',
+          rows: roster(count),
+          mergeCells: false,
+          includeSignatures: true);
+      File('build/heybet-previews/heybet-$count.xlsx').writeAsBytesSync(bytes);
+    });
+  }
+
+  testWidgets('signed PDF long text renderer fixture', (tester) async {
+    final rows = roster(1);
+    rows[0] = MilitaryRosterRow(
+        sNu: 1,
+        birligi: rows[0].birligi,
+        rutbe: 'J.Uzm.Çvş.',
+        adSoyad: 'BİRİNCİ\nİKİNCİ\nÜÇÜNCÜ\nSONSATIR',
+        diger: '');
+    final pdf = await PdfRosterExporter.generateRosterPdf(
+        faaliyetAdi: 'Heybet',
+        tarih: '2026-10-06',
+        rows: rows,
+        includeSignatures: true);
+    if (Platform.environment['CI'] == 'true') {
+      Directory('build/heybet-previews').createSync(recursive: true);
+      File('build/heybet-previews/heybet-long.pdf')
+          .writeAsBytesSync(await pdf.save());
+    }
   });
 
   for (final count in [0, 1, 32, 33, 95, 100, 120]) {
@@ -93,8 +153,9 @@ void main() {
               .writeAsBytesSync(bytes);
         }
         expect(bytes, isNotEmpty);
-        if (count == 95 || count == 100)
+        if (count == 95 || count == 100) {
           expect(pdf.document.pdfPageList.pages.length, 2);
+        }
         if (count <= 33) expect(pdf.document.pdfPageList.pages.length, 1);
       },
     );
