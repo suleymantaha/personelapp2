@@ -20,7 +20,9 @@ void main() {
           .insert(TimTableCompanion.insert(timAdi: name, olusturmaTarihi: ''));
     }
     for (var i = 1; i <= 5; i++) {
-      await db.into(db.personelTable).insert(
+      await db
+          .into(db.personelTable)
+          .insert(
             PersonelTableCompanion.insert(
               adSoyad: i <= 2 ? 'Aynı İsim' : 'Personel $i',
               rutbe: 'J.Uzm.Çvş.',
@@ -35,7 +37,9 @@ void main() {
       ('Hazır Kıta', '2026-12-31'),
       ('Eski', '2026-12-30'),
     ]) {
-      await db.into(db.gunlukFaaliyetTable).insert(
+      await db
+          .into(db.gunlukFaaliyetTable)
+          .insert(
             GunlukFaaliyetTableCompanion.insert(
               faaliyetAdi: item.$1,
               tarih: item.$2,
@@ -55,7 +59,9 @@ void main() {
       (2, 4, 'HAZIR KITA', 'beklemede', 1),
       (2, 5, 'HAZIR KITA', 'onaylandi', 2),
     ]) {
-      await db.into(db.faaliyetPersonelAtamaTable).insert(
+      await db
+          .into(db.faaliyetPersonelAtamaTable)
+          .insert(
             FaaliyetPersonelAtamaTableCompanion.insert(
               faaliyetId: item.$1,
               personelId: item.$2,
@@ -68,15 +74,48 @@ void main() {
   });
   tearDown(() => db.close());
 
+  test('previous cards keep selection order rather than sorting people across cards', () async {
+    for (final personId in [5, 4]) {
+      final id = await db
+          .into(db.gunlukFaaliyetTable)
+          .insert(
+            GunlukFaaliyetTableCompanion.insert(
+              faaliyetAdi: 'Kart $personId',
+              tarih: '2026-12-31',
+              olusturanKullanici: 'admin',
+              olusturmaTarihi: '',
+            ),
+          );
+      await db
+          .into(db.faaliyetPersonelAtamaTable)
+          .insert(
+            FaaliyetPersonelAtamaTableCompanion.insert(
+              faaliyetId: id,
+              personelId: personId,
+              gorevVeyaIzin: 'HAZIR KITA',
+              durum: 'onaylandi',
+            ),
+          );
+    }
+    final rows = await service.build(
+      activity: anchor,
+      selectedPreviousActivityIds: {5, 6},
+      currentRows: [],
+      personnelById: people,
+      squadNames: {},
+    );
+    expect(rows.map((r) => r.personelId), [5, 4]);
+  });
+
   MilitaryRosterRow mainRow() => MilitaryRosterRow(
-        sNu: 7,
-        personelId: 1,
-        birligi: 'Normal birlik',
-        rutbe: 'J.Uzm.Çvş.',
-        adSoyad: 'Aynı İsim',
-        diger: 'Ana kart',
-        groupCode: 'DIGER',
-      );
+    sNu: 7,
+    personelId: 1,
+    birligi: 'Normal birlik',
+    rutbe: 'J.Uzm.Çvş.',
+    adSoyad: 'Aynı İsim',
+    diger: 'Ana kart',
+    groupCode: 'DIGER',
+  );
 
   test('same-day picker excludes anchor and handles year boundary', () async {
     expect((await service.listCurrentActivities(anchor)).map((a) => a.id), [2]);
@@ -157,9 +196,7 @@ void main() {
       expect(rows, hasLength(2));
     },
   );
-  test(
-      'main-only deduplicates identity and renumbers without changing source rows',
-      () async {
+  test('main-only deduplicates identity and renumbers without changing source rows', () async {
     final main = mainRow();
     final rows = await service.build(
       activity: anchor,
@@ -176,8 +213,7 @@ void main() {
   test('deleted anchor cannot export a stale roster', () async {
     await (db.delete(
       db.gunlukFaaliyetTable,
-    )..where((t) => t.id.equals(anchor.id)))
-        .go();
+    )..where((t) => t.id.equals(anchor.id))).go();
     expect(
       service.build(
         activity: anchor,

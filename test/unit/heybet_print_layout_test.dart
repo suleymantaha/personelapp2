@@ -8,17 +8,34 @@ import 'package:personelapp2/features/activity/services/military_roster_exporter
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 
 List<MilitaryRosterRow> roster(int count) => List.generate(
-      count,
-      (i) => MilitaryRosterRow(
-        sNu: i + 1,
-        birligi: 'J.Komd.Öz.Hrk.Tb.Klığı',
-        rutbe: 'J.Uzm.Çvş.',
-        adSoyad: 'Personel ${i + 1}',
-        diger: '',
-      ),
-    );
+  count,
+  (i) => MilitaryRosterRow(
+    sNu: i + 1,
+    birligi: 'J.Komd.Öz.Hrk.Tb.Klığı',
+    rutbe: 'J.Uzm.Çvş.',
+    adSoyad: 'Personel ${i + 1}',
+    diger: '',
+  ),
+);
 
 void main() {
+  test('signed Excel puts centered signatures at left and right edges', () {
+    final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
+      faaliyetAdi: 'Seçilen Kartlar',
+      tarih: '2026-10-06',
+      rows: roster(1),
+      mergeCells: false,
+      includeSignatures: true,
+    );
+    final sheet = Excel.decodeBytes(bytes)['İsim Listesi'];
+    final row = sheet.rows.singleWhere(
+      (r) => r.any((c) => c?.value?.toString() == 'TANZİM EDEN'),
+    );
+    expect(row.first?.value?.toString(), 'TANZİM EDEN');
+    expect(row[4]?.value?.toString(), 'TASDİK EDEN');
+    expect(row.first?.cellStyle?.horizontalAlign, HorizontalAlign.Center);
+    expect(row[4]?.cellStyle?.horizontalAlign, HorizontalAlign.Center);
+  });
   test(
     'Excel prints personnel and signatures but keeps totals outside print area',
     () {
@@ -62,36 +79,41 @@ void main() {
     },
   );
 
-  test('signed Excel expands multiline names and protects signature pagination',
-      () {
-    final rows = roster(48);
-    rows[0] = MilitaryRosterRow(
+  test(
+    'signed Excel expands multiline names and protects signature pagination',
+    () {
+      final rows = roster(48);
+      rows[0] = MilitaryRosterRow(
         sNu: 1,
         birligi: rows[0].birligi,
         rutbe: 'J.Uzm.Çvş.',
         adSoyad: 'UZUN BİRİNCİ SATIR\nİKİNCİ SATIR\nÜÇÜNCÜ SATIR\nSONSATIR',
-        diger: '');
-    final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
+        diger: '',
+      );
+      final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
         faaliyetAdi: 'Heybet',
         tarih: '2026-10-06',
         rows: rows,
         mergeCells: false,
-        includeSignatures: true);
-    final zip = ZipDecoder().decodeBytes(bytes);
-    final xml = utf8
-        .decode(zip.findFile('xl/worksheets/sheet1.xml')!.content as List<int>);
-    final height = double.parse(RegExp(r'<row[^>]*r="3"[^>]*\bht="([^"]+)"')
-        .firstMatch(xml)!
-        .group(1)!);
-    expect(height, greaterThanOrEqualTo(50));
-    if (Platform.environment['CI'] == 'true') {
-      Directory('build/heybet-previews').createSync(recursive: true);
-      File('build/heybet-previews/heybet-long.xlsx').writeAsBytesSync(bytes);
-    }
-    expect(xml, contains('<rowBreaks'));
-    expect(xml, contains('man="1"'));
-    expect(xml, contains('scale="90"'));
-  });
+        includeSignatures: true,
+      );
+      final zip = ZipDecoder().decodeBytes(bytes);
+      final xml = utf8.decode(
+        zip.findFile('xl/worksheets/sheet1.xml')!.content as List<int>,
+      );
+      final height = double.parse(
+        RegExp(r'<row[^>]*r="3"[^>]*\bht="([^"]+)"').firstMatch(xml)!.group(1)!,
+      );
+      expect(height, greaterThanOrEqualTo(50));
+      if (Platform.environment['CI'] == 'true') {
+        Directory('build/heybet-previews').createSync(recursive: true);
+        File('build/heybet-previews/heybet-long.xlsx').writeAsBytesSync(bytes);
+      }
+      expect(xml, contains('<rowBreaks'));
+      expect(xml, contains('man="1"'));
+      expect(xml, contains('scale="90"'));
+    },
+  );
 
   test('ordinary Excel retains existing output without Heybet signers', () {
     final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
@@ -99,8 +121,7 @@ void main() {
       tarih: '2026-10-06',
       rows: roster(1),
     );
-    final text = Excel.decodeBytes(bytes)['İsim Listesi']
-        .rows
+    final text = Excel.decodeBytes(bytes)['İsim Listesi'].rows
         .expand((r) => r)
         .map((c) => c?.value?.toString() ?? '')
         .join('\n');
@@ -112,11 +133,12 @@ void main() {
       if (Platform.environment['CI'] != 'true') return;
       Directory('build/heybet-previews').createSync(recursive: true);
       final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
-          faaliyetAdi: 'Heybet',
-          tarih: '2026-10-06',
-          rows: roster(count),
-          mergeCells: false,
-          includeSignatures: true);
+        faaliyetAdi: 'Heybet',
+        tarih: '2026-10-06',
+        rows: roster(count),
+        mergeCells: false,
+        includeSignatures: true,
+      );
       File('build/heybet-previews/heybet-$count.xlsx').writeAsBytesSync(bytes);
     });
   }
@@ -124,16 +146,18 @@ void main() {
   testWidgets('signed PDF long text renderer fixture', (tester) async {
     final rows = roster(1);
     rows[0] = MilitaryRosterRow(
-        sNu: 1,
-        birligi: rows[0].birligi,
-        rutbe: 'J.Uzm.Çvş.',
-        adSoyad: 'BİRİNCİ\nİKİNCİ\nÜÇÜNCÜ\nSONSATIR',
-        diger: '');
+      sNu: 1,
+      birligi: rows[0].birligi,
+      rutbe: 'J.Uzm.Çvş.',
+      adSoyad: 'BİRİNCİ\nİKİNCİ\nÜÇÜNCÜ\nSONSATIR',
+      diger: '',
+    );
     final pdf = await PdfRosterExporter.generateRosterPdf(
-        faaliyetAdi: 'Heybet',
-        tarih: '2026-10-06',
-        rows: rows,
-        includeSignatures: true);
+      faaliyetAdi: 'Heybet',
+      tarih: '2026-10-06',
+      rows: rows,
+      includeSignatures: true,
+    );
     if (Platform.environment['CI'] == 'true') {
       Directory('build/heybet-previews').createSync(recursive: true);
       File('build/heybet-previews/heybet-long.pdf')
