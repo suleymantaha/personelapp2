@@ -5,12 +5,14 @@ Future<void> pdfShareRoster({
   required String tarih,
   required List<MilitaryRosterRow> rows,
   PdfRosterStyle style = PdfRosterStyle.verticalBlock,
+  bool includeSignatures = false,
 }) async {
   final pdf = await pdfGenerateRoster(
     faaliyetAdi: faaliyetAdi,
     tarih: tarih,
     rows: rows,
     style: style,
+    includeSignatures: includeSignatures,
   );
 
   final fileName = formatExportFileName(
@@ -33,12 +35,14 @@ Future<void> pdfPrintRoster({
   required String tarih,
   required List<MilitaryRosterRow> rows,
   PdfRosterStyle style = PdfRosterStyle.verticalBlock,
+  bool includeSignatures = false,
 }) async {
   final pdf = await pdfGenerateRoster(
     faaliyetAdi: faaliyetAdi,
     tarih: tarih,
     rows: rows,
     style: style,
+    includeSignatures: includeSignatures,
   );
   final bytes = await pdf.save();
   await Printing.layoutPdf(
@@ -54,6 +58,7 @@ Future<void> pdfShowStylePickerAndShare(
   required String tarih,
   required List<MilitaryRosterRow> rows,
   Future<List<MilitaryRosterRow>> Function()? loadRows,
+  bool includeSignatures = false,
   bool printDirectly = false,
 }) async {
   final selectedStyle = await showModalBottomSheet<PdfRosterStyle>(
@@ -104,11 +109,7 @@ Future<void> pdfShowStylePickerAndShare(
                 contentPadding: EdgeInsets.zero,
                 leading: const CircleAvatar(
                   backgroundColor: Colors.teal,
-                  child: Icon(
-                    Icons.table_rows,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.table_rows, color: Colors.white, size: 20),
                 ),
                 title: const Text(
                   'Stil 2: Akıllı Sayfa Kırılımı Formatı',
@@ -153,6 +154,7 @@ Future<void> pdfShowStylePickerAndShare(
         tarih: tarih,
         rows: currentRows,
         style: selectedStyle,
+        includeSignatures: includeSignatures,
       );
     } else {
       await pdfShareRoster(
@@ -160,6 +162,7 @@ Future<void> pdfShowStylePickerAndShare(
         tarih: tarih,
         rows: currentRows,
         style: selectedStyle,
+        includeSignatures: includeSignatures,
       );
     }
   }
@@ -171,6 +174,7 @@ Future<void> pdfShowStylePickerAndPrint(
   required String tarih,
   required List<MilitaryRosterRow> rows,
   Future<List<MilitaryRosterRow>> Function()? loadRows,
+  bool includeSignatures = false,
 }) {
   return pdfShowStylePickerAndShare(
     context,
@@ -179,5 +183,6 @@ Future<void> pdfShowStylePickerAndPrint(
     rows: rows,
     printDirectly: true,
     loadRows: loadRows,
+    includeSignatures: includeSignatures,
   );
 }

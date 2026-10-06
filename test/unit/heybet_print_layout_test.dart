@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:excel/excel.dart';
@@ -7,15 +8,15 @@ import 'package:personelapp2/features/activity/services/military_roster_exporter
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 
 List<MilitaryRosterRow> roster(int count) => List.generate(
-  count,
-  (i) => MilitaryRosterRow(
-    sNu: i + 1,
-    birligi: 'J.Komd.Öz.Hrk.Tb.Klığı',
-    rutbe: 'J.Uzm.Çvş.',
-    adSoyad: 'Personel ${i + 1}',
-    diger: '',
-  ),
-);
+      count,
+      (i) => MilitaryRosterRow(
+        sNu: i + 1,
+        birligi: 'J.Komd.Öz.Hrk.Tb.Klığı',
+        rutbe: 'J.Uzm.Çvş.',
+        adSoyad: 'Personel ${i + 1}',
+        diger: '',
+      ),
+    );
 
 void main() {
   test(
@@ -28,6 +29,10 @@ void main() {
         mergeCells: false,
         includeSignatures: true,
       );
+      if (Platform.environment['CI'] == 'true') {
+        Directory('build/heybet-previews').createSync(recursive: true);
+        File('build/heybet-previews/heybet-95.xlsx').writeAsBytesSync(bytes);
+      }
       final sheet = Excel.decodeBytes(bytes)['İsim Listesi'];
       final values = sheet.rows
           .map((r) => r.map((c) => c?.value?.toString() ?? '').join('|'))
@@ -63,7 +68,8 @@ void main() {
       tarih: '2026-10-06',
       rows: roster(1),
     );
-    final text = Excel.decodeBytes(bytes)['İsim Listesi'].rows
+    final text = Excel.decodeBytes(bytes)['İsim Listesi']
+        .rows
         .expand((r) => r)
         .map((c) => c?.value?.toString() ?? '')
         .join('\n');
@@ -81,6 +87,11 @@ void main() {
           includeSignatures: true,
         );
         final bytes = await pdf.save();
+        if (Platform.environment['CI'] == 'true' && count >= 95) {
+          Directory('build/heybet-previews').createSync(recursive: true);
+          File('build/heybet-previews/heybet-$count.pdf')
+              .writeAsBytesSync(bytes);
+        }
         expect(bytes, isNotEmpty);
         if (count == 95 || count == 100)
           expect(pdf.document.pdfPageList.pages.length, 2);

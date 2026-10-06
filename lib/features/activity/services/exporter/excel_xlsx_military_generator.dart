@@ -5,6 +5,7 @@ List<int> _generateMilitaryExcelBytes({
   required String tarih,
   required List<MilitaryRosterRow> rows,
   bool mergeCells = true,
+  bool includeSignatures = false,
 }) {
   final excel = Excel.createExcel();
   const sheetName = 'İsim Listesi';
@@ -30,7 +31,7 @@ List<int> _generateMilitaryExcelBytes({
   final headerStyle = CellStyle(
     bold: true,
     fontFamily: getFontFamily(FontFamily.Calibri),
-    fontSize: 11,
+    fontSize: includeSignatures ? 10 : 11,
     backgroundColorHex: ExcelColor.fromHexString('#D9D9D9'),
     horizontalAlign: HorizontalAlign.Center,
     verticalAlign: VerticalAlign.Center,
@@ -43,7 +44,7 @@ List<int> _generateMilitaryExcelBytes({
 
   final cellCenterStyle = CellStyle(
     fontFamily: getFontFamily(FontFamily.Calibri),
-    fontSize: 11,
+    fontSize: includeSignatures ? 10 : 11,
     horizontalAlign: HorizontalAlign.Center,
     verticalAlign: VerticalAlign.Center,
     textWrapping: TextWrapping.WrapText,
@@ -56,7 +57,7 @@ List<int> _generateMilitaryExcelBytes({
   final cellCenterBoldStyle = CellStyle(
     bold: true,
     fontFamily: getFontFamily(FontFamily.Calibri),
-    fontSize: 11,
+    fontSize: includeSignatures ? 10 : 11,
     horizontalAlign: HorizontalAlign.Center,
     verticalAlign: VerticalAlign.Center,
     textWrapping: TextWrapping.WrapText,
@@ -68,7 +69,7 @@ List<int> _generateMilitaryExcelBytes({
 
   final cellLeftStyle = CellStyle(
     fontFamily: getFontFamily(FontFamily.Calibri),
-    fontSize: 11,
+    fontSize: includeSignatures ? 10 : 11,
     horizontalAlign: HorizontalAlign.Left,
     verticalAlign: VerticalAlign.Center,
     textWrapping: TextWrapping.WrapText,
@@ -81,7 +82,7 @@ List<int> _generateMilitaryExcelBytes({
   final summaryHeaderStyle = CellStyle(
     bold: true,
     fontFamily: getFontFamily(FontFamily.Calibri),
-    fontSize: 11,
+    fontSize: includeSignatures ? 10 : 11,
     backgroundColorHex: ExcelColor.fromHexString('#D9D9D9'),
     horizontalAlign: HorizontalAlign.Center,
     verticalAlign: VerticalAlign.Center,
@@ -169,7 +170,9 @@ List<int> _generateMilitaryExcelBytes({
         ..cellStyle = isSpecialGroup ? cellCenterBoldStyle : cellLeftStyle;
       sheet.setRowHeight(
         rIndex,
-        _excelRowHeightFor(r.adSoyad, r.diger, r.rutbe),
+        includeSignatures
+            ? (r.adSoyad.length > 32 || r.rutbe.length > 22 ? 26 : 14)
+            : _excelRowHeightFor(r.adSoyad, r.diger, r.rutbe),
       );
     }
 
@@ -199,7 +202,12 @@ List<int> _generateMilitaryExcelBytes({
     i += mergeCount + 1;
   }
 
-  final lastPersonnelRowNumber = currentRow;
+  var lastPrintRowNumber = currentRow;
+  if (includeSignatures) {
+    currentRow += 1;
+    lastPrintRowNumber = _writeRosterSignatures(sheet, currentRow) + 1;
+    currentRow = lastPrintRowNumber;
+  }
 
   currentRow += 1;
   _writeThreeBoxSummary(
@@ -229,21 +237,29 @@ List<int> _generateMilitaryExcelBytes({
     for (var index = 0; index < rows.length; index++) {
       sheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: index + 2))
-          .value = TextCellValue(rows[index].birligi);
+          .value = TextCellValue(
+        rows[index].birligi,
+      );
       sheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: index + 2))
-          .value = TextCellValue(rows[index].diger);
+          .value = TextCellValue(
+        rows[index].diger,
+      );
       final styles = [
         cellCenterStyle,
         cellCenterBoldStyle,
         cellCenterStyle,
         cellLeftStyle,
-        cellLeftStyle
+        cellLeftStyle,
       ];
       for (var column = 0; column < styles.length; column++) {
         sheet
-            .cell(CellIndex.indexByColumnRow(
-                columnIndex: column, rowIndex: index + 2))
+            .cell(
+              CellIndex.indexByColumnRow(
+                columnIndex: column,
+                rowIndex: index + 2,
+              ),
+            )
             .cellStyle = styles[column];
       }
     }
@@ -254,7 +270,7 @@ List<int> _generateMilitaryExcelBytes({
   return _applyPrintSettings(
     encoded,
     sheetName: sheetName,
-    endRow: lastPersonnelRowNumber,
+    endRow: lastPrintRowNumber,
     endColumn: 'E',
     repeatHeaderRange: r'$1:$2',
   );

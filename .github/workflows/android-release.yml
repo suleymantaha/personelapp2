@@ -102,6 +102,15 @@ jobs:
         timeout-minutes: 8
         run: flutter test --reporter expanded --timeout 2m
 
+      - name: Upload Heybet print previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heybet-print-previews
+          path: build/heybet-previews/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Calculate app version
         id: version
         shell: bash
