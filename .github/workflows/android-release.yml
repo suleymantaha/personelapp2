@@ -66,6 +66,13 @@ jobs:
         timeout-minutes: 3
         run: flutter test --reporter expanded --timeout 2m test/unit/combined_heybet_selection_test.dart
 
+      - name: Run output preparation page regressions
+        timeout-minutes: 4
+        run: >-
+          flutter test --reporter expanded --timeout 2m
+          test/unit/selected_roster_output_test.dart
+          test/features/activity/roster_output_screen_test.dart
+
       - name: Run Heybet output regressions
         timeout-minutes: 4
         run: >-

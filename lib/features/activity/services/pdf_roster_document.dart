@@ -129,34 +129,37 @@ Future<pw.Document> pdfGenerateRoster({
 }
 
 pw.Widget _buildRosterSignatures() => pw.Padding(
-      padding: const pw.EdgeInsets.only(top: 10),
-      child: pw.Row(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          for (final signer in heybetRosterSigners)
-            pw.Expanded(
-              child: pw.Column(
-                children: [
-                  pw.Text(
-                    signer.title,
-                    style: pw.TextStyle(
-                      fontSize: 9,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                  pw.SizedBox(height: 22),
-                  pw.Text(
-                    signer.name,
-                    style: pw.TextStyle(
-                      fontSize: 9,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                  pw.Text(signer.rank, style: const pw.TextStyle(fontSize: 9)),
-                  pw.Text(signer.role, style: const pw.TextStyle(fontSize: 9)),
-                ],
+  padding: const pw.EdgeInsets.only(top: 10),
+  child: pw.Row(
+    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      for (final signer in heybetRosterSigners)
+        pw.SizedBox(
+          width: 175,
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: [
+              pw.Text(
+                signer.title,
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
-            ),
-        ],
-      ),
-    );
+              pw.SizedBox(height: 22),
+              pw.Text(
+                signer.name,
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.Text(signer.rank, style: const pw.TextStyle(fontSize: 9)),
+              pw.Text(signer.role, style: const pw.TextStyle(fontSize: 9)),
+            ],
+          ),
+        ),
+    ],
+  ),
+);

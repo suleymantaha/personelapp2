@@ -11,16 +11,14 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
-import 'package:personelapp2/features/activity/presentation/dialogs/previous_day_excel_picker.dart';
+import 'package:personelapp2/features/activity/presentation/roster_output_screen.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/edit_assignment_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_squad_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_assignment_groups.dart';
-import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
-import 'package:personelapp2/features/activity/services/combined_heybet_excel_service.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/roster_image_import_service.dart';
 
@@ -64,8 +62,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
       }).toList();
     }
 
-    final existingPersonnelIds =
-        filteredAssignments.map((a) => a.personelId).toSet();
+    final existingPersonnelIds = filteredAssignments
+        .map((a) => a.personelId)
+        .toSet();
     final allSquadsAsync = ref.watch(allSquadsProvider);
     final squadsList = allSquadsAsync.value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
@@ -123,19 +122,22 @@ class ActivityAssignmentDetails extends ConsumerWidget {
       final team = currentSession.isAdmin
           ? null
           : await ref
-              .read(personnelRepositoryProvider)
-              .currentCommanderTeam(currentSession.username);
+                .read(personnelRepositoryProvider)
+                .currentCommanderTeam(currentSession.username);
       if (!currentSession.isAdmin && team == null) {
         throw StateError('Tim yetkiniz sona erdi.');
       }
       final ids = selected.map((a) => a.id).toSet();
       final db = ref.read(databaseProvider);
-      final current = await (db.select(
-        db.faaliyetPersonelAtamaTable,
-      )..where((a) =>
-              a.faaliyetId.equals(activity.id) &
-              (allCurrentAssignments ? const Constant(true) : a.id.isIn(ids))))
-          .get();
+      final current =
+          await (db.select(db.faaliyetPersonelAtamaTable)..where(
+                (a) =>
+                    a.faaliyetId.equals(activity.id) &
+                    (allCurrentAssignments
+                        ? const Constant(true)
+                        : a.id.isIn(ids)),
+              ))
+              .get();
       final people = await db.select(db.personelTable).get();
       return buildRosterRows(
         current.where(
@@ -148,148 +150,14 @@ class ActivityAssignmentDetails extends ConsumerWidget {
     }
 
     Future<void> shareSeparateCombinedExcel() async {
-      final service = CombinedHeybetExcelService(ref.read(databaseProvider));
-      final available = await Future.wait([
-        service.listCurrentActivities(activity),
-        service.listPreviousActivities(activity),
-      ]);
-      if (!context.mounted) return;
-      final selectedIds = await showDialog<Set<int>>(
-        context: context,
-        builder: (_) => PreviousDayExcelPicker(
-          currentActivities: available[0],
-          activities: available[1],
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => RosterOutputScreen(
+            initialDate: activity.tarih,
+            selectedSquadId: selectedSquadId,
+          ),
         ),
       );
-      if (selectedIds == null || !context.mounted) return;
-      final currentIds = available[0]
-          .where((a) => selectedIds.contains(a.id))
-          .map((a) => a.id)
-          .toSet();
-      final previousIds = available[1]
-          .where((a) => selectedIds.contains(a.id))
-          .map((a) => a.id)
-          .toSet();
-      final selectedSources = [
-        activity,
-        ...available
-            .expand((cards) => cards)
-            .where((a) => selectedIds.contains(a.id)),
-      ];
-
-      Future<List<MilitaryRosterRow>> loadCombinedRows() async {
-        final currentSession = ref.read(userSessionProvider);
-        if (currentSession == null) throw StateError('Oturum doğrulanamadı.');
-        final team = currentSession.isAdmin
-            ? null
-            : await ref
-                .read(personnelRepositoryProvider)
-                .currentCommanderTeam(currentSession.username);
-        if (!currentSession.isAdmin && team == null) {
-          throw StateError('Tim yetkiniz sona erdi.');
-        }
-        final freshPersonnel = await ref
-            .read(databaseProvider)
-            .select(ref.read(databaseProvider).personelTable)
-            .get();
-        final db = ref.read(databaseProvider);
-        final sources = await (db.select(db.gunlukFaaliyetTable)
-              ..where((a) => a.id.isIn(selectedSources.map((a) => a.id))))
-            .get();
-        for (final selected in selectedSources) {
-          if (!sources.any((a) =>
-              a.id == selected.id &&
-              a.tarih == selected.tarih &&
-              a.faaliyetAdi == selected.faaliyetAdi)) {
-            throw StateError(
-                'Seçilen kart değişti veya silindi. Önizlemeyi yeniden açın.');
-          }
-        }
-        final currentRows = await loadCurrentRows(filteredAssignments,
-            allCurrentAssignments: true);
-        return service.build(
-          activity: activity,
-          selectedCurrentActivityIds: currentIds,
-          selectedPreviousActivityIds: previousIds,
-          currentRows: currentRows,
-          personnelById: {
-            for (final person in freshPersonnel) person.id: person,
-          },
-          squadNames: squadMap,
-          authorizedTeamId: team,
-          selectedSquadId: selectedSquadId,
-        );
-      }
-
-      final rows = await loadCombinedRows();
-      if (!context.mounted) return;
-      if (rows.isEmpty) {
-        AppNotifications.info('Dışa aktarılacak personel bulunamadı.');
-        return;
-      }
-      if (!await confirmCombinedExcelPreview(
-            context,
-            rows,
-            sources: selectedSources,
-          ) ||
-          !context.mounted) {
-        return;
-      }
-      final action = await showArchiveExportSheet(
-        context,
-        subtitle:
-            '${activity.tarih} • ${rows.length} personel • İmzalı birleşik çıktı',
-      );
-      if (!context.mounted || action == null) return;
-      final title = '${activity.faaliyetAdi} + Seçilen Kartlar';
-      Future<List<MilitaryRosterRow>> reloadValidatedRows() async {
-        final refreshed = await loadCombinedRows();
-        String fingerprint(List<MilitaryRosterRow> source) => source
-            .map(
-              (r) => '${r.personelId}|${r.rutbe}|${r.adSoyad}|${r.groupCode}',
-            )
-            .join('\n');
-        if (fingerprint(refreshed) != fingerprint(rows)) {
-          throw StateError('Kayıtlar değişti. Önizlemeyi yeniden açın.');
-        }
-        return refreshed;
-      }
-
-      switch (action) {
-        case ArchiveExportType.excel:
-          final currentRows = await reloadValidatedRows();
-          await MilitaryRosterExporter.shareExcelRoster(
-            faaliyetAdi: title,
-            tarih: activity.tarih,
-            rows: currentRows,
-            mergeCells: false,
-            includeSignatures: true,
-          );
-        case ArchiveExportType.pdf:
-          await PdfRosterExporter.showStylePickerAndSharePdf(
-            context,
-            faaliyetAdi: title,
-            tarih: activity.tarih,
-            rows: rows,
-            loadRows: reloadValidatedRows,
-            includeSignatures: true,
-          );
-        case ArchiveExportType.print:
-          await PdfRosterExporter.showStylePickerAndPrintPdf(
-            context,
-            faaliyetAdi: title,
-            tarih: activity.tarih,
-            rows: rows,
-            loadRows: reloadValidatedRows,
-            includeSignatures: true,
-          );
-        case ArchiveExportType.text:
-          await MilitaryRosterExporter.shareTextRoster(
-            faaliyetAdi: title,
-            tarih: activity.tarih,
-            rows: await reloadValidatedRows(),
-          );
-      }
     }
 
     return Container(
@@ -429,19 +297,20 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       return;
                     }
 
-                    final added = await Navigator.of(
-                      context,
-                      rootNavigator: true,
-                    ).push<bool>(
-                      MaterialPageRoute(
-                        fullscreenDialog: true,
-                        builder: (ctx) => AddPersonnelToActivityDialog(
-                          activity: activity,
-                          isAdmin: isAdmin,
-                          existingPersonnelIds: existingPersonnelIds,
-                        ),
-                      ),
-                    );
+                    final added =
+                        await Navigator.of(
+                          context,
+                          rootNavigator: true,
+                        ).push<bool>(
+                          MaterialPageRoute(
+                            fullscreenDialog: true,
+                            builder: (ctx) => AddPersonnelToActivityDialog(
+                              activity: activity,
+                              isAdmin: isAdmin,
+                              existingPersonnelIds: existingPersonnelIds,
+                            ),
+                          ),
+                        );
                     if (added == true && context.mounted) {
                       AppNotifications.approvalResult(
                         isAdmin
@@ -508,16 +377,14 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                     icon: Icons.ios_share_rounded,
                   ),
                   const PopupMenuDivider(),
-                  if (CombinedHeybetExcelService.isHeybet(activity.faaliyetAdi))
-                    ModernPopupMenuItem(
-                      option: const ModernActionOption(
-                        value: 'combinedExcel',
-                        title: 'Kartları Birleştir ve Çıktı Al',
-                        subtitle:
-                            'Aynı gün ve önceki gün kartlarını imzalı çıktıda birleştir',
-                        icon: Icons.table_chart_outlined,
-                      ),
+                  ModernPopupMenuItem(
+                    option: const ModernActionOption(
+                      value: 'combinedExcel',
+                      title: 'Kartları Birleştir ve Çıktı Al',
+                      subtitle: 'Aynı gün ve önceki gün kartlarını imzalı çıktıda birleştir',
+                      icon: Icons.table_chart_outlined,
                     ),
+                  ),
                   ModernPopupMenuItem(
                     option: const ModernActionOption(
                       value: 'excel',

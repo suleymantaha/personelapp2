@@ -11,6 +11,7 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_summary_card.dart';
+import 'package:personelapp2/features/activity/presentation/roster_output_screen.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_date_navigator.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
@@ -177,8 +178,9 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
     final personnelAsync = ref.watch(historicalPersonnelProvider);
     final squads = squadsAsync.value ?? [];
     final allPersonnel = personnelAsync.value ?? [];
-    final personnelList =
-        session == null ? <PersonelTableData>[] : allPersonnel;
+    final personnelList = session == null
+        ? <PersonelTableData>[]
+        : allPersonnel;
 
     final dateFilterStr = DateFormat('yyyy-MM-dd').format(_selectedDateFilter);
     final now = DateTime.now();
@@ -199,21 +201,20 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
     }
 
     void exportCurrentArchive() {
-      final filteredForDate =
-          (activitiesAsync.value ?? [])
-              .where((activity) => activity.tarih == dateFilterStr)
-              .toList();
+      final filteredForDate = (activitiesAsync.value ?? [])
+          .where((activity) => activity.tarih == dateFilterStr)
+          .toList();
       final hasSelectedSquad =
           _selectedSquadFilter != null &&
           squads.any((squad) => squad.id == _selectedSquadFilter);
-      final selectedSquadName =
-          hasSelectedSquad
-              ? squads
-                  .firstWhere((squad) => squad.id == _selectedSquadFilter)
-                  .timAdi
-              : null;
-      final squadText =
-          selectedSquadName == null ? '' : ' • $selectedSquadName';
+      final selectedSquadName = hasSelectedSquad
+          ? squads
+                .firstWhere((squad) => squad.id == _selectedSquadFilter)
+                .timAdi
+          : null;
+      final squadText = selectedSquadName == null
+          ? ''
+          : ' • $selectedSquadName';
       final subtitle =
           '${DateFormat('dd.MM.yyyy').format(_selectedDateFilter)} • '
           '${filteredForDate.length} Faaliyet$squadText';
@@ -228,15 +229,14 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
         elevation: 0,
         centerTitle: false,
         titleSpacing: _selectionMode ? null : 0,
-        leading:
-            _selectionMode
-                ? IconButton(
-                  key: const Key('activity-selection-close'),
-                  icon: const Icon(Icons.close),
-                  tooltip: 'Seçimi Kapat',
-                  onPressed: _clearSelection,
-                )
-                : null,
+        leading: _selectionMode
+            ? IconButton(
+                key: const Key('activity-selection-close'),
+                icon: const Icon(Icons.close),
+                tooltip: 'Seçimi Kapat',
+                onPressed: _clearSelection,
+              )
+            : null,
         title: Text(
           _selectionMode
               ? '${_selectedActivityIds.length} faaliyet seçildi'
@@ -251,11 +251,10 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
               key: const Key('activity-selection-export'),
               icon: const Icon(Icons.ios_share),
               tooltip: 'Seçilenleri Dışa Aktar',
-              onPressed:
-                  () => _showSelectedExportOptions(
-                    activitiesAsync.value ?? [],
-                    personnelList,
-                  ),
+              onPressed: () => _showSelectedExportOptions(
+                activitiesAsync.value ?? [],
+                personnelList,
+              ),
             )
           else if (!context.isMobile)
             TextButton.icon(
@@ -275,6 +274,15 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
               constraints: const BoxConstraints(minWidth: 280, maxWidth: 320),
               onSelected: (action) async {
                 switch (action) {
+                  case 'prepare-output':
+                    await Navigator.of(context).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) => RosterOutputScreen(
+                          initialDate: dateFilterStr,
+                          selectedSquadId: _selectedSquadFilter,
+                        ),
+                      ),
+                    );
                   case 'export':
                     exportCurrentArchive();
                   case 'select':
@@ -297,81 +305,99 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                     await pickArchiveDate();
                 }
               },
-              itemBuilder:
-                  (context) => [
-                    const ModernMenuHeader<String>(
-                      title: 'Arşiv İşlemleri',
-                      subtitle: 'Görünüm ve arşiv araçları',
-                      icon: Icons.inventory_2_outlined,
+              itemBuilder: (context) => [
+                const ModernMenuHeader<String>(
+                  title: 'Arşiv İşlemleri',
+                  subtitle: 'Görünüm ve arşiv araçları',
+                  icon: Icons.inventory_2_outlined,
+                ),
+                const PopupMenuDivider(),
+                ModernPopupMenuItem(
+                  option: const ModernActionOption(
+                    value: 'prepare-output',
+                    title: 'Çıktı Hazırla',
+                    subtitle: 'Kartları seç, sırala ve imzalı çıktı al',
+                    icon: Icons.playlist_add_check_rounded,
+                  ),
+                ),
+                ModernPopupMenuItem(
+                  option: const ModernActionOption(
+                    value: 'export',
+                    title: 'Dışa Aktar / Yazdır',
+                    subtitle: 'Görüntülenen günü paylaş veya yazdır',
+                    icon: Icons.ios_share_rounded,
+                  ),
+                ),
+                ModernPopupMenuItem(
+                  option: const ModernActionOption(
+                    value: 'select',
+                    title: 'Faaliyet seç',
+                    subtitle: 'Birden fazla kayıt üzerinde çalış',
+                    icon: Icons.checklist_rounded,
+                  ),
+                ),
+                ModernPopupMenuItem(
+                  option: ModernActionOption(
+                    value: 'reorder',
+                    title: _reorderMode ? 'Sıralamayı bitir' : 'Kartları taşı',
+                    subtitle: _reorderMode
+                        ? 'Sürükleme modundan çık'
+                        : 'Kartları sürükleyerek yeniden sırala',
+                    icon: _reorderMode
+                        ? Icons.check_rounded
+                        : Icons.swap_vert_rounded,
+                  ),
+                ),
+                if (_manualOrder.isNotEmpty)
+                  ModernPopupMenuItem(
+                    option: const ModernActionOption(
+                      value: 'reset-order',
+                      title: 'Sıralamayı sıfırla',
+                      subtitle: 'Varsayılan sıralamaya dön',
+                      icon: Icons.restart_alt_rounded,
                     ),
-                    const PopupMenuDivider(),
-                    ModernPopupMenuItem(
-                      option: const ModernActionOption(
-                        value: 'export',
-                        title: 'Dışa Aktar / Yazdır',
-                        subtitle: 'Görüntülenen günü paylaş veya yazdır',
-                        icon: Icons.ios_share_rounded,
-                      ),
+                  ),
+                if (!isSelectedToday)
+                  ModernPopupMenuItem(
+                    option: const ModernActionOption(
+                      value: 'today',
+                      title: 'Bugüne dön',
+                      subtitle: 'Güncel faaliyetleri göster',
+                      icon: Icons.today_rounded,
                     ),
-                    ModernPopupMenuItem(
-                      option: const ModernActionOption(
-                        value: 'select',
-                        title: 'Faaliyet seç',
-                        subtitle: 'Birden fazla kayıt üzerinde çalış',
-                        icon: Icons.checklist_rounded,
-                      ),
+                  ),
+                if (isAdmin)
+                  ModernPopupMenuItem(
+                    option: const ModernActionOption(
+                      value: 'audit',
+                      title: 'Çakışmaları denetle',
+                      subtitle: 'Personel görevlendirmelerini kontrol et',
+                      icon: Icons.fact_check_outlined,
                     ),
-                    ModernPopupMenuItem(
-                      option: ModernActionOption(
-                        value: 'reorder',
-                        title:
-                            _reorderMode ? 'Sıralamayı bitir' : 'Kartları taşı',
-                        subtitle:
-                            _reorderMode
-                                ? 'Sürükleme modundan çık'
-                                : 'Kartları sürükleyerek yeniden sırala',
-                        icon:
-                            _reorderMode
-                                ? Icons.check_rounded
-                                : Icons.swap_vert_rounded,
-                      ),
-                    ),
-                    if (_manualOrder.isNotEmpty)
-                      ModernPopupMenuItem(
-                        option: const ModernActionOption(
-                          value: 'reset-order',
-                          title: 'Sıralamayı sıfırla',
-                          subtitle: 'Varsayılan sıralamaya dön',
-                          icon: Icons.restart_alt_rounded,
-                        ),
-                      ),
-                    if (!isSelectedToday)
-                      ModernPopupMenuItem(
-                        option: const ModernActionOption(
-                          value: 'today',
-                          title: 'Bugüne dön',
-                          subtitle: 'Güncel faaliyetleri göster',
-                          icon: Icons.today_rounded,
-                        ),
-                      ),
-                    if (isAdmin)
-                      ModernPopupMenuItem(
-                        option: const ModernActionOption(
-                          value: 'audit',
-                          title: 'Çakışmaları denetle',
-                          subtitle: 'Personel görevlendirmelerini kontrol et',
-                          icon: Icons.fact_check_outlined,
-                        ),
-                      ),
-                    ModernPopupMenuItem(
-                      option: const ModernActionOption(
-                        value: 'date',
-                        title: 'Tarihe göre süz',
-                        subtitle: 'Belirli bir günün arşivini aç',
-                        icon: Icons.calendar_today_rounded,
-                      ),
-                    ),
-                  ],
+                  ),
+                ModernPopupMenuItem(
+                  option: const ModernActionOption(
+                    value: 'date',
+                    title: 'Tarihe göre süz',
+                    subtitle: 'Belirli bir günün arşivini aç',
+                    icon: Icons.calendar_today_rounded,
+                  ),
+                ),
+              ],
+            ),
+          if (!_selectionMode && !context.isMobile)
+            IconButton(
+              key: const Key('activity-prepare-output'),
+              tooltip: 'Çıktı Hazırla',
+              icon: const Icon(Icons.playlist_add_check_rounded),
+              onPressed: () => Navigator.of(context).push<void>(
+                MaterialPageRoute(
+                  builder: (_) => RosterOutputScreen(
+                    initialDate: dateFilterStr,
+                    selectedSquadId: _selectedSquadFilter,
+                  ),
+                ),
+              ),
             ),
           if (!_selectionMode && !context.isMobile)
             IconButton(
@@ -416,17 +442,13 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
           child: Column(
             children: [
               activitiesAsync.when(
-                data:
-                    (activities) => ArchiveDateNavigator(
-                      selectedDate: _selectedDateFilter,
-                      activityCount:
-                          activities
-                              .where(
-                                (activity) => activity.tarih == dateFilterStr,
-                              )
-                              .length,
-                      onDateSelected: _changeSelectedDate,
-                    ),
+                data: (activities) => ArchiveDateNavigator(
+                  selectedDate: _selectedDateFilter,
+                  activityCount: activities
+                      .where((activity) => activity.tarih == dateFilterStr)
+                      .length,
+                  onDateSelected: _changeSelectedDate,
+                ),
                 loading: () => const SizedBox(height: 72),
                 error: (_, __) => const SizedBox.shrink(),
               ),
@@ -436,18 +458,16 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
               Expanded(
                 child: activitiesAsync.when(
                   data: (activities) {
-                    final filtered =
-                        activities
-                            .where((act) => act.tarih == dateFilterStr)
-                            .toList();
+                    final filtered = activities
+                        .where((act) => act.tarih == dateFilterStr)
+                        .toList();
                     _pruneSelectionAfterBuild(
                       filtered.map((activity) => activity.id),
                     );
 
                     if (filtered.isEmpty) {
-                      final formattedDate = DateFormat(
-                        'dd.MM.yyyy',
-                      ).format(_selectedDateFilter);
+                      final formattedDate = DateFormat('dd.MM.yyyy')
+                          .format(_selectedDateFilter);
                       return Center(
                         child: Text(
                           '$formattedDate tarihine ait faaliyet kaydı bulunamadı.',
@@ -509,59 +529,57 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                             ),
                           ),
                         Expanded(
-                          child:
-                              _reorderMode
-                                  ? ReorderableListView.builder(
-                                    key: const Key('activity-reorder-list'),
-                                    padding: listPadding,
-                                    buildDefaultDragHandles: false,
-                                    itemCount: ordered.length,
-                                    onReorderItem:
-                                        (oldIndex, newIndex) => _handleReorder(
-                                          ordered,
-                                          dateFilterStr,
-                                          oldIndex,
-                                          newIndex,
-                                        ),
-                                    itemBuilder: (context, index) {
-                                      final act = ordered[index];
-                                      return Row(
-                                        key: ValueKey<int>(act.id),
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          ReorderableDragStartListener(
-                                            index: index,
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                right: 4,
-                                              ),
-                                              child: Icon(
-                                                Icons.drag_indicator_rounded,
-                                                color: context.textSecondary,
-                                              ),
+                          child: _reorderMode
+                              ? ReorderableListView.builder(
+                                  key: const Key('activity-reorder-list'),
+                                  padding: listPadding,
+                                  buildDefaultDragHandles: false,
+                                  itemCount: ordered.length,
+                                  onReorderItem: (oldIndex, newIndex) =>
+                                      _handleReorder(
+                                        ordered,
+                                        dateFilterStr,
+                                        oldIndex,
+                                        newIndex,
+                                      ),
+                                  itemBuilder: (context, index) {
+                                    final act = ordered[index];
+                                    return Row(
+                                      key: ValueKey<int>(act.id),
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        ReorderableDragStartListener(
+                                          index: index,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 4,
+                                            ),
+                                            child: Icon(
+                                              Icons.drag_indicator_rounded,
+                                              color: context.textSecondary,
                                             ),
                                           ),
-                                          Expanded(
-                                            child: _buildActivityCard(act),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  )
-                                  : ListView.builder(
-                                    padding: listPadding,
-                                    itemCount: ordered.length,
-                                    itemBuilder:
-                                        (context, index) =>
-                                            _buildActivityCard(ordered[index]),
-                                  ),
+                                        ),
+                                        Expanded(
+                                          child: _buildActivityCard(act),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                )
+                              : ListView.builder(
+                                  padding: listPadding,
+                                  itemCount: ordered.length,
+                                  itemBuilder: (context, index) =>
+                                      _buildActivityCard(ordered[index]),
+                                ),
                         ),
                       ],
                     );
                   },
-                  loading:
-                      () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (err, _) => Center(child: Text('Hata: $err')),
                 ),
               ),

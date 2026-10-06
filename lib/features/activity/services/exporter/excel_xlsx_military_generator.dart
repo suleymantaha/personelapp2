@@ -134,10 +134,10 @@ List<int> _generateMilitaryExcelBytes({
     }
     final isSpecialGroup =
         (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
-            List.generate(
-              mergeCount + 1,
-              (offset) => rows[i + offset].groupCode,
-            ).every((groupCode) => groupCode == currentGroup);
+        List.generate(
+          mergeCount + 1,
+          (offset) => rows[i + offset].groupCode,
+        ).every((groupCode) => groupCode == currentGroup);
 
     final startRowIndex = currentRow;
 
@@ -204,9 +204,11 @@ List<int> _generateMilitaryExcelBytes({
   }
 
   var lastPrintRowNumber = currentRow;
+  int? signatureStartRow;
   if (includeSignatures) {
     sheet.setRowHeight(currentRow, 14);
     currentRow += 1;
+    signatureStartRow = currentRow;
     lastPrintRowNumber = _writeRosterSignatures(sheet, currentRow) + 1;
     currentRow = lastPrintRowNumber;
   }
@@ -232,7 +234,12 @@ List<int> _generateMilitaryExcelBytes({
     // Keep the title merged; all personnel and summary cells remain independent.
     // Restore values and full borders after removing the data merged ranges.
     for (final range in sheet.spannedItems.toList()) {
-      if (range != 'A1:E1') {
+      final startRow = int.parse(RegExp(r'\d+').firstMatch(range)!.group(0)!);
+      final isSignature =
+          signatureStartRow != null &&
+          startRow >= signatureStartRow + 1 &&
+          startRow <= signatureStartRow + 5;
+      if (range != 'A1:E1' && !isSignature) {
         sheet.unMerge(range);
       }
     }
@@ -256,13 +263,14 @@ List<int> _generateMilitaryExcelBytes({
       ];
       for (var column = 0; column < styles.length; column++) {
         sheet
-            .cell(
-              CellIndex.indexByColumnRow(
-                columnIndex: column,
-                rowIndex: index + 2,
-              ),
-            )
-            .cellStyle = styles[column];
+                .cell(
+                  CellIndex.indexByColumnRow(
+                    columnIndex: column,
+                    rowIndex: index + 2,
+                  ),
+                )
+                .cellStyle =
+            styles[column];
       }
     }
   }
@@ -339,7 +347,7 @@ double _signedRosterRowHeight(MilitaryRosterRow row) {
     lines(row.birligi, 114),
     lines(row.rutbe, 90),
     lines(row.adSoyad, 153),
-    lines(row.diger, 126)
+    lines(row.diger, 126),
   ];
   final maxLines = counts.reduce((a, b) => a > b ? a : b);
   return maxLines * 12.0 + 2;

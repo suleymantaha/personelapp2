@@ -22,10 +22,10 @@ void main() {
     'starts unselected, preserves card order and selection after preview back',
     (tester) async {
       tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final db = AppDatabase(NativeDatabase.memory());
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final db = AppDatabase(NativeDatabase.memory());
       addTearDown(db.close);
       await tester.runAsync(() async {
         for (final name in ['Heybet personeli', 'Z Personel', 'A Personel']) {
@@ -126,6 +126,37 @@ void main() {
       await waitFor(tester, find.text('Birleşik Çıktı Önizlemesi'));
       expect(find.text('1. A Personel'), findsOneWidget);
       expect(find.textContaining('Z Personel'), findsNothing);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+  testWidgets(
+    'empty preparation fits narrow screens and refuses preview without a session',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            userSessionProvider.overrideWith((ref) => null),
+          ],
+          child: const MaterialApp(
+            home: RosterOutputScreen(initialDate: '2026-10-06'),
+          ),
+        ),
+      );
+      await waitFor(tester, find.textContaining('Oturum doğrulanamadı'));
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const Key('roster-preview')))
+            .onPressed,
+        isNull,
+      );
+      expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
