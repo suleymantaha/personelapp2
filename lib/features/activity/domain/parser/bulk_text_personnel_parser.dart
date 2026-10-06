@@ -157,7 +157,8 @@ bool _isHeader(String line) {
       RegExp(r'\bliste\b').hasMatch(folded) ||
       folded.contains('isim list') ||
       folded.contains('timi') ||
-      folded.contains(' tim ');
+      folded.contains(' tim ') ||
+      RegExp(r'\bmeti\b').hasMatch(folded);
   final hasActivity = _activityTypes.keys.any((key) => folded.contains(key));
   final hasDate = _extractDateFromLine(line) != null;
   return hasHeaderWord ||
@@ -198,7 +199,13 @@ String? _extractTeam(String line) {
       r'(?<!\d)(\d{1,2})\s*[.]?\s*(?:tim(?:i)?|bölük|boluk|bl)\b',
       caseSensitive: false,
     ).firstMatch(_fold(line));
-    return timMatch != null ? '${timMatch.group(1)}' : null;
+    if (timMatch != null) return '${timMatch.group(1)}';
+
+    final folded = _fold(line);
+    if (RegExp(r'\bmeti\b').hasMatch(folded)) {
+      return 'METİ';
+    }
+    return null;
   }
   final number = match.group(1)!;
   final rawSuffix = (match.group(2) ?? match.group(3))!;
@@ -233,6 +240,7 @@ String _extractUnknownActivity(String line) => line
     .replaceAll(_datePattern, '')
     .replaceAll(_textMonthDatePattern, '')
     .replaceAll(_teamPattern, '')
+    .replaceAll(RegExp(r'\bmeti\s*(?:timi?)?\b', caseSensitive: false), '')
     .replaceAll(
       RegExp(r'\b(?:isim\s+)?(?:liste|listesi)\b', caseSensitive: false),
       '',
