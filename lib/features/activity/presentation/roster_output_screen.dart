@@ -78,11 +78,12 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
         _loading = false;
       });
     } catch (error) {
-      if (mounted && date == _date)
+      if (mounted && date == _date) {
         setState(() {
           _error = '$error';
           _loading = false;
         });
+      }
     }
   }
 

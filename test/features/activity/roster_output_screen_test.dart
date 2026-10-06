@@ -101,6 +101,7 @@ void main() {
       await tester.ensureVisible(
         find.byKey(const ValueKey('previous-activity-3')),
       );
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('previous-activity-3')));
       await tester.pumpAndSettle();
       await tester.ensureVisible(

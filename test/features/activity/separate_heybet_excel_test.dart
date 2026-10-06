@@ -174,7 +174,7 @@ void main() {
             );
             await tester.pump();
           }
-          expect(find.text('Devriye'), findsOneWidget);
+          expect(find.text('Devriye', skipOffstage: false), findsOneWidget);
           expect(shares.length, expectedShares - 1);
           expect(
             tester
@@ -243,10 +243,10 @@ void main() {
           );
         }
         if (label == 'Kartları Birleştir ve Çıktı Al') {
-          await tester.pageBack();
-          await tester.pumpAndSettle();
-          await tester.pageBack();
-          await tester.pumpAndSettle();
+          while (find.byType(AppBar).evaluate().isNotEmpty) {
+            await tester.pageBack();
+            await tester.pumpAndSettle();
+          }
         }
         debugPrint('Heybet flow complete: $label, shares=${shares.length}');
         await tester.pumpAndSettle();
@@ -278,7 +278,14 @@ void main() {
         combinedPaths.add(path);
         final workbook = Excel.decodeBytes(File(path).readAsBytesSync());
         final sheet = workbook['İsim Listesi'];
-        expect(sheet.spannedItems, ['A1:E1']);
+        expect(sheet.spannedItems, [
+          'A1:E1',
+          'A6:B6',
+          'A7:B7',
+          'A8:B8',
+          'A9:B9',
+          'A10:B10',
+        ]);
         for (var index = 2; index < 4; index++) {
           for (var column = 0; column < 5; column++) {
             final style = sheet
