@@ -66,9 +66,16 @@ final RegExp _messageMetadataPattern = RegExp(
   r'\d{1,2}[.:]\d{2}\s*[-–—]\s*[A-Za-zÇĞİÖŞÜçğıöşü][^:]{0,59}:)',
 );
 final RegExp _rankPattern = RegExp(
-  r'^(J\s*[.]?\s*(?:(?:Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm|Yzb|Bçvş|Bcvs)|'
-  r'(?:(?:Asb|Uzm)\s*[.]?\s*(?:Kd\s*[.]?\s*)?'
-  r'(?:Ü[.]?Çvş|U[.]?Cv[sş]|Üçvş|Ucv[sş]?|Çvş|Cv[sş]?)))\s*[.]?)\s*',
+  r'^(?:J\s*[.]?\s*)?'
+  r'(?:(?:Per|İkm|Ikm|Mu|Mhb|Bkm|Asyş|Asys|İst|Ist|Uls|Mly|Tbp|Sağ|Sag|Hrk)\s*[.]?\s*)?'
+  r'(?:'
+  r'(?:Alb|Yb|Yrb|Bnb|Yzb|Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm)|'
+  r'(?:(?:Asb|Astsb|Asts)\s*[.]?\s*(?:Kd\s*[.]?\s*)?(?:Bçvş|Bcvs|Ü[.]?Çvş|U[.]?Cv[sş]|Üçvş|Ucv[sş]?|Çvş|Cv[sş]?))|'
+  r'(?:Uzm\s*[.]?\s*J\s*[.]?)|'
+  r'(?:(?:Uzm|Uz)\s*[.]?\s*(?:Çvş|Cv[sş]?|Onb))|'
+  r'(?:Söz\s*[.]?\s*Er)|'
+  r'Er'
+  r')\s*[.]?\s*',
   caseSensitive: false,
 );
 final RegExp _fullDayAnnotationPattern = RegExp(

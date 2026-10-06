@@ -25,9 +25,9 @@ class MilitaryRankNormalizer {
     r'(?:(?:Per|İkm|Ikm|Mu|Mhb|Bkm|Asyş|Asys|İst|Ist|Uls|Mly|Tbp|Sağ|Sag|Hrk)\s*[.]?\s*)?'
     r'(?:'
     r'(?:Alb|Yb|Yrb|Bnb|Yzb|Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm)|'
-    r'(?:(?:Asb|Astsb|Asts)\s*[.]?\s*(?:Kd\s*[.]?\s*)?(?:Bçvş|Bcvs|Üçvş|Ucvs|Çvş|Cvs))|'
+    r'(?:(?:Asb|Astsb|Asts)\s*[.]?\s*(?:Kd\s*[.]?\s*)?(?:Bçvş|Bcvs|Ü[.]?Çvş|U[.]?Cv[sş]|Üçvş|Ucv[sş]?|Çvş|Cv[sş]?))|'
     r'(?:Uzm\s*[.]?\s*J\s*[.]?)|'
-    r'(?:(?:Uzm|Uz)\s*[.]?\s*(?:Çvş|Cvs|Onb|Çvs))|'
+    r'(?:(?:Uzm|Uz)\s*[.]?\s*(?:Çvş|Cv[sş]?|Onb))|'
     r'(?:Söz\s*[.]?\s*Er)|'
     r'Er'
     r')\s*[.]?\s*',

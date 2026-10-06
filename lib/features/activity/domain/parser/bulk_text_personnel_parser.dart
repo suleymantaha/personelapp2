@@ -329,10 +329,10 @@ bool _looksLikeBrokenPersonnel(String line) =>
   int index,
   int lineNumber,
 ) {
-  final rankMatch = _rankPattern.firstMatch(content);
-  final rankKnown = rankMatch != null;
-  final rank = rankKnown ? _normalizeRank(rankMatch.group(1)!) : '';
-  final name = (rankKnown ? content.substring(rankMatch.end) : content).trim();
+  final extracted = MilitaryRankNormalizer.extractRankAndName(content);
+  final rankKnown = extracted.hasRank;
+  final rank = extracted.standardRank ?? '';
+  final name = extracted.cleanName.trim();
   if (name.isEmpty || !RegExp(r'[A-Za-zÇĞİÖŞÜçğıöşü]').hasMatch(name)) {
     return null;
   }
