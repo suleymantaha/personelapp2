@@ -366,14 +366,11 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                           onSelected: (action) async {
                             switch (action) {
                               case _AssignmentAction.edit:
-                                final updated = await showDialog<bool>(
+                                final updated = await showEditAssignmentModal(
                                   context: context,
-                                  builder:
-                                      (ctx) => EditAssignmentDialog(
-                                        assignment: atama,
-                                        personnelName: displayName,
-                                        isAdmin: isAdmin,
-                                      ),
+                                  assignment: atama,
+                                  personnelName: displayName,
+                                  isAdmin: isAdmin,
                                 );
                                 if (updated == true && context.mounted) {
                                   AppNotifications.approvalResult(

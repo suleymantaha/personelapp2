@@ -45,28 +45,6 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
     'Diğer',
   ];
 
-  static const _adminOnlyDuties = [
-    DutyOrLeaveType.heybetKomutani,
-    DutyOrLeaveType.nobSb,
-    DutyOrLeaveType.mebsNob,
-    DutyOrLeaveType.garajNob,
-    DutyOrLeaveType.ttzaNob,
-    DutyOrLeaveType.kuleNob,
-  ];
-
-  static const _generalDuties = [
-    DutyOrLeaveType.hazirKita,
-    DutyOrLeaveType.guluskur,
-    DutyOrLeaveType.heybet,
-    DutyOrLeaveType.gorevli,
-    DutyOrLeaveType.nobetci,
-    DutyOrLeaveType.izinli,
-    DutyOrLeaveType.istirahatli,
-    DutyOrLeaveType.raporlu,
-    DutyOrLeaveType.sevk,
-    DutyOrLeaveType.diger,
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -228,10 +206,8 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
         .toList()
       ..sort(
           (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)));
-    final availableDuties = [
-      if (isAdmin) ..._adminOnlyDuties,
-      ..._generalDuties,
-    ];
+    final availableDuties =
+        DutyOrLeaveType.dutiesForRole(isAdmin: isAdmin);
 
     return ActivityDetailsStep(
       draft: _draft,

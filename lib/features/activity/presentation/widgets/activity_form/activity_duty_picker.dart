@@ -10,12 +10,14 @@ Future<String?> showActivityDutyPicker(
   required List<String> duties,
   required String keyPrefix,
   String? inheritLabel,
+  String? selectedDuty,
 }) {
   final content = _DutyPickerContent(
     title: title,
     duties: duties,
     keyPrefix: keyPrefix,
     inheritLabel: inheritLabel,
+    selectedDuty: selectedDuty,
   );
   if (MediaQuery.sizeOf(context).width < AppBreakpoints.mobile) {
     return showModalBottomSheet<String>(
@@ -43,12 +45,14 @@ class _DutyPickerContent extends StatelessWidget {
     required this.duties,
     required this.keyPrefix,
     required this.inheritLabel,
+    this.selectedDuty,
   });
 
   final String title;
   final List<String> duties;
   final String keyPrefix;
   final String? inheritLabel;
+  final String? selectedDuty;
 
   @override
   Widget build(BuildContext context) {
@@ -66,26 +70,47 @@ class _DutyPickerContent extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: ListView.builder(
-                itemCount: itemCount,
-                itemBuilder: (context, index) {
+              child: ListView(
+                children: List.generate(itemCount, (index) {
                   final isInherit = inheritLabel != null && index == 0;
                   final duty = isInherit
                       ? inheritCommonDutyValue
                       : duties[index - (inheritLabel == null ? 0 : 1)];
+                  final isSelected = !isInherit &&
+                      selectedDuty != null &&
+                      selectedDuty!.isNotEmpty &&
+                      duty == selectedDuty;
                   return ListTile(
                     key: ValueKey('$keyPrefix-$duty'),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    tileColor: isSelected ? context.accentSubtleBg : null,
                     leading: Icon(
                       isInherit
                           ? Icons.refresh_rounded
                           : Icons.assignment_ind_outlined,
-                      color: context.accentOrOlive,
+                      color: isSelected
+                          ? context.accentOrOlive
+                          : (isInherit ? context.accentOrOlive : null),
                     ),
-                    title: Text(isInherit ? inheritLabel! : duty),
-                    trailing: const Icon(Icons.chevron_right_rounded),
+                    title: Text(
+                      isInherit ? inheritLabel! : duty,
+                      style: TextStyle(
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.w500,
+                        color: isSelected ? context.accentOrOlive : null,
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? Icon(
+                            Icons.check_circle_rounded,
+                            color: context.accentOrOlive,
+                          )
+                        : const Icon(Icons.chevron_right_rounded),
                     onTap: () => Navigator.pop(context, duty),
                   );
-                },
+                }),
               ),
             ),
           ],

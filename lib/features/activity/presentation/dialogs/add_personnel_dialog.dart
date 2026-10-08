@@ -13,33 +13,9 @@ import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/view_models/activity_form_draft.dart';
 
-const List<String> kActivityAssignmentDuties = [
-  DutyOrLeaveType.heybetKomutani,
-  DutyOrLeaveType.nobSb,
-  DutyOrLeaveType.mebsNob,
-  DutyOrLeaveType.garajNob,
-  DutyOrLeaveType.ttzaNob,
-  DutyOrLeaveType.kuleNob,
-  DutyOrLeaveType.hazirKita,
-  DutyOrLeaveType.guluskur,
-  DutyOrLeaveType.heybet,
-  DutyOrLeaveType.gorevli,
-  DutyOrLeaveType.nobetci,
-  DutyOrLeaveType.izinli,
-  DutyOrLeaveType.istirahatli,
-  DutyOrLeaveType.raporlu,
-  DutyOrLeaveType.sevk,
-  DutyOrLeaveType.diger,
-];
-
-const Set<String> kActivityAdminOnlyDuties = {
-  DutyOrLeaveType.heybetKomutani,
-  DutyOrLeaveType.nobSb,
-  DutyOrLeaveType.mebsNob,
-  DutyOrLeaveType.garajNob,
-  DutyOrLeaveType.ttzaNob,
-  DutyOrLeaveType.kuleNob,
-};
+const List<String> kActivityAssignmentDuties = DutyOrLeaveType.allDuties;
+final Set<String> kActivityAdminOnlyDuties =
+    DutyOrLeaveType.adminOnlyDuties.toSet();
 
 /// Full-screen, two-stage editor with a route-local single-person draft.
 class AddPersonnelToActivityDialog extends ConsumerStatefulWidget {
@@ -175,11 +151,7 @@ class _AddPersonnelToActivityDialogState
     final selected = people
         .where((p) => _draft.selectedPersonnelIds.contains(p.id))
         .toList();
-    final duties = widget.isAdmin
-        ? kActivityAssignmentDuties
-        : kActivityAssignmentDuties
-              .where((duty) => !kActivityAdminOnlyDuties.contains(duty))
-              .toList(growable: false);
+    final duties = DutyOrLeaveType.dutiesForRole(isAdmin: widget.isAdmin);
     final colorScheme = Theme.of(context).colorScheme;
     return PopScope<bool>(
       canPop:

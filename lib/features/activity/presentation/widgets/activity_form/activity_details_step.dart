@@ -84,6 +84,7 @@ class ActivityDetailsStep extends StatelessWidget {
               title: context.l10n.activitySelectCommonDuty,
               duties: availableDuties,
               keyPrefix: 'common-duty',
+              selectedDuty: draft.commonDuty,
             );
             if (context.mounted && duty != null) onCommonDutyChanged(duty);
           },
@@ -185,6 +186,7 @@ class ActivityDetailsStep extends StatelessWidget {
         inheritLabel: draft.commonDuty.isEmpty
             ? null
             : context.l10n.activityUseCommonDuty,
+        selectedDuty: draft.dutyFor(person.id),
       );
       if (!context.mounted) return;
       if (duty == inheritCommonDutyValue) {

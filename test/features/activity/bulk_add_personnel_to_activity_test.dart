@@ -94,9 +94,19 @@ void main() {
     expect(find.text('1 personel seçildi'), findsOneWidget);
     await tester.tap(find.text('Devam et'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<String>).first);
+    await tester.tap(find.byKey(const Key('common-duty-field')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(DutyOrLeaveType.nobetci).last);
+    final targetTile = find.byKey(
+      const ValueKey('common-duty-${DutyOrLeaveType.nobetci}'),
+    );
+    await tester.scrollUntilVisible(
+      targetTile,
+      50,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.drag(find.byType(Scrollable).last, const Offset(0, -100));
+    await tester.pumpAndSettle();
+    await tester.tap(targetTile);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Not ekle'));
     await tester.pumpAndSettle();
