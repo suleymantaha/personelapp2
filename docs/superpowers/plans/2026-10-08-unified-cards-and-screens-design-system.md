@@ -4,7 +4,7 @@
 
 **Goal:** Uygulama genelindeki tüm ekranlarda bağımsız, tutarsız ve performans kaybına (jank / donma / gesture çakışması) yol açan kart ve liste yapılarını tek bir kurumsal tasarım ve performans sistemine (`AppCard`, `AppListCard`, `AppExpandableCard`, sanallaştırılmış liste şablonları) kavuşturmak.
 
-**Architecture:** `lib/core/widgets/` altında tek tip ve izole edilmiş `AppCard`, `AppActionCard`, `AppExpandableCard` bileşen ailesi oluşturulur; tüm ekranlar (`Temgundrap`, `Personnel`, `Activity Archive`, `Activity Form`, `Roster Output`, `Pending Approvals`, `Monthly Matrix`, `Dashboard`, `Auth`) bu standart yapıya taşınır; iç içe `shrinkWrap: true` ve `build()` içi ağır senkron hesaplama darboğazları ortadan kaldırılır.
+**Architecture:** `lib/core/widgets/` altında tek tip ve izole edilmiş `AppCard`, `AppExpandableCard`, `AppEmptyState`, `AppErrorState` ve `AppNoticeBanner` bileşen ailesi oluşturulur; tüm ekranlar (`Temgundrap`, `Personnel`, `Activity Archive`, `Activity Form`, `Roster Output`, `Pending Approvals`, `Monthly Matrix`, `Dashboard`, `Auth`) bu standart yapıya taşınır; iç içe `shrinkWrap: true` ve `build()` içi ağır senkron hesaplama darboğazları ortadan kaldırılır; diyaloglardaki klavye taşma riskleri ve çift tıklama zafiyetleri kapatılır.
 
 **Tech Stack:** Flutter 3.x, Flutter Riverpod, Material 3, Drift DB, GoRouter.
 

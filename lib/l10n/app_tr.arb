@@ -27,6 +27,9 @@
   "commonRequired": "Zorunlu alan",
   "commonLoading": "Yükleniyor...",
   "commonNoData": "Kayıt bulunamadı",
+  "commonApprove": "Onayla",
+  "commonReject": "Reddet",
+  "commonUnauthorized": "Bu sayfaya erişim yetkiniz bulunmuyor.",
 
   "activitySelectDutyTitle": "Görev veya İzin Seçin",
   "activityCommonDuty": "Ortak Görev",
@@ -159,6 +162,7 @@
   },
   "personnelAllUnit": "Tüm Birlik",
   "personnelNoSubscription": "Abonelik Yok",
+  "personnelNoCriteriaMatches": "Kriterlere uygun personel bulunamadı.",
   "commonSaving": "KAYDEDİLİYOR…",
   "commonRetry": "TEKRAR DENE",
 
@@ -503,5 +507,145 @@
   "temgundrapApproverDuty": "Görevi",
   "temgundrapSaveAsDraft": "Taslak olarak kaydet",
   "temgundrapSaveDocumentButton": "ÇİZELGEYİ KAYDET",
-  "temgundrapRequiredField": "Bu alan zorunludur."
+  "temgundrapRequiredField": "Bu alan zorunludur.",
+
+  "pendingApprovalsTitle": "Bekleyen Görev Onayları",
+  "pendingApprovalsEmptyTitle": "Bekleyen Onay Yok",
+  "pendingApprovalsEmptyDesc": "Onay bekleyen veya çakışan görev kaydı bulunmuyor.",
+  "pendingApprovalsAssignmentConflict": "Görevlendirme #{id} (ÇAKIŞMA VAR)",
+  "@pendingApprovalsAssignmentConflict": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingApprovalsPersonnelLabel": "Personel",
+  "pendingApprovalsRequestedDutyLabel": "Talep Edilen Görev",
+  "pendingApprovalsDescriptionLabel": "Açıklama: {description}",
+  "@pendingApprovalsDescriptionLabel": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingApprovalsApprove": "ONAYLA",
+  "pendingApprovalsReject": "REDDET",
+  "pendingApprovalsApprovalFailed": "Onaylanamadı: {reason}",
+  "@pendingApprovalsApprovalFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+
+  "activityDeleteTitle": "Faaliyeti Sil",
+  "activityDeleteConfirm": "{name} ({date}) faaliyet kaydı silinecektir. Emin misiniz?",
+  "@activityDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "activityRenameTitle": "Faaliyet Adını Değiştir",
+  "activityRenameLabel": "Faaliyet adı",
+  "activityRenameHint": "Örn. Gece nöbeti",
+  "activityActionsTitle": "Faaliyet İşlemleri",
+  "activityActionsSubtitle": "Bu faaliyet için kullanılabilir işlemler",
+  "activityApproveAllTitle": "Tümünü onayla",
+  "activityApproveAllSubtitle": "Bekleyen tüm atamaları onayla",
+  "activityRenameOptionTitle": "Faaliyet adını değiştir",
+  "activityRenameOptionSubtitle": "Kart başlığını yeniden adlandır",
+  "activityChangeDateOptionTitle": "Tarihi değiştir",
+  "activityChangeDateOptionSubtitle": "Faaliyeti başka bir güne taşı",
+  "activityDeleteOptionTitle": "Faaliyeti sil",
+  "activityDeleteOptionSubtitle": "Bu işlem geri alınamaz",
+  "activityApproveAllSuccess": "{count} atama onaylandı.",
+  "@activityApproveAllSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityApproveAllWithConflicts": "{approvedCount} onaylandı, {blockedCount} çakışma nedeniyle beklemede kaldı: {reasons}",
+  "@activityApproveAllWithConflicts": {
+    "placeholders": {
+      "approvedCount": {
+        "type": "int"
+      },
+      "blockedCount": {
+        "type": "int"
+      },
+      "reasons": {
+        "type": "String"
+      }
+    }
+  },
+  "activityCreatedBy": "Yazan: {user}",
+  "@activityCreatedBy": {
+    "placeholders": {
+      "user": {
+        "type": "String"
+      }
+    }
+  },
+  "activityStatusApproved": "ONAYLANDI",
+  "activityStatusPendingAdmin": "ADMIN ONAYI BEKLİYOR",
+  "activityStatusConflictOrRejected": "ÇAKIŞMA / RED",
+  "activityChangeDateTitle": "Faaliyet Tarihini Değiştir",
+  "activityChangeDateAlreadyOnDate": "Faaliyet zaten seçilen tarihte.",
+  "activityChangeDatePrepareFailed": "Tarih değişikliği hazırlanamadı.",
+  "activityChangeDatePersonnelCountNotice": "{count} personel yeni tarihe taşınacak.",
+  "@activityChangeDatePersonnelCountNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityChangeDatePendingNotice": "{count} personel rapor/görev çakışması nedeniyle yeniden onaya alınacak.",
+  "@activityChangeDatePendingNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityChangeDateSubmit": "TARİHİ DEĞİŞTİR",
+  "activityChangeDateMovedNotice": "{count} personel {date} tarihine taşındı.",
+  "@activityChangeDateMovedNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "activityChangeDatePendingCountNotice": "{count} personel yeniden onay bekliyor.",
+  "@activityChangeDatePendingCountNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityChangeDateFailed": "Tarih değiştirilemedi. Hedef tarih yeniden kontrol edilmelidir.",
+  "activityRenameSuccess": "Faaliyet adı güncellendi.",
+  "activityRenameFailed": "Faaliyet adı değiştirilemedi: {error}",
+  "@activityRenameFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
+import 'package:personelapp2/core/widgets/app_card.dart';
 
 class CollapsibleSquadCard extends StatelessWidget {
   const CollapsibleSquadCard({
@@ -26,19 +27,12 @@ class CollapsibleSquadCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return AppCard(
       key: cardKey,
-      clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        side: BorderSide(
-          color: warningCount > 0
-              ? context.pendingColor.withValues(alpha: 0.7)
-              : context.cardBorderColor,
-        ),
-      ),
+      padding: EdgeInsets.zero,
+      borderColor: warningCount > 0
+          ? context.pendingColor.withValues(alpha: 0.7)
+          : null,
       child: Column(
         children: [
           ListTile(

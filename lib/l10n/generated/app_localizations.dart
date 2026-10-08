@@ -238,6 +238,24 @@ abstract class AppLocalizations {
   /// **'Kayıt bulunamadı'**
   String get commonNoData;
 
+  /// No description provided for @commonApprove.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onayla'**
+  String get commonApprove;
+
+  /// No description provided for @commonReject.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reddet'**
+  String get commonReject;
+
+  /// No description provided for @commonUnauthorized.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu sayfaya erişim yetkiniz bulunmuyor.'**
+  String get commonUnauthorized;
+
   /// No description provided for @activitySelectDutyTitle.
   ///
   /// In tr, this message translates to:
@@ -723,6 +741,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Abonelik Yok'**
   String get personnelNoSubscription;
+
+  /// No description provided for @personnelNoCriteriaMatches.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kriterlere uygun personel bulunamadı.'**
+  String get personnelNoCriteriaMatches;
 
   /// No description provided for @commonSaving.
   ///
@@ -1815,6 +1839,259 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Bu alan zorunludur.'**
   String get temgundrapRequiredField;
+
+  /// No description provided for @pendingApprovalsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bekleyen Görev Onayları'**
+  String get pendingApprovalsTitle;
+
+  /// No description provided for @pendingApprovalsEmptyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bekleyen Onay Yok'**
+  String get pendingApprovalsEmptyTitle;
+
+  /// No description provided for @pendingApprovalsEmptyDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onay bekleyen veya çakışan görev kaydı bulunmuyor.'**
+  String get pendingApprovalsEmptyDesc;
+
+  /// No description provided for @pendingApprovalsAssignmentConflict.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görevlendirme #{id} (ÇAKIŞMA VAR)'**
+  String pendingApprovalsAssignmentConflict(int id);
+
+  /// No description provided for @pendingApprovalsPersonnelLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel'**
+  String get pendingApprovalsPersonnelLabel;
+
+  /// No description provided for @pendingApprovalsRequestedDutyLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Talep Edilen Görev'**
+  String get pendingApprovalsRequestedDutyLabel;
+
+  /// No description provided for @pendingApprovalsDescriptionLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama: {description}'**
+  String pendingApprovalsDescriptionLabel(String description);
+
+  /// No description provided for @pendingApprovalsApprove.
+  ///
+  /// In tr, this message translates to:
+  /// **'ONAYLA'**
+  String get pendingApprovalsApprove;
+
+  /// No description provided for @pendingApprovalsReject.
+  ///
+  /// In tr, this message translates to:
+  /// **'REDDET'**
+  String get pendingApprovalsReject;
+
+  /// No description provided for @pendingApprovalsApprovalFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onaylanamadı: {reason}'**
+  String pendingApprovalsApprovalFailed(String reason);
+
+  /// No description provided for @activityDeleteTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyeti Sil'**
+  String get activityDeleteTitle;
+
+  /// No description provided for @activityDeleteConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'{name} ({date}) faaliyet kaydı silinecektir. Emin misiniz?'**
+  String activityDeleteConfirm(String name, String date);
+
+  /// No description provided for @activityRenameTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet Adını Değiştir'**
+  String get activityRenameTitle;
+
+  /// No description provided for @activityRenameLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet adı'**
+  String get activityRenameLabel;
+
+  /// No description provided for @activityRenameHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn. Gece nöbeti'**
+  String get activityRenameHint;
+
+  /// No description provided for @activityActionsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet İşlemleri'**
+  String get activityActionsTitle;
+
+  /// No description provided for @activityActionsSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu faaliyet için kullanılabilir işlemler'**
+  String get activityActionsSubtitle;
+
+  /// No description provided for @activityApproveAllTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümünü onayla'**
+  String get activityApproveAllTitle;
+
+  /// No description provided for @activityApproveAllSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bekleyen tüm atamaları onayla'**
+  String get activityApproveAllSubtitle;
+
+  /// No description provided for @activityRenameOptionTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet adını değiştir'**
+  String get activityRenameOptionTitle;
+
+  /// No description provided for @activityRenameOptionSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart başlığını yeniden adlandır'**
+  String get activityRenameOptionSubtitle;
+
+  /// No description provided for @activityChangeDateOptionTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarihi değiştir'**
+  String get activityChangeDateOptionTitle;
+
+  /// No description provided for @activityChangeDateOptionSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyeti başka bir güne taşı'**
+  String get activityChangeDateOptionSubtitle;
+
+  /// No description provided for @activityDeleteOptionTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyeti sil'**
+  String get activityDeleteOptionTitle;
+
+  /// No description provided for @activityDeleteOptionSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu işlem geri alınamaz'**
+  String get activityDeleteOptionSubtitle;
+
+  /// No description provided for @activityApproveAllSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} atama onaylandı.'**
+  String activityApproveAllSuccess(int count);
+
+  /// No description provided for @activityApproveAllWithConflicts.
+  ///
+  /// In tr, this message translates to:
+  /// **'{approvedCount} onaylandı, {blockedCount} çakışma nedeniyle beklemede kaldı: {reasons}'**
+  String activityApproveAllWithConflicts(
+      int approvedCount, int blockedCount, String reasons);
+
+  /// No description provided for @activityCreatedBy.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yazan: {user}'**
+  String activityCreatedBy(String user);
+
+  /// No description provided for @activityStatusApproved.
+  ///
+  /// In tr, this message translates to:
+  /// **'ONAYLANDI'**
+  String get activityStatusApproved;
+
+  /// No description provided for @activityStatusPendingAdmin.
+  ///
+  /// In tr, this message translates to:
+  /// **'ADMIN ONAYI BEKLİYOR'**
+  String get activityStatusPendingAdmin;
+
+  /// No description provided for @activityStatusConflictOrRejected.
+  ///
+  /// In tr, this message translates to:
+  /// **'ÇAKIŞMA / RED'**
+  String get activityStatusConflictOrRejected;
+
+  /// No description provided for @activityChangeDateTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet Tarihini Değiştir'**
+  String get activityChangeDateTitle;
+
+  /// No description provided for @activityChangeDateAlreadyOnDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet zaten seçilen tarihte.'**
+  String get activityChangeDateAlreadyOnDate;
+
+  /// No description provided for @activityChangeDatePrepareFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih değişikliği hazırlanamadı.'**
+  String get activityChangeDatePrepareFailed;
+
+  /// No description provided for @activityChangeDatePersonnelCountNotice.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} personel yeni tarihe taşınacak.'**
+  String activityChangeDatePersonnelCountNotice(int count);
+
+  /// No description provided for @activityChangeDatePendingNotice.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} personel rapor/görev çakışması nedeniyle yeniden onaya alınacak.'**
+  String activityChangeDatePendingNotice(int count);
+
+  /// No description provided for @activityChangeDateSubmit.
+  ///
+  /// In tr, this message translates to:
+  /// **'TARİHİ DEĞİŞTİR'**
+  String get activityChangeDateSubmit;
+
+  /// No description provided for @activityChangeDateMovedNotice.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} personel {date} tarihine taşındı.'**
+  String activityChangeDateMovedNotice(int count, String date);
+
+  /// No description provided for @activityChangeDatePendingCountNotice.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} personel yeniden onay bekliyor.'**
+  String activityChangeDatePendingCountNotice(int count);
+
+  /// No description provided for @activityChangeDateFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih değiştirilemedi. Hedef tarih yeniden kontrol edilmelidir.'**
+  String get activityChangeDateFailed;
+
+  /// No description provided for @activityRenameSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet adı güncellendi.'**
+  String get activityRenameSuccess;
+
+  /// No description provided for @activityRenameFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet adı değiştirilemedi: {error}'**
+  String activityRenameFailed(String error);
 }
 
 class _AppLocalizationsDelegate

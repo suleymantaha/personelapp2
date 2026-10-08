@@ -22,14 +22,9 @@ extension _MonthlyMatrixMobileView on _MonthlyMatrixScreenState {
               : (squadNames[teamId] ?? context.l10n.matrixUnknownTeam);
           final members = group.value;
 
-          return Card(
+          return AppCard(
+            padding: EdgeInsets.zero,
             margin: const EdgeInsets.only(bottom: 10),
-            clipBehavior: Clip.antiAlias,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: context.cardBorderColor),
-            ),
             child: ExpansionTile(
               initiallyExpanded: false, // Varsayılan KAPALI!
               minTileHeight: 76,

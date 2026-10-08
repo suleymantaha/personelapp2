@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/widgets/app_card.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/presentation/view_models/activity_form_draft.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_form_header.dart';
@@ -101,24 +102,8 @@ class ActivityDetailsStep extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         if (showPreviewHint)
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: context.accentSubtleBg,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.info_outline_rounded, color: context.accentOrOlive),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    context.l10n.activityPreviewHint,
-                  ),
-                ),
-              ],
-            ),
+          AppNoticeBanner(
+            message: context.l10n.activityPreviewHint,
           ),
       ],
     );
@@ -215,15 +200,17 @@ class ActivityDetailsStep extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(dialogContext.l10n.activityPersonnelNoteTitle(person.adSoyad)),
-        content: TextFormField(
-          key: ValueKey('personnel-note-${person.id}'),
-          initialValue: noteValue,
-          autofocus: true,
-          maxLines: 3,
-          decoration: InputDecoration(
-            hintText: dialogContext.l10n.activityOptionalNoteHint,
+        content: SingleChildScrollView(
+          child: TextFormField(
+            key: ValueKey('personnel-note-${person.id}'),
+            initialValue: noteValue,
+            autofocus: true,
+            maxLines: 3,
+            decoration: InputDecoration(
+              hintText: dialogContext.l10n.activityOptionalNoteHint,
+            ),
+            onChanged: (value) => noteValue = value,
           ),
-          onChanged: (value) => noteValue = value,
         ),
         actions: [
           TextButton(

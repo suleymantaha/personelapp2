@@ -129,7 +129,7 @@ class _PersonnelManagementScreenState
                     return AppEmptyState(
                       icon: Icons.person_search_rounded,
                       title: context.l10n.commonSearch,
-                      description: 'Kriterlere uygun personel bulunamadı.',
+                      description: context.l10n.personnelNoCriteriaMatches,
                     );
                   }
 

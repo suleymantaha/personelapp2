@@ -81,6 +81,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get commonNoData => 'Kayıt bulunamadı';
 
   @override
+  String get commonApprove => 'Onayla';
+
+  @override
+  String get commonReject => 'Reddet';
+
+  @override
+  String get commonUnauthorized => 'Bu sayfaya erişim yetkiniz bulunmuyor.';
+
+  @override
   String get activitySelectDutyTitle => 'Görev veya İzin Seçin';
 
   @override
@@ -340,6 +349,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get personnelNoSubscription => 'Abonelik Yok';
+
+  @override
+  String get personnelNoCriteriaMatches =>
+      'Kriterlere uygun personel bulunamadı.';
 
   @override
   String get commonSaving => 'KAYDEDİLİYOR…';
@@ -955,4 +968,161 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get temgundrapRequiredField => 'Bu alan zorunludur.';
+
+  @override
+  String get pendingApprovalsTitle => 'Bekleyen Görev Onayları';
+
+  @override
+  String get pendingApprovalsEmptyTitle => 'Bekleyen Onay Yok';
+
+  @override
+  String get pendingApprovalsEmptyDesc =>
+      'Onay bekleyen veya çakışan görev kaydı bulunmuyor.';
+
+  @override
+  String pendingApprovalsAssignmentConflict(int id) {
+    return 'Görevlendirme #$id (ÇAKIŞMA VAR)';
+  }
+
+  @override
+  String get pendingApprovalsPersonnelLabel => 'Personel';
+
+  @override
+  String get pendingApprovalsRequestedDutyLabel => 'Talep Edilen Görev';
+
+  @override
+  String pendingApprovalsDescriptionLabel(String description) {
+    return 'Açıklama: $description';
+  }
+
+  @override
+  String get pendingApprovalsApprove => 'ONAYLA';
+
+  @override
+  String get pendingApprovalsReject => 'REDDET';
+
+  @override
+  String pendingApprovalsApprovalFailed(String reason) {
+    return 'Onaylanamadı: $reason';
+  }
+
+  @override
+  String get activityDeleteTitle => 'Faaliyeti Sil';
+
+  @override
+  String activityDeleteConfirm(String name, String date) {
+    return '$name ($date) faaliyet kaydı silinecektir. Emin misiniz?';
+  }
+
+  @override
+  String get activityRenameTitle => 'Faaliyet Adını Değiştir';
+
+  @override
+  String get activityRenameLabel => 'Faaliyet adı';
+
+  @override
+  String get activityRenameHint => 'Örn. Gece nöbeti';
+
+  @override
+  String get activityActionsTitle => 'Faaliyet İşlemleri';
+
+  @override
+  String get activityActionsSubtitle =>
+      'Bu faaliyet için kullanılabilir işlemler';
+
+  @override
+  String get activityApproveAllTitle => 'Tümünü onayla';
+
+  @override
+  String get activityApproveAllSubtitle => 'Bekleyen tüm atamaları onayla';
+
+  @override
+  String get activityRenameOptionTitle => 'Faaliyet adını değiştir';
+
+  @override
+  String get activityRenameOptionSubtitle => 'Kart başlığını yeniden adlandır';
+
+  @override
+  String get activityChangeDateOptionTitle => 'Tarihi değiştir';
+
+  @override
+  String get activityChangeDateOptionSubtitle =>
+      'Faaliyeti başka bir güne taşı';
+
+  @override
+  String get activityDeleteOptionTitle => 'Faaliyeti sil';
+
+  @override
+  String get activityDeleteOptionSubtitle => 'Bu işlem geri alınamaz';
+
+  @override
+  String activityApproveAllSuccess(int count) {
+    return '$count atama onaylandı.';
+  }
+
+  @override
+  String activityApproveAllWithConflicts(
+      int approvedCount, int blockedCount, String reasons) {
+    return '$approvedCount onaylandı, $blockedCount çakışma nedeniyle beklemede kaldı: $reasons';
+  }
+
+  @override
+  String activityCreatedBy(String user) {
+    return 'Yazan: $user';
+  }
+
+  @override
+  String get activityStatusApproved => 'ONAYLANDI';
+
+  @override
+  String get activityStatusPendingAdmin => 'ADMIN ONAYI BEKLİYOR';
+
+  @override
+  String get activityStatusConflictOrRejected => 'ÇAKIŞMA / RED';
+
+  @override
+  String get activityChangeDateTitle => 'Faaliyet Tarihini Değiştir';
+
+  @override
+  String get activityChangeDateAlreadyOnDate =>
+      'Faaliyet zaten seçilen tarihte.';
+
+  @override
+  String get activityChangeDatePrepareFailed =>
+      'Tarih değişikliği hazırlanamadı.';
+
+  @override
+  String activityChangeDatePersonnelCountNotice(int count) {
+    return '$count personel yeni tarihe taşınacak.';
+  }
+
+  @override
+  String activityChangeDatePendingNotice(int count) {
+    return '$count personel rapor/görev çakışması nedeniyle yeniden onaya alınacak.';
+  }
+
+  @override
+  String get activityChangeDateSubmit => 'TARİHİ DEĞİŞTİR';
+
+  @override
+  String activityChangeDateMovedNotice(int count, String date) {
+    return '$count personel $date tarihine taşındı.';
+  }
+
+  @override
+  String activityChangeDatePendingCountNotice(int count) {
+    return '$count personel yeniden onay bekliyor.';
+  }
+
+  @override
+  String get activityChangeDateFailed =>
+      'Tarih değiştirilemedi. Hedef tarih yeniden kontrol edilmelidir.';
+
+  @override
+  String get activityRenameSuccess => 'Faaliyet adı güncellendi.';
+
+  @override
+  String activityRenameFailed(String error) {
+    return 'Faaliyet adı değiştirilemedi: $error';
+  }
 }
