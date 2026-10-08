@@ -42,19 +42,35 @@ class AppBackupService {
 
   Future<String> exportBackupJson() async {
     final prefs = await _preferences();
+    final usersList = await db.select(db.kullaniciTable).get();
+    final squadsList = await db.select(db.timTable).get();
+    final personnelList = await db.select(db.personelTable).get();
+    final userIds = usersList.map((r) => r.id).toSet();
+    final squadIds = squadsList.map((r) => r.id).toSet();
+    final personnelIds = personnelList.map((r) => r.id).toSet();
+
     final payload = <String, Object?>{
       'databaseSchemaVersion': db.schemaVersion,
       'tables': <String, Object?>{
         'users':
-            (await db.select(db.kullaniciTable).get())
+            usersList
+                .map((row) => row.timId != null && !squadIds.contains(row.timId!)
+                    ? row.copyWith(timId: const Value(null))
+                    : row)
                 .map((row) => row.toJson())
                 .toList(),
         'squads':
-            (await db.select(db.timTable).get())
+            squadsList
+                .map((row) => row.timKomutaniId != null && !userIds.contains(row.timKomutaniId!)
+                    ? row.copyWith(timKomutaniId: const Value(null))
+                    : row)
                 .map((row) => row.toJson())
                 .toList(),
         'personnel':
-            (await db.select(db.personelTable).get())
+            personnelList
+                .map((row) => row.timId != null && !squadIds.contains(row.timId!)
+                    ? row.copyWith(timId: const Value(null))
+                    : row)
                 .map((row) => row.toJson())
                 .toList(),
         'activities':
@@ -63,18 +79,28 @@ class AppBackupService {
                 .toList(),
         'assignments':
             (await db.select(db.faaliyetPersonelAtamaTable).get())
+                .where((row) => personnelIds.contains(row.personelId))
+                .map((row) => row.gorevTimId != null && !squadIds.contains(row.gorevTimId!)
+                    ? row.copyWith(gorevTimId: const Value(null))
+                    : row)
                 .map((row) => row.toJson())
                 .toList(),
         'reports':
             (await db.select(db.raporKayitTable).get())
+                .where((row) => personnelIds.contains(row.personelId))
                 .map((row) => row.toJson())
                 .toList(),
         'membershipHistory':
             (await db.select(db.timUyelikGecmisiTable).get())
+                .where((row) => personnelIds.contains(row.personelId))
+                .map((row) => row.timId != null && !squadIds.contains(row.timId!)
+                    ? row.copyWith(timId: const Value(null))
+                    : row)
                 .map((row) => row.toJson())
                 .toList(),
         'aliases':
             (await db.select(db.personelIsimTakmaAdTable).get())
+                .where((row) => personnelIds.contains(row.personelId))
                 .map((row) => row.toJson())
                 .toList(),
         'bulkImportHistory':
@@ -169,9 +195,9 @@ class AppBackupService {
     }
 
     final tables = _object(payload['tables'], 'tables');
-    final users = _rows(tables, 'users', KullaniciTableData.fromJson);
-    final squads = _rows(tables, 'squads', TimTableData.fromJson);
-    final personnel = _rows(
+    final rawUsers = _rows(tables, 'users', KullaniciTableData.fromJson);
+    final rawSquads = _rows(tables, 'squads', TimTableData.fromJson);
+    final rawPersonnel = _rows(
       tables,
       'personnel',
       (json) =>
@@ -182,18 +208,18 @@ class AppBackupService {
       'activities',
       GunlukFaaliyetTableData.fromJson,
     );
-    final assignments = _rows(
+    final rawAssignments = _rows(
       tables,
       'assignments',
       FaaliyetPersonelAtamaTableData.fromJson,
     );
-    final reports = _rows(tables, 'reports', RaporKayitTableData.fromJson);
-    final membershipHistory = _rows(
+    final rawReports = _rows(tables, 'reports', RaporKayitTableData.fromJson);
+    final rawMembershipHistory = _rows(
       tables,
       'membershipHistory',
       TimUyelikGecmisiTableData.fromJson,
     );
-    final aliases = _rows(
+    final rawAliases = _rows(
       tables,
       'aliases',
       PersonelIsimTakmaAdTableData.fromJson,
@@ -203,78 +229,75 @@ class AppBackupService {
       'bulkImportHistory',
       TopluAktarimGecmisiTableData.fromJson,
     );
-    final preferences = _object(payload['preferences'], 'preferences');
-    _validatePreferences(preferences);
+    final rawPreferences = _object(payload['preferences'], 'preferences');
+    final preferences = _sanitizeAndValidatePreferences(rawPreferences);
 
-    final userIds = users.map((row) => row.id).toSet();
-    final squadIds = squads.map((row) => row.id).toSet();
-    final personnelIds = personnel.map((row) => row.id).toSet();
+    final userIds = rawUsers.map((row) => row.id).toSet();
+    final squadIds = rawSquads.map((row) => row.id).toSet();
+    final personnelIds = rawPersonnel.map((row) => row.id).toSet();
     final activityIds = activities.map((row) => row.id).toSet();
-    _requireUniqueIds('users', users.map((row) => row.id));
-    _requireUniqueIds('squads', squads.map((row) => row.id));
-    _requireUniqueIds('personnel', personnel.map((row) => row.id));
+    _requireUniqueIds('users', rawUsers.map((row) => row.id));
+    _requireUniqueIds('squads', rawSquads.map((row) => row.id));
+    _requireUniqueIds('personnel', rawPersonnel.map((row) => row.id));
     _requireUniqueIds('activities', activities.map((row) => row.id));
-    _requireUniqueIds('assignments', assignments.map((row) => row.id));
-    _requireUniqueIds('reports', reports.map((row) => row.id));
+    _requireUniqueIds('assignments', rawAssignments.map((row) => row.id));
+    _requireUniqueIds('reports', rawReports.map((row) => row.id));
     _requireUniqueIds(
       'membershipHistory',
-      membershipHistory.map((row) => row.id),
+      rawMembershipHistory.map((row) => row.id),
     );
-    _requireUniqueIds('aliases', aliases.map((row) => row.id));
+    _requireUniqueIds('aliases', rawAliases.map((row) => row.id));
     _requireUniqueIds(
       'bulkImportHistory',
       bulkImportHistory.map((row) => row.id),
     );
 
     _requireReferences(
-      users.where((row) => row.timId != null).map((row) => row.timId!),
-      squadIds,
-      'Kullanıcı-tim bağlantısı',
-    );
-    _requireReferences(
-      squads
-          .where((row) => row.timKomutaniId != null)
-          .map((row) => row.timKomutaniId!),
-      userIds,
-      'Tim-komutan bağlantısı',
-    );
-    _requireReferences(
-      personnel.where((row) => row.timId != null).map((row) => row.timId!),
-      squadIds,
-      'Personel-tim bağlantısı',
-    );
-    _requireReferences(
-      assignments.map((row) => row.faaliyetId),
+      rawAssignments.map((row) => row.faaliyetId),
       activityIds,
       'Faaliyet-atama bağlantısı',
     );
     _requireReferences(
-      assignments.map((row) => row.personelId),
+      rawAssignments.map((row) => row.personelId),
       personnelIds,
       'Personel-atama bağlantısı',
     );
-    _requireReferences(
-      reports.map((row) => row.personelId),
-      personnelIds,
-      'Personel-rapor bağlantısı',
-    );
-    _requireReferences(
-      membershipHistory.map((row) => row.personelId),
-      personnelIds,
-      'Personel-geçmiş bağlantısı',
-    );
-    _requireReferences(
-      membershipHistory
-          .where((row) => row.timId != null)
-          .map((row) => row.timId!),
-      squadIds,
-      'Tim-geçmiş bağlantısı',
-    );
-    _requireReferences(
-      aliases.map((row) => row.personelId),
-      personnelIds,
-      'Personel-takma ad bağlantısı',
-    );
+
+    // Otomatik güvenli temizleme (Sanitization):
+    // Silinmiş personele ait yetim geçmiş kayıtları veya silinmiş time ait referanslar
+    // geri yüklemeyi çökertmemek için güvenli şekilde temizlenir ve sanitize edilir.
+    final users = rawUsers
+        .map((row) => row.timId != null && !squadIds.contains(row.timId!)
+            ? row.copyWith(timId: const Value(null))
+            : row)
+        .toList();
+    final squads = rawSquads
+        .map((row) => row.timKomutaniId != null && !userIds.contains(row.timKomutaniId!)
+            ? row.copyWith(timKomutaniId: const Value(null))
+            : row)
+        .toList();
+    final personnel = rawPersonnel
+        .map((row) => row.timId != null && !squadIds.contains(row.timId!)
+            ? row.copyWith(timId: const Value(null))
+            : row)
+        .toList();
+    final assignments = rawAssignments
+        .map((row) => row.gorevTimId != null && !squadIds.contains(row.gorevTimId!)
+            ? row.copyWith(gorevTimId: const Value(null))
+            : row)
+        .toList();
+    final reports = rawReports
+        .where((row) => personnelIds.contains(row.personelId))
+        .toList();
+    final aliases = rawAliases
+        .where((row) => personnelIds.contains(row.personelId))
+        .toList();
+    final membershipHistory = rawMembershipHistory
+        .where((row) => personnelIds.contains(row.personelId))
+        .map((row) => row.timId != null && !squadIds.contains(row.timId!)
+            ? row.copyWith(timId: const Value(null))
+            : row)
+        .toList();
 
     final exportedAt = DateTime.tryParse(
       _string(decoded['exportedAt'], 'exportedAt'),
@@ -480,12 +503,19 @@ class AppBackupService {
     }
   }
 
+  Map<String, Object?> _sanitizeAndValidatePreferences(
+    Map<String, Object?> preferences,
+  ) {
+    final sanitized = <String, Object?>{
+      for (final entry in preferences.entries)
+        if (_preferenceKeys.contains(entry.key) || _isCardOrderKey(entry.key))
+          entry.key: entry.value,
+    };
+    _validatePreferences(sanitized);
+    return sanitized;
+  }
+
   void _validatePreferences(Map<String, Object?> preferences) {
-    if (preferences.keys.any(
-      (key) => !_preferenceKeys.contains(key) && !_isCardOrderKey(key),
-    )) {
-      throw const FormatException('Yedekte desteklenmeyen bir tercih var.');
-    }
     for (final entry in preferences.entries) {
       final valid =
           entry.value is bool ||

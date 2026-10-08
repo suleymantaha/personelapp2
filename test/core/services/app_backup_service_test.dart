@@ -209,6 +209,50 @@ void main() {
       'Eski Personel',
     );
   });
+
+  test(
+    'orphaned membership history records from deleted personnel are safely sanitized without error',
+    () async {
+      await _seedAllData(db);
+      final envelope =
+          jsonDecode(await service.exportBackupJson()) as Map<String, dynamic>;
+      final payload = envelope['payload'] as Map<String, dynamic>;
+      final tables = payload['tables'] as Map<String, dynamic>;
+      final history = tables['membershipHistory'] as List<dynamic>;
+
+      // Silinmiş personele (999) ve silinmiş time (888) ait yetim geçmiş kaydı simüle et
+      history.add({
+        'id': 501,
+        'personelId': 999, // Olmayan personel
+        'timId': 888, // Olmayan tim
+        'tarih': '2026-08-01',
+        'islem': 'çıkarıldı',
+      });
+      // Geçerli personele ait ama silinmiş time işaret eden geçmiş kaydı simüle et
+      history.add({
+        'id': 502,
+        'personelId': 100, // Geçerli personel
+        'timId': 888, // Olmayan tim
+        'tarih': '2026-08-02',
+        'islem': 'eklendi',
+      });
+
+      envelope['checksum'] = AppBackupService.computeCanonicalChecksum(payload);
+
+      final result = await service.restoreBackupJson(jsonEncode(envelope));
+
+      expect(result.legacy, isFalse);
+      expect(result.importedPersonnel, 1);
+      final restoredHistory =
+          await db.select(db.timUyelikGecmisiTable).get();
+      // Olmayan personelin kaydı (501) filtrelenmiş olmalı
+      expect(restoredHistory.any((h) => h.personelId == 999), isFalse);
+      // Geçerli personelin silinmiş timli kaydı (502) timId: null olarak sanitize edilmiş olmalı
+      final sanitizedRecord =
+          restoredHistory.firstWhere((h) => h.id == 502);
+      expect(sanitizedRecord.timId, null);
+    },
+  );
 }
 
 Future<void> _seedAllData(AppDatabase db) async {
