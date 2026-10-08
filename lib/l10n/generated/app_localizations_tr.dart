@@ -270,6 +270,122 @@ class AppLocalizationsTr extends AppLocalizations {
   String get personnelInactive => 'Pasif';
 
   @override
+  String get personnelWarningEnterName => 'Lütfen ad soyad giriniz.';
+
+  @override
+  String get personnelWarningSelectRank => 'Lütfen rütbe seçiniz.';
+
+  @override
+  String personnelErrorSaveFailed(String error) {
+    return 'Personel kaydedilemedi: $error';
+  }
+
+  @override
+  String personnelEditNamed(String name) {
+    return '$name - Düzenle';
+  }
+
+  @override
+  String get personnelSelectRankHint => 'Rütbe Seçiniz';
+
+  @override
+  String get personnelCustomRankLabel => 'Özel Rütbe Metni';
+
+  @override
+  String get personnelCustomRankHint => 'Örn: J.Uz.Çvş. (Kıd.Kd.Çvş)';
+
+  @override
+  String get personnelSquadLabel => 'Bağlı Olduğu Tim';
+
+  @override
+  String get personnelIndependentSquad => 'Bağımsız / Tim Dışı';
+
+  @override
+  String get personnelUnitLabel => 'Birlik / Bölük';
+
+  @override
+  String get personnelSelectUnitTooltip => 'Birlik seç';
+
+  @override
+  String get personnelSelectUnitTitle => 'Birlik seç';
+
+  @override
+  String get personnelFrequentlyUsedUnits => 'Sık kullanılan birlikler';
+
+  @override
+  String get personnelSearchHint => 'Personel ad, rütbe veya birlik ara...';
+
+  @override
+  String get personnelSquadFilter => 'Tim Filtresi';
+
+  @override
+  String get personnelNewSquad => 'Yeni Tim';
+
+  @override
+  String get personnelAllPersonnel => 'Tüm Personel';
+
+  @override
+  String get personnelUnassignedOrOffRoster => 'Boşta / Kadro Dışı';
+
+  @override
+  String personnelAuthorizedSquad(String squadName) {
+    return 'Yetkili Olduğunuz Tim: $squadName';
+  }
+
+  @override
+  String get personnelAllUnit => 'Tüm Birlik';
+
+  @override
+  String get personnelNoSubscription => 'Abonelik Yok';
+
+  @override
+  String get commonSaving => 'KAYDEDİLİYOR…';
+
+  @override
+  String get authLoginTitle => 'Giriş Yap';
+
+  @override
+  String get authUsername => 'Kullanıcı Adı';
+
+  @override
+  String get authPassword => 'Şifre';
+
+  @override
+  String get authLoginButton => 'GİRİŞ YAP';
+
+  @override
+  String get authLogoutButton => 'Çıkış Yap';
+
+  @override
+  String get authSessionExpired => 'Oturum süresi doldu';
+
+  @override
+  String get authInvalidCredentials => 'Geçersiz kullanıcı adı veya parola!';
+
+  @override
+  String get authMissionManagement => 'Görev Yönetimi';
+
+  @override
+  String get authFirstLoginTitle => 'İlk Giriş: Parola Belirleyin';
+
+  @override
+  String authFirstLoginSubtitle(String username) {
+    return 'Sayın $username, hesabınız için yeni bir parola belirleyiniz.';
+  }
+
+  @override
+  String get authNewPassword => 'Yeni Parola';
+
+  @override
+  String get authNewPasswordRepeat => 'Yeni Parola (Tekrar)';
+
+  @override
+  String get authPasswordsDoNotMatch => 'Parolalar eşleşmiyor!';
+
+  @override
+  String get authSavePasswordAndLogin => 'PAROLAYI KAYDET VE GİRİŞ YAP';
+
+  @override
   String get dashboardTitle => 'Ana Sayfa';
 
   @override
@@ -282,22 +398,124 @@ class AppLocalizationsTr extends AppLocalizations {
   String get dashboardRecentActivities => 'Son Faaliyetler';
 
   @override
-  String get authLoginTitle => 'Giriş Yap';
+  String get dashboardActivitySchedule => 'Faaliyet Çizelgesi';
 
   @override
-  String get authUsername => 'Kullanıcı Adı';
+  String get dashboardDailyDutyEntry => 'Günlük görev gir';
 
   @override
-  String get authPassword => 'Şifre';
+  String get dashboardMonthlyMatrix => 'Aylık Matris';
 
   @override
-  String get authLoginButton => 'Giriş';
+  String get dashboardExcelDistribution => 'Excel / Dağıtım';
 
   @override
-  String get authLogoutButton => 'Çıkış Yap';
+  String get dashboardTemgundrapSubtitle => 'Çizelge oluştur ve yönet';
 
   @override
-  String get authSessionExpired => 'Oturum süresi doldu';
+  String get dashboardPersonnelAndSquad => 'Personel & Tim';
+
+  @override
+  String get dashboardRegisterAndAuth => 'Kayıt ve Yetki';
+
+  @override
+  String get dashboardRosterStatus => 'Kadro Durumu';
+
+  @override
+  String get dashboardBulkImportText => 'Metinden Toplu Aktar';
+
+  @override
+  String get dashboardWhatsAppListUpload => 'WhatsApp / Liste Yükle';
+
+  @override
+  String get dashboardBulkImportImage => 'Görselden Toplu Aktar';
+
+  @override
+  String get dashboardOcrNameMatch => 'OCR ile isim eşleştir';
+
+  @override
+  String get dashboardOcrPlatformWarning =>
+      'Görselden aktarım Android ve iOS cihazlarda kullanılabilir.';
+
+  @override
+  String get dashboardThemeMilitaryLight => 'Askeri Haki (Açık)';
+
+  @override
+  String get dashboardThemeMilitaryDark => 'Taktik Gece (Koyu)';
+
+  @override
+  String get dashboardThemeSystem => 'Sistem Teması';
+
+  @override
+  String get dashboardSettingsTitle => 'Uygulama Ayarları';
+
+  @override
+  String get dashboardThemeMode => 'Tema Modu';
+
+  @override
+  String get dashboardPendingAssignments => 'Onay Bekleyen Görevler';
+
+  @override
+  String dashboardPendingAssignmentsDesc(int count) {
+    return '$count personelin görev değişikliği onay bekliyor';
+  }
+
+  @override
+  String get dashboardOperations => 'İşlemler';
+
+  @override
+  String dashboardPendingConflictsNotice(int count) {
+    return '$count Görevlendirmede Çakışma / Rapor Var!';
+  }
+
+  @override
+  String get dashboardPendingTapToReview =>
+      'Onaylamak veya reddetmek için dokunun.';
+
+  @override
+  String get dashboardSearchAndReview => 'Arama ve İnceleme';
+
+  @override
+  String get settingsChangePassword => 'Şifremi Değiştir';
+
+  @override
+  String get settingsNewPassword => 'Yeni Şifreniz';
+
+  @override
+  String get settingsPasswordUpdated => 'Şifreniz başarıyla güncellendi!';
+
+  @override
+  String settingsUserAccount(String username) {
+    return 'Hesap: $username';
+  }
+
+  @override
+  String get settingsRoleAdmin => 'Rol: Birlik Yöneticisi (Admin)';
+
+  @override
+  String get settingsRoleCommander => 'Rol: Tim Komutanı';
+
+  @override
+  String get settingsAppTheme => 'Uygulama Teması';
+
+  @override
+  String get settingsThemeLight => 'Açık';
+
+  @override
+  String get settingsThemeDark => 'Koyu';
+
+  @override
+  String get settingsThemeSystem => 'Sistem';
+
+  @override
+  String get settingsFullBackup => 'Tam Yedekleme';
+
+  @override
+  String get settingsFullBackupSubtitle =>
+      'Tüm uygulama verilerini cihazda sakla veya geri yükle';
+
+  @override
+  String get settingsUpdate => 'GÜNCELLE';
 
   @override
   String get matrixTitle => 'Matris ve Çizelge';

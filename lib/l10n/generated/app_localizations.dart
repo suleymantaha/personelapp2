@@ -592,6 +592,222 @@ abstract class AppLocalizations {
   /// **'Pasif'**
   String get personnelInactive;
 
+  /// No description provided for @personnelWarningEnterName.
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen ad soyad giriniz.'**
+  String get personnelWarningEnterName;
+
+  /// No description provided for @personnelWarningSelectRank.
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen rütbe seçiniz.'**
+  String get personnelWarningSelectRank;
+
+  /// No description provided for @personnelErrorSaveFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel kaydedilemedi: {error}'**
+  String personnelErrorSaveFailed(String error);
+
+  /// No description provided for @personnelEditNamed.
+  ///
+  /// In tr, this message translates to:
+  /// **'{name} - Düzenle'**
+  String personnelEditNamed(String name);
+
+  /// No description provided for @personnelSelectRankHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rütbe Seçiniz'**
+  String get personnelSelectRankHint;
+
+  /// No description provided for @personnelCustomRankLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Özel Rütbe Metni'**
+  String get personnelCustomRankLabel;
+
+  /// No description provided for @personnelCustomRankHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: J.Uz.Çvş. (Kıd.Kd.Çvş)'**
+  String get personnelCustomRankHint;
+
+  /// No description provided for @personnelSquadLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bağlı Olduğu Tim'**
+  String get personnelSquadLabel;
+
+  /// No description provided for @personnelIndependentSquad.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bağımsız / Tim Dışı'**
+  String get personnelIndependentSquad;
+
+  /// No description provided for @personnelUnitLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Birlik / Bölük'**
+  String get personnelUnitLabel;
+
+  /// No description provided for @personnelSelectUnitTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Birlik seç'**
+  String get personnelSelectUnitTooltip;
+
+  /// No description provided for @personnelSelectUnitTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Birlik seç'**
+  String get personnelSelectUnitTitle;
+
+  /// No description provided for @personnelFrequentlyUsedUnits.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sık kullanılan birlikler'**
+  String get personnelFrequentlyUsedUnits;
+
+  /// No description provided for @personnelSearchHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel ad, rütbe veya birlik ara...'**
+  String get personnelSearchHint;
+
+  /// No description provided for @personnelSquadFilter.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tim Filtresi'**
+  String get personnelSquadFilter;
+
+  /// No description provided for @personnelNewSquad.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Tim'**
+  String get personnelNewSquad;
+
+  /// No description provided for @personnelAllPersonnel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüm Personel'**
+  String get personnelAllPersonnel;
+
+  /// No description provided for @personnelUnassignedOrOffRoster.
+  ///
+  /// In tr, this message translates to:
+  /// **'Boşta / Kadro Dışı'**
+  String get personnelUnassignedOrOffRoster;
+
+  /// No description provided for @personnelAuthorizedSquad.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yetkili Olduğunuz Tim: {squadName}'**
+  String personnelAuthorizedSquad(String squadName);
+
+  /// No description provided for @personnelAllUnit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüm Birlik'**
+  String get personnelAllUnit;
+
+  /// No description provided for @personnelNoSubscription.
+  ///
+  /// In tr, this message translates to:
+  /// **'Abonelik Yok'**
+  String get personnelNoSubscription;
+
+  /// No description provided for @commonSaving.
+  ///
+  /// In tr, this message translates to:
+  /// **'KAYDEDİLİYOR…'**
+  String get commonSaving;
+
+  /// No description provided for @authLoginTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Giriş Yap'**
+  String get authLoginTitle;
+
+  /// No description provided for @authUsername.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kullanıcı Adı'**
+  String get authUsername;
+
+  /// No description provided for @authPassword.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şifre'**
+  String get authPassword;
+
+  /// No description provided for @authLoginButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'GİRİŞ YAP'**
+  String get authLoginButton;
+
+  /// No description provided for @authLogoutButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıkış Yap'**
+  String get authLogoutButton;
+
+  /// No description provided for @authSessionExpired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Oturum süresi doldu'**
+  String get authSessionExpired;
+
+  /// No description provided for @authInvalidCredentials.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçersiz kullanıcı adı veya parola!'**
+  String get authInvalidCredentials;
+
+  /// No description provided for @authMissionManagement.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görev Yönetimi'**
+  String get authMissionManagement;
+
+  /// No description provided for @authFirstLoginTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk Giriş: Parola Belirleyin'**
+  String get authFirstLoginTitle;
+
+  /// No description provided for @authFirstLoginSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sayın {username}, hesabınız için yeni bir parola belirleyiniz.'**
+  String authFirstLoginSubtitle(String username);
+
+  /// No description provided for @authNewPassword.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Parola'**
+  String get authNewPassword;
+
+  /// No description provided for @authNewPasswordRepeat.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Parola (Tekrar)'**
+  String get authNewPasswordRepeat;
+
+  /// No description provided for @authPasswordsDoNotMatch.
+  ///
+  /// In tr, this message translates to:
+  /// **'Parolalar eşleşmiyor!'**
+  String get authPasswordsDoNotMatch;
+
+  /// No description provided for @authSavePasswordAndLogin.
+  ///
+  /// In tr, this message translates to:
+  /// **'PAROLAYI KAYDET VE GİRİŞ YAP'**
+  String get authSavePasswordAndLogin;
+
   /// No description provided for @dashboardTitle.
   ///
   /// In tr, this message translates to:
@@ -616,41 +832,227 @@ abstract class AppLocalizations {
   /// **'Son Faaliyetler'**
   String get dashboardRecentActivities;
 
-  /// No description provided for @authLoginTitle.
+  /// No description provided for @dashboardActivitySchedule.
   ///
   /// In tr, this message translates to:
-  /// **'Giriş Yap'**
-  String get authLoginTitle;
+  /// **'Faaliyet Çizelgesi'**
+  String get dashboardActivitySchedule;
 
-  /// No description provided for @authUsername.
+  /// No description provided for @dashboardDailyDutyEntry.
   ///
   /// In tr, this message translates to:
-  /// **'Kullanıcı Adı'**
-  String get authUsername;
+  /// **'Günlük görev gir'**
+  String get dashboardDailyDutyEntry;
 
-  /// No description provided for @authPassword.
+  /// No description provided for @dashboardMonthlyMatrix.
   ///
   /// In tr, this message translates to:
-  /// **'Şifre'**
-  String get authPassword;
+  /// **'Aylık Matris'**
+  String get dashboardMonthlyMatrix;
 
-  /// No description provided for @authLoginButton.
+  /// No description provided for @dashboardExcelDistribution.
   ///
   /// In tr, this message translates to:
-  /// **'Giriş'**
-  String get authLoginButton;
+  /// **'Excel / Dağıtım'**
+  String get dashboardExcelDistribution;
 
-  /// No description provided for @authLogoutButton.
+  /// No description provided for @dashboardTemgundrapSubtitle.
   ///
   /// In tr, this message translates to:
-  /// **'Çıkış Yap'**
-  String get authLogoutButton;
+  /// **'Çizelge oluştur ve yönet'**
+  String get dashboardTemgundrapSubtitle;
 
-  /// No description provided for @authSessionExpired.
+  /// No description provided for @dashboardPersonnelAndSquad.
   ///
   /// In tr, this message translates to:
-  /// **'Oturum süresi doldu'**
-  String get authSessionExpired;
+  /// **'Personel & Tim'**
+  String get dashboardPersonnelAndSquad;
+
+  /// No description provided for @dashboardRegisterAndAuth.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıt ve Yetki'**
+  String get dashboardRegisterAndAuth;
+
+  /// No description provided for @dashboardRosterStatus.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kadro Durumu'**
+  String get dashboardRosterStatus;
+
+  /// No description provided for @dashboardBulkImportText.
+  ///
+  /// In tr, this message translates to:
+  /// **'Metinden Toplu Aktar'**
+  String get dashboardBulkImportText;
+
+  /// No description provided for @dashboardWhatsAppListUpload.
+  ///
+  /// In tr, this message translates to:
+  /// **'WhatsApp / Liste Yükle'**
+  String get dashboardWhatsAppListUpload;
+
+  /// No description provided for @dashboardBulkImportImage.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görselden Toplu Aktar'**
+  String get dashboardBulkImportImage;
+
+  /// No description provided for @dashboardOcrNameMatch.
+  ///
+  /// In tr, this message translates to:
+  /// **'OCR ile isim eşleştir'**
+  String get dashboardOcrNameMatch;
+
+  /// No description provided for @dashboardOcrPlatformWarning.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görselden aktarım Android ve iOS cihazlarda kullanılabilir.'**
+  String get dashboardOcrPlatformWarning;
+
+  /// No description provided for @dashboardThemeMilitaryLight.
+  ///
+  /// In tr, this message translates to:
+  /// **'Askeri Haki (Açık)'**
+  String get dashboardThemeMilitaryLight;
+
+  /// No description provided for @dashboardThemeMilitaryDark.
+  ///
+  /// In tr, this message translates to:
+  /// **'Taktik Gece (Koyu)'**
+  String get dashboardThemeMilitaryDark;
+
+  /// No description provided for @dashboardThemeSystem.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sistem Teması'**
+  String get dashboardThemeSystem;
+
+  /// No description provided for @dashboardSettingsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uygulama Ayarları'**
+  String get dashboardSettingsTitle;
+
+  /// No description provided for @dashboardThemeMode.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tema Modu'**
+  String get dashboardThemeMode;
+
+  /// No description provided for @dashboardPendingAssignments.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onay Bekleyen Görevler'**
+  String get dashboardPendingAssignments;
+
+  /// No description provided for @dashboardPendingAssignmentsDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} personelin görev değişikliği onay bekliyor'**
+  String dashboardPendingAssignmentsDesc(int count);
+
+  /// No description provided for @dashboardOperations.
+  ///
+  /// In tr, this message translates to:
+  /// **'İşlemler'**
+  String get dashboardOperations;
+
+  /// No description provided for @dashboardPendingConflictsNotice.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} Görevlendirmede Çakışma / Rapor Var!'**
+  String dashboardPendingConflictsNotice(int count);
+
+  /// No description provided for @dashboardPendingTapToReview.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onaylamak veya reddetmek için dokunun.'**
+  String get dashboardPendingTapToReview;
+
+  /// No description provided for @dashboardSearchAndReview.
+  ///
+  /// In tr, this message translates to:
+  /// **'Arama ve İnceleme'**
+  String get dashboardSearchAndReview;
+
+  /// No description provided for @settingsChangePassword.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şifremi Değiştir'**
+  String get settingsChangePassword;
+
+  /// No description provided for @settingsNewPassword.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Şifreniz'**
+  String get settingsNewPassword;
+
+  /// No description provided for @settingsPasswordUpdated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şifreniz başarıyla güncellendi!'**
+  String get settingsPasswordUpdated;
+
+  /// No description provided for @settingsUserAccount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hesap: {username}'**
+  String settingsUserAccount(String username);
+
+  /// No description provided for @settingsRoleAdmin.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rol: Birlik Yöneticisi (Admin)'**
+  String get settingsRoleAdmin;
+
+  /// No description provided for @settingsRoleCommander.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rol: Tim Komutanı'**
+  String get settingsRoleCommander;
+
+  /// No description provided for @settingsAppTheme.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uygulama Teması'**
+  String get settingsAppTheme;
+
+  /// No description provided for @settingsThemeLight.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açık'**
+  String get settingsThemeLight;
+
+  /// No description provided for @settingsThemeDark.
+  ///
+  /// In tr, this message translates to:
+  /// **'Koyu'**
+  String get settingsThemeDark;
+
+  /// No description provided for @settingsThemeSystem.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sistem'**
+  String get settingsThemeSystem;
+
+  /// No description provided for @settingsFullBackup.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tam Yedekleme'**
+  String get settingsFullBackup;
+
+  /// No description provided for @settingsFullBackupSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüm uygulama verilerini cihazda sakla veya geri yükle'**
+  String get settingsFullBackupSubtitle;
+
+  /// No description provided for @settingsUpdate.
+  ///
+  /// In tr, this message translates to:
+  /// **'GÜNCELLE'**
+  String get settingsUpdate;
 
   /// No description provided for @matrixTitle.
   ///

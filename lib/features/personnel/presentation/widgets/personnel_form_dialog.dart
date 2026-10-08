@@ -6,6 +6,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
@@ -69,12 +70,12 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
     if (_saving) return;
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      AppNotifications.warning('Lütfen ad soyad giriniz.');
+      AppNotifications.warning(context.l10n.personnelWarningEnterName);
       return;
     }
 
     if (_selectedRank == null) {
-      AppNotifications.warning('Lütfen rütbe seçiniz.');
+      AppNotifications.warning(context.l10n.personnelWarningSelectRank);
       return;
     }
 
@@ -128,7 +129,11 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
 
       if (mounted) Navigator.of(context).pop();
     } catch (error) {
-      if (mounted) AppNotifications.error('Personel kaydedilemedi: $error');
+      if (mounted) {
+        AppNotifications.error(
+          context.l10n.personnelErrorSaveFailed('$error'),
+        );
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -146,8 +151,8 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
         child: AlertDialog(
           title: Text(
             _isEditing
-                ? '${p?.rutbe} ${p?.adSoyad} - Düzenle'
-                : 'Yeni Personel Ekle',
+                ? context.l10n.personnelEditNamed('${p?.rutbe} ${p?.adSoyad}')
+                : context.l10n.personnelAddTitle,
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -155,17 +160,19 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
               children: [
                 TextField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Ad Soyad'),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.personnelFullName,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   key: const Key('personnel-phone-field'),
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    labelText: 'Telefon',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.personnelPhone,
                     hintText: '533 158 35 97',
-                    prefixIcon: Icon(Icons.phone_outlined),
+                    prefixIcon: const Icon(Icons.phone_outlined),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -175,7 +182,9 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                   dropdownColor: modernDropdownColor(context),
                   initialValue: _selectedRank,
                   isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Rütbe Seçiniz'),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.personnelSelectRankHint,
+                  ),
                   items: [
                     ...kAskeriRutbeler.map(
                       (r) => DropdownMenuItem(value: r, child: Text(r)),
@@ -193,9 +202,9 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: _customRankController,
-                    decoration: const InputDecoration(
-                      labelText: 'Özel Rütbe Metni',
-                      hintText: 'Örn: J.Uz.Çvş. (Kıd.Kd.Çvş)',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.personnelCustomRankLabel,
+                      hintText: context.l10n.personnelCustomRankHint,
                     ),
                   ),
                 ],
@@ -207,12 +216,12 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                     dropdownColor: modernDropdownColor(context),
                     initialValue: _selectedSquadId,
                     isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Bağlı Olduğu Tim',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.personnelSquadLabel,
                     ),
                     items: [
-                      const DropdownMenuItem<int?>(
-                        child: Text('Bağımsız / Tim Dışı'),
+                      DropdownMenuItem<int?>(
+                        child: Text(context.l10n.personnelIndependentSquad),
                       ),
                       ...squads.map(
                         (sq) => DropdownMenuItem<int?>(
@@ -236,15 +245,15 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                     Expanded(
                       child: TextField(
                         controller: _unitController,
-                        decoration: const InputDecoration(
-                          labelText: 'Birlik / Bölük',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.personnelUnitLabel,
                           hintText: "Örn: 1'inci Bl.",
                         ),
                       ),
                     ),
                     PopupMenuButton<String>(
                       icon: const Icon(Icons.arrow_drop_down),
-                      tooltip: 'Birlik seç',
+                      tooltip: context.l10n.personnelSelectUnitTooltip,
                       elevation: 5,
                       shadowColor: context.shadowColor,
                       surfaceTintColor: context.colorScheme.surface,
@@ -257,9 +266,9 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                         _unitController.text = val;
                       },
                       itemBuilder: (ctx) => [
-                        const ModernMenuHeader<String>(
-                          title: 'Birlik seç',
-                          subtitle: 'Sık kullanılan birlikler',
+                        ModernMenuHeader<String>(
+                          title: context.l10n.personnelSelectUnitTitle,
+                          subtitle: context.l10n.personnelFrequentlyUsedUnits,
                           icon: Icons.domain_outlined,
                         ),
                         const PopupMenuDivider(),
@@ -290,7 +299,7 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
           actions: [
             TextButton(
               onPressed: _saving ? null : () => Navigator.of(context).pop(),
-              child: const Text('İPTAL'),
+              child: Text(context.l10n.commonCancel.toUpperCase()),
             ),
             ElevatedButton(
               onPressed: _saving ? null : _onSave,
@@ -300,10 +309,10 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
               ),
               child: Text(
                 _saving
-                    ? 'KAYDEDİLİYOR…'
+                    ? context.l10n.commonSaving
                     : _isEditing
-                    ? 'GÜNCELLE'
-                    : 'KAYDET',
+                    ? context.l10n.settingsUpdate
+                    : context.l10n.commonSave.toUpperCase(),
               ),
             ),
           ],

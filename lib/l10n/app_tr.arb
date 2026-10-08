@@ -116,18 +116,135 @@
   "personnelStatus": "Durum",
   "personnelActive": "Aktif",
   "personnelInactive": "Pasif",
+  "personnelWarningEnterName": "Lütfen ad soyad giriniz.",
+  "personnelWarningSelectRank": "Lütfen rütbe seçiniz.",
+  "personnelErrorSaveFailed": "Personel kaydedilemedi: {error}",
+  "@personnelErrorSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "personnelEditNamed": "{name} - Düzenle",
+  "@personnelEditNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "personnelSelectRankHint": "Rütbe Seçiniz",
+  "personnelCustomRankLabel": "Özel Rütbe Metni",
+  "personnelCustomRankHint": "Örn: J.Uz.Çvş. (Kıd.Kd.Çvş)",
+  "personnelSquadLabel": "Bağlı Olduğu Tim",
+  "personnelIndependentSquad": "Bağımsız / Tim Dışı",
+  "personnelUnitLabel": "Birlik / Bölük",
+  "personnelSelectUnitTooltip": "Birlik seç",
+  "personnelSelectUnitTitle": "Birlik seç",
+  "personnelFrequentlyUsedUnits": "Sık kullanılan birlikler",
+  "personnelSearchHint": "Personel ad, rütbe veya birlik ara...",
+  "personnelSquadFilter": "Tim Filtresi",
+  "personnelNewSquad": "Yeni Tim",
+  "personnelAllPersonnel": "Tüm Personel",
+  "personnelUnassignedOrOffRoster": "Boşta / Kadro Dışı",
+  "personnelAuthorizedSquad": "Yetkili Olduğunuz Tim: {squadName}",
+  "@personnelAuthorizedSquad": {
+    "placeholders": {
+      "squadName": {
+        "type": "String"
+      }
+    }
+  },
+  "personnelAllUnit": "Tüm Birlik",
+  "personnelNoSubscription": "Abonelik Yok",
+  "commonSaving": "KAYDEDİLİYOR…",
+
+  "authLoginTitle": "Giriş Yap",
+  "authUsername": "Kullanıcı Adı",
+  "authPassword": "Şifre",
+  "authLoginButton": "GİRİŞ YAP",
+  "authLogoutButton": "Çıkış Yap",
+  "authSessionExpired": "Oturum süresi doldu",
+  "authInvalidCredentials": "Geçersiz kullanıcı adı veya parola!",
+  "authMissionManagement": "Görev Yönetimi",
+  "authFirstLoginTitle": "İlk Giriş: Parola Belirleyin",
+  "authFirstLoginSubtitle": "Sayın {username}, hesabınız için yeni bir parola belirleyiniz.",
+  "@authFirstLoginSubtitle": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "authNewPassword": "Yeni Parola",
+  "authNewPasswordRepeat": "Yeni Parola (Tekrar)",
+  "authPasswordsDoNotMatch": "Parolalar eşleşmiyor!",
+  "authSavePasswordAndLogin": "PAROLAYI KAYDET VE GİRİŞ YAP",
 
   "dashboardTitle": "Ana Sayfa",
   "dashboardQuickActions": "Hızlı İşlemler",
   "dashboardStatistics": "İstatistikler",
   "dashboardRecentActivities": "Son Faaliyetler",
+  "dashboardActivitySchedule": "Faaliyet Çizelgesi",
+  "dashboardDailyDutyEntry": "Günlük görev gir",
+  "dashboardMonthlyMatrix": "Aylık Matris",
+  "dashboardExcelDistribution": "Excel / Dağıtım",
+  "dashboardTemgundrapSubtitle": "Çizelge oluştur ve yönet",
+  "dashboardPersonnelAndSquad": "Personel & Tim",
+  "dashboardRegisterAndAuth": "Kayıt ve Yetki",
+  "dashboardRosterStatus": "Kadro Durumu",
+  "dashboardBulkImportText": "Metinden Toplu Aktar",
+  "dashboardWhatsAppListUpload": "WhatsApp / Liste Yükle",
+  "dashboardBulkImportImage": "Görselden Toplu Aktar",
+  "dashboardOcrNameMatch": "OCR ile isim eşleştir",
+  "dashboardOcrPlatformWarning": "Görselden aktarım Android ve iOS cihazlarda kullanılabilir.",
+  "dashboardThemeMilitaryLight": "Askeri Haki (Açık)",
+  "dashboardThemeMilitaryDark": "Taktik Gece (Koyu)",
+  "dashboardThemeSystem": "Sistem Teması",
+  "dashboardSettingsTitle": "Uygulama Ayarları",
+  "dashboardThemeMode": "Tema Modu",
+  "dashboardPendingAssignments": "Onay Bekleyen Görevler",
+  "dashboardPendingAssignmentsDesc": "{count} personelin görev değişikliği onay bekliyor",
+  "@dashboardPendingAssignmentsDesc": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardOperations": "İşlemler",
+  "dashboardPendingConflictsNotice": "{count} Görevlendirmede Çakışma / Rapor Var!",
+  "@dashboardPendingConflictsNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardPendingTapToReview": "Onaylamak veya reddetmek için dokunun.",
+  "dashboardSearchAndReview": "Arama ve İnceleme",
 
-  "authLoginTitle": "Giriş Yap",
-  "authUsername": "Kullanıcı Adı",
-  "authPassword": "Şifre",
-  "authLoginButton": "Giriş",
-  "authLogoutButton": "Çıkış Yap",
-  "authSessionExpired": "Oturum süresi doldu",
+  "settingsChangePassword": "Şifremi Değiştir",
+  "settingsNewPassword": "Yeni Şifreniz",
+  "settingsPasswordUpdated": "Şifreniz başarıyla güncellendi!",
+  "settingsUserAccount": "Hesap: {username}",
+  "@settingsUserAccount": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsRoleAdmin": "Rol: Birlik Yöneticisi (Admin)",
+  "settingsRoleCommander": "Rol: Tim Komutanı",
+  "settingsAppTheme": "Uygulama Teması",
+  "settingsThemeLight": "Açık",
+  "settingsThemeDark": "Koyu",
+  "settingsThemeSystem": "Sistem",
+  "settingsFullBackup": "Tam Yedekleme",
+  "settingsFullBackupSubtitle": "Tüm uygulama verilerini cihazda sakla veya geri yükle",
+  "settingsUpdate": "GÜNCELLE",
 
   "matrixTitle": "Matris ve Çizelge",
   "reportTitle": "Raporlar"

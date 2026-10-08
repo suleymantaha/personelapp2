@@ -12,7 +12,7 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
       TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: 'Personel ad, rütbe veya birlik ara...',
+          hintText: context.l10n.personnelSearchHint,
           prefixIcon: const Icon(Icons.search),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
@@ -44,9 +44,9 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Tim Filtresi',
-              style: TextStyle(
+            Text(
+              context.l10n.personnelSquadFilter,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -54,7 +54,7 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
             if (!context.isMobile)
               TextButton.icon(
                 icon: const Icon(Icons.group_add, size: 18),
-                label: const Text('Yeni Tim'),
+                label: Text(context.l10n.personnelNewSquad),
                 onPressed: _showAddSquadDialog,
               ),
           ],
@@ -69,7 +69,7 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
             final filterChips = [
               FilterChip(
                 avatar: const Icon(Icons.groups, size: 16),
-                label: const Text('Tüm Personel'),
+                label: Text(context.l10n.personnelAllPersonnel),
                 selected: _selectedFilterTimId == null,
                 onSelected: (selected) {
                   _updatePersonnelView(() => _selectedFilterTimId = null);
@@ -119,7 +119,7 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
                       ? context.onStatusColor(context.rejectedBorderColor)
                       : context.rejectedColor,
                 ),
-                label: const Text('Boşta / Kadro Dışı'),
+                label: Text(context.l10n.personnelUnassignedOrOffRoster),
                 selected: _selectedFilterTimId == -1,
                 onSelected: (selected) {
                   _updatePersonnelView(() {
@@ -161,8 +161,8 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
           data: (squads) {
             final squadMap = {for (final s in squads) s.id: s.timAdi};
             final timName = session?.timId != null
-                ? squadMap[session?.timId] ?? 'Tüm Birlik'
-                : 'Abonelik Yok';
+                ? squadMap[session?.timId] ?? context.l10n.personnelAllUnit
+                : context.l10n.personnelNoSubscription;
             return Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: 14,
@@ -183,7 +183,7 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Yetkili Olduğunuz Tim: $timName',
+                      context.l10n.personnelAuthorizedSquad(timName),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
