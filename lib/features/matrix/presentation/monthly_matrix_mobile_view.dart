@@ -18,8 +18,8 @@ extension _MonthlyMatrixMobileView on _MonthlyMatrixScreenState {
         children: groupedPersonnel.entries.map((group) {
           final teamId = group.key;
           final teamName = teamId == null
-              ? 'Timsiz Personel'
-              : (squadNames[teamId] ?? 'Bilinmeyen Tim');
+              ? context.l10n.matrixUnassignedTeam
+              : (squadNames[teamId] ?? context.l10n.matrixUnknownTeam);
           final members = group.value;
 
           return Card(
@@ -51,7 +51,7 @@ extension _MonthlyMatrixMobileView on _MonthlyMatrixScreenState {
                 ),
               ),
               subtitle: Text(
-                '${members.length} Personel',
+                context.l10n.matrixPersonnelCount(members.length),
                 style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context).hintColor,
@@ -66,7 +66,7 @@ extension _MonthlyMatrixMobileView on _MonthlyMatrixScreenState {
                         Icons.calendar_month_outlined,
                         color: context.accentOrOlive,
                       ),
-                      tooltip: 'Görev Takvimi',
+                      tooltip: context.l10n.matrixTeamDutyCalendar,
                       onPressed: () => _showTeamCalendarModal(
                         context,
                         teamId,
@@ -161,7 +161,7 @@ extension _MonthlyMatrixMobileView on _MonthlyMatrixScreenState {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            '$dutyCount gün',
+                            context.l10n.matrixDaysCount(dutyCount),
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -181,7 +181,7 @@ extension _MonthlyMatrixMobileView on _MonthlyMatrixScreenState {
                           children: [
                             Divider(color: context.cardBorderColor),
                             Text(
-                              'Aylık çizelge · $daysInMonth gün',
+                              context.l10n.matrixMonthlyScheduleDays(daysInMonth),
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,

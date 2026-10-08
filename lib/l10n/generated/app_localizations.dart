@@ -109,8 +109,14 @@ abstract class AppLocalizations {
   /// No description provided for @commonCancel.
   ///
   /// In tr, this message translates to:
-  /// **'Vazgeç'**
+  /// **'İptal'**
   String get commonCancel;
+
+  /// No description provided for @commonDismiss.
+  ///
+  /// In tr, this message translates to:
+  /// **'Vazgeç'**
+  String get commonDismiss;
 
   /// No description provided for @commonClose.
   ///
@@ -724,6 +730,12 @@ abstract class AppLocalizations {
   /// **'KAYDEDİLİYOR…'**
   String get commonSaving;
 
+  /// No description provided for @commonRetry.
+  ///
+  /// In tr, this message translates to:
+  /// **'TEKRAR DENE'**
+  String get commonRetry;
+
   /// No description provided for @authLoginTitle.
   ///
   /// In tr, this message translates to:
@@ -1065,6 +1077,744 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Raporlar'**
   String get reportTitle;
+
+  /// No description provided for @rosterOutputTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıktı Hazırla'**
+  String get rosterOutputTitle;
+
+  /// No description provided for @rosterSelectCardsHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yazdırılacak kartları seçin. Önceki gün kartları listenin sonunda yer alır. Aynı kişi bir kez yazılır.'**
+  String get rosterSelectCardsHint;
+
+  /// No description provided for @rosterReload.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeniden yükle'**
+  String get rosterReload;
+
+  /// No description provided for @rosterIncludedItemsCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıktıya Eklenecekler ({count})'**
+  String rosterIncludedItemsCount(int count);
+
+  /// No description provided for @rosterReorderHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sırayı tutamaçtan sürükleyerek değiştirebilirsiniz.'**
+  String get rosterReorderHint;
+
+  /// No description provided for @rosterSameDayOutputOrder.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aynı Gün — Çıktı Sırası'**
+  String get rosterSameDayOutputOrder;
+
+  /// No description provided for @rosterPreviousDayOutputOrder.
+  ///
+  /// In tr, this message translates to:
+  /// **'Önceki Gün — Çıktı Sırası'**
+  String get rosterPreviousDayOutputOrder;
+
+  /// No description provided for @rosterSameDayCards.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aynı Günün Kartları'**
+  String get rosterSameDayCards;
+
+  /// No description provided for @rosterPreviousDayCards.
+  ///
+  /// In tr, this message translates to:
+  /// **'Önceki Günün Kartları'**
+  String get rosterPreviousDayCards;
+
+  /// No description provided for @rosterNoCardsForDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu güne ait kart bulunamadı.'**
+  String get rosterNoCardsForDay;
+
+  /// No description provided for @rosterAllCardsAdded.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu güne ait tüm kartlar çıktıya eklendi.'**
+  String get rosterAllCardsAdded;
+
+  /// No description provided for @rosterPreparing.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hazırlanıyor…'**
+  String get rosterPreparing;
+
+  /// No description provided for @rosterPreviewWithCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Önizle ({count})'**
+  String rosterPreviewWithCount(int count);
+
+  /// No description provided for @rosterNoApprovedPersonnel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçilen kartlarda dışa aktarılacak onaylı personel bulunamadı.'**
+  String get rosterNoApprovedPersonnel;
+
+  /// No description provided for @activityArchiveTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet Arşivi'**
+  String get activityArchiveTitle;
+
+  /// No description provided for @activityArchiveTeamTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tim Faaliyet Arşivi'**
+  String get activityArchiveTeamTitle;
+
+  /// No description provided for @activityArchiveSelectedCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} faaliyet seçildi'**
+  String activityArchiveSelectedCount(int count);
+
+  /// No description provided for @activityArchiveCloseSelection.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçimi Kapat'**
+  String get activityArchiveCloseSelection;
+
+  /// No description provided for @activityArchiveExportSelectedTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçilenleri Dışa Aktar'**
+  String get activityArchiveExportSelectedTooltip;
+
+  /// No description provided for @activityArchiveSelectButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seç'**
+  String get activityArchiveSelectButton;
+
+  /// No description provided for @activityArchiveMenuTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Arşiv işlemleri'**
+  String get activityArchiveMenuTooltip;
+
+  /// No description provided for @activityArchiveMenuHeader.
+  ///
+  /// In tr, this message translates to:
+  /// **'Arşiv İşlemleri'**
+  String get activityArchiveMenuHeader;
+
+  /// No description provided for @activityArchiveMenuSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görünüm ve arşiv araçları'**
+  String get activityArchiveMenuSubtitle;
+
+  /// No description provided for @activityArchivePrepareOutputTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıktı Hazırla'**
+  String get activityArchivePrepareOutputTitle;
+
+  /// No description provided for @activityArchivePrepareOutputSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kartları seç, sırala ve imzalı çıktı al'**
+  String get activityArchivePrepareOutputSubtitle;
+
+  /// No description provided for @activityArchiveExportPrintTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Dışa Aktar / Yazdır'**
+  String get activityArchiveExportPrintTitle;
+
+  /// No description provided for @activityArchiveExportPrintSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görüntülenen günü paylaş veya yazdır'**
+  String get activityArchiveExportPrintSubtitle;
+
+  /// No description provided for @activityArchiveSelectOptionTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet seç'**
+  String get activityArchiveSelectOptionTitle;
+
+  /// No description provided for @activityArchiveSelectOptionSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Birden fazla kayıt üzerinde çalış'**
+  String get activityArchiveSelectOptionSubtitle;
+
+  /// No description provided for @activityArchiveFinishReorder.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sıralamayı bitir'**
+  String get activityArchiveFinishReorder;
+
+  /// No description provided for @activityArchiveMoveCards.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kartları taşı'**
+  String get activityArchiveMoveCards;
+
+  /// No description provided for @activityArchiveExitReorderSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sürükleme modundan çık'**
+  String get activityArchiveExitReorderSubtitle;
+
+  /// No description provided for @activityArchiveMoveCardsSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kartları sürükleyerek yeniden sırala'**
+  String get activityArchiveMoveCardsSubtitle;
+
+  /// No description provided for @activityArchiveResetOrder.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sıralamayı sıfırla'**
+  String get activityArchiveResetOrder;
+
+  /// No description provided for @activityArchiveResetOrderSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Varsayılan sıralamaya dön'**
+  String get activityArchiveResetOrderSubtitle;
+
+  /// No description provided for @activityArchiveReturnToday.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugüne dön'**
+  String get activityArchiveReturnToday;
+
+  /// No description provided for @activityArchiveReturnTodaySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Güncel faaliyetleri göster'**
+  String get activityArchiveReturnTodaySubtitle;
+
+  /// No description provided for @activityArchiveAuditTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çakışmaları denetle'**
+  String get activityArchiveAuditTitle;
+
+  /// No description provided for @activityArchiveAuditSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel görevlendirmelerini kontrol et'**
+  String get activityArchiveAuditSubtitle;
+
+  /// No description provided for @activityArchiveFilterByDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarihe göre süz'**
+  String get activityArchiveFilterByDate;
+
+  /// No description provided for @activityArchiveFilterByDateSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Belirli bir günün arşivini aç'**
+  String get activityArchiveFilterByDateSubtitle;
+
+  /// No description provided for @activityArchiveNoRecordsFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} tarihine ait faaliyet kaydı bulunamadı.'**
+  String activityArchiveNoRecordsFound(String date);
+
+  /// No description provided for @activityArchiveReorderHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kartları tutamaçtan sürükleyerek taşıyın. Sıralama bu güne kaydedilir.'**
+  String get activityArchiveReorderHint;
+
+  /// No description provided for @activityArchiveConflictAuditTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçmiş Kayıt Çakışma Denetimi'**
+  String get activityArchiveConflictAuditTitle;
+
+  /// No description provided for @activityArchiveConflictAuditNone.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çakışan geçmiş kayıt bulunamadı.'**
+  String get activityArchiveConflictAuditNone;
+
+  /// No description provided for @activityArchiveConflictAuditReadOnly.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu liste salt okunurdur; hiçbir kayıt silinmedi.'**
+  String get activityArchiveConflictAuditReadOnly;
+
+  /// No description provided for @activityArchiveSaveOrderFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sıralama kaydedilemedi.'**
+  String get activityArchiveSaveOrderFailed;
+
+  /// No description provided for @activityArchiveResetOrderFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sıralama sıfırlanamadı.'**
+  String get activityArchiveResetOrderFailed;
+
+  /// No description provided for @activityArchiveOrderResetSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart sıralaması varsayılana döndürüldü.'**
+  String get activityArchiveOrderResetSuccess;
+
+  /// No description provided for @activityArchiveNoActivitiesToExport.
+  ///
+  /// In tr, this message translates to:
+  /// **'Dışa aktarılacak faaliyet bulunamadı.'**
+  String get activityArchiveNoActivitiesToExport;
+
+  /// No description provided for @activityArchiveAllActivitiesDefaultName.
+  ///
+  /// In tr, this message translates to:
+  /// **'GÜNLÜK TÜM FAALİYETLER'**
+  String get activityArchiveAllActivitiesDefaultName;
+
+  /// No description provided for @activityArchiveExportFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Dışa aktarılamadı: {error}'**
+  String activityArchiveExportFailed(String error);
+
+  /// No description provided for @matrixSearchHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel veya rütbe ara'**
+  String get matrixSearchHint;
+
+  /// No description provided for @matrixClearSearchTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aramayı temizle'**
+  String get matrixClearSearchTooltip;
+
+  /// No description provided for @matrixPreviousMonth.
+  ///
+  /// In tr, this message translates to:
+  /// **'Önceki ay'**
+  String get matrixPreviousMonth;
+
+  /// No description provided for @matrixNextMonth.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sonraki ay'**
+  String get matrixNextMonth;
+
+  /// No description provided for @matrixCloseSearchTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aramayı kapat'**
+  String get matrixCloseSearchTooltip;
+
+  /// No description provided for @matrixSearchPersonnelTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel ara'**
+  String get matrixSearchPersonnelTooltip;
+
+  /// No description provided for @matrixExportExcel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Excel\'e Aktar'**
+  String get matrixExportExcel;
+
+  /// No description provided for @matrixTeamDutyCalendar.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tim Görev Takvimi'**
+  String get matrixTeamDutyCalendar;
+
+  /// No description provided for @matrixMonthlyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aylık Matris'**
+  String get matrixMonthlyTitle;
+
+  /// No description provided for @matrixMonthlySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel görev ve durum çizelgesi'**
+  String get matrixMonthlySubtitle;
+
+  /// No description provided for @matrixNoMatchingPersonnel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aramanızla eşleşen personel bulunamadı'**
+  String get matrixNoMatchingPersonnel;
+
+  /// No description provided for @matrixNoPersonnelToShow.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gösterilecek kayıtlı personel bulunmuyor.'**
+  String get matrixNoPersonnelToShow;
+
+  /// No description provided for @matrixExportFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelge dışa aktarılamadı: {error}'**
+  String matrixExportFailed(String error);
+
+  /// No description provided for @matrixUnassignedTeam.
+  ///
+  /// In tr, this message translates to:
+  /// **'Timsiz Personel'**
+  String get matrixUnassignedTeam;
+
+  /// No description provided for @matrixUnknownTeam.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bilinmeyen Tim'**
+  String get matrixUnknownTeam;
+
+  /// No description provided for @matrixPersonnelCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} Personel'**
+  String matrixPersonnelCount(int count);
+
+  /// No description provided for @matrixOrderNumberShort.
+  ///
+  /// In tr, this message translates to:
+  /// **'S.N.'**
+  String get matrixOrderNumberShort;
+
+  /// No description provided for @matrixTotalShort.
+  ///
+  /// In tr, this message translates to:
+  /// **'Top.'**
+  String get matrixTotalShort;
+
+  /// No description provided for @matrixDaysCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} gün'**
+  String matrixDaysCount(int count);
+
+  /// No description provided for @matrixMonthlyScheduleDays.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aylık çizelge · {count} gün'**
+  String matrixMonthlyScheduleDays(int count);
+
+  /// No description provided for @temgundrapTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'TEMGÜNDRAP Çizelgeleri'**
+  String get temgundrapTitle;
+
+  /// No description provided for @temgundrapDailyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günlük TEMGÜNDRAP'**
+  String get temgundrapDailyTitle;
+
+  /// No description provided for @temgundrapArchiveTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'TEMGÜNDRAP Arşivi'**
+  String get temgundrapArchiveTitle;
+
+  /// No description provided for @temgundrapFailedToLoad.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelgeler yüklenemedi: {error}'**
+  String temgundrapFailedToLoad(String error);
+
+  /// No description provided for @temgundrapArchivedSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelge arşive taşındı.'**
+  String get temgundrapArchivedSuccess;
+
+  /// No description provided for @temgundrapUnarchivedSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelge yeniden taslağa alındı.'**
+  String get temgundrapUnarchivedSuccess;
+
+  /// No description provided for @temgundrapUpdateFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelge güncellenemedi: {error}'**
+  String temgundrapUpdateFailed(String error);
+
+  /// No description provided for @temgundrapDeleteTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelgeyi sil'**
+  String get temgundrapDeleteTitle;
+
+  /// No description provided for @temgundrapDeleteContent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu TEMGÜNDRAP çizelgesi kalıcı olarak silinecek.'**
+  String get temgundrapDeleteContent;
+
+  /// No description provided for @temgundrapDeleteFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelge silinemedi: {error}'**
+  String temgundrapDeleteFailed(String error);
+
+  /// No description provided for @temgundrapPickDateTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih seç'**
+  String get temgundrapPickDateTooltip;
+
+  /// No description provided for @temgundrapNewDocument.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Çizelge'**
+  String get temgundrapNewDocument;
+
+  /// No description provided for @temgundrapEditDocument.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelgeyi Düzenle'**
+  String get temgundrapEditDocument;
+
+  /// No description provided for @temgundrapFailedToLoadDocs.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıtlar yüklenemedi'**
+  String get temgundrapFailedToLoadDocs;
+
+  /// No description provided for @temgundrapActionsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelge İşlemleri'**
+  String get temgundrapActionsTitle;
+
+  /// No description provided for @temgundrapEditSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelge bilgilerini güncelle'**
+  String get temgundrapEditSubtitle;
+
+  /// No description provided for @temgundrapArchiveOption.
+  ///
+  /// In tr, this message translates to:
+  /// **'Arşivle'**
+  String get temgundrapArchiveOption;
+
+  /// No description provided for @temgundrapArchiveSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelgeyi tamamla ve arşive taşı'**
+  String get temgundrapArchiveSubtitle;
+
+  /// No description provided for @temgundrapRestoreOption.
+  ///
+  /// In tr, this message translates to:
+  /// **'Taslağa al'**
+  String get temgundrapRestoreOption;
+
+  /// No description provided for @temgundrapRestoreSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelgeyi yeniden düzenlemeye aç'**
+  String get temgundrapRestoreSubtitle;
+
+  /// No description provided for @temgundrapDeleteSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu çizelgeyi kalıcı olarak kaldır'**
+  String get temgundrapDeleteSubtitle;
+
+  /// No description provided for @temgundrapDailyWithCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günlük Çizelge ({count})'**
+  String temgundrapDailyWithCount(int count);
+
+  /// No description provided for @temgundrapArchiveWithCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Arşiv ({count})'**
+  String temgundrapArchiveWithCount(int count);
+
+  /// No description provided for @temgundrapPreviousDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Önceki gün'**
+  String get temgundrapPreviousDay;
+
+  /// No description provided for @temgundrapNextDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sonraki gün'**
+  String get temgundrapNextDay;
+
+  /// No description provided for @temgundrapBackToToday.
+  ///
+  /// In tr, this message translates to:
+  /// **'BUGÜNE DÖN'**
+  String get temgundrapBackToToday;
+
+  /// No description provided for @temgundrapOperationsCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} operasyon'**
+  String temgundrapOperationsCount(int count);
+
+  /// No description provided for @temgundrapBadgeDraft.
+  ///
+  /// In tr, this message translates to:
+  /// **'TASLAK'**
+  String get temgundrapBadgeDraft;
+
+  /// No description provided for @temgundrapBadgeArchived.
+  ///
+  /// In tr, this message translates to:
+  /// **'ARŞİVDE'**
+  String get temgundrapBadgeArchived;
+
+  /// No description provided for @temgundrapNoDailyDraftTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu güne ait taslak çizelge yok'**
+  String get temgundrapNoDailyDraftTitle;
+
+  /// No description provided for @temgundrapNoArchivedDocTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu tarihte arşivlenmiş çizelge yok'**
+  String get temgundrapNoArchivedDocTitle;
+
+  /// No description provided for @temgundrapNoDailyDraftMessage.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} için yeni bir TEMGÜNDRAP çizelgesi oluşturun.'**
+  String temgundrapNoDailyDraftMessage(String date);
+
+  /// No description provided for @temgundrapNoArchivedDocMessage.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başka bir tarih seçebilir veya tamamlanan bir taslağı arşivleyebilirsiniz.'**
+  String get temgundrapNoArchivedDocMessage;
+
+  /// No description provided for @temgundrapNewDocButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'YENİ ÇİZELGE'**
+  String get temgundrapNewDocButton;
+
+  /// No description provided for @temgundrapPickDateButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'TARİH SEÇ'**
+  String get temgundrapPickDateButton;
+
+  /// No description provided for @temgundrapApproverDefaultsLoadFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onay bilgileri yüklenemedi: {error}'**
+  String temgundrapApproverDefaultsLoadFailed(String error);
+
+  /// No description provided for @temgundrapAtLeastOneOperationRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'En az bir operasyon ekleyin.'**
+  String get temgundrapAtLeastOneOperationRequired;
+
+  /// No description provided for @temgundrapSaveFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelge kaydedilemedi: {error}'**
+  String temgundrapSaveFailed(String error);
+
+  /// No description provided for @temgundrapUnitTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Birlik başlığı'**
+  String get temgundrapUnitTitle;
+
+  /// No description provided for @temgundrapDocumentDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çizelge tarihi'**
+  String get temgundrapDocumentDate;
+
+  /// No description provided for @temgundrapOperations.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyonlar'**
+  String get temgundrapOperations;
+
+  /// No description provided for @temgundrapAddOperation.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyon Ekle'**
+  String get temgundrapAddOperation;
+
+  /// No description provided for @temgundrapNoOperationsAddedYet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz operasyon eklenmedi.'**
+  String get temgundrapNoOperationsAddedYet;
+
+  /// No description provided for @temgundrapEditOperationTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyonu düzenle'**
+  String get temgundrapEditOperationTooltip;
+
+  /// No description provided for @temgundrapDeleteOperationTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyonu sil'**
+  String get temgundrapDeleteOperationTooltip;
+
+  /// No description provided for @temgundrapApprovalInfo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onay Bilgileri'**
+  String get temgundrapApprovalInfo;
+
+  /// No description provided for @temgundrapApproverName.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onaylayan ad soyad'**
+  String get temgundrapApproverName;
+
+  /// No description provided for @temgundrapApproverDuty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görevi'**
+  String get temgundrapApproverDuty;
+
+  /// No description provided for @temgundrapSaveAsDraft.
+  ///
+  /// In tr, this message translates to:
+  /// **'Taslak olarak kaydet'**
+  String get temgundrapSaveAsDraft;
+
+  /// No description provided for @temgundrapSaveDocumentButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'ÇİZELGEYİ KAYDET'**
+  String get temgundrapSaveDocumentButton;
+
+  /// No description provided for @temgundrapRequiredField.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu alan zorunludur.'**
+  String get temgundrapRequiredField;
 }
 
 class _AppLocalizationsDelegate

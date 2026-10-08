@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -233,14 +234,14 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
             ? IconButton(
                 key: const Key('activity-selection-close'),
                 icon: const Icon(Icons.close),
-                tooltip: 'Seçimi Kapat',
+                tooltip: context.l10n.activityArchiveCloseSelection,
                 onPressed: _clearSelection,
               )
             : null,
         title: Text(
           _selectionMode
-              ? '${_selectedActivityIds.length} faaliyet seçildi'
-              : (isAdmin ? 'Faaliyet Arşivi' : 'Tim Faaliyet Arşivi'),
+              ? context.l10n.activityArchiveSelectedCount(_selectedActivityIds.length)
+              : (isAdmin ? context.l10n.activityArchiveTitle : context.l10n.activityArchiveTeamTitle),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
@@ -250,7 +251,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
             IconButton(
               key: const Key('activity-selection-export'),
               icon: const Icon(Icons.ios_share),
-              tooltip: 'Seçilenleri Dışa Aktar',
+              tooltip: context.l10n.activityArchiveExportSelectedTooltip,
               onPressed: () => _showSelectedExportOptions(
                 activitiesAsync.value ?? [],
                 personnelList,
@@ -261,11 +262,11 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
               key: const Key('activity-selection-start'),
               onPressed: () => setState(() => _selectionMode = true),
               icon: const Icon(Icons.checklist),
-              label: const Text('Seç'),
+              label: Text(context.l10n.activityArchiveSelectButton),
             ),
           if (!_selectionMode && context.isMobile)
             PopupMenuButton<String>(
-              tooltip: 'Arşiv işlemleri',
+              tooltip: context.l10n.activityArchiveMenuTooltip,
               icon: const Icon(Icons.more_vert_rounded),
               elevation: 5,
               shadowColor: context.shadowColor,
@@ -306,43 +307,45 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                 }
               },
               itemBuilder: (context) => [
-                const ModernMenuHeader<String>(
-                  title: 'Arşiv İşlemleri',
-                  subtitle: 'Görünüm ve arşiv araçları',
+                ModernMenuHeader<String>(
+                  title: context.l10n.activityArchiveMenuHeader,
+                  subtitle: context.l10n.activityArchiveMenuSubtitle,
                   icon: Icons.inventory_2_outlined,
                 ),
                 const PopupMenuDivider(),
                 ModernPopupMenuItem(
-                  option: const ModernActionOption(
+                  option: ModernActionOption(
                     value: 'prepare-output',
-                    title: 'Çıktı Hazırla',
-                    subtitle: 'Kartları seç, sırala ve imzalı çıktı al',
+                    title: context.l10n.activityArchivePrepareOutputTitle,
+                    subtitle: context.l10n.activityArchivePrepareOutputSubtitle,
                     icon: Icons.playlist_add_check_rounded,
                   ),
                 ),
                 ModernPopupMenuItem(
-                  option: const ModernActionOption(
+                  option: ModernActionOption(
                     value: 'export',
-                    title: 'Dışa Aktar / Yazdır',
-                    subtitle: 'Görüntülenen günü paylaş veya yazdır',
+                    title: context.l10n.activityArchiveExportPrintTitle,
+                    subtitle: context.l10n.activityArchiveExportPrintSubtitle,
                     icon: Icons.ios_share_rounded,
                   ),
                 ),
                 ModernPopupMenuItem(
-                  option: const ModernActionOption(
+                  option: ModernActionOption(
                     value: 'select',
-                    title: 'Faaliyet seç',
-                    subtitle: 'Birden fazla kayıt üzerinde çalış',
+                    title: context.l10n.activityArchiveSelectOptionTitle,
+                    subtitle: context.l10n.activityArchiveSelectOptionSubtitle,
                     icon: Icons.checklist_rounded,
                   ),
                 ),
                 ModernPopupMenuItem(
                   option: ModernActionOption(
                     value: 'reorder',
-                    title: _reorderMode ? 'Sıralamayı bitir' : 'Kartları taşı',
+                    title: _reorderMode
+                        ? context.l10n.activityArchiveFinishReorder
+                        : context.l10n.activityArchiveMoveCards,
                     subtitle: _reorderMode
-                        ? 'Sürükleme modundan çık'
-                        : 'Kartları sürükleyerek yeniden sırala',
+                        ? context.l10n.activityArchiveExitReorderSubtitle
+                        : context.l10n.activityArchiveMoveCardsSubtitle,
                     icon: _reorderMode
                         ? Icons.check_rounded
                         : Icons.swap_vert_rounded,
@@ -350,36 +353,36 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                 ),
                 if (_manualOrder.isNotEmpty)
                   ModernPopupMenuItem(
-                    option: const ModernActionOption(
+                    option: ModernActionOption(
                       value: 'reset-order',
-                      title: 'Sıralamayı sıfırla',
-                      subtitle: 'Varsayılan sıralamaya dön',
+                      title: context.l10n.activityArchiveResetOrder,
+                      subtitle: context.l10n.activityArchiveResetOrderSubtitle,
                       icon: Icons.restart_alt_rounded,
                     ),
                   ),
                 if (!isSelectedToday)
                   ModernPopupMenuItem(
-                    option: const ModernActionOption(
+                    option: ModernActionOption(
                       value: 'today',
-                      title: 'Bugüne dön',
-                      subtitle: 'Güncel faaliyetleri göster',
+                      title: context.l10n.activityArchiveReturnToday,
+                      subtitle: context.l10n.activityArchiveReturnTodaySubtitle,
                       icon: Icons.today_rounded,
                     ),
                   ),
                 if (isAdmin)
                   ModernPopupMenuItem(
-                    option: const ModernActionOption(
+                    option: ModernActionOption(
                       value: 'audit',
-                      title: 'Çakışmaları denetle',
-                      subtitle: 'Personel görevlendirmelerini kontrol et',
+                      title: context.l10n.activityArchiveAuditTitle,
+                      subtitle: context.l10n.activityArchiveAuditSubtitle,
                       icon: Icons.fact_check_outlined,
                     ),
                   ),
                 ModernPopupMenuItem(
-                  option: const ModernActionOption(
+                  option: ModernActionOption(
                     value: 'date',
-                    title: 'Tarihe göre süz',
-                    subtitle: 'Belirli bir günün arşivini aç',
+                    title: context.l10n.activityArchiveFilterByDate,
+                    subtitle: context.l10n.activityArchiveFilterByDateSubtitle,
                     icon: Icons.calendar_today_rounded,
                   ),
                 ),
@@ -388,7 +391,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
           if (!_selectionMode && !context.isMobile)
             IconButton(
               key: const Key('activity-prepare-output'),
-              tooltip: 'Çıktı Hazırla',
+              tooltip: context.l10n.activityArchivePrepareOutputTitle,
               icon: const Icon(Icons.playlist_add_check_rounded),
               onPressed: () => Navigator.of(context).push<void>(
                 MaterialPageRoute(
@@ -403,13 +406,13 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
             IconButton(
               key: const Key('activity-archive-export'),
               icon: const Icon(Icons.ios_share_rounded),
-              tooltip: 'Dışa Aktar / Yazdır',
+              tooltip: context.l10n.activityArchiveExportPrintTitle,
               onPressed: exportCurrentArchive,
             ),
           if (!_selectionMode && !context.isMobile && !isSelectedToday)
             IconButton(
               icon: const Icon(Icons.today),
-              tooltip: 'Bugüne Dön',
+              tooltip: context.l10n.activityArchiveReturnToday,
               onPressed: () => _changeSelectedDate(DateTime.now()),
             ),
           if (!_selectionMode && !context.isMobile)
@@ -418,19 +421,21 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
               icon: Icon(
                 _reorderMode ? Icons.check_rounded : Icons.swap_vert_rounded,
               ),
-              tooltip: _reorderMode ? 'Sıralamayı Bitir' : 'Kartları Taşı',
+              tooltip: _reorderMode
+                  ? context.l10n.activityArchiveFinishReorder
+                  : context.l10n.activityArchiveMoveCards,
               onPressed: () => setState(() => _reorderMode = !_reorderMode),
             ),
           if (!_selectionMode && !context.isMobile && isAdmin)
             IconButton(
               icon: const Icon(Icons.fact_check_outlined),
-              tooltip: 'Geçmiş Çakışmaları Denetle',
+              tooltip: context.l10n.activityArchiveAuditTitle,
               onPressed: _showConflictAudit,
             ),
           if (!_selectionMode && !context.isMobile)
             IconButton(
               icon: const Icon(Icons.calendar_today),
-              tooltip: 'Tarihe Göre Süz',
+              tooltip: context.l10n.activityArchiveFilterByDate,
               onPressed: pickArchiveDate,
             ),
         ],
@@ -470,7 +475,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                           .format(_selectedDateFilter);
                       return Center(
                         child: Text(
-                          '$formattedDate tarihine ait faaliyet kaydı bulunamadı.',
+                          context.l10n.activityArchiveNoRecordsFound(formattedDate),
                           style: TextStyle(
                             color: context.textSecondary,
                             fontSize: 14,
@@ -520,8 +525,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                             child: Text(
-                              'Kartları tutamaçtan sürükleyerek taşıyın. '
-                              'Sıralama bu güne kaydedilir.',
+                              context.l10n.activityArchiveReorderHint,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: context.textSecondary,

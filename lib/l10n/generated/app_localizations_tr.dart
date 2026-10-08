@@ -15,7 +15,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get commonSave => 'Kaydet';
 
   @override
-  String get commonCancel => 'Vazgeç';
+  String get commonCancel => 'İptal';
+
+  @override
+  String get commonDismiss => 'Vazgeç';
 
   @override
   String get commonClose => 'Kapat';
@@ -342,6 +345,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get commonSaving => 'KAYDEDİLİYOR…';
 
   @override
+  String get commonRetry => 'TEKRAR DENE';
+
+  @override
   String get authLoginTitle => 'Giriş Yap';
 
   @override
@@ -522,4 +528,431 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get reportTitle => 'Raporlar';
+
+  @override
+  String get rosterOutputTitle => 'Çıktı Hazırla';
+
+  @override
+  String get rosterSelectCardsHint =>
+      'Yazdırılacak kartları seçin. Önceki gün kartları listenin sonunda yer alır. Aynı kişi bir kez yazılır.';
+
+  @override
+  String get rosterReload => 'Yeniden yükle';
+
+  @override
+  String rosterIncludedItemsCount(int count) {
+    return 'Çıktıya Eklenecekler ($count)';
+  }
+
+  @override
+  String get rosterReorderHint =>
+      'Sırayı tutamaçtan sürükleyerek değiştirebilirsiniz.';
+
+  @override
+  String get rosterSameDayOutputOrder => 'Aynı Gün — Çıktı Sırası';
+
+  @override
+  String get rosterPreviousDayOutputOrder => 'Önceki Gün — Çıktı Sırası';
+
+  @override
+  String get rosterSameDayCards => 'Aynı Günün Kartları';
+
+  @override
+  String get rosterPreviousDayCards => 'Önceki Günün Kartları';
+
+  @override
+  String get rosterNoCardsForDay => 'Bu güne ait kart bulunamadı.';
+
+  @override
+  String get rosterAllCardsAdded => 'Bu güne ait tüm kartlar çıktıya eklendi.';
+
+  @override
+  String get rosterPreparing => 'Hazırlanıyor…';
+
+  @override
+  String rosterPreviewWithCount(int count) {
+    return 'Önizle ($count)';
+  }
+
+  @override
+  String get rosterNoApprovedPersonnel =>
+      'Seçilen kartlarda dışa aktarılacak onaylı personel bulunamadı.';
+
+  @override
+  String get activityArchiveTitle => 'Faaliyet Arşivi';
+
+  @override
+  String get activityArchiveTeamTitle => 'Tim Faaliyet Arşivi';
+
+  @override
+  String activityArchiveSelectedCount(int count) {
+    return '$count faaliyet seçildi';
+  }
+
+  @override
+  String get activityArchiveCloseSelection => 'Seçimi Kapat';
+
+  @override
+  String get activityArchiveExportSelectedTooltip => 'Seçilenleri Dışa Aktar';
+
+  @override
+  String get activityArchiveSelectButton => 'Seç';
+
+  @override
+  String get activityArchiveMenuTooltip => 'Arşiv işlemleri';
+
+  @override
+  String get activityArchiveMenuHeader => 'Arşiv İşlemleri';
+
+  @override
+  String get activityArchiveMenuSubtitle => 'Görünüm ve arşiv araçları';
+
+  @override
+  String get activityArchivePrepareOutputTitle => 'Çıktı Hazırla';
+
+  @override
+  String get activityArchivePrepareOutputSubtitle =>
+      'Kartları seç, sırala ve imzalı çıktı al';
+
+  @override
+  String get activityArchiveExportPrintTitle => 'Dışa Aktar / Yazdır';
+
+  @override
+  String get activityArchiveExportPrintSubtitle =>
+      'Görüntülenen günü paylaş veya yazdır';
+
+  @override
+  String get activityArchiveSelectOptionTitle => 'Faaliyet seç';
+
+  @override
+  String get activityArchiveSelectOptionSubtitle =>
+      'Birden fazla kayıt üzerinde çalış';
+
+  @override
+  String get activityArchiveFinishReorder => 'Sıralamayı bitir';
+
+  @override
+  String get activityArchiveMoveCards => 'Kartları taşı';
+
+  @override
+  String get activityArchiveExitReorderSubtitle => 'Sürükleme modundan çık';
+
+  @override
+  String get activityArchiveMoveCardsSubtitle =>
+      'Kartları sürükleyerek yeniden sırala';
+
+  @override
+  String get activityArchiveResetOrder => 'Sıralamayı sıfırla';
+
+  @override
+  String get activityArchiveResetOrderSubtitle => 'Varsayılan sıralamaya dön';
+
+  @override
+  String get activityArchiveReturnToday => 'Bugüne dön';
+
+  @override
+  String get activityArchiveReturnTodaySubtitle => 'Güncel faaliyetleri göster';
+
+  @override
+  String get activityArchiveAuditTitle => 'Çakışmaları denetle';
+
+  @override
+  String get activityArchiveAuditSubtitle =>
+      'Personel görevlendirmelerini kontrol et';
+
+  @override
+  String get activityArchiveFilterByDate => 'Tarihe göre süz';
+
+  @override
+  String get activityArchiveFilterByDateSubtitle =>
+      'Belirli bir günün arşivini aç';
+
+  @override
+  String activityArchiveNoRecordsFound(String date) {
+    return '$date tarihine ait faaliyet kaydı bulunamadı.';
+  }
+
+  @override
+  String get activityArchiveReorderHint =>
+      'Kartları tutamaçtan sürükleyerek taşıyın. Sıralama bu güne kaydedilir.';
+
+  @override
+  String get activityArchiveConflictAuditTitle =>
+      'Geçmiş Kayıt Çakışma Denetimi';
+
+  @override
+  String get activityArchiveConflictAuditNone =>
+      'Çakışan geçmiş kayıt bulunamadı.';
+
+  @override
+  String get activityArchiveConflictAuditReadOnly =>
+      'Bu liste salt okunurdur; hiçbir kayıt silinmedi.';
+
+  @override
+  String get activityArchiveSaveOrderFailed => 'Sıralama kaydedilemedi.';
+
+  @override
+  String get activityArchiveResetOrderFailed => 'Sıralama sıfırlanamadı.';
+
+  @override
+  String get activityArchiveOrderResetSuccess =>
+      'Kart sıralaması varsayılana döndürüldü.';
+
+  @override
+  String get activityArchiveNoActivitiesToExport =>
+      'Dışa aktarılacak faaliyet bulunamadı.';
+
+  @override
+  String get activityArchiveAllActivitiesDefaultName =>
+      'GÜNLÜK TÜM FAALİYETLER';
+
+  @override
+  String activityArchiveExportFailed(String error) {
+    return 'Dışa aktarılamadı: $error';
+  }
+
+  @override
+  String get matrixSearchHint => 'Personel veya rütbe ara';
+
+  @override
+  String get matrixClearSearchTooltip => 'Aramayı temizle';
+
+  @override
+  String get matrixPreviousMonth => 'Önceki ay';
+
+  @override
+  String get matrixNextMonth => 'Sonraki ay';
+
+  @override
+  String get matrixCloseSearchTooltip => 'Aramayı kapat';
+
+  @override
+  String get matrixSearchPersonnelTooltip => 'Personel ara';
+
+  @override
+  String get matrixExportExcel => 'Excel\'e Aktar';
+
+  @override
+  String get matrixTeamDutyCalendar => 'Tim Görev Takvimi';
+
+  @override
+  String get matrixMonthlyTitle => 'Aylık Matris';
+
+  @override
+  String get matrixMonthlySubtitle => 'Personel görev ve durum çizelgesi';
+
+  @override
+  String get matrixNoMatchingPersonnel =>
+      'Aramanızla eşleşen personel bulunamadı';
+
+  @override
+  String get matrixNoPersonnelToShow =>
+      'Gösterilecek kayıtlı personel bulunmuyor.';
+
+  @override
+  String matrixExportFailed(String error) {
+    return 'Çizelge dışa aktarılamadı: $error';
+  }
+
+  @override
+  String get matrixUnassignedTeam => 'Timsiz Personel';
+
+  @override
+  String get matrixUnknownTeam => 'Bilinmeyen Tim';
+
+  @override
+  String matrixPersonnelCount(int count) {
+    return '$count Personel';
+  }
+
+  @override
+  String get matrixOrderNumberShort => 'S.N.';
+
+  @override
+  String get matrixTotalShort => 'Top.';
+
+  @override
+  String matrixDaysCount(int count) {
+    return '$count gün';
+  }
+
+  @override
+  String matrixMonthlyScheduleDays(int count) {
+    return 'Aylık çizelge · $count gün';
+  }
+
+  @override
+  String get temgundrapTitle => 'TEMGÜNDRAP Çizelgeleri';
+
+  @override
+  String get temgundrapDailyTitle => 'Günlük TEMGÜNDRAP';
+
+  @override
+  String get temgundrapArchiveTitle => 'TEMGÜNDRAP Arşivi';
+
+  @override
+  String temgundrapFailedToLoad(String error) {
+    return 'Çizelgeler yüklenemedi: $error';
+  }
+
+  @override
+  String get temgundrapArchivedSuccess => 'Çizelge arşive taşındı.';
+
+  @override
+  String get temgundrapUnarchivedSuccess => 'Çizelge yeniden taslağa alındı.';
+
+  @override
+  String temgundrapUpdateFailed(String error) {
+    return 'Çizelge güncellenemedi: $error';
+  }
+
+  @override
+  String get temgundrapDeleteTitle => 'Çizelgeyi sil';
+
+  @override
+  String get temgundrapDeleteContent =>
+      'Bu TEMGÜNDRAP çizelgesi kalıcı olarak silinecek.';
+
+  @override
+  String temgundrapDeleteFailed(String error) {
+    return 'Çizelge silinemedi: $error';
+  }
+
+  @override
+  String get temgundrapPickDateTooltip => 'Tarih seç';
+
+  @override
+  String get temgundrapNewDocument => 'Yeni Çizelge';
+
+  @override
+  String get temgundrapEditDocument => 'Çizelgeyi Düzenle';
+
+  @override
+  String get temgundrapFailedToLoadDocs => 'Kayıtlar yüklenemedi';
+
+  @override
+  String get temgundrapActionsTitle => 'Çizelge İşlemleri';
+
+  @override
+  String get temgundrapEditSubtitle => 'Çizelge bilgilerini güncelle';
+
+  @override
+  String get temgundrapArchiveOption => 'Arşivle';
+
+  @override
+  String get temgundrapArchiveSubtitle => 'Çizelgeyi tamamla ve arşive taşı';
+
+  @override
+  String get temgundrapRestoreOption => 'Taslağa al';
+
+  @override
+  String get temgundrapRestoreSubtitle => 'Çizelgeyi yeniden düzenlemeye aç';
+
+  @override
+  String get temgundrapDeleteSubtitle => 'Bu çizelgeyi kalıcı olarak kaldır';
+
+  @override
+  String temgundrapDailyWithCount(int count) {
+    return 'Günlük Çizelge ($count)';
+  }
+
+  @override
+  String temgundrapArchiveWithCount(int count) {
+    return 'Arşiv ($count)';
+  }
+
+  @override
+  String get temgundrapPreviousDay => 'Önceki gün';
+
+  @override
+  String get temgundrapNextDay => 'Sonraki gün';
+
+  @override
+  String get temgundrapBackToToday => 'BUGÜNE DÖN';
+
+  @override
+  String temgundrapOperationsCount(int count) {
+    return '$count operasyon';
+  }
+
+  @override
+  String get temgundrapBadgeDraft => 'TASLAK';
+
+  @override
+  String get temgundrapBadgeArchived => 'ARŞİVDE';
+
+  @override
+  String get temgundrapNoDailyDraftTitle => 'Bu güne ait taslak çizelge yok';
+
+  @override
+  String get temgundrapNoArchivedDocTitle =>
+      'Bu tarihte arşivlenmiş çizelge yok';
+
+  @override
+  String temgundrapNoDailyDraftMessage(String date) {
+    return '$date için yeni bir TEMGÜNDRAP çizelgesi oluşturun.';
+  }
+
+  @override
+  String get temgundrapNoArchivedDocMessage =>
+      'Başka bir tarih seçebilir veya tamamlanan bir taslağı arşivleyebilirsiniz.';
+
+  @override
+  String get temgundrapNewDocButton => 'YENİ ÇİZELGE';
+
+  @override
+  String get temgundrapPickDateButton => 'TARİH SEÇ';
+
+  @override
+  String temgundrapApproverDefaultsLoadFailed(String error) {
+    return 'Onay bilgileri yüklenemedi: $error';
+  }
+
+  @override
+  String get temgundrapAtLeastOneOperationRequired =>
+      'En az bir operasyon ekleyin.';
+
+  @override
+  String temgundrapSaveFailed(String error) {
+    return 'Çizelge kaydedilemedi: $error';
+  }
+
+  @override
+  String get temgundrapUnitTitle => 'Birlik başlığı';
+
+  @override
+  String get temgundrapDocumentDate => 'Çizelge tarihi';
+
+  @override
+  String get temgundrapOperations => 'Operasyonlar';
+
+  @override
+  String get temgundrapAddOperation => 'Operasyon Ekle';
+
+  @override
+  String get temgundrapNoOperationsAddedYet => 'Henüz operasyon eklenmedi.';
+
+  @override
+  String get temgundrapEditOperationTooltip => 'Operasyonu düzenle';
+
+  @override
+  String get temgundrapDeleteOperationTooltip => 'Operasyonu sil';
+
+  @override
+  String get temgundrapApprovalInfo => 'Onay Bilgileri';
+
+  @override
+  String get temgundrapApproverName => 'Onaylayan ad soyad';
+
+  @override
+  String get temgundrapApproverDuty => 'Görevi';
+
+  @override
+  String get temgundrapSaveAsDraft => 'Taslak olarak kaydet';
+
+  @override
+  String get temgundrapSaveDocumentButton => 'ÇİZELGEYİ KAYDET';
+
+  @override
+  String get temgundrapRequiredField => 'Bu alan zorunludur.';
 }

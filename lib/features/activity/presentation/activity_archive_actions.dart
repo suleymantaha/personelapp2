@@ -11,18 +11,18 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
       context: context,
       builder:
           (dialogContext) => AlertDialog(
-            title: const Text('Geçmiş Kayıt Çakışma Denetimi'),
+            title: Text(context.l10n.activityArchiveConflictAuditTitle),
             content: SizedBox(
               width: 600,
               child:
                   conflicts.isEmpty
-                      ? const Text('Çakışan geçmiş kayıt bulunamadı.')
+                      ? Text(context.l10n.activityArchiveConflictAuditNone)
                       : SingleChildScrollView(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Bu liste salt okunurdur; hiçbir kayıt silinmedi.',
+                            Text(
+                              context.l10n.activityArchiveConflictAuditReadOnly,
                             ),
                             const SizedBox(height: 12),
                             for (final conflict in conflicts)
@@ -37,7 +37,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
             actions: [
               FilledButton(
                 onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('KAPAT'),
+                child: Text(context.l10n.commonClose),
               ),
             ],
           ),
@@ -183,9 +183,10 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     List<PersonelTableData> personnelList,
   ) async {
     if (activities.isEmpty) {
-      AppNotifications.info('Dışa aktarılacak faaliyet bulunamadı.');
+      AppNotifications.info(context.l10n.activityArchiveNoActivitiesToExport);
       return;
     }
+    final defaultTitle = context.l10n.activityArchiveAllActivitiesDefaultName;
     final dateTitle = _buildExportDateTitle(activities);
     final rows = await _buildRosterRowsForMasterExport(
       activities,
@@ -195,7 +196,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
       faaliyetAdi:
           activities.length == 1
               ? activities.first.faaliyetAdi
-              : 'GÜNLÜK TÜM FAALİYETLER',
+              : defaultTitle,
       tarih: dateTitle,
       rows: rows,
     );
@@ -206,9 +207,10 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     List<PersonelTableData> personnelList,
   ) async {
     if (activities.isEmpty) {
-      AppNotifications.info('Dışa aktarılacak faaliyet bulunamadı.');
+      AppNotifications.info(context.l10n.activityArchiveNoActivitiesToExport);
       return;
     }
+    final defaultTitle = context.l10n.activityArchiveAllActivitiesDefaultName;
     final rows = await _buildRosterRowsForMasterExport(
       activities,
       personnelList,
@@ -217,7 +219,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     final mainActivityName =
         activities.length == 1
             ? activities.first.faaliyetAdi
-            : 'GÜNLÜK TÜM FAALİYETLER';
+            : defaultTitle;
 
     if (mounted) {
       await PdfRosterExporter.showStylePickerAndSharePdf(
@@ -235,9 +237,10 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     List<PersonelTableData> personnelList,
   ) async {
     if (activities.isEmpty) {
-      AppNotifications.info('Dışa aktarılacak faaliyet bulunamadı.');
+      AppNotifications.info(context.l10n.activityArchiveNoActivitiesToExport);
       return;
     }
+    final defaultTitle = context.l10n.activityArchiveAllActivitiesDefaultName;
     final rows = await _buildRosterRowsForMasterExport(
       activities,
       personnelList,
@@ -246,7 +249,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     final mainActivityName =
         activities.length == 1
             ? activities.first.faaliyetAdi
-            : 'GÜNLÜK TÜM FAALİYETLER';
+            : defaultTitle;
 
     await MilitaryRosterExporter.shareTextRoster(
       faaliyetAdi: mainActivityName,
@@ -269,7 +272,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
       faaliyetAdi:
           activities.length == 1
               ? activities.first.faaliyetAdi
-              : 'GÜNLÜK TÜM FAALİYETLER',
+              : context.l10n.activityArchiveAllActivitiesDefaultName,
       tarih: _buildExportDateTitle(activities),
       rows: rows,
       loadRows: () => _buildRosterRowsForMasterExport(activities, personnelList),
@@ -282,7 +285,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     required String subtitle,
   }) async {
     if (activities.isEmpty) {
-      AppNotifications.info('Dışa aktarılacak faaliyet bulunamadı.');
+      AppNotifications.info(context.l10n.activityArchiveNoActivitiesToExport);
       return;
     }
 
@@ -304,7 +307,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
         return;
     }
     } catch (error) {
-      if (mounted) AppNotifications.error('Dışa aktarılamadı: $error');
+      if (mounted) AppNotifications.error(context.l10n.activityArchiveExportFailed('$error'));
     }
   }
 

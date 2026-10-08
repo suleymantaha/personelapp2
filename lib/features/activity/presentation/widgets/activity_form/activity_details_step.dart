@@ -228,7 +228,7 @@ class ActivityDetailsStep extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(dialogContext.l10n.commonCancel),
+            child: Text(dialogContext.l10n.commonDismiss),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, noteValue),

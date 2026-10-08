@@ -17,8 +17,8 @@ extension _MonthlyMatrixDesktopView on _MonthlyMatrixScreenState {
         children: groupedPersonnel.entries.map((group) {
           final teamId = group.key;
           final teamName = teamId == null
-              ? 'Timsiz Personel'
-              : (squadNames[teamId] ?? 'Bilinmeyen Tim');
+              ? context.l10n.matrixUnassignedTeam
+              : (squadNames[teamId] ?? context.l10n.matrixUnknownTeam);
           final members = group.value;
           final isExpanded = _expandedTeamIds.contains(teamId);
 
@@ -85,7 +85,7 @@ extension _MonthlyMatrixDesktopView on _MonthlyMatrixScreenState {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            '${members.length} Personel',
+                            context.l10n.matrixPersonnelCount(members.length),
                             style: TextStyle(
                               color: context.onAccentOrOlive,
                               fontSize: 11,
@@ -105,7 +105,7 @@ extension _MonthlyMatrixDesktopView on _MonthlyMatrixScreenState {
                               Icons.calendar_month_outlined,
                               size: 16,
                             ),
-                            label: const Text('Görev Takvimi'),
+                            label: Text(context.l10n.matrixTeamDutyCalendar),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: context.onAccentOrOlive,
                               foregroundColor: context.accentOrOlive,
@@ -159,7 +159,7 @@ extension _MonthlyMatrixDesktopView on _MonthlyMatrixScreenState {
                                       SizedBox(
                                         width: 24,
                                         child: Text(
-                                          'S.N.',
+                                          context.l10n.matrixOrderNumberShort,
                                           style: TextStyle(
                                             color: context.onAccentOrOlive,
                                             fontWeight: FontWeight.bold,
@@ -170,7 +170,7 @@ extension _MonthlyMatrixDesktopView on _MonthlyMatrixScreenState {
                                       SizedBox(
                                         width: 60,
                                         child: Text(
-                                          'Rütbe',
+                                          context.l10n.personnelRank,
                                           style: TextStyle(
                                             color: context.onAccentOrOlive,
                                             fontWeight: FontWeight.bold,
@@ -180,7 +180,7 @@ extension _MonthlyMatrixDesktopView on _MonthlyMatrixScreenState {
                                       ),
                                       Expanded(
                                         child: Text(
-                                          'Adı Soyadı',
+                                          context.l10n.personnelFullName,
                                           style: TextStyle(
                                             color: context.onAccentOrOlive,
                                             fontWeight: FontWeight.bold,
@@ -191,7 +191,7 @@ extension _MonthlyMatrixDesktopView on _MonthlyMatrixScreenState {
                                       SizedBox(
                                         width: 36,
                                         child: Text(
-                                          'Top.',
+                                          context.l10n.matrixTotalShort,
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             color: context.onAccentOrOlive,

@@ -5,7 +5,8 @@
     "description": "Uygulama adı"
   },
   "commonSave": "Kaydet",
-  "commonCancel": "Vazgeç",
+  "commonCancel": "İptal",
+  "commonDismiss": "Vazgeç",
   "commonClose": "Kapat",
   "commonDelete": "Sil",
   "commonEdit": "Düzenle",
@@ -159,6 +160,7 @@
   "personnelAllUnit": "Tüm Birlik",
   "personnelNoSubscription": "Abonelik Yok",
   "commonSaving": "KAYDEDİLİYOR…",
+  "commonRetry": "TEKRAR DENE",
 
   "authLoginTitle": "Giriş Yap",
   "authUsername": "Kullanıcı Adı",
@@ -247,5 +249,259 @@
   "settingsUpdate": "GÜNCELLE",
 
   "matrixTitle": "Matris ve Çizelge",
-  "reportTitle": "Raporlar"
+  "reportTitle": "Raporlar",
+
+  "rosterOutputTitle": "Çıktı Hazırla",
+  "rosterSelectCardsHint": "Yazdırılacak kartları seçin. Önceki gün kartları listenin sonunda yer alır. Aynı kişi bir kez yazılır.",
+  "rosterReload": "Yeniden yükle",
+  "rosterIncludedItemsCount": "Çıktıya Eklenecekler ({count})",
+  "@rosterIncludedItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rosterReorderHint": "Sırayı tutamaçtan sürükleyerek değiştirebilirsiniz.",
+  "rosterSameDayOutputOrder": "Aynı Gün — Çıktı Sırası",
+  "rosterPreviousDayOutputOrder": "Önceki Gün — Çıktı Sırası",
+  "rosterSameDayCards": "Aynı Günün Kartları",
+  "rosterPreviousDayCards": "Önceki Günün Kartları",
+  "rosterNoCardsForDay": "Bu güne ait kart bulunamadı.",
+  "rosterAllCardsAdded": "Bu güne ait tüm kartlar çıktıya eklendi.",
+  "rosterPreparing": "Hazırlanıyor…",
+  "rosterPreviewWithCount": "Önizle ({count})",
+  "@rosterPreviewWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rosterNoApprovedPersonnel": "Seçilen kartlarda dışa aktarılacak onaylı personel bulunamadı.",
+
+  "activityArchiveTitle": "Faaliyet Arşivi",
+  "activityArchiveTeamTitle": "Tim Faaliyet Arşivi",
+  "activityArchiveSelectedCount": "{count} faaliyet seçildi",
+  "@activityArchiveSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityArchiveCloseSelection": "Seçimi Kapat",
+  "activityArchiveExportSelectedTooltip": "Seçilenleri Dışa Aktar",
+  "activityArchiveSelectButton": "Seç",
+  "activityArchiveMenuTooltip": "Arşiv işlemleri",
+  "activityArchiveMenuHeader": "Arşiv İşlemleri",
+  "activityArchiveMenuSubtitle": "Görünüm ve arşiv araçları",
+  "activityArchivePrepareOutputTitle": "Çıktı Hazırla",
+  "activityArchivePrepareOutputSubtitle": "Kartları seç, sırala ve imzalı çıktı al",
+  "activityArchiveExportPrintTitle": "Dışa Aktar / Yazdır",
+  "activityArchiveExportPrintSubtitle": "Görüntülenen günü paylaş veya yazdır",
+  "activityArchiveSelectOptionTitle": "Faaliyet seç",
+  "activityArchiveSelectOptionSubtitle": "Birden fazla kayıt üzerinde çalış",
+  "activityArchiveFinishReorder": "Sıralamayı bitir",
+  "activityArchiveMoveCards": "Kartları taşı",
+  "activityArchiveExitReorderSubtitle": "Sürükleme modundan çık",
+  "activityArchiveMoveCardsSubtitle": "Kartları sürükleyerek yeniden sırala",
+  "activityArchiveResetOrder": "Sıralamayı sıfırla",
+  "activityArchiveResetOrderSubtitle": "Varsayılan sıralamaya dön",
+  "activityArchiveReturnToday": "Bugüne dön",
+  "activityArchiveReturnTodaySubtitle": "Güncel faaliyetleri göster",
+  "activityArchiveAuditTitle": "Çakışmaları denetle",
+  "activityArchiveAuditSubtitle": "Personel görevlendirmelerini kontrol et",
+  "activityArchiveFilterByDate": "Tarihe göre süz",
+  "activityArchiveFilterByDateSubtitle": "Belirli bir günün arşivini aç",
+  "activityArchiveNoRecordsFound": "{date} tarihine ait faaliyet kaydı bulunamadı.",
+  "@activityArchiveNoRecordsFound": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "activityArchiveReorderHint": "Kartları tutamaçtan sürükleyerek taşıyın. Sıralama bu güne kaydedilir.",
+  "activityArchiveConflictAuditTitle": "Geçmiş Kayıt Çakışma Denetimi",
+  "activityArchiveConflictAuditNone": "Çakışan geçmiş kayıt bulunamadı.",
+  "activityArchiveConflictAuditReadOnly": "Bu liste salt okunurdur; hiçbir kayıt silinmedi.",
+  "activityArchiveSaveOrderFailed": "Sıralama kaydedilemedi.",
+  "activityArchiveResetOrderFailed": "Sıralama sıfırlanamadı.",
+  "activityArchiveOrderResetSuccess": "Kart sıralaması varsayılana döndürüldü.",
+  "activityArchiveNoActivitiesToExport": "Dışa aktarılacak faaliyet bulunamadı.",
+  "activityArchiveAllActivitiesDefaultName": "GÜNLÜK TÜM FAALİYETLER",
+  "activityArchiveExportFailed": "Dışa aktarılamadı: {error}",
+  "@activityArchiveExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "matrixSearchHint": "Personel veya rütbe ara",
+  "matrixClearSearchTooltip": "Aramayı temizle",
+  "matrixPreviousMonth": "Önceki ay",
+  "matrixNextMonth": "Sonraki ay",
+  "matrixCloseSearchTooltip": "Aramayı kapat",
+  "matrixSearchPersonnelTooltip": "Personel ara",
+  "matrixExportExcel": "Excel'e Aktar",
+  "matrixTeamDutyCalendar": "Tim Görev Takvimi",
+  "matrixMonthlyTitle": "Aylık Matris",
+  "matrixMonthlySubtitle": "Personel görev ve durum çizelgesi",
+  "matrixNoMatchingPersonnel": "Aramanızla eşleşen personel bulunamadı",
+  "matrixNoPersonnelToShow": "Gösterilecek kayıtlı personel bulunmuyor.",
+  "matrixExportFailed": "Çizelge dışa aktarılamadı: {error}",
+  "@matrixExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "matrixUnassignedTeam": "Timsiz Personel",
+  "matrixUnknownTeam": "Bilinmeyen Tim",
+  "matrixPersonnelCount": "{count} Personel",
+  "@matrixPersonnelCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "matrixOrderNumberShort": "S.N.",
+  "matrixTotalShort": "Top.",
+  "matrixDaysCount": "{count} gün",
+  "@matrixDaysCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "matrixMonthlyScheduleDays": "Aylık çizelge · {count} gün",
+  "@matrixMonthlyScheduleDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "temgundrapTitle": "TEMGÜNDRAP Çizelgeleri",
+  "temgundrapDailyTitle": "Günlük TEMGÜNDRAP",
+  "temgundrapArchiveTitle": "TEMGÜNDRAP Arşivi",
+  "temgundrapFailedToLoad": "Çizelgeler yüklenemedi: {error}",
+  "@temgundrapFailedToLoad": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapArchivedSuccess": "Çizelge arşive taşındı.",
+  "temgundrapUnarchivedSuccess": "Çizelge yeniden taslağa alındı.",
+  "temgundrapUpdateFailed": "Çizelge güncellenemedi: {error}",
+  "@temgundrapUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapDeleteTitle": "Çizelgeyi sil",
+  "temgundrapDeleteContent": "Bu TEMGÜNDRAP çizelgesi kalıcı olarak silinecek.",
+  "temgundrapDeleteFailed": "Çizelge silinemedi: {error}",
+  "@temgundrapDeleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapPickDateTooltip": "Tarih seç",
+  "temgundrapNewDocument": "Yeni Çizelge",
+  "temgundrapEditDocument": "Çizelgeyi Düzenle",
+  "temgundrapFailedToLoadDocs": "Kayıtlar yüklenemedi",
+  "temgundrapActionsTitle": "Çizelge İşlemleri",
+  "temgundrapEditSubtitle": "Çizelge bilgilerini güncelle",
+  "temgundrapArchiveOption": "Arşivle",
+  "temgundrapArchiveSubtitle": "Çizelgeyi tamamla ve arşive taşı",
+  "temgundrapRestoreOption": "Taslağa al",
+  "temgundrapRestoreSubtitle": "Çizelgeyi yeniden düzenlemeye aç",
+  "temgundrapDeleteSubtitle": "Bu çizelgeyi kalıcı olarak kaldır",
+  "temgundrapDailyWithCount": "Günlük Çizelge ({count})",
+  "@temgundrapDailyWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "temgundrapArchiveWithCount": "Arşiv ({count})",
+  "@temgundrapArchiveWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "temgundrapPreviousDay": "Önceki gün",
+  "temgundrapNextDay": "Sonraki gün",
+  "temgundrapBackToToday": "BUGÜNE DÖN",
+  "temgundrapOperationsCount": "{count} operasyon",
+  "@temgundrapOperationsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "temgundrapBadgeDraft": "TASLAK",
+  "temgundrapBadgeArchived": "ARŞİVDE",
+  "temgundrapNoDailyDraftTitle": "Bu güne ait taslak çizelge yok",
+  "temgundrapNoArchivedDocTitle": "Bu tarihte arşivlenmiş çizelge yok",
+  "temgundrapNoDailyDraftMessage": "{date} için yeni bir TEMGÜNDRAP çizelgesi oluşturun.",
+  "@temgundrapNoDailyDraftMessage": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapNoArchivedDocMessage": "Başka bir tarih seçebilir veya tamamlanan bir taslağı arşivleyebilirsiniz.",
+  "temgundrapNewDocButton": "YENİ ÇİZELGE",
+  "temgundrapPickDateButton": "TARİH SEÇ",
+
+  "temgundrapApproverDefaultsLoadFailed": "Onay bilgileri yüklenemedi: {error}",
+  "@temgundrapApproverDefaultsLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapAtLeastOneOperationRequired": "En az bir operasyon ekleyin.",
+  "temgundrapSaveFailed": "Çizelge kaydedilemedi: {error}",
+  "@temgundrapSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapUnitTitle": "Birlik başlığı",
+  "temgundrapDocumentDate": "Çizelge tarihi",
+  "temgundrapOperations": "Operasyonlar",
+  "temgundrapAddOperation": "Operasyon Ekle",
+  "temgundrapNoOperationsAddedYet": "Henüz operasyon eklenmedi.",
+  "temgundrapEditOperationTooltip": "Operasyonu düzenle",
+  "temgundrapDeleteOperationTooltip": "Operasyonu sil",
+  "temgundrapApprovalInfo": "Onay Bilgileri",
+  "temgundrapApproverName": "Onaylayan ad soyad",
+  "temgundrapApproverDuty": "Görevi",
+  "temgundrapSaveAsDraft": "Taslak olarak kaydet",
+  "temgundrapSaveDocumentButton": "ÇİZELGEYİ KAYDET",
+  "temgundrapRequiredField": "Bu alan zorunludur."
 }

@@ -23,7 +23,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
               textInputAction: TextInputAction.search,
               style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
               decoration: InputDecoration(
-                hintText: 'Personel veya rütbe ara',
+                hintText: context.l10n.matrixSearchHint,
                 hintStyle: TextStyle(
                   color: Theme.of(context)
                       .colorScheme
@@ -37,7 +37,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
                 suffixIcon: _searchQuery.isEmpty
                     ? null
                     : IconButton(
-                        tooltip: 'Aramayı temizle',
+                        tooltip: context.l10n.matrixClearSearchTooltip,
                         onPressed: _clearSearch,
                         icon: Icon(
                           Icons.close_rounded,
@@ -56,7 +56,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
           : Row(
               children: [
                 IconButton(
-                  tooltip: 'Önceki ay',
+                  tooltip: context.l10n.matrixPreviousMonth,
                   onPressed: () => _changeMonth(-1),
                   icon: const Icon(Icons.chevron_left_rounded),
                 ),
@@ -88,7 +88,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Sonraki ay',
+                  tooltip: context.l10n.matrixNextMonth,
                   onPressed: () => _changeMonth(1),
                   icon: const Icon(Icons.chevron_right_rounded),
                 ),
@@ -97,7 +97,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
       actions: [
         IconButton(
           key: const ValueKey('matrix-mobile-search-button'),
-          tooltip: _isMobileSearchOpen ? 'Aramayı kapat' : 'Personel ara',
+          tooltip: _isMobileSearchOpen ? context.l10n.matrixCloseSearchTooltip : context.l10n.matrixSearchPersonnelTooltip,
           onPressed: () {
             FocusScope.of(context).unfocus();
             _updateState(() => _isMobileSearchOpen = !_isMobileSearchOpen);
@@ -111,7 +111,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
         if (!_isMobileSearchOpen)
           IconButton(
             key: const ValueKey('matrix-export-button'),
-            tooltip: "Excel'e aktar",
+            tooltip: context.l10n.matrixExportExcel,
             onPressed: onExport,
             icon: const Icon(Icons.file_download_outlined),
           ),
@@ -164,24 +164,24 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
       centerTitle: false,
       toolbarHeight: 64,
       titleSpacing: 20,
-      title: const Column(
+      title: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Aylık Matris',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+            context.l10n.matrixMonthlyTitle,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
           ),
           Text(
-            'Personel görev ve durum çizelgesi',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w400),
+            context.l10n.matrixMonthlySubtitle,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w400),
           ),
         ],
       ),
       actions: [
         IconButton.filledTonal(
           key: const ValueKey('matrix-export-button'),
-          tooltip: "Excel'e aktar",
+          tooltip: context.l10n.matrixExportExcel,
           onPressed: onExport,
           icon: const Icon(Icons.file_download_outlined),
           style: IconButton.styleFrom(
@@ -318,7 +318,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Çizelge dışa aktarılamadı: $error')));
+          SnackBar(content: Text(context.l10n.matrixExportFailed('$error'))));
       }
     }
   }
@@ -341,8 +341,8 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
             const SizedBox(height: 12),
             Text(
               hasQuery
-                  ? 'Aramanızla eşleşen personel bulunamadı'
-                  : 'Gösterilecek kayıtlı personel bulunmuyor.',
+                  ? context.l10n.matrixNoMatchingPersonnel
+                  : context.l10n.matrixNoPersonnelToShow,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium,
             ),
@@ -351,7 +351,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
               TextButton.icon(
                 onPressed: _clearSearch,
                 icon: const Icon(Icons.close_rounded),
-                label: const Text('Aramayı temizle'),
+                label: Text(context.l10n.matrixClearSearchTooltip),
               ),
             ],
           ],
@@ -386,7 +386,7 @@ class _MonthPicker extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            tooltip: 'Önceki ay',
+            tooltip: context.l10n.matrixPreviousMonth,
             onPressed: onPrevious,
             icon: const Icon(Icons.chevron_left_rounded),
           ),
@@ -416,7 +416,7 @@ class _MonthPicker extends StatelessWidget {
             ),
           ),
           IconButton(
-            tooltip: 'Sonraki ay',
+            tooltip: context.l10n.matrixNextMonth,
             onPressed: onNext,
             icon: const Icon(Icons.chevron_right_rounded),
           ),
@@ -453,11 +453,11 @@ class _PersonnelSearchField extends StatelessWidget {
         onChanged: onChanged,
         textInputAction: TextInputAction.search,
         decoration: InputDecoration(
-          hintText: 'Personel adı veya rütbe ara',
+          hintText: context.l10n.matrixSearchHint,
           prefixIcon: const Icon(Icons.search_rounded),
           suffixIcon: query.isNotEmpty
               ? IconButton(
-                  tooltip: 'Aramayı temizle',
+                  tooltip: context.l10n.matrixClearSearchTooltip,
                   onPressed: onClear,
                   icon: const Icon(Icons.close_rounded),
                 )

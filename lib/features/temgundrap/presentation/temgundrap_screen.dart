@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
@@ -37,7 +38,7 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
     try {
       await _documents;
     } catch (error) {
-      if (mounted) AppNotifications.error('Çizelgeler yüklenemedi: $error');
+      if (mounted) AppNotifications.error(context.l10n.temgundrapFailedToLoad('$error'));
     }
   }
 
@@ -80,11 +81,11 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
       setState(_reload);
       AppNotifications.info(
         archived
-            ? 'Çizelge arşive taşındı.'
-            : 'Çizelge yeniden taslağa alındı.',
+            ? context.l10n.temgundrapArchivedSuccess
+            : context.l10n.temgundrapUnarchivedSuccess,
       );
     } catch (error) {
-      if (mounted) AppNotifications.error('Çizelge güncellenemedi: $error');
+      if (mounted) AppNotifications.error(context.l10n.temgundrapUpdateFailed('$error'));
     }
   }
 
@@ -92,19 +93,19 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder:
-          (context) => AlertDialog(
-            title: const Text('Çizelgeyi sil'),
-            content: const Text(
-              'Bu TEMGÜNDRAP çizelgesi kalıcı olarak silinecek.',
+          (dialogContext) => AlertDialog(
+            title: Text(dialogContext.l10n.temgundrapDeleteTitle),
+            content: Text(
+              dialogContext.l10n.temgundrapDeleteContent,
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('VAZGEÇ'),
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(dialogContext.l10n.commonCancel),
               ),
               FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('SİL'),
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: Text(dialogContext.l10n.commonDelete),
               ),
             ],
           ),
@@ -114,41 +115,41 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
       await _repository.delete(document.id);
       if (mounted) setState(_reload);
     } catch (error) {
-      if (mounted) AppNotifications.error('Çizelge silinemedi: $error');
+      if (mounted) AppNotifications.error(context.l10n.temgundrapDeleteFailed('$error'));
     }
   }
 
   Future<void> _showDocumentActions(TemgundrapDocument document) async {
     final action = await showModernActionSheet<String>(
       context,
-      title: 'Çizelge İşlemleri',
+      title: context.l10n.temgundrapActionsTitle,
       subtitle: _formatDate(document.date),
       icon: Icons.description_outlined,
       options: [
-        const ModernActionOption(
+        ModernActionOption(
           value: 'edit',
-          title: 'Düzenle',
-          subtitle: 'Çizelge bilgilerini güncelle',
+          title: context.l10n.commonEdit,
+          subtitle: context.l10n.temgundrapEditSubtitle,
           icon: Icons.edit_outlined,
         ),
         if (document.isDraft)
-          const ModernActionOption(
+          ModernActionOption(
             value: 'archive',
-            title: 'Arşivle',
-            subtitle: 'Çizelgeyi tamamla ve arşive taşı',
+            title: context.l10n.temgundrapArchiveOption,
+            subtitle: context.l10n.temgundrapArchiveSubtitle,
             icon: Icons.archive_outlined,
           )
         else
-          const ModernActionOption(
+          ModernActionOption(
             value: 'restore',
-            title: 'Taslağa al',
-            subtitle: 'Çizelgeyi yeniden düzenlemeye aç',
+            title: context.l10n.temgundrapRestoreOption,
+            subtitle: context.l10n.temgundrapRestoreSubtitle,
             icon: Icons.unarchive_outlined,
           ),
-        const ModernActionOption(
+        ModernActionOption(
           value: 'delete',
-          title: 'Sil',
-          subtitle: 'Bu çizelgeyi kalıcı olarak kaldır',
+          title: context.l10n.commonDelete,
+          subtitle: context.l10n.temgundrapDeleteSubtitle,
           icon: Icons.delete_outline,
           isDestructive: true,
         ),
@@ -194,13 +195,13 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
         appBar: AppBar(
           title: Text(
             _section == _TemgundrapSection.daily
-                ? 'Günlük TEMGÜNDRAP'
-                : 'TEMGÜNDRAP Arşivi',
+                ? context.l10n.temgundrapDailyTitle
+                : context.l10n.temgundrapArchiveTitle,
           ),
           actions: [
             IconButton(
               key: const Key('temgundrap-date-picker'),
-              tooltip: 'Tarih seç',
+              tooltip: context.l10n.temgundrapPickDateTooltip,
               onPressed: _pickDate,
               icon: const Icon(Icons.calendar_month_outlined),
             ),
@@ -212,7 +213,7 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
                   key: const Key('new-temgundrap-document-fab'),
                   onPressed: _openForm,
                   icon: const Icon(Icons.add_rounded),
-                  label: const Text('Yeni Çizelge'),
+                  label: Text(context.l10n.temgundrapNewDocument),
                 )
                 : null,
         body: TurkishFlagWatermarkBackground(
@@ -223,12 +224,12 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
             if (snapshot.hasError) {
               return _MessageState(
                 icon: Icons.cloud_off_outlined,
-                title: 'Kayıtlar yüklenemedi',
+                title: context.l10n.temgundrapFailedToLoadDocs,
                 message: '${snapshot.error}',
                 action: FilledButton.icon(
                   onPressed: () => setState(_reload),
                   icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('TEKRAR DENE'),
+                  label: Text(context.l10n.commonRetry),
                 ),
               );
             }
@@ -341,7 +342,7 @@ class _SectionSwitcher extends StatelessWidget {
                 value: _TemgundrapSection.daily,
                 icon: const Icon(Icons.edit_calendar_outlined),
                 label: Text(
-                  'Günlük Çizelge ($draftCount)',
+                  context.l10n.temgundrapDailyWithCount(draftCount),
                   key: const Key('temgundrap-daily-tab'),
                 ),
               ),
@@ -349,7 +350,7 @@ class _SectionSwitcher extends StatelessWidget {
                 value: _TemgundrapSection.archive,
                 icon: const Icon(Icons.inventory_2_outlined),
                 label: Text(
-                  'Arşiv ($archiveCount)',
+                  context.l10n.temgundrapArchiveWithCount(archiveCount),
                   key: const Key('temgundrap-archive-tab'),
                 ),
               ),
@@ -395,7 +396,7 @@ class _DateNavigator extends StatelessWidget {
             children: [
               IconButton(
                 key: const Key('temgundrap-previous-day'),
-                tooltip: 'Önceki gün',
+                tooltip: context.l10n.temgundrapPreviousDay,
                 onPressed: onPrevious,
                 icon: const Icon(Icons.chevron_left_rounded),
               ),
@@ -420,7 +421,7 @@ class _DateNavigator extends StatelessWidget {
                           TextButton(
                             key: const Key('temgundrap-today'),
                             onPressed: onToday,
-                            child: const Text('BUGÜNE DÖN'),
+                            child: Text(context.l10n.temgundrapBackToToday),
                           ),
                       ],
                     ),
@@ -429,7 +430,7 @@ class _DateNavigator extends StatelessWidget {
               ),
               IconButton(
                 key: const Key('temgundrap-next-day'),
-                tooltip: 'Sonraki gün',
+                tooltip: context.l10n.temgundrapNextDay,
                 onPressed: onNext,
                 icon: const Icon(Icons.chevron_right_rounded),
               ),
@@ -481,7 +482,7 @@ class _DocumentCard extends StatelessWidget {
                 const Spacer(),
                 IconButton(
                   key: Key('temgundrap-actions-${document.id}'),
-                  tooltip: 'Çizelge işlemleri',
+                  tooltip: context.l10n.temgundrapActionsTitle,
                   onPressed: onActions,
                   icon: const Icon(Icons.more_horiz_rounded),
                 ),
@@ -505,7 +506,7 @@ class _DocumentCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    '${document.operations.length} operasyon',
+                    context.l10n.temgundrapOperationsCount(document.operations.length),
                     style: TextStyle(color: context.textSecondary),
                   ),
                 ),
@@ -533,7 +534,7 @@ class _StatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(99),
       ),
       child: Text(
-        isDraft ? 'TASLAK' : 'ARŞİVDE',
+        isDraft ? context.l10n.temgundrapBadgeDraft : context.l10n.temgundrapBadgeArchived,
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w800,
@@ -564,16 +565,16 @@ class _EmptySection extends StatelessWidget {
       icon: isDaily ? Icons.edit_calendar_outlined : Icons.inventory_2_outlined,
       title:
           isDaily
-              ? 'Bu güne ait taslak çizelge yok'
-              : 'Bu tarihte arşivlenmiş çizelge yok',
+              ? context.l10n.temgundrapNoDailyDraftTitle
+              : context.l10n.temgundrapNoArchivedDocTitle,
       message:
           isDaily
-              ? '${_formatDate(date)} için yeni bir TEMGÜNDRAP çizelgesi oluşturun.'
-              : 'Başka bir tarih seçebilir veya tamamlanan bir taslağı arşivleyebilirsiniz.',
+              ? context.l10n.temgundrapNoDailyDraftMessage(_formatDate(date))
+              : context.l10n.temgundrapNoArchivedDocMessage,
       action: FilledButton.icon(
         onPressed: isDaily ? onCreate : onPickDate,
         icon: Icon(isDaily ? Icons.add_rounded : Icons.calendar_month_outlined),
-        label: Text(isDaily ? 'YENİ ÇİZELGE' : 'TARİH SEÇ'),
+        label: Text(isDaily ? context.l10n.temgundrapNewDocButton : context.l10n.temgundrapPickDateButton),
       ),
     );
   }
