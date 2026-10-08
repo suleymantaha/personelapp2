@@ -152,7 +152,17 @@ void main() {
           find.byKey(Key('assignment-duty-$second-${DutyOrLeaveType.gorevli}')),
         );
         await tester.pumpAndSettle();
-        await tester.tap(find.text(DutyOrLeaveType.nobetci).last);
+        final targetTile = find.byKey(
+          ValueKey('assignment-duty-$second-${DutyOrLeaveType.nobetci}'),
+        );
+        await tester.scrollUntilVisible(
+          targetTile,
+          50,
+          scrollable: find.byType(Scrollable).last,
+        );
+        await tester.drag(find.byType(Scrollable).last, const Offset(0, -100));
+        await tester.pumpAndSettle();
+        await tester.tap(targetTile);
         await tester.pumpAndSettle();
         await tester.tap(find.text('Not ekle').first);
         await tester.pumpAndSettle();

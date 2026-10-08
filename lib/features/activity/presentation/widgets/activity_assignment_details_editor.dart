@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import '../view_models/activity_form_draft.dart';
+import 'activity_form/activity_duty_action_card.dart';
+import 'activity_form/activity_duty_picker.dart';
 
 class ActivityAssignmentDetailsEditor extends StatelessWidget {
   const ActivityAssignmentDetailsEditor(
@@ -35,16 +37,21 @@ class ActivityAssignmentDetailsEditor extends StatelessWidget {
                 child: Text(context.l10n.activityChange))
           ]),
           const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: draft.commonDuty,
-            isExpanded: true,
-            decoration: InputDecoration(
-                labelText: context.l10n.activityCommonDuty,
-                helperText: context.l10n.activityCommonDutyHelper),
-            items: duties
-                .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                .toList(),
-            onChanged: (value) {
+          ActivityDutyActionCard(
+            key: const Key('common-duty-field'),
+            icon: Icons.assignment_ind_outlined,
+            label: context.l10n.activityCommonDuty,
+            value: draft.commonDuty.isEmpty
+                ? context.l10n.activityCommonDuty
+                : draft.commonDuty,
+            onTap: () async {
+              final value = await showActivityDutyPicker(
+                context,
+                title: context.l10n.activityCommonDuty,
+                duties: duties,
+                keyPrefix: 'common-duty',
+                selectedDuty: draft.commonDuty,
+              );
               if (value == null) return;
               draft.setCommonDuty(value);
               for (final person in people) {
@@ -97,7 +104,7 @@ class _AssignmentCardState extends State<_AssignmentCard> {
   @override
   Widget build(BuildContext context) {
     final id = widget.person.id;
-    final duty = widget.draft.dutyFor(id)!;
+    final duty = widget.draft.dutyFor(id) ?? widget.draft.commonDuty;
     final note = widget.draft.notes[id] ?? '';
     return Card(
         child: Padding(
@@ -119,19 +126,42 @@ class _AssignmentCardState extends State<_AssignmentCard> {
                 ]),
                 if (widget.showDuty) ...[
                   const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
+                  InkWell(
                     key: Key('assignment-duty-$id-$duty'),
-                    initialValue: duty,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                        labelText: context.l10n.activityPersonalDutyLabel),
-                    items: widget.duties
-                        .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                        .toList(),
-                    onChanged: (value) {
-                      widget.draft.setDutyOverride(id, value);
-                      widget.onChanged();
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () async {
+                      final newDuty = await showActivityDutyPicker(
+                        context,
+                        title: '${widget.person.adSoyad} için görev',
+                        duties: widget.duties,
+                        keyPrefix: 'assignment-duty-$id',
+                        selectedDuty: duty,
+                      );
+                      if (newDuty != null) {
+                        widget.draft.setDutyOverride(id, newDuty);
+                        widget.onChanged();
+                      }
                     },
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: context.l10n.activityPersonalDutyLabel,
+                        suffixIcon: const Icon(Icons.arrow_drop_down),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: Text(
+                        duty,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
                 if (!_noteOpen && note.isNotEmpty)

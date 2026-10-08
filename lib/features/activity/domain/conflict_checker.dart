@@ -26,6 +26,36 @@ class DutyOrLeaveType {
   static const String sevk = 'SEVK';
   static const String diger = 'DİĞER';
 
+  static const List<String> adminOnlyDuties = [
+    heybetKomutani,
+    nobSb,
+    mebsNob,
+    garajNob,
+    ttzaNob,
+    kuleNob,
+  ];
+
+  static const List<String> generalDuties = [
+    hazirKita,
+    guluskur,
+    heybet,
+    gorevli,
+    nobetci,
+    izinli,
+    istirahatli,
+    raporlu,
+    sevk,
+    diger,
+  ];
+
+  static const List<String> allDuties = [
+    ...adminOnlyDuties,
+    ...generalDuties,
+  ];
+
+  static List<String> dutiesForRole({required bool isAdmin}) =>
+      isAdmin ? allDuties : generalDuties;
+
   /// Returns true if the assignment is an active operational duty, false if it is a non-duty status (leave, rest, report, referral).
   static bool isApprovedOperationalDuty(String dutyOrLeave, String status) =>
       status == AssignmentStatus.onaylandi && isOperationalDuty(dutyOrLeave);

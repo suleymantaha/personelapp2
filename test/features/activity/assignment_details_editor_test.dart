@@ -36,4 +36,97 @@ void main() {
     expect(find.byKey(const Key('assignment-duty-1-NÖBETÇİ')), findsOneWidget);
     expect(find.byKey(const Key('assignment-note-1')), findsNothing);
   });
+
+  testWidgets('tapping common duty opens bottom sheet duty picker and updates selection',
+      (tester) async {
+    final draft = ActivityFormDraft(initialDate: DateTime(2026, 10, 3))
+      ..setCommonDuty(DutyOrLeaveType.gorevli);
+    var changed = false;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: ActivityAssignmentDetailsEditor(
+          people: const [
+            PersonelTableData(
+              aktif: true,
+              isDemo: false,
+              id: 1,
+              adSoyad: 'Ahmet',
+              rutbe: 'J.Asb.',
+              birlik: 'Asayiş',
+              kayitTarihi: '2026-10-03',
+            )
+          ],
+          squadNames: const {},
+          draft: draft,
+          duties: const [DutyOrLeaveType.gorevli, DutyOrLeaveType.nobetci],
+          isAdmin: true,
+          onChangePerson: () {},
+          onChanged: () => changed = true,
+        ),
+      ),
+    ));
+
+    await tester.tap(find.byKey(const Key('common-duty-field')));
+    await tester.pumpAndSettle();
+
+    expect(find.text(DutyOrLeaveType.nobetci), findsOneWidget);
+    await tester.tap(find.text(DutyOrLeaveType.nobetci));
+    await tester.pumpAndSettle();
+
+    expect(draft.commonDuty, DutyOrLeaveType.nobetci);
+    expect(changed, isTrue);
+  });
+
+  testWidgets(
+      'tapping personal duty override opens bottom sheet and updates duty override',
+      (tester) async {
+    final draft = ActivityFormDraft(initialDate: DateTime(2026, 10, 3))
+      ..setCommonDuty(DutyOrLeaveType.gorevli)
+      ..togglePersonnel(1)
+      ..togglePersonnel(2);
+    var changed = false;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: ActivityAssignmentDetailsEditor(
+          people: const [
+            PersonelTableData(
+              aktif: true,
+              isDemo: false,
+              id: 1,
+              adSoyad: 'Ahmet',
+              rutbe: 'J.Asb.',
+              birlik: 'Asayiş',
+              kayitTarihi: '2026-10-03',
+            ),
+            PersonelTableData(
+              aktif: true,
+              isDemo: false,
+              id: 2,
+              adSoyad: 'Mehmet',
+              rutbe: 'J.Uzm.',
+              birlik: 'Asayiş',
+              kayitTarihi: '2026-10-03',
+            ),
+          ],
+          squadNames: const {},
+          draft: draft,
+          duties: const [DutyOrLeaveType.gorevli, DutyOrLeaveType.nobetci],
+          isAdmin: true,
+          onChangePerson: () {},
+          onChanged: () => changed = true,
+        ),
+      ),
+    ));
+
+    expect(find.byKey(const Key('assignment-duty-1-GÖREVLİ')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('assignment-duty-1-GÖREVLİ')));
+    await tester.pumpAndSettle();
+
+    expect(find.text(DutyOrLeaveType.nobetci), findsOneWidget);
+    await tester.tap(find.text(DutyOrLeaveType.nobetci));
+    await tester.pumpAndSettle();
+
+    expect(draft.dutyFor(1), DutyOrLeaveType.nobetci);
+    expect(changed, isTrue);
+  });
 }
