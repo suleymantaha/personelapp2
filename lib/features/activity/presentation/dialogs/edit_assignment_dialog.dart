@@ -5,6 +5,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
@@ -89,10 +90,10 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
         children: [
           Icon(Icons.edit_note, color: context.accentOrOlive),
           const SizedBox(width: 8),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Görev Değişikliği',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              context.l10n.activityDutyChange,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -118,7 +119,7 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
               initialValue: _selectedDuty,
               isExpanded: true,
               decoration: InputDecoration(
-                labelText: 'Görev / İzin Türü',
+                labelText: context.l10n.activityDutyOrLeaveType,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -138,8 +139,8 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
             TextField(
               controller: _noteController,
               decoration: InputDecoration(
-                labelText: 'Açıklama / Not (İsteğe Bağlı)',
-                hintText: 'Örn: Gece nöbeti, özel devriye vb.',
+                labelText: context.l10n.activityDutyNoteOptional,
+                hintText: context.l10n.activityDutyNoteHint,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -155,7 +156,7 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('İPTAL'),
+          child: Text(context.l10n.commonCancel.toUpperCase()),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
@@ -190,7 +191,7 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
               }
             }
           },
-          child: const Text('KAYDET'),
+          child: Text(context.l10n.commonSave.toUpperCase()),
         ),
       ],
     );

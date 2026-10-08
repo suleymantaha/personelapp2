@@ -10,6 +10,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/password_hasher.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -138,12 +139,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await _loginUserSession(user);
       } else {
         if (mounted) {
-          AppNotifications.error('Geçersiz kullanıcı adı veya parola!');
+          AppNotifications.error(context.l10n.authInvalidCredentials);
         }
       }
     } else {
       if (mounted) {
-        AppNotifications.error('Geçersiz kullanıcı adı veya parola!');
+        AppNotifications.error(context.l10n.authInvalidCredentials);
       }
     }
   }
@@ -194,22 +195,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      Text('Görev Yönetimi', style: context.textStyleSecondary),
+                      Text(
+                        context.l10n.authMissionManagement,
+                        style: context.textStyleSecondary,
+                      ),
                       const SizedBox(height: 32),
                       TextField(
                         controller: _usernameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Kullanıcı Adı',
-                          prefixIcon: Icon(Icons.person),
+                        decoration: InputDecoration(
+                          labelText: context.l10n.authUsername,
+                          prefixIcon: const Icon(Icons.person),
                         ),
                       ),
                       const SizedBox(height: 16),
                       TextField(
                         controller: _passwordController,
                         obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Şifre',
-                          prefixIcon: Icon(Icons.lock),
+                        decoration: InputDecoration(
+                          labelText: context.l10n.authPassword,
+                          prefixIcon: const Icon(Icons.lock),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -218,7 +222,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         height: 48,
                         child: ElevatedButton(
                           onPressed: _handleLogin,
-                          child: const Text('GİRİŞ YAP'),
+                          child: Text(context.l10n.authLoginButton),
                         ),
                       ),
                     ],
@@ -264,7 +268,7 @@ class _PasswordCreationDialogState extends State<_PasswordCreationDialog> {
       return;
     }
     if (password != confirmation) {
-      setState(() => _errorText = 'Parolalar eşleşmiyor!');
+      setState(() => _errorText = context.l10n.authPasswordsDoNotMatch);
       return;
     }
 
@@ -274,31 +278,31 @@ class _PasswordCreationDialogState extends State<_PasswordCreationDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('İlk Giriş: Parola Belirleyin'),
+      title: Text(context.l10n.authFirstLoginTitle),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Sayın ${widget.username}, hesabınız için yeni bir parola belirleyiniz.',
+              context.l10n.authFirstLoginSubtitle(widget.username),
               style: TextStyle(fontSize: 13, color: context.textPrimary),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Yeni Parola',
-                prefixIcon: Icon(Icons.lock_outline),
+              decoration: InputDecoration(
+                labelText: context.l10n.authNewPassword,
+                prefixIcon: const Icon(Icons.lock_outline),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _confirmationController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Yeni Parola (Tekrar)',
-                prefixIcon: Icon(Icons.lock_reset),
+              decoration: InputDecoration(
+                labelText: context.l10n.authNewPasswordRepeat,
+                prefixIcon: const Icon(Icons.lock_reset),
               ),
             ),
             if (_errorText != null) ...[
@@ -317,7 +321,7 @@ class _PasswordCreationDialogState extends State<_PasswordCreationDialog> {
       actions: [
         ElevatedButton(
           onPressed: _submit,
-          child: const Text('PAROLAYI KAYDET VE GİRİŞ YAP'),
+          child: Text(context.l10n.authSavePasswordAndLogin),
         ),
       ],
     );

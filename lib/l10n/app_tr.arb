@@ -1,0 +1,651 @@
+{
+  "@@locale": "tr",
+  "appTitle": "Nizam",
+  "@appTitle": {
+    "description": "Uygulama adı"
+  },
+  "commonSave": "Kaydet",
+  "commonCancel": "İptal",
+  "commonDismiss": "Vazgeç",
+  "commonClose": "Kapat",
+  "commonDelete": "Sil",
+  "commonEdit": "Düzenle",
+  "commonAdd": "Ekle",
+  "commonSelect": "Seç",
+  "commonSearch": "Ara...",
+  "commonFilter": "Filtrele",
+  "commonClear": "Temizle",
+  "commonSuccess": "Başarılı",
+  "commonError": "Hata",
+  "commonWarning": "Uyarı",
+  "commonInfo": "Bilgi",
+  "commonConfirm": "Onayla",
+  "commonYes": "Evet",
+  "commonNo": "Hayır",
+  "commonOk": "Tamam",
+  "commonAll": "Tümü",
+  "commonRequired": "Zorunlu alan",
+  "commonLoading": "Yükleniyor...",
+  "commonNoData": "Kayıt bulunamadı",
+  "commonApprove": "Onayla",
+  "commonReject": "Reddet",
+  "commonUnauthorized": "Bu sayfaya erişim yetkiniz bulunmuyor.",
+
+  "activitySelectDutyTitle": "Görev veya İzin Seçin",
+  "activityCommonDuty": "Ortak Görev",
+  "activityPersonalDuty": "Kişisel Görev",
+  "activitySelectPersonalDuty": "Özel Görev Seç",
+  "activityDutyChangeTitle": "Görev / Durum Değiştir",
+  "activityDutyChangeSubtitle": "Seçilen personel için geçerli görev veya izin durumunu güncelleyin.",
+  "activityUpdateSuccess": "Görev başarıyla güncellendi",
+  "activityScheduleTitle": "Faaliyet Çizelgesi",
+  "activityAddPersonnel": "Personel Ekle",
+  "activityArchive": "Faaliyet Arşivi",
+  "activityDate": "Tarih",
+  "activityPersonnelCount": "Personel Sayısı",
+  "activityDuty": "Görev",
+  "activityShift": "Vardiya",
+  "activityNotes": "Notlar",
+  "activitySelectDutyHint": "Bir görev türü seçiniz",
+  "activitySearchDutyHint": "Görev ara...",
+  "activityLeaveType": "İzin Türü",
+  "activityDutyChange": "Görev Değişikliği",
+  "activityDutyOrLeaveType": "Görev / İzin Türü",
+  "activityDutyNoteOptional": "Açıklama / Not (İsteğe Bağlı)",
+  "activityDutyNoteHint": "Örn: Gece nöbeti, özel devriye vb.",
+  "activityAssignCommonDuty": "Ortak Görev",
+  "activityAssignDutyToSelected": "Seçilen personele görev ata",
+  "activitySelectCommonDuty": "Ortak görev seç",
+  "activityUseCommonDuty": "Ortak görevi kullan",
+  "activitySquadDutyAssignTitle": "{squadName} timine görev ata",
+  "@activitySquadDutyAssignTitle": {
+    "placeholders": {
+      "squadName": {
+        "type": "String"
+      }
+    }
+  },
+  "activityPersonnelDutyTitle": "{name} için görev",
+  "@activityPersonnelDutyTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityPersonnelNoteTitle": "{name} için not",
+  "@activityPersonnelNoteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activitySelectDifferentDuty": "Farklı görev seç",
+  "activityDutyNotSelected": "Görev seçilmedi",
+  "activityAddOrEditNote": "Not ekle veya düzenle",
+  "activityNoNote": "Not yok",
+  "activityOptionalNoteHint": "İsteğe bağlı not",
+  "activityPreviewHint": "Bilgileri kontrol ettikten sonra görevlendirme önizlemesine geçebilirsiniz.",
+  "activitySelectedPersonnelCount": "{count} personel seçildi",
+  "@activitySelectedPersonnelCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityChange": "Değiştir",
+  "activityCommonDutyHelper": "Tüm seçilen personele uygular",
+  "activityPersonalDutyLabel": "Kişiye özel görev",
+  "activityOutsideSquad": "Tim Dışı",
+  "activityAdminAddNotice": "Seçilen personel bu faaliyete eklenecek.",
+  "activityUserAddNotice": "Personel eklendikten sonra admin onayına gönderilecek.",
+  "activityCloseNote": "Notu kapat",
+  "activityAddNote": "Not ekle",
+  "activityEditNote": "Notu düzenle",
+  "activityGeneralDutyNoteHint": "Görevle ilgili not",
+
+  "personnelManagementTitle": "Personel Yönetimi",
+  "personnelListTitle": "Personel Listesi",
+  "personnelAddTitle": "Yeni Personel Ekle",
+  "personnelEditTitle": "Personeli Düzenle",
+  "personnelName": "Ad",
+  "personnelSurname": "Soyad",
+  "personnelFullName": "Ad Soyad",
+  "personnelRank": "Rütbe",
+  "personnelBranch": "Sınıf / Kuvvet",
+  "personnelPhone": "Telefon",
+  "personnelRole": "Rol",
+  "personnelStatus": "Durum",
+  "personnelActive": "Aktif",
+  "personnelInactive": "Pasif",
+  "personnelWarningEnterName": "Lütfen ad soyad giriniz.",
+  "personnelWarningSelectRank": "Lütfen rütbe seçiniz.",
+  "personnelErrorSaveFailed": "Personel kaydedilemedi: {error}",
+  "@personnelErrorSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "personnelEditNamed": "{name} - Düzenle",
+  "@personnelEditNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "personnelSelectRankHint": "Rütbe Seçiniz",
+  "personnelCustomRankLabel": "Özel Rütbe Metni",
+  "personnelCustomRankHint": "Örn: J.Uz.Çvş. (Kıd.Kd.Çvş)",
+  "personnelSquadLabel": "Bağlı Olduğu Tim",
+  "personnelIndependentSquad": "Bağımsız / Tim Dışı",
+  "personnelUnitLabel": "Birlik / Bölük",
+  "personnelSelectUnitTooltip": "Birlik seç",
+  "personnelSelectUnitTitle": "Birlik seç",
+  "personnelFrequentlyUsedUnits": "Sık kullanılan birlikler",
+  "personnelSearchHint": "Personel ad, rütbe veya birlik ara...",
+  "personnelSquadFilter": "Tim Filtresi",
+  "personnelNewSquad": "Yeni Tim",
+  "personnelAllPersonnel": "Tüm Personel",
+  "personnelUnassignedOrOffRoster": "Boşta / Kadro Dışı",
+  "personnelAuthorizedSquad": "Yetkili Olduğunuz Tim: {squadName}",
+  "@personnelAuthorizedSquad": {
+    "placeholders": {
+      "squadName": {
+        "type": "String"
+      }
+    }
+  },
+  "personnelAllUnit": "Tüm Birlik",
+  "personnelNoSubscription": "Abonelik Yok",
+  "personnelNoCriteriaMatches": "Kriterlere uygun personel bulunamadı.",
+  "commonSaving": "KAYDEDİLİYOR…",
+  "commonRetry": "TEKRAR DENE",
+
+  "authLoginTitle": "Giriş Yap",
+  "authUsername": "Kullanıcı Adı",
+  "authPassword": "Şifre",
+  "authLoginButton": "GİRİŞ YAP",
+  "authLogoutButton": "Çıkış Yap",
+  "authSessionExpired": "Oturum süresi doldu",
+  "authInvalidCredentials": "Geçersiz kullanıcı adı veya parola!",
+  "authMissionManagement": "Görev Yönetimi",
+  "authFirstLoginTitle": "İlk Giriş: Parola Belirleyin",
+  "authFirstLoginSubtitle": "Sayın {username}, hesabınız için yeni bir parola belirleyiniz.",
+  "@authFirstLoginSubtitle": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "authNewPassword": "Yeni Parola",
+  "authNewPasswordRepeat": "Yeni Parola (Tekrar)",
+  "authPasswordsDoNotMatch": "Parolalar eşleşmiyor!",
+  "authSavePasswordAndLogin": "PAROLAYI KAYDET VE GİRİŞ YAP",
+
+  "dashboardTitle": "Ana Sayfa",
+  "dashboardQuickActions": "Hızlı İşlemler",
+  "dashboardStatistics": "İstatistikler",
+  "dashboardRecentActivities": "Son Faaliyetler",
+  "dashboardActivitySchedule": "Faaliyet Çizelgesi",
+  "dashboardDailyDutyEntry": "Günlük görev gir",
+  "dashboardMonthlyMatrix": "Aylık Matris",
+  "dashboardExcelDistribution": "Excel / Dağıtım",
+  "dashboardTemgundrapSubtitle": "Çizelge oluştur ve yönet",
+  "dashboardPersonnelAndSquad": "Personel & Tim",
+  "dashboardRegisterAndAuth": "Kayıt ve Yetki",
+  "dashboardRosterStatus": "Kadro Durumu",
+  "dashboardBulkImportText": "Metinden Toplu Aktar",
+  "dashboardWhatsAppListUpload": "WhatsApp / Liste Yükle",
+  "dashboardBulkImportImage": "Görselden Toplu Aktar",
+  "dashboardOcrNameMatch": "OCR ile isim eşleştir",
+  "dashboardOcrPlatformWarning": "Görselden aktarım Android ve iOS cihazlarda kullanılabilir.",
+  "dashboardThemeMilitaryLight": "Askeri Haki (Açık)",
+  "dashboardThemeMilitaryDark": "Taktik Gece (Koyu)",
+  "dashboardThemeSystem": "Sistem Teması",
+  "dashboardSettingsTitle": "Uygulama Ayarları",
+  "dashboardThemeMode": "Tema Modu",
+  "dashboardPendingAssignments": "Onay Bekleyen Görevler",
+  "dashboardPendingAssignmentsDesc": "{count} personelin görev değişikliği onay bekliyor",
+  "@dashboardPendingAssignmentsDesc": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardOperations": "İşlemler",
+  "dashboardPendingConflictsNotice": "{count} Görevlendirmede Çakışma / Rapor Var!",
+  "@dashboardPendingConflictsNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardPendingTapToReview": "Onaylamak veya reddetmek için dokunun.",
+  "dashboardSearchAndReview": "Arama ve İnceleme",
+
+  "settingsChangePassword": "Şifremi Değiştir",
+  "settingsNewPassword": "Yeni Şifreniz",
+  "settingsPasswordUpdated": "Şifreniz başarıyla güncellendi!",
+  "settingsUserAccount": "Hesap: {username}",
+  "@settingsUserAccount": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsRoleAdmin": "Rol: Birlik Yöneticisi (Admin)",
+  "settingsRoleCommander": "Rol: Tim Komutanı",
+  "settingsAppTheme": "Uygulama Teması",
+  "settingsThemeLight": "Açık",
+  "settingsThemeDark": "Koyu",
+  "settingsThemeSystem": "Sistem",
+  "settingsFullBackup": "Tam Yedekleme",
+  "settingsFullBackupSubtitle": "Tüm uygulama verilerini cihazda sakla veya geri yükle",
+  "settingsUpdate": "GÜNCELLE",
+
+  "matrixTitle": "Matris ve Çizelge",
+  "reportTitle": "Raporlar",
+
+  "rosterOutputTitle": "Çıktı Hazırla",
+  "rosterSelectCardsHint": "Yazdırılacak kartları seçin. Önceki gün kartları listenin sonunda yer alır. Aynı kişi bir kez yazılır.",
+  "rosterReload": "Yeniden yükle",
+  "rosterIncludedItemsCount": "Çıktıya Eklenecekler ({count})",
+  "@rosterIncludedItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rosterReorderHint": "Sırayı tutamaçtan sürükleyerek değiştirebilirsiniz.",
+  "rosterSameDayOutputOrder": "Aynı Gün — Çıktı Sırası",
+  "rosterPreviousDayOutputOrder": "Önceki Gün — Çıktı Sırası",
+  "rosterSameDayCards": "Aynı Günün Kartları",
+  "rosterPreviousDayCards": "Önceki Günün Kartları",
+  "rosterNoCardsForDay": "Bu güne ait kart bulunamadı.",
+  "rosterAllCardsAdded": "Bu güne ait tüm kartlar çıktıya eklendi.",
+  "rosterPreparing": "Hazırlanıyor…",
+  "rosterPreviewWithCount": "Önizle ({count})",
+  "@rosterPreviewWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rosterNoApprovedPersonnel": "Seçilen kartlarda dışa aktarılacak onaylı personel bulunamadı.",
+
+  "activityArchiveTitle": "Faaliyet Arşivi",
+  "activityArchiveTeamTitle": "Tim Faaliyet Arşivi",
+  "activityArchiveSelectedCount": "{count} faaliyet seçildi",
+  "@activityArchiveSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityArchiveCloseSelection": "Seçimi Kapat",
+  "activityArchiveExportSelectedTooltip": "Seçilenleri Dışa Aktar",
+  "activityArchiveSelectButton": "Seç",
+  "activityArchiveMenuTooltip": "Arşiv işlemleri",
+  "activityArchiveMenuHeader": "Arşiv İşlemleri",
+  "activityArchiveMenuSubtitle": "Görünüm ve arşiv araçları",
+  "activityArchivePrepareOutputTitle": "Çıktı Hazırla",
+  "activityArchivePrepareOutputSubtitle": "Kartları seç, sırala ve imzalı çıktı al",
+  "activityArchiveExportPrintTitle": "Dışa Aktar / Yazdır",
+  "activityArchiveExportPrintSubtitle": "Görüntülenen günü paylaş veya yazdır",
+  "activityArchiveSelectOptionTitle": "Faaliyet seç",
+  "activityArchiveSelectOptionSubtitle": "Birden fazla kayıt üzerinde çalış",
+  "activityArchiveFinishReorder": "Sıralamayı bitir",
+  "activityArchiveMoveCards": "Kartları taşı",
+  "activityArchiveExitReorderSubtitle": "Sürükleme modundan çık",
+  "activityArchiveMoveCardsSubtitle": "Kartları sürükleyerek yeniden sırala",
+  "activityArchiveResetOrder": "Sıralamayı sıfırla",
+  "activityArchiveResetOrderSubtitle": "Varsayılan sıralamaya dön",
+  "activityArchiveReturnToday": "Bugüne dön",
+  "activityArchiveReturnTodaySubtitle": "Güncel faaliyetleri göster",
+  "activityArchiveAuditTitle": "Çakışmaları denetle",
+  "activityArchiveAuditSubtitle": "Personel görevlendirmelerini kontrol et",
+  "activityArchiveFilterByDate": "Tarihe göre süz",
+  "activityArchiveFilterByDateSubtitle": "Belirli bir günün arşivini aç",
+  "activityArchiveNoRecordsFound": "{date} tarihine ait faaliyet kaydı bulunamadı.",
+  "@activityArchiveNoRecordsFound": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "activityArchiveReorderHint": "Kartları tutamaçtan sürükleyerek taşıyın. Sıralama bu güne kaydedilir.",
+  "activityArchiveConflictAuditTitle": "Geçmiş Kayıt Çakışma Denetimi",
+  "activityArchiveConflictAuditNone": "Çakışan geçmiş kayıt bulunamadı.",
+  "activityArchiveConflictAuditReadOnly": "Bu liste salt okunurdur; hiçbir kayıt silinmedi.",
+  "activityArchiveSaveOrderFailed": "Sıralama kaydedilemedi.",
+  "activityArchiveResetOrderFailed": "Sıralama sıfırlanamadı.",
+  "activityArchiveOrderResetSuccess": "Kart sıralaması varsayılana döndürüldü.",
+  "activityArchiveNoActivitiesToExport": "Dışa aktarılacak faaliyet bulunamadı.",
+  "activityArchiveAllActivitiesDefaultName": "GÜNLÜK TÜM FAALİYETLER",
+  "activityArchiveExportFailed": "Dışa aktarılamadı: {error}",
+  "@activityArchiveExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "matrixSearchHint": "Personel veya rütbe ara",
+  "matrixClearSearchTooltip": "Aramayı temizle",
+  "matrixPreviousMonth": "Önceki ay",
+  "matrixNextMonth": "Sonraki ay",
+  "matrixCloseSearchTooltip": "Aramayı kapat",
+  "matrixSearchPersonnelTooltip": "Personel ara",
+  "matrixExportExcel": "Excel'e Aktar",
+  "matrixTeamDutyCalendar": "Tim Görev Takvimi",
+  "matrixMonthlyTitle": "Aylık Matris",
+  "matrixMonthlySubtitle": "Personel görev ve durum çizelgesi",
+  "matrixNoMatchingPersonnel": "Aramanızla eşleşen personel bulunamadı",
+  "matrixNoPersonnelToShow": "Gösterilecek kayıtlı personel bulunmuyor.",
+  "matrixExportFailed": "Çizelge dışa aktarılamadı: {error}",
+  "@matrixExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "matrixUnassignedTeam": "Timsiz Personel",
+  "matrixUnknownTeam": "Bilinmeyen Tim",
+  "matrixPersonnelCount": "{count} Personel",
+  "@matrixPersonnelCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "matrixOrderNumberShort": "S.N.",
+  "matrixTotalShort": "Top.",
+  "matrixDaysCount": "{count} gün",
+  "@matrixDaysCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "matrixMonthlyScheduleDays": "Aylık çizelge · {count} gün",
+  "@matrixMonthlyScheduleDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "temgundrapTitle": "TEMGÜNDRAP Çizelgeleri",
+  "temgundrapDailyTitle": "Günlük TEMGÜNDRAP",
+  "temgundrapArchiveTitle": "TEMGÜNDRAP Arşivi",
+  "temgundrapFailedToLoad": "Çizelgeler yüklenemedi: {error}",
+  "@temgundrapFailedToLoad": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapArchivedSuccess": "Çizelge arşive taşındı.",
+  "temgundrapUnarchivedSuccess": "Çizelge yeniden taslağa alındı.",
+  "temgundrapUpdateFailed": "Çizelge güncellenemedi: {error}",
+  "@temgundrapUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapDeleteTitle": "Çizelgeyi sil",
+  "temgundrapDeleteContent": "Bu TEMGÜNDRAP çizelgesi kalıcı olarak silinecek.",
+  "temgundrapDeleteFailed": "Çizelge silinemedi: {error}",
+  "@temgundrapDeleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapPickDateTooltip": "Tarih seç",
+  "temgundrapNewDocument": "Yeni Çizelge",
+  "temgundrapEditDocument": "Çizelgeyi Düzenle",
+  "temgundrapFailedToLoadDocs": "Kayıtlar yüklenemedi",
+  "temgundrapActionsTitle": "Çizelge İşlemleri",
+  "temgundrapEditSubtitle": "Çizelge bilgilerini güncelle",
+  "temgundrapArchiveOption": "Arşivle",
+  "temgundrapArchiveSubtitle": "Çizelgeyi tamamla ve arşive taşı",
+  "temgundrapRestoreOption": "Taslağa al",
+  "temgundrapRestoreSubtitle": "Çizelgeyi yeniden düzenlemeye aç",
+  "temgundrapDeleteSubtitle": "Bu çizelgeyi kalıcı olarak kaldır",
+  "temgundrapDailyWithCount": "Günlük Çizelge ({count})",
+  "@temgundrapDailyWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "temgundrapArchiveWithCount": "Arşiv ({count})",
+  "@temgundrapArchiveWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "temgundrapPreviousDay": "Önceki gün",
+  "temgundrapNextDay": "Sonraki gün",
+  "temgundrapBackToToday": "BUGÜNE DÖN",
+  "temgundrapOperationsCount": "{count} operasyon",
+  "@temgundrapOperationsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "temgundrapBadgeDraft": "TASLAK",
+  "temgundrapBadgeArchived": "ARŞİVDE",
+  "temgundrapNoDailyDraftTitle": "Bu güne ait taslak çizelge yok",
+  "temgundrapNoArchivedDocTitle": "Bu tarihte arşivlenmiş çizelge yok",
+  "temgundrapNoDailyDraftMessage": "{date} için yeni bir TEMGÜNDRAP çizelgesi oluşturun.",
+  "@temgundrapNoDailyDraftMessage": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapNoArchivedDocMessage": "Başka bir tarih seçebilir veya tamamlanan bir taslağı arşivleyebilirsiniz.",
+  "temgundrapNewDocButton": "YENİ ÇİZELGE",
+  "temgundrapPickDateButton": "TARİH SEÇ",
+
+  "temgundrapApproverDefaultsLoadFailed": "Onay bilgileri yüklenemedi: {error}",
+  "@temgundrapApproverDefaultsLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapAtLeastOneOperationRequired": "En az bir operasyon ekleyin.",
+  "temgundrapSaveFailed": "Çizelge kaydedilemedi: {error}",
+  "@temgundrapSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapUnitTitle": "Birlik başlığı",
+  "temgundrapDocumentDate": "Çizelge tarihi",
+  "temgundrapOperations": "Operasyonlar",
+  "temgundrapAddOperation": "Operasyon Ekle",
+  "temgundrapNoOperationsAddedYet": "Henüz operasyon eklenmedi.",
+  "temgundrapEditOperationTooltip": "Operasyonu düzenle",
+  "temgundrapDeleteOperationTooltip": "Operasyonu sil",
+  "temgundrapApprovalInfo": "Onay Bilgileri",
+  "temgundrapApproverName": "Onaylayan ad soyad",
+  "temgundrapApproverDuty": "Görevi",
+  "temgundrapSaveAsDraft": "Taslak olarak kaydet",
+  "temgundrapSaveDocumentButton": "ÇİZELGEYİ KAYDET",
+  "temgundrapRequiredField": "Bu alan zorunludur.",
+
+  "pendingApprovalsTitle": "Bekleyen Görev Onayları",
+  "pendingApprovalsEmptyTitle": "Bekleyen Onay Yok",
+  "pendingApprovalsEmptyDesc": "Onay bekleyen veya çakışan görev kaydı bulunmuyor.",
+  "pendingApprovalsAssignmentConflict": "Görevlendirme #{id} (ÇAKIŞMA VAR)",
+  "@pendingApprovalsAssignmentConflict": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingApprovalsPersonnelLabel": "Personel",
+  "pendingApprovalsRequestedDutyLabel": "Talep Edilen Görev",
+  "pendingApprovalsDescriptionLabel": "Açıklama: {description}",
+  "@pendingApprovalsDescriptionLabel": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingApprovalsApprove": "ONAYLA",
+  "pendingApprovalsReject": "REDDET",
+  "pendingApprovalsApprovalFailed": "Onaylanamadı: {reason}",
+  "@pendingApprovalsApprovalFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+
+  "activityDeleteTitle": "Faaliyeti Sil",
+  "activityDeleteConfirm": "{name} ({date}) faaliyet kaydı silinecektir. Emin misiniz?",
+  "@activityDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "activityRenameTitle": "Faaliyet Adını Değiştir",
+  "activityRenameLabel": "Faaliyet adı",
+  "activityRenameHint": "Örn. Gece nöbeti",
+  "activityActionsTitle": "Faaliyet İşlemleri",
+  "activityActionsSubtitle": "Bu faaliyet için kullanılabilir işlemler",
+  "activityApproveAllTitle": "Tümünü onayla",
+  "activityApproveAllSubtitle": "Bekleyen tüm atamaları onayla",
+  "activityRenameOptionTitle": "Faaliyet adını değiştir",
+  "activityRenameOptionSubtitle": "Kart başlığını yeniden adlandır",
+  "activityChangeDateOptionTitle": "Tarihi değiştir",
+  "activityChangeDateOptionSubtitle": "Faaliyeti başka bir güne taşı",
+  "activityDeleteOptionTitle": "Faaliyeti sil",
+  "activityDeleteOptionSubtitle": "Bu işlem geri alınamaz",
+  "activityApproveAllSuccess": "{count} atama onaylandı.",
+  "@activityApproveAllSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityApproveAllWithConflicts": "{approvedCount} onaylandı, {blockedCount} çakışma nedeniyle beklemede kaldı: {reasons}",
+  "@activityApproveAllWithConflicts": {
+    "placeholders": {
+      "approvedCount": {
+        "type": "int"
+      },
+      "blockedCount": {
+        "type": "int"
+      },
+      "reasons": {
+        "type": "String"
+      }
+    }
+  },
+  "activityCreatedBy": "Yazan: {user}",
+  "@activityCreatedBy": {
+    "placeholders": {
+      "user": {
+        "type": "String"
+      }
+    }
+  },
+  "activityStatusApproved": "ONAYLANDI",
+  "activityStatusPendingAdmin": "ADMIN ONAYI BEKLİYOR",
+  "activityStatusConflictOrRejected": "ÇAKIŞMA / RED",
+  "activityChangeDateTitle": "Faaliyet Tarihini Değiştir",
+  "activityChangeDateAlreadyOnDate": "Faaliyet zaten seçilen tarihte.",
+  "activityChangeDatePrepareFailed": "Tarih değişikliği hazırlanamadı.",
+  "activityChangeDatePersonnelCountNotice": "{count} personel yeni tarihe taşınacak.",
+  "@activityChangeDatePersonnelCountNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityChangeDatePendingNotice": "{count} personel rapor/görev çakışması nedeniyle yeniden onaya alınacak.",
+  "@activityChangeDatePendingNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityChangeDateSubmit": "TARİHİ DEĞİŞTİR",
+  "activityChangeDateMovedNotice": "{count} personel {date} tarihine taşındı.",
+  "@activityChangeDateMovedNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "activityChangeDatePendingCountNotice": "{count} personel yeniden onay bekliyor.",
+  "@activityChangeDatePendingCountNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityChangeDateFailed": "Tarih değiştirilemedi. Hedef tarih yeniden kontrol edilmelidir.",
+  "activityRenameSuccess": "Faaliyet adı güncellendi.",
+  "activityRenameFailed": "Faaliyet adı değiştirilemedi: {error}",
+  "@activityRenameFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
+}

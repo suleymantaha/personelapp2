@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/theme/spacing.dart';
+import 'package:personelapp2/core/widgets/app_card.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
@@ -42,10 +45,12 @@ class ActivityCard extends ConsumerWidget {
     if (!context.mounted) return;
 
     final message = result.blockedCount == 0
-        ? '${result.approvedCount} atama onaylandı.'
-        : '${result.approvedCount} onaylandı, '
-              '${result.blockedCount} çakışma nedeniyle beklemede kaldı: '
-              '${result.conflictDescriptions.join(', ')}';
+        ? context.l10n.activityApproveAllSuccess(result.approvedCount)
+        : context.l10n.activityApproveAllWithConflicts(
+            result.approvedCount,
+            result.blockedCount,
+            result.conflictDescriptions.join(', '),
+          );
     if (result.blockedCount == 0) {
       AppNotifications.success(message);
     } else {
@@ -57,22 +62,21 @@ class ActivityCard extends ConsumerWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Faaliyeti Sil'),
+        title: Text(ctx.l10n.activityDeleteTitle),
         content: Text(
-          '${activity.faaliyetAdi} (${activity.tarih}) faaliyet kaydı '
-          'silinecektir. Emin misiniz?',
+          ctx.l10n.activityDeleteConfirm(activity.faaliyetAdi, activity.tarih),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('İPTAL'),
+            child: Text(ctx.l10n.commonCancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: context.rejectedColor,
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('SİL'),
+            child: Text(ctx.l10n.commonDelete),
           ),
         ],
       ),
@@ -117,7 +121,7 @@ class ActivityCard extends ConsumerWidget {
     if (compact) {
       return PopupMenuButton<_ActivityAdminAction>(
         key: Key('activity-actions-${activity.id}'),
-        tooltip: 'Faaliyet işlemleri',
+        tooltip: context.l10n.activityActionsTitle,
         icon: const Icon(Icons.more_vert_rounded),
         elevation: 5,
         shadowColor: context.shadowColor,
@@ -141,43 +145,43 @@ class ActivityCard extends ConsumerWidget {
           }
         },
         itemBuilder: (context) => [
-          const ModernMenuHeader<_ActivityAdminAction>(
-            title: 'Faaliyet İşlemleri',
-            subtitle: 'Bu faaliyet için kullanılabilir işlemler',
+          ModernMenuHeader<_ActivityAdminAction>(
+            title: context.l10n.activityActionsTitle,
+            subtitle: context.l10n.activityActionsSubtitle,
             icon: Icons.event_note_outlined,
           ),
           const PopupMenuDivider(),
           if (hasPending)
             ModernPopupMenuItem(
-              option: const ModernActionOption(
+              option: ModernActionOption(
                 value: _ActivityAdminAction.approveAll,
-                title: 'Tümünü onayla',
-                subtitle: 'Bekleyen tüm atamaları onayla',
+                title: context.l10n.activityApproveAllTitle,
+                subtitle: context.l10n.activityApproveAllSubtitle,
                 icon: Icons.done_all_rounded,
               ),
             ),
           ModernPopupMenuItem(
-            option: const ModernActionOption(
+            option: ModernActionOption(
               value: _ActivityAdminAction.rename,
-              title: 'Faaliyet adını değiştir',
-              subtitle: 'Kart başlığını yeniden adlandır',
+              title: context.l10n.activityRenameOptionTitle,
+              subtitle: context.l10n.activityRenameOptionSubtitle,
               icon: Icons.drive_file_rename_outline_rounded,
             ),
           ),
           ModernPopupMenuItem(
-            option: const ModernActionOption(
+            option: ModernActionOption(
               value: _ActivityAdminAction.changeDate,
-              title: 'Tarihi değiştir',
-              subtitle: 'Faaliyeti başka bir güne taşı',
+              title: context.l10n.activityChangeDateOptionTitle,
+              subtitle: context.l10n.activityChangeDateOptionSubtitle,
               icon: Icons.edit_calendar_outlined,
             ),
           ),
           const PopupMenuDivider(),
           ModernPopupMenuItem(
-            option: const ModernActionOption(
+            option: ModernActionOption(
               value: _ActivityAdminAction.delete,
-              title: 'Faaliyeti sil',
-              subtitle: 'Bu işlem geri alınamaz',
+              title: context.l10n.activityDeleteOptionTitle,
+              subtitle: context.l10n.activityDeleteOptionSubtitle,
               icon: Icons.delete_outline_rounded,
               isDestructive: true,
             ),
@@ -192,7 +196,7 @@ class ActivityCard extends ConsumerWidget {
         if (hasPending)
           IconButton(
             icon: Icon(Icons.done_all, color: context.approvedColor),
-            tooltip: 'Tümünü Onayla',
+            tooltip: context.l10n.activityApproveAllTitle,
             onPressed: () => _approveAll(context, ref),
           ),
         IconButton(
@@ -200,7 +204,7 @@ class ActivityCard extends ConsumerWidget {
             Icons.drive_file_rename_outline_rounded,
             color: context.accentOrOlive,
           ),
-          tooltip: 'Faaliyet Adını Değiştir',
+          tooltip: context.l10n.activityRenameOptionTitle,
           onPressed: () => _renameActivity(context, ref),
         ),
         IconButton(
@@ -208,12 +212,12 @@ class ActivityCard extends ConsumerWidget {
             Icons.edit_calendar_outlined,
             color: context.accentOrOlive,
           ),
-          tooltip: 'Faaliyet Tarihini Değiştir',
+          tooltip: context.l10n.activityChangeDateOptionTitle,
           onPressed: () => _changeDate(context, ref, assignments.length),
         ),
         IconButton(
           icon: Icon(Icons.delete_outline, color: context.rejectedColor),
-          tooltip: 'Faaliyeti Sil',
+          tooltip: context.l10n.activityDeleteOptionTitle,
           onPressed: () => _deleteActivity(context, db),
         ),
       ],
@@ -225,17 +229,17 @@ class ActivityCard extends ConsumerWidget {
     final newName = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Faaliyet Adını Değiştir'),
+        title: Text(dialogContext.l10n.activityRenameTitle),
         content: TextFormField(
           key: const Key('activity-name-field'),
           initialValue: activity.faaliyetAdi,
           autofocus: true,
           textCapitalization: TextCapitalization.sentences,
           maxLength: 100,
-          decoration: const InputDecoration(
-            labelText: 'Faaliyet adı',
-            hintText: 'Örn. Gece nöbeti',
-            prefixIcon: Icon(Icons.drive_file_rename_outline_rounded),
+          decoration: InputDecoration(
+            labelText: dialogContext.l10n.activityRenameLabel,
+            hintText: dialogContext.l10n.activityRenameHint,
+            prefixIcon: const Icon(Icons.drive_file_rename_outline_rounded),
           ),
           onChanged: (value) => editedName = value,
           onFieldSubmitted: (value) {
@@ -245,19 +249,20 @@ class ActivityCard extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('İPTAL'),
+            child: Text(dialogContext.l10n.commonCancel),
           ),
           ElevatedButton(
             onPressed: () {
               final value = editedName.trim();
               if (value.isNotEmpty) Navigator.of(dialogContext).pop(value);
             },
-            child: const Text('KAYDET'),
+            child: Text(dialogContext.l10n.commonSave),
           ),
         ],
       ),
     );
     if (newName == null || !context.mounted) return;
+    final l10n = context.l10n;
 
     final session = ref.read(userSessionProvider);
     if (session == null) return;
@@ -269,9 +274,9 @@ class ActivityCard extends ConsumerWidget {
             newName: newName,
             actor: session,
           );
-      AppNotifications.success('Faaliyet adı güncellendi.');
+      AppNotifications.success(l10n.activityRenameSuccess);
     } on Object catch (error) {
-      AppNotifications.error('Faaliyet adı değiştirilemedi: $error');
+      AppNotifications.error(l10n.activityRenameFailed('$error'));
     }
   }
 
@@ -297,18 +302,18 @@ class ActivityCard extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (preview.status == ActivityDateChangeStatus.unchanged) {
-      AppNotifications.info('Faaliyet zaten seçilen tarihte.');
+      AppNotifications.info(context.l10n.activityChangeDateAlreadyOnDate);
       return;
     }
     if (!preview.canChange) {
-      AppNotifications.error('Tarih değişikliği hazırlanamadı.');
+      AppNotifications.error(context.l10n.activityChangeDatePrepareFailed);
       return;
     }
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Faaliyet Tarihini Değiştir'),
+        title: Text(dialogContext.l10n.activityChangeDateTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,12 +324,11 @@ class ActivityCard extends ConsumerWidget {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            Text('$assignmentCount personel yeni tarihe taşınacak.'),
+            Text(dialogContext.l10n.activityChangeDatePersonnelCountNotice(assignmentCount)),
             if (preview.pendingAssignmentCount > 0) ...[
               const SizedBox(height: 8),
               Text(
-                '${preview.pendingAssignmentCount} personel rapor/görev '
-                'çakışması nedeniyle yeniden onaya alınacak.',
+                dialogContext.l10n.activityChangeDatePendingNotice(preview.pendingAssignmentCount),
                 style: TextStyle(color: context.pendingColor),
               ),
             ],
@@ -333,11 +337,11 @@ class ActivityCard extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('İPTAL'),
+            child: Text(dialogContext.l10n.commonCancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('TARİHİ DEĞİŞTİR'),
+            child: Text(dialogContext.l10n.activityChangeDateSubmit),
           ),
         ],
       ),
@@ -360,17 +364,16 @@ class ActivityCard extends ConsumerWidget {
     if (result.status == ActivityDateChangeStatus.success) {
       onDateChanged(result.newDate);
       final pendingMessage = result.pendingAssignmentCount > 0
-          ? ' ${result.pendingAssignmentCount} personel yeniden onay bekliyor.'
+          ? ' ${context.l10n.activityChangeDatePendingCountNotice(result.pendingAssignmentCount)}'
           : '';
       AppNotifications.success(
-        '${result.assignmentCount} personel '
-        '${DateFormat('dd.MM.yyyy').format(picked)} tarihine taşındı.'
+        '${context.l10n.activityChangeDateMovedNotice(result.assignmentCount, DateFormat('dd.MM.yyyy').format(picked))}'
         '$pendingMessage',
       );
       return;
     }
     AppNotifications.error(
-      'Tarih değiştirilemedi. Hedef tarih yeniden kontrol edilmelidir.',
+      context.l10n.activityChangeDateFailed,
     );
   }
 
@@ -405,16 +408,16 @@ class ActivityCard extends ConsumerWidget {
           (a) => a.durum == AssignmentStatus.reddedildi,
         );
 
-        var statusLabel = 'ONAYLANDI';
+        var statusLabel = context.l10n.activityStatusApproved;
         var statusColor = context.approvedColor;
         var statusIcon = Icons.check_circle_outline;
 
         if (hasPending) {
-          statusLabel = 'ADMIN ONAYI BEKLİYOR';
+          statusLabel = context.l10n.activityStatusPendingAdmin;
           statusColor = context.pendingColor;
           statusIcon = Icons.hourglass_top;
         } else if (hasRejected) {
-          statusLabel = 'ÇAKIŞMA / RED';
+          statusLabel = context.l10n.activityStatusConflictOrRejected;
           statusColor = context.rejectedColor;
           statusIcon = Icons.cancel_outlined;
         }
@@ -422,98 +425,90 @@ class ActivityCard extends ConsumerWidget {
         return LayoutBuilder(
           builder: (context, constraints) {
             final compact = constraints.maxWidth < 520;
-            return GestureDetector(
+            return AppCard(
               key: Key('activity-card-${activity.id}'),
-              behavior: HitTestBehavior.opaque,
+              elevation: isSelected ? 4 : 1,
+              padding: EdgeInsets.zero,
+              margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
+              backgroundColor: isSelected
+                  ? context.accentOrOlive.withValues(alpha: 0.12)
+                  : context.colorScheme.surface,
+              borderColor: isSelected
+                  ? context.accentOrOlive
+                  : statusColor.withValues(alpha: 0.5),
               onLongPress: onLongPress,
               onTap: selectionMode ? onSelectionToggle : null,
-              child: Card(
-                elevation: isSelected ? 5 : 2,
-                color: isSelected
-                    ? context.accentOrOlive.withValues(alpha: 0.12)
-                    : context.colorScheme.surface,
-                margin: const EdgeInsets.only(bottom: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  side: BorderSide(
-                    color: isSelected
-                        ? context.accentOrOlive
-                        : statusColor.withValues(alpha: 0.5),
-                    width: isSelected ? 2.5 : 1,
+              child: IgnorePointer(
+                ignoring: selectionMode,
+                child: ExpansionTile(
+                  tilePadding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
+                  childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                  leading: CircleAvatar(
+                    radius: 25,
+                    backgroundColor: statusColor,
+                    child: Icon(statusIcon, color: Colors.white, size: 25),
                   ),
-                ),
-                child: IgnorePointer(
-                  ignoring: selectionMode,
-                  child: ExpansionTile(
-                    tilePadding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
-                    childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                    leading: CircleAvatar(
-                      radius: 25,
-                      backgroundColor: statusColor,
-                      child: Icon(statusIcon, color: Colors.white, size: 25),
+                  title: Text(
+                    activity.faaliyetAdi,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: compact ? 16 : 17,
+                      letterSpacing: 0.15,
                     ),
-                    title: Text(
-                      activity.faaliyetAdi,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: compact ? 16 : 17,
-                        letterSpacing: 0.15,
-                      ),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Row(
-                        children: [
-                          Flexible(
-                            child: _buildStatusBadge(
-                              label: statusLabel,
-                              color: statusColor,
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: _buildStatusBadge(
+                            label: statusLabel,
+                            color: statusColor,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            context.l10n.activityCreatedBy(activity.olusturanKullanici),
+                            maxLines: compact ? 2 : 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: context.textSecondary,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Yazan: ${activity.olusturanKullanici}',
-                              maxLines: compact ? 2 : 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                color: context.textSecondary,
-                              ),
-                            ),
+                        ),
+                        if (isAdmin)
+                          _buildAdminActions(
+                            context,
+                            ref,
+                            db,
+                            assignments,
+                            hasPending: hasPending,
+                            compact: compact,
                           ),
-                          if (isAdmin)
-                            _buildAdminActions(
-                              context,
-                              ref,
-                              db,
-                              assignments,
-                              hasPending: hasPending,
-                              compact: compact,
-                            ),
-                        ],
-                      ),
+                      ],
                     ),
-                    trailing: selectionMode
-                        ? Icon(
-                            isSelected
-                                ? Icons.check_circle
-                                : Icons.radio_button_unchecked,
-                            color: isSelected
-                                ? context.accentOrOlive
-                                : context.textSecondary,
-                          )
-                        : null,
-                    children: [
-                      ActivityAssignmentDetails(
-                        activity: activity,
-                        assignments: assignments,
-                        selectedSquadId: selectedSquadId,
-                      ),
-                    ],
                   ),
+                  trailing: selectionMode
+                      ? Icon(
+                          isSelected
+                              ? Icons.check_circle
+                              : Icons.radio_button_unchecked,
+                          color: isSelected
+                              ? context.accentOrOlive
+                              : context.textSecondary,
+                        )
+                      : null,
+                  children: [
+                    ActivityAssignmentDetails(
+                      activity: activity,
+                      assignments: assignments,
+                      selectedSquadId: selectedSquadId,
+                    ),
+                  ],
                 ),
               ),
             );

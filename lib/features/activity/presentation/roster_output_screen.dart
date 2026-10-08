@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/presentation/roster_output_preview_screen.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/roster_selected_cards.dart';
@@ -129,8 +130,7 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
       if (!mounted) return;
       if (rows.isEmpty) {
         setState(
-          () => _error =
-              'Seçilen kartlarda dışa aktarılacak onaylı personel bulunamadı.',
+          () => _error = context.l10n.rosterNoApprovedPersonnel,
         );
         return;
       }
@@ -195,7 +195,7 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
         child: Text(title, style: Theme.of(context).textTheme.titleMedium),
       ),
       if (cards.isEmpty)
-        const Text('Bu güne ait kart bulunamadı.')
+        Text(context.l10n.rosterNoCardsForDay)
       else if (unselected.isEmpty)
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -207,10 +207,10 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
                 color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Bu güne ait tüm kartlar çıktıya eklendi.',
-                  style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+                  context.l10n.rosterAllCardsAdded,
+                  style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
                 ),
               ),
             ],
@@ -235,7 +235,7 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Çıktı Hazırla')),
+    appBar: AppBar(title: Text(context.l10n.rosterOutputTitle)),
     body: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900),
@@ -253,10 +253,10 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
                           .format(DateFormat('yyyy-MM-dd').parseStrict(_date)),
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     child: Text(
-                      'Yazdırılacak kartları seçin. Önceki gün kartları listenin sonunda yer alır. Aynı kişi bir kez yazılır.',
+                      context.l10n.rosterSelectCardsHint,
                     ),
                   ),
                   if (_error != null)
@@ -280,17 +280,17 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
                               });
                               _loadCards();
                             },
-                      child: const Text('Yeniden yükle'),
+                      child: Text(context.l10n.rosterReload),
                     ),
                   Text(
-                    'Çıktıya Eklenecekler (${_currentIds.length + _previousIds.length})',
+                    context.l10n.rosterIncludedItemsCount(_currentIds.length + _previousIds.length),
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  const Text(
-                    'Sırayı tutamaçtan sürükleyerek değiştirebilirsiniz.',
+                  Text(
+                    context.l10n.rosterReorderHint,
                   ),
                   RosterSelectedCards(
-                    title: 'Aynı Gün — Çıktı Sırası',
+                    title: context.l10n.rosterSameDayOutputOrder,
                     cards: _ordered(_current, _currentIds),
                     startNumber: 1,
                     onRemove: _remove,
@@ -298,7 +298,7 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
                     enabled: !_working,
                   ),
                   RosterSelectedCards(
-                    title: 'Önceki Gün — Çıktı Sırası',
+                    title: context.l10n.rosterPreviousDayOutputOrder,
                     cards: _ordered(_previous, _previousIds),
                     startNumber: _currentIds.length + 1,
                     onRemove: _remove,
@@ -307,13 +307,13 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
                   ),
                   const Divider(),
                   ..._available(
-                    'Aynı Günün Kartları',
+                    context.l10n.rosterSameDayCards,
                     _current,
                     _currentIds,
                     'current',
                   ),
                   ..._available(
-                    'Önceki Günün Kartları',
+                    context.l10n.rosterPreviousDayCards,
                     _previous,
                     _previousIds,
                     'previous',
@@ -336,8 +336,8 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
           icon: const Icon(Icons.preview_outlined),
           label: Text(
             _working
-                ? 'Hazırlanıyor…'
-                : 'Önizle (${_currentIds.length + _previousIds.length})',
+                ? context.l10n.rosterPreparing
+                : context.l10n.rosterPreviewWithCount(_currentIds.length + _previousIds.length),
           ),
         ),
       ),

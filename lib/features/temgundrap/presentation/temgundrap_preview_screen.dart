@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/widgets/app_card.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/services/temgundrap_excel_exporter.dart';
@@ -254,14 +255,12 @@ class _OperationCard extends StatelessWidget {
   final int index;
   final TemgundrapOperation operation;
   @override
-  Widget build(BuildContext context) => Card(
+  Widget build(BuildContext context) => AppCard(
     key: Key('preview-operation-$index'),
-    clipBehavior: Clip.antiAlias,
-    child: Padding(
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    padding: const EdgeInsets.all(18),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
           Row(
             children: [
               CircleAvatar(
@@ -325,7 +324,6 @@ class _OperationCard extends StatelessWidget {
             ),
         ],
       ),
-    ),
   );
 }
 

@@ -13,6 +13,7 @@ import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_a
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_archive_action.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_grid_layout.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_menu_card.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_settings.dart';
 import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
@@ -28,37 +29,39 @@ class DashboardScreen extends ConsumerWidget {
     final gridActions = <DashboardActionItem>[
       DashboardActionItem(
         icon: Icons.edit_calendar,
-        title: 'Faaliyet Çizelgesi',
-        subtitle: 'Günlük görev gir',
+        title: context.l10n.dashboardActivitySchedule,
+        subtitle: context.l10n.dashboardDailyDutyEntry,
         tone: DashboardActionTone.primary,
         onTap: () => context.push('/activity-form'),
       ),
       DashboardActionItem(
         icon: Icons.grid_on,
-        title: 'Aylık Matris',
-        subtitle: 'Excel / Dağıtım',
+        title: context.l10n.dashboardMonthlyMatrix,
+        subtitle: context.l10n.dashboardExcelDistribution,
         tone: DashboardActionTone.neutral,
         onTap: () => context.push('/monthly-matrix'),
       ),
       DashboardActionItem(
         icon: Icons.table_chart_outlined,
         title: 'TEMGÜNDRAP',
-        subtitle: 'Çizelge oluştur ve yönet',
+        subtitle: context.l10n.dashboardTemgundrapSubtitle,
         tone: DashboardActionTone.neutral,
         onTap: () => context.push('/temgundrap'),
       ),
       DashboardActionItem(
         icon: Icons.people_alt,
-        title: 'Personel & Tim',
-        subtitle: isAdmin ? 'Kayıt ve Yetki' : 'Kadro Durumu',
+        title: context.l10n.dashboardPersonnelAndSquad,
+        subtitle: isAdmin
+            ? context.l10n.dashboardRegisterAndAuth
+            : context.l10n.dashboardRosterStatus,
         tone: DashboardActionTone.personnel,
         onTap: () => context.push('/personnel-management'),
       ),
       if (isAdmin) ...[
         DashboardActionItem(
           icon: Icons.paste_rounded,
-          title: 'Metinden Toplu Aktar',
-          subtitle: 'WhatsApp / Liste Yükle',
+          title: context.l10n.dashboardBulkImportText,
+          subtitle: context.l10n.dashboardWhatsAppListUpload,
           tone: DashboardActionTone.import,
           onTap: () async {
             final db = ref.read(databaseProvider);
@@ -75,14 +78,14 @@ class DashboardScreen extends ConsumerWidget {
         ),
         DashboardActionItem(
           icon: Icons.image_search_rounded,
-          title: 'Görselden Toplu Aktar',
-          subtitle: 'OCR ile isim eşleştir',
+          title: context.l10n.dashboardBulkImportImage,
+          subtitle: context.l10n.dashboardOcrNameMatch,
           tone: DashboardActionTone.pending,
           onTap: () async {
             final service = RosterImageImportService();
             if (!service.isSupportedPlatform) {
               AppNotifications.warning(
-                'Görselden aktarım Android ve iOS cihazlarda kullanılabilir.',
+                context.l10n.dashboardOcrPlatformWarning,
               );
               return;
             }
@@ -171,7 +174,7 @@ class DashboardScreen extends ConsumerWidget {
                                   size: 28,
                                 ),
                                 title: Text(
-                                  '${pendingList.length} Görevlendirmede Çakışma / Rapor Var!',
+                                  context.l10n.dashboardPendingConflictsNotice(pendingList.length),
                                   style: TextStyle(
                                     color: context.rejectedColor,
                                     fontWeight: FontWeight.bold,
@@ -179,7 +182,7 @@ class DashboardScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 subtitle: Text(
-                                  'Onaylamak veya reddetmek için dokunun.',
+                                  context.l10n.dashboardPendingTapToReview,
                                   style: TextStyle(
                                     color: context.textPrimary,
                                     fontSize: 11.5,
@@ -203,7 +206,7 @@ class DashboardScreen extends ConsumerWidget {
                     child: Padding(
                       padding: EdgeInsets.only(bottom: gridLayout.gap * 0.8),
                       child: Text(
-                        'İşlemler',
+                        context.l10n.dashboardOperations,
                         style: TextStyle(
                           fontSize: gridLayout.gap < 10 ? 16 : 18,
                           fontWeight: FontWeight.bold,
@@ -213,41 +216,41 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                   SliverGrid(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: gridLayout.columnCount,
-                      mainAxisExtent: gridLayout.mainAxisExtent,
-                      crossAxisSpacing: gridLayout.gap,
-                      mainAxisSpacing: gridLayout.gap,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final action = gridActions[index];
-                        return DashboardMenuCard(
-                          key: ValueKey('dashboard-action-${action.title}'),
-                          icon: action.icon,
-                          title: action.title,
-                          subtitle: action.subtitle,
-                          tone: action.tone,
-                          animationIndex: index,
-                          onTap: action.onTap,
-                        );
-                      },
-                      childCount: gridActions.length,
-                    ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: SizedBox(height: gridLayout.gap),
-                  ),
-                  SliverToBoxAdapter(
-                    child: DashboardArchiveAction(
-                      key: const ValueKey('dashboard-archive-action'),
-                      icon: Icons.inventory_2_outlined,
-                      title: 'Faaliyet Arşivi',
-                      subtitle: 'Arama ve İnceleme',
-                      height: gridLayout.archiveHeight,
-                      animationIndex: gridActions.length,
-                      onTap: () => context.push('/activity-archive'),
-                    ),
-                  ),
+                       crossAxisCount: gridLayout.columnCount,
+                       mainAxisExtent: gridLayout.mainAxisExtent,
+                       crossAxisSpacing: gridLayout.gap,
+                       mainAxisSpacing: gridLayout.gap,
+                     ),
+                     delegate: SliverChildBuilderDelegate(
+                       (context, index) {
+                         final action = gridActions[index];
+                         return DashboardMenuCard(
+                           key: ValueKey('dashboard-action-${action.title}'),
+                           icon: action.icon,
+                           title: action.title,
+                           subtitle: action.subtitle,
+                           tone: action.tone,
+                           animationIndex: index,
+                           onTap: action.onTap,
+                         );
+                       },
+                       childCount: gridActions.length,
+                     ),
+                   ),
+                   SliverToBoxAdapter(
+                     child: SizedBox(height: gridLayout.gap),
+                   ),
+                   SliverToBoxAdapter(
+                     child: DashboardArchiveAction(
+                       key: const ValueKey('dashboard-archive-action'),
+                       icon: Icons.inventory_2_outlined,
+                       title: context.l10n.activityArchive,
+                       subtitle: context.l10n.dashboardSearchAndReview,
+                       height: gridLayout.archiveHeight,
+                       animationIndex: gridActions.length,
+                       onTap: () => context.push('/activity-archive'),
+                     ),
+                   ),
                 ],
               ),
             );

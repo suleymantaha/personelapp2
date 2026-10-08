@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import '../view_models/activity_form_draft.dart';
 
 class ActivityAssignmentDetailsEditor extends StatelessWidget {
@@ -26,17 +27,20 @@ class ActivityAssignmentDetailsEditor extends StatelessWidget {
         children: [
           Row(children: [
             Expanded(
-                child: Text('${people.length} personel seçildi',
+                child: Text(
+                    context.l10n.activitySelectedPersonnelCount(people.length),
                     style: Theme.of(context).textTheme.titleMedium)),
-            TextButton(onPressed: onChangePerson, child: const Text('Değiştir'))
+            TextButton(
+                onPressed: onChangePerson,
+                child: Text(context.l10n.activityChange))
           ]),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             initialValue: draft.commonDuty,
             isExpanded: true,
-            decoration: const InputDecoration(
-                labelText: 'Ortak görev',
-                helperText: 'Tüm seçilen personele uygular'),
+            decoration: InputDecoration(
+                labelText: context.l10n.activityCommonDuty,
+                helperText: context.l10n.activityCommonDutyHelper),
             items: duties
                 .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                 .toList(),
@@ -54,7 +58,8 @@ class ActivityAssignmentDetailsEditor extends StatelessWidget {
             _AssignmentCard(
                 key: ValueKey(person.id),
                 person: person,
-                teamName: squadNames[person.timId] ?? 'Tim Dışı',
+                teamName:
+                    squadNames[person.timId] ?? context.l10n.activityOutsideSquad,
                 draft: draft,
                 duties: duties,
                 showDuty: people.length > 1 ||
@@ -62,8 +67,8 @@ class ActivityAssignmentDetailsEditor extends StatelessWidget {
                 onChanged: onChanged),
           const SizedBox(height: 12),
           Text(isAdmin
-              ? 'Seçilen personel bu faaliyete eklenecek.'
-              : 'Personel eklendikten sonra admin onayına gönderilecek.'),
+              ? context.l10n.activityAdminAddNotice
+              : context.l10n.activityUserAddNotice),
         ],
       );
 }
@@ -118,8 +123,8 @@ class _AssignmentCardState extends State<_AssignmentCard> {
                     key: Key('assignment-duty-$id-$duty'),
                     initialValue: duty,
                     isExpanded: true,
-                    decoration:
-                        const InputDecoration(labelText: 'Kişiye özel görev'),
+                    decoration: InputDecoration(
+                        labelText: context.l10n.activityPersonalDutyLabel),
                     items: widget.duties
                         .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                         .toList(),
@@ -138,10 +143,10 @@ class _AssignmentCardState extends State<_AssignmentCard> {
                   onPressed: () => setState(() => _noteOpen = !_noteOpen),
                   icon: Icon(_noteOpen ? Icons.check : Icons.note_add_outlined),
                   label: Text(_noteOpen
-                      ? 'Notu kapat'
+                      ? context.l10n.activityCloseNote
                       : note.isEmpty
-                          ? 'Not ekle'
-                          : 'Notu düzenle'),
+                          ? context.l10n.activityAddNote
+                          : context.l10n.activityEditNote),
                 ),
                 if (_noteOpen)
                   TextFormField(
@@ -149,9 +154,9 @@ class _AssignmentCardState extends State<_AssignmentCard> {
                     initialValue: note,
                     minLines: 1,
                     maxLines: 3,
-                    decoration: const InputDecoration(
-                        hintText: 'Görevle ilgili not',
-                        border: OutlineInputBorder()),
+                    decoration: InputDecoration(
+                        hintText: context.l10n.activityGeneralDutyNoteHint,
+                        border: const OutlineInputBorder()),
                     onChanged: (value) => widget.draft.setNote(id, value),
                   ),
               ],

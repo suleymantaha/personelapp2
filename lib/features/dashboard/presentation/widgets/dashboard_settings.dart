@@ -10,6 +10,7 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
 
 class DashboardSettings {
@@ -32,7 +33,7 @@ class DashboardSettings {
                 (ctx, updateDialog) => PopScope(
                   canPop: !saving,
                   child: AlertDialog(
-                    title: const Text('Şifremi Değiştir'),
+                    title: Text(context.l10n.settingsChangePassword),
                     content: SingleChildScrollView(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 400),
@@ -40,7 +41,7 @@ class DashboardSettings {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Kullanıcı: $username',
+                              context.l10n.settingsUserAccount(username),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -51,7 +52,7 @@ class DashboardSettings {
                               obscureText: true,
                               decoration: InputDecoration(
                                 errorText: errorText,
-                                labelText: 'Yeni Şifreniz',
+                                labelText: context.l10n.settingsNewPassword,
                                 prefixIcon: const Icon(Icons.lock),
                               ),
                             ),
@@ -63,7 +64,7 @@ class DashboardSettings {
                       TextButton(
                         onPressed:
                             saving ? null : () => Navigator.of(ctx).pop(),
-                        child: const Text('İPTAL'),
+                        child: Text(context.l10n.commonCancel.toUpperCase()),
                       ),
                       ElevatedButton(
                         onPressed:
@@ -97,7 +98,7 @@ class DashboardSettings {
                                       if (!ctx.mounted) return;
                                       Navigator.of(ctx).pop();
                                       AppNotifications.success(
-                                        'Şifreniz başarıyla güncellendi!',
+                                        context.l10n.settingsPasswordUpdated,
                                       );
                                     }
                                   } catch (error) {
@@ -114,7 +115,7 @@ class DashboardSettings {
                                     }
                                   }
                                 },
-                        child: const Text('GÜNCELLE'),
+                        child: Text(context.l10n.settingsUpdate),
                       ),
                     ],
                   ),
@@ -170,13 +171,13 @@ class DashboardSettings {
                             ),
                           ),
                           title: Text(
-                            'Hesap: $username',
+                            context.l10n.settingsUserAccount(username),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Text(
                             isAdmin
-                                ? 'Rol: Birlik Yöneticisi (Admin)'
-                                : 'Rol: Tim Komutanı',
+                                ? context.l10n.settingsRoleAdmin
+                                : context.l10n.settingsRoleCommander,
                           ),
                         ),
                         const Divider(),
@@ -200,7 +201,7 @@ class DashboardSettings {
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
-                                    'Uygulama Teması',
+                                    context.l10n.settingsAppTheme,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: context.textPrimary,
@@ -212,21 +213,21 @@ class DashboardSettings {
                               SizedBox(
                                 width: double.infinity,
                                 child: SegmentedButton<ThemeMode>(
-                                  segments: const [
+                                  segments: [
                                     ButtonSegment<ThemeMode>(
                                       value: ThemeMode.light,
-                                      label: Text('Açık'),
-                                      icon: Icon(Icons.light_mode_outlined),
+                                      label: Text(context.l10n.settingsThemeLight),
+                                      icon: const Icon(Icons.light_mode_outlined),
                                     ),
                                     ButtonSegment<ThemeMode>(
                                       value: ThemeMode.dark,
-                                      label: Text('Koyu'),
-                                      icon: Icon(Icons.dark_mode_outlined),
+                                      label: Text(context.l10n.settingsThemeDark),
+                                      icon: const Icon(Icons.dark_mode_outlined),
                                     ),
                                     ButtonSegment<ThemeMode>(
                                       value: ThemeMode.system,
-                                      label: Text('Sistem'),
-                                      icon: Icon(Icons.brightness_auto),
+                                      label: Text(context.l10n.settingsThemeSystem),
+                                      icon: const Icon(Icons.brightness_auto),
                                     ),
                                   ],
                                   selected: {themeMode},
@@ -248,7 +249,7 @@ class DashboardSettings {
                             Icons.key,
                             color: context.accentOrOlive,
                           ),
-                          title: const Text('Şifremi Değiştir'),
+                          title: Text(context.l10n.settingsChangePassword),
                           onTap: () {
                             Navigator.pop(ctx);
                             unawaited(
@@ -263,9 +264,9 @@ class DashboardSettings {
                               Icons.storage_rounded,
                               color: context.accentOrOlive,
                             ),
-                            title: const Text('Tam Yedekleme'),
-                            subtitle: const Text(
-                              'Tüm uygulama verilerini cihazda sakla veya geri yükle',
+                            title: Text(context.l10n.settingsFullBackup),
+                            subtitle: Text(
+                              context.l10n.settingsFullBackupSubtitle,
                             ),
                             onTap: () async {
                               Navigator.pop(ctx);
@@ -370,7 +371,7 @@ class DashboardSettings {
                             color: context.rejectedColor,
                           ),
                           title: Text(
-                            'Çıkış Yap',
+                            context.l10n.authLogoutButton,
                             style: TextStyle(color: context.rejectedColor),
                           ),
                           onTap: () async {

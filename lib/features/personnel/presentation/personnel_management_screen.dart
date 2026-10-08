@@ -9,8 +9,10 @@ import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/core/widgets/app_card.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/bulk_personnel_import_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/widgets/personnel_form_dialog.dart';
@@ -82,6 +84,17 @@ class _PersonnelManagementScreenState
                   final squads = squadsAsync.value ?? [];
                   final squadMap = {for (final s in squads) s.id: s.timAdi};
 
+                  final matchingPersonnel = _searchQuery.isEmpty
+                      ? rawPersonnelList
+                      : PersonnelFuzzyMatcher.searchPersonnel(
+                          _searchQuery,
+                          rawPersonnelList,
+                          threshold: 0.5,
+                        );
+                  final matchingIds = {
+                    for (final p in matchingPersonnel) p.id,
+                  };
+
                   // Filter by squad & commander permissions & search query
                   final personnelList = rawPersonnelList.where((p) {
                     // If Commander, restrict to commander's squad
@@ -104,30 +117,19 @@ class _PersonnelManagementScreenState
                       }
                     }
 
-                    // Search query filter
-                    if (_searchQuery.isNotEmpty) {
-                      // Use fuzzy matching for better search results
-                      final matches = PersonnelFuzzyMatcher.searchPersonnel(
-                        _searchQuery,
-                        [p],
-                        threshold: 0.5,
-                        maxResults: 1,
-                      );
-                      if (matches.isEmpty) return false;
+                    // Search query filter (instant O(1) set lookup)
+                    if (_searchQuery.isNotEmpty && !matchingIds.contains(p.id)) {
+                      return false;
                     }
 
                     return true;
                   }).toList();
 
                   if (personnelList.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Center(
-                        child: Text(
-                          'Kriterlere uygun personel bulunamadı.',
-                          style: TextStyle(color: context.textSecondary),
-                        ),
-                      ),
+                    return AppEmptyState(
+                      icon: Icons.person_search_rounded,
+                      title: context.l10n.commonSearch,
+                      description: context.l10n.personnelNoCriteriaMatches,
                     );
                   }
 
@@ -249,15 +251,9 @@ class _PersonnelManagementScreenState
                               itemBuilder: (context, index) {
                                 final p = members[index];
 
-                                return Card(
-                                  elevation: 0,
+                                return AppCard(
                                   margin: EdgeInsets.zero,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                    side: BorderSide(
-                                      color: context.cardBorderColor,
-                                    ),
-                                  ),
+                                  padding: EdgeInsets.zero,
                                   child: ListTile(
                                     leading: CircleAvatar(
                                       backgroundColor: context.accentOrOlive,

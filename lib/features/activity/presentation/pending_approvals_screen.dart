@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
+import 'package:personelapp2/core/widgets/app_card.dart';
 import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 
@@ -17,9 +19,9 @@ class PendingApprovalsScreen extends ConsumerWidget {
     final session = ref.watch(userSessionProvider);
     if (session?.isAdmin != true) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Bekleyen Görev Onayları')),
-        body: const Center(
-          child: Text('Bu sayfaya erisim yetkiniz bulunmuyor.'),
+        appBar: AppBar(title: Text(context.l10n.pendingApprovalsTitle)),
+        body: Center(
+          child: Text(context.l10n.commonUnauthorized),
         ),
       );
     }
@@ -32,44 +34,37 @@ class PendingApprovalsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bekleyen Görev Onayları'),
+        title: Text(context.l10n.pendingApprovalsTitle),
       ),
       body: TurkishFlagWatermarkBackground(
         child: pendingAsync.when(
-        data: (pendingList) {
-          if (pendingList.isEmpty) {
-            return Center(
-              child: Text(
-                'Onay bekleyen veya çakışan görev kaydı bulunmuyor.',
-                style: TextStyle(fontSize: 16, color: context.textSecondary),
-              ),
-            );
-          }
+          data: (pendingList) {
+            if (pendingList.isEmpty) {
+              return AppEmptyState(
+                icon: Icons.check_circle_outline_rounded,
+                title: context.l10n.pendingApprovalsEmptyTitle,
+                description: context.l10n.pendingApprovalsEmptyDesc,
+              );
+            }
 
-          return ResponsiveCenter(
-            maxWidth: AppSpacing.readableContentWidth,
-            child: ListView.builder(
-              padding: const EdgeInsets.all(AppSpacing.pagePadding),
-              itemCount: pendingList.length,
-              itemBuilder: (context, index) {
-                final atama = pendingList[index];
-                final p = pMap[atama.personelId];
-                final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
-                final rutbeText = p?.rutbe ?? '';
-                final birlikInfo = p?.birlik ?? '';
-                final fullPersonName =
-                    rutbeText.isNotEmpty ? '$rutbeText $nameText' : nameText;
-                final squadInfo = birlikInfo.isNotEmpty ? ' ($birlikInfo)' : '';
+            return ResponsiveCenter(
+              maxWidth: AppSpacing.readableContentWidth,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(AppSpacing.pagePadding),
+                itemCount: pendingList.length,
+                itemBuilder: (context, index) {
+                  final atama = pendingList[index];
+                  final p = pMap[atama.personelId];
+                  final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
+                  final rutbeText = p?.rutbe ?? '';
+                  final birlikInfo = p?.birlik ?? '';
+                  final fullPersonName =
+                      rutbeText.isNotEmpty ? '$rutbeText $nameText' : nameText;
+                  final squadInfo = birlikInfo.isNotEmpty ? ' ($birlikInfo)' : '';
 
-                return Card(
-                  elevation: 3,
-                  margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(color: context.pendingColor, width: 1.5),
-                    borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                  return AppCard(
+                    elevation: 1,
+                    borderColor: context.pendingColor,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -79,7 +74,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Görevlendirme #${atama.id} (ÇAKIŞMA VAR)',
+                                context.l10n.pendingApprovalsAssignmentConflict(atama.id),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -96,9 +91,9 @@ class PendingApprovalsScreen extends ConsumerWidget {
                               fontSize: 14,
                             ),
                             children: [
-                              const TextSpan(
-                                text: 'Personel: ',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              TextSpan(
+                                text: '${context.l10n.pendingApprovalsPersonnelLabel}: ',
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               TextSpan(
                                 text: '$fullPersonName$squadInfo',
@@ -118,9 +113,9 @@ class PendingApprovalsScreen extends ConsumerWidget {
                               fontSize: 14,
                             ),
                             children: [
-                              const TextSpan(
-                                text: 'Talep Edilen Görev: ',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              TextSpan(
+                                text: '${context.l10n.pendingApprovalsRequestedDutyLabel}: ',
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               TextSpan(
                                 text: atama.gorevVeyaIzin,
@@ -135,7 +130,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
                             atama.aciklama!.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
-                            'Açıklama: ${atama.aciklama}',
+                            context.l10n.pendingApprovalsDescriptionLabel(atama.aciklama!),
                             style: TextStyle(
                               fontSize: 13,
                               fontStyle: FontStyle.italic,
@@ -163,7 +158,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
                                   actor: session!,
                                 );
                               },
-                              child: const Text('REDDET'),
+                              child: Text(context.l10n.pendingApprovalsReject),
                             ),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
@@ -181,27 +176,30 @@ class PendingApprovalsScreen extends ConsumerWidget {
                                 if (context.mounted &&
                                     result.blockedCount > 0) {
                                   AppNotifications.error(
-                                    'Onaylanamadı: '
-                                    '${result.conflictDescriptions.join(', ')}',
+                                    context.l10n.pendingApprovalsApprovalFailed(
+                                      result.conflictDescriptions.join(', '),
+                                    ),
                                   );
                                 }
                               },
-                              child: const Text('ONAYLA'),
+                              child: Text(context.l10n.pendingApprovalsApprove),
                             ),
                           ],
                         ),
                       ],
                     ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, st) => Center(child: Text('Hata: $err')),
+                  );
+                },
+              ),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, st) => AppErrorState(
+            title: context.l10n.commonError,
+            error: '$err',
+          ),
+        ),
       ),
-    ),
     );
   }
 }

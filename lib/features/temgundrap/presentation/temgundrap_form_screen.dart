@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:personelapp2/core/widgets/confirm_discard_changes.dart';
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
@@ -107,7 +108,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
         _baseline = _snapshot();
       });
     } catch (error) {
-      if (mounted) AppNotifications.error('Onay bilgileri yüklenemedi: $error');
+      if (mounted) AppNotifications.error(context.l10n.temgundrapApproverDefaultsLoadFailed('$error'));
     }
   }
 
@@ -156,7 +157,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
   Future<void> _save() async {
     if (_saving || !_formKey.currentState!.validate()) return;
     if (_operations.isEmpty) {
-      AppNotifications.warning('En az bir operasyon ekleyin.');
+      AppNotifications.warning(context.l10n.temgundrapAtLeastOneOperationRequired);
       return;
     }
     setState(() => _saving = true);
@@ -181,7 +182,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Çizelge kaydedilemedi: $error')),
+          SnackBar(content: Text(context.l10n.temgundrapSaveFailed('$error'))),
         );
       }
     } finally {
@@ -200,8 +201,8 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
         leading: BackButton(onPressed: _saving ? null : _back),
         title: Text(
           widget.initialDocument == null
-              ? 'Yeni TEMGÜNDRAP'
-              : 'Çizelgeyi Düzenle',
+              ? context.l10n.temgundrapNewDocument
+              : context.l10n.temgundrapEditDocument,
         ),
       ),
       body: TurkishFlagWatermarkBackground(
@@ -218,19 +219,19 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                     TextFormField(
                       key: const Key('document-unit-title'),
                       controller: _unitTitle,
-                      decoration: const InputDecoration(
-                        labelText: 'Birlik başlığı',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.temgundrapUnitTitle,
                         hintText: 'Örn: KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI',
-                        prefixIcon: Icon(Icons.account_balance),
+                        prefixIcon: const Icon(Icons.account_balance),
                       ),
-                      validator: _required,
+                      validator: (value) => _required(value, context),
                     ),
                     const SizedBox(height: 12),
                     ListTile(
                       key: const Key('document-date'),
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.calendar_month),
-                      title: const Text('Çizelge tarihi'),
+                      title: Text(context.l10n.temgundrapDocumentDate),
                       subtitle: Text(
                         '${_date.day.toString().padLeft(2, '0')}.${_date.month.toString().padLeft(2, '0')}.${_date.year}',
                       ),
@@ -240,10 +241,10 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                     const Divider(height: 32),
                     Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Operasyonlar',
-                            style: TextStyle(
+                            context.l10n.temgundrapOperations,
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -253,16 +254,16 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                           key: const Key('add-operation'),
                           onPressed: _addOperation,
                           icon: const Icon(Icons.add),
-                          label: const Text('Operasyon Ekle'),
+                          label: Text(context.l10n.temgundrapAddOperation),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     if (_operations.isEmpty)
-                      const Card(
+                      Card(
                         child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Text('Henüz operasyon eklenmedi.'),
+                          padding: const EdgeInsets.all(20),
+                          child: Text(context.l10n.temgundrapNoOperationsAddedYet),
                         ),
                       )
                     else
@@ -288,13 +289,13 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                               children: [
                                 IconButton(
                                   key: Key('edit-operation-${entry.key}'),
-                                  tooltip: 'Operasyonu düzenle',
+                                  tooltip: context.l10n.temgundrapEditOperationTooltip,
                                   icon: const Icon(Icons.edit_outlined),
                                   onPressed: () => _editOperation(entry.key),
                                 ),
                                 IconButton(
                                   key: Key('delete-operation-${entry.key}'),
-                                  tooltip: 'Operasyonu sil',
+                                  tooltip: context.l10n.temgundrapDeleteOperationTooltip,
                                   icon: const Icon(Icons.delete_outline),
                                   onPressed:
                                       () => setState(
@@ -307,9 +308,9 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                         ),
                       ),
                     const Divider(height: 32),
-                    const Text(
-                      'Onay Bilgileri',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.temgundrapApprovalInfo,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -317,30 +318,30 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _approverName,
-                      decoration: const InputDecoration(
-                        labelText: 'Onaylayan ad soyad',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.temgundrapApproverName,
                         hintText: 'Örn: İhsan DAĞLI',
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _approverRank,
-                      decoration: const InputDecoration(
-                        labelText: 'Rütbe',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.personnelRank,
                         hintText: 'Örn: J.Ütğm.',
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _approverDuty,
-                      decoration: const InputDecoration(
-                        labelText: 'Görevi',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.temgundrapApproverDuty,
                         hintText: 'Örn: Tb. K. V.',
                       ),
                     ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Taslak olarak kaydet'),
+                      title: Text(context.l10n.temgundrapSaveAsDraft),
                       value: _isDraft,
                       onChanged: (value) => setState(() => _isDraft = value),
                     ),
@@ -357,9 +358,9 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                                 ),
                               )
                               : const Icon(Icons.save),
-                      label: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 14),
-                        child: Text('ÇİZELGEYİ KAYDET'),
+                      label: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        child: Text(context.l10n.temgundrapSaveDocumentButton),
                       ),
                     ),
                   ],
@@ -372,6 +373,6 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
     ),
   );
 
-  String? _required(String? value) =>
-      value == null || value.trim().isEmpty ? 'Bu alan zorunludur.' : null;
+  String? _required(String? value, BuildContext context) =>
+      value == null || value.trim().isEmpty ? context.l10n.temgundrapRequiredField : null;
 }

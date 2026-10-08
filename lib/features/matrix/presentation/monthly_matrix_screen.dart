@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
@@ -12,6 +13,7 @@ import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 import 'package:personelapp2/features/matrix/domain/matrix_personnel_order.dart';
 import 'package:personelapp2/features/matrix/presentation/widgets/team_duty_calendar_modal.dart';
 import 'package:personelapp2/features/matrix/services/excel_xml_generator.dart';
+import 'package:personelapp2/core/widgets/app_card.dart';
 import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 part 'monthly_matrix_actions.dart';
