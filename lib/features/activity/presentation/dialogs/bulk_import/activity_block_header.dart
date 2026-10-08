@@ -81,15 +81,19 @@ class ActivityBlockHeader extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: context.warningBgColor,
+                            color: context.accentOrOlive.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: context.accentOrOlive.withValues(alpha: 0.25),
+                              width: 0.8,
+                            ),
                           ),
                           child: Text(
                             'Varsayılan Tim',
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 12,
-                              color: context.warningColor,
+                              color: context.accentOrOlive,
                             ),
                           ),
                         ),

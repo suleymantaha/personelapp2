@@ -112,11 +112,11 @@ class PersonnelMatchHeader extends StatelessWidget {
                   ],
                 ],
               ),
-              if (hasNameDiff || item.sourceLineNumber != null) ...[
+              if (hasNameDiff || !item.isMatched) ...[
                 const SizedBox(height: 2),
                 Text(
                   [
-                    if (hasNameDiff)
+                    if (hasNameDiff || !item.isMatched)
                       'Metinde: $rawRankText $rawNameText'.trim(),
                     if (item.sourceLineNumber != null)
                       '📍 Satır ${item.sourceLineNumber}',

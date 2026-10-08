@@ -89,20 +89,25 @@ class MilitaryRankNormalizer {
 
     final match = _rankPattern.firstMatch(working);
     if (match == null || match.group(0) == null || match.group(0)!.trim().isEmpty) {
-      return ParsedRankAndName(cleanName: working.trim());
+      final clean = working.replaceAll(RegExp(r'(?:\s*\([^)]*\))+$'), '').trim();
+      return ParsedRankAndName(cleanName: clean.isEmpty ? working.trim() : clean);
     }
 
     final rawRankMatched = match.group(0)!.trim();
     // Eğer eşleşme sadece 'J.' veya 'J' ise ve devamında rütbe yoksa rütbe sayma
     if (rawRankMatched == 'J.' || rawRankMatched == 'J') {
-      return ParsedRankAndName(cleanName: working.trim());
+      final clean = working.replaceAll(RegExp(r'(?:\s*\([^)]*\))+$'), '').trim();
+      return ParsedRankAndName(cleanName: clean.isEmpty ? working.trim() : clean);
     }
 
     final standard = normalizeRank(rawRankMatched);
-    final remainingName = working.substring(match.end).trim();
+    final remainingRaw = working.substring(match.end).trim();
+    final remainingClean = remainingRaw
+        .replaceAll(RegExp(r'(?:\s*\([^)]*\))+$'), '')
+        .trim();
 
     return ParsedRankAndName(
-      cleanName: remainingName,
+      cleanName: remainingClean.isEmpty ? remainingRaw : remainingClean,
       standardRank: standard,
       rawRank: rawRankMatched,
     );

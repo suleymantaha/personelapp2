@@ -395,4 +395,29 @@ Sabah
     final result = BulkTextParser.parse(input);
     expect(result.blocks.length, greaterThanOrEqualTo(10));
   });
+
+  test('parse warrior element heybet list with parenthetical squad notes', () {
+    const input = '''
+09.10.2026-Cuma 
+*Savaşçı Unsuru Heybet İsim Listesi*
+
+1-J.Ütğm. Mehmet CEYLAN(1B)
+2-J.Asb.Kd.Çvş. Beytullah ÇETİN(5B)
+3-J.Uzm.Çvş. Ergin DİNÇ(9B)
+4-J.Uzm.Çvş. Kudret SARIOĞLU(7B)
+5-J.Uzm.Çvş. Hünkar AKGÜN(6B)
+6-J.Uzm.Çvş. Yusuf ÇELİKKIRAN(Keskin Timi)
+7-J.Uzm.Çvş. Hidayet ŞAHİNLER(6B)
+''';
+
+    final result = BulkTextParser.parse(input);
+    expect(result.blocks.length, 1);
+    expect(result.blocks.first.parsedDate, '2026-10-09');
+    expect(result.blocks.first.parsedActivityType, DutyOrLeaveType.heybet);
+    expect(result.blocks.first.personnelList.length, 7);
+    expect(result.blocks.first.personnelList[0].rawName, 'Mehmet CEYLAN');
+    expect(result.blocks.first.personnelList[5].rawName, 'Yusuf ÇELİKKIRAN');
+    expect(result.blocks.first.personnelList[6].rawName, 'Hidayet ŞAHİNLER');
+  });
 }
+

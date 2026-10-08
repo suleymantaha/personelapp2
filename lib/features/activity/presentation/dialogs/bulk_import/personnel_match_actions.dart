@@ -68,26 +68,59 @@ class PersonnelMatchActions extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (registeredTeamName?.trim().isNotEmpty == true)
-                          Text(
-                            'Kayitli tim: ${registeredTeamName!.trim()}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: context.textSecondary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        Text(
-                          'Liste timi: $teamName',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: context.textPrimary,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        Builder(
+                          builder: (context) {
+                            final hasRegistered =
+                                registeredTeamName?.trim().isNotEmpty == true;
+                            final hasList = teamName.trim().isNotEmpty;
+                            final isDifferent = hasRegistered &&
+                                hasList &&
+                                registeredTeamName!.trim().toLowerCase() !=
+                                    teamName.trim().toLowerCase();
+
+                            if (isDifferent) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Kayitli tim: ${registeredTeamName!.trim()}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: context.textSecondary,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Liste timi: $teamName',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: context.warningColor,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
+
+                            final singleTeam = hasRegistered
+                                ? 'Kayitli tim: ${registeredTeamName!.trim()}'
+                                : (hasList ? 'Liste timi: $teamName' : 'Tim belirtilmedi');
+
+                            return Text(
+                              singleTeam,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: context.textSecondary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

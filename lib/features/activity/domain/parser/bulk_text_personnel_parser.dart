@@ -151,8 +151,23 @@ String _stripShiftWordsAtEdges(String line) {
   return clean.trim();
 }
 
+bool _looksLikePersonnel(String line) {
+  final clean = line.trim();
+  if (_rankPattern.hasMatch(clean)) return true;
+  final numbered = _numberedPersonnelPattern.firstMatch(clean);
+  if (numbered != null) {
+    final after = numbered.group(3)?.trim() ?? '';
+    if (_rankPattern.hasMatch(after)) return true;
+  }
+  return false;
+}
+
 bool _isHeader(String line) {
-  final folded = _fold(line);
+  final cleanLine = line.trim();
+  if (_looksLikePersonnel(cleanLine)) return false;
+
+  final withoutParens = cleanLine.replaceAll(RegExp(r'\([^)]*\)'), ' ').trim();
+  final folded = _fold(withoutParens);
   final hasHeaderWord = folded.contains('listesi') ||
       RegExp(r'\bliste\b').hasMatch(folded) ||
       folded.contains('isim list') ||
@@ -160,9 +175,9 @@ bool _isHeader(String line) {
       folded.contains(' tim ') ||
       RegExp(r'\bmeti\b').hasMatch(folded);
   final hasActivity = _activityTypes.keys.any((key) => folded.contains(key));
-  final hasDate = _extractDateFromLine(line) != null;
+  final hasDate = _extractDateFromLine(withoutParens) != null;
   return hasHeaderWord ||
-      (hasActivity && (_extractTeam(line) != null || hasDate));
+      (hasActivity && (_extractTeam(withoutParens) != null || hasDate));
 }
 
 const Set<String> _conversationalWords = {
@@ -193,6 +208,8 @@ const Set<String> _conversationalWords = {
 };
 
 String? _extractTeam(String line) {
+  if (_looksLikePersonnel(line)) return null;
+
   final match = _teamPattern.firstMatch(line);
   if (match == null) {
     final timMatch = RegExp(
@@ -211,7 +228,15 @@ String? _extractTeam(String line) {
   final rawSuffix = (match.group(2) ?? match.group(3))!;
   final foldedSuffix = _fold(rawSuffix);
 
-  if (_turkishMonths.containsKey(foldedSuffix)) {
+  if (foldedSuffix == 'j' ||
+      foldedSuffix.startsWith('j.') ||
+      _turkishMonths.containsKey(foldedSuffix)) {
+    return null;
+  }
+
+  final remainingAfterMatch = line.substring(match.end).trim();
+  if (remainingAfterMatch.startsWith('.') ||
+      _rankPattern.hasMatch(remainingAfterMatch)) {
     return null;
   }
 
