@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/widgets/app_card.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
@@ -222,15 +223,10 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
-              return _MessageState(
-                icon: Icons.cloud_off_outlined,
+              return AppErrorState(
                 title: context.l10n.temgundrapFailedToLoadDocs,
-                message: '${snapshot.error}',
-                action: FilledButton.icon(
-                  onPressed: () => setState(_reload),
-                  icon: const Icon(Icons.refresh_rounded),
-                  label: Text(context.l10n.commonRetry),
-                ),
+                error: '${snapshot.error}',
+                onRetry: () => setState(_reload),
               );
             }
 
@@ -454,68 +450,61 @@ class _DocumentCard extends StatelessWidget {
   final VoidCallback onActions;
 
   @override
-  Widget build(BuildContext context) => Card(
+  Widget build(BuildContext context) => AppCard(
     key: Key('temgundrap-document-${document.id}'),
-    clipBehavior: Clip.antiAlias,
-    child: InkWell(
-      onTap: onOpen,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    onTap: onOpen,
+    trailingAction: IconButton(
+      key: Key('temgundrap-actions-${document.id}'),
+      tooltip: context.l10n.temgundrapActionsTitle,
+      onPressed: onActions,
+      icon: const Icon(Icons.more_horiz_rounded),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(9),
-                  decoration: BoxDecoration(
-                    color: context.accentOrOlive.withValues(alpha: .12),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    document.isDraft
-                        ? Icons.edit_note_rounded
-                        : Icons.inventory_2_outlined,
-                    color: context.accentOrOlive,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  key: Key('temgundrap-actions-${document.id}'),
-                  tooltip: context.l10n.temgundrapActionsTitle,
-                  onPressed: onActions,
-                  icon: const Icon(Icons.more_horiz_rounded),
-                ),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              document.unitTitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-            ),
-            const SizedBox(height: 7),
-            Row(
-              children: [
-                Icon(
-                  Icons.shield_outlined,
-                  size: 18,
-                  color: context.textSecondary,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    context.l10n.temgundrapOperationsCount(document.operations.length),
-                    style: TextStyle(color: context.textSecondary),
-                  ),
-                ),
-                _StatusBadge(isDraft: document.isDraft),
-              ],
+            Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: context.accentOrOlive.withValues(alpha: .12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                document.isDraft
+                    ? Icons.edit_note_rounded
+                    : Icons.inventory_2_outlined,
+                color: context.accentOrOlive,
+              ),
             ),
           ],
         ),
-      ),
+        const Spacer(),
+        Text(
+          document.unitTitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+        ),
+        const SizedBox(height: 7),
+        Row(
+          children: [
+            Icon(
+              Icons.shield_outlined,
+              size: 18,
+              color: context.textSecondary,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                context.l10n.temgundrapOperationsCount(document.operations.length),
+                style: TextStyle(color: context.textSecondary),
+              ),
+            ),
+            _StatusBadge(isDraft: document.isDraft),
+          ],
+        ),
+      ],
     ),
   );
 }
@@ -561,76 +550,25 @@ class _EmptySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDaily = section == _TemgundrapSection.daily;
-    return _MessageState(
+    return AppEmptyState(
       icon: isDaily ? Icons.edit_calendar_outlined : Icons.inventory_2_outlined,
-      title:
-          isDaily
-              ? context.l10n.temgundrapNoDailyDraftTitle
-              : context.l10n.temgundrapNoArchivedDocTitle,
-      message:
-          isDaily
-              ? context.l10n.temgundrapNoDailyDraftMessage(_formatDate(date))
-              : context.l10n.temgundrapNoArchivedDocMessage,
+      title: isDaily
+          ? context.l10n.temgundrapNoDailyDraftTitle
+          : context.l10n.temgundrapNoArchivedDocTitle,
+      description: isDaily
+          ? context.l10n.temgundrapNoDailyDraftMessage(_formatDate(date))
+          : context.l10n.temgundrapNoArchivedDocMessage,
       action: FilledButton.icon(
         onPressed: isDaily ? onCreate : onPickDate,
         icon: Icon(isDaily ? Icons.add_rounded : Icons.calendar_month_outlined),
-        label: Text(isDaily ? context.l10n.temgundrapNewDocButton : context.l10n.temgundrapPickDateButton),
+        label: Text(
+          isDaily
+              ? context.l10n.temgundrapNewDocButton
+              : context.l10n.temgundrapPickDateButton,
+        ),
       ),
     );
   }
-}
-
-class _MessageState extends StatelessWidget {
-  const _MessageState({
-    required this.icon,
-    required this.title,
-    required this.message,
-    required this.action,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final Widget action;
-
-  @override
-  Widget build(BuildContext context) => Center(
-    child: SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: context.accentOrOlive.withValues(alpha: .12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 44, color: context.accentOrOlive),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: context.textSecondary),
-            ),
-            const SizedBox(height: 22),
-            action,
-          ],
-        ),
-      ),
-    ),
-  );
 }
 
 String _isoDate(DateTime date) =>
