@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/presentation/view_models/activity_form_draft.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_form_header.dart';
 
@@ -72,14 +73,14 @@ class ActivityDetailsStep extends StatelessWidget {
         ActivityDutyActionCard(
           key: const Key('common-duty-field'),
           icon: Icons.assignment_ind_outlined,
-          label: 'Ortak Görev',
+          label: context.l10n.activityAssignCommonDuty,
           value: draft.commonDuty.isEmpty
-              ? 'Seçilen personele görev ata'
+              ? context.l10n.activityAssignDutyToSelected
               : draft.commonDuty,
           onTap: () async {
             final duty = await showActivityDutyPicker(
               context,
-              title: 'Ortak görev seç',
+              title: context.l10n.activitySelectCommonDuty,
               duties: availableDuties,
               keyPrefix: 'common-duty',
             );
@@ -111,9 +112,9 @@ class ActivityDetailsStep extends StatelessWidget {
               children: [
                 Icon(Icons.info_outline_rounded, color: context.accentOrOlive),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Bilgileri kontrol ettikten sonra görevlendirme önizlemesine geçebilirsiniz.',
+                    context.l10n.activityPreviewHint,
                   ),
                 ),
               ],
@@ -130,10 +131,12 @@ class ActivityDetailsStep extends StatelessWidget {
   ) async {
     final duty = await showActivityDutyPicker(
       context,
-      title: '$squadName timine görev ata',
+      title: context.l10n.activitySquadDutyAssignTitle(squadName),
       duties: availableDuties,
       keyPrefix: 'squad-duty-$squadName',
-      inheritLabel: draft.commonDuty.isEmpty ? null : 'Ortak görevi kullan',
+      inheritLabel: draft.commonDuty.isEmpty
+          ? null
+          : context.l10n.activityUseCommonDuty,
     );
     if (!context.mounted) return;
     if (duty == inheritCommonDutyValue) {
@@ -165,8 +168,9 @@ class ActivityDetailsStep extends StatelessWidget {
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.assignment_outlined),
-              title: const Text('Farklı görev seç'),
-              subtitle: Text(draft.dutyFor(person.id) ?? 'Görev seçilmedi'),
+              title: Text(sheetContext.l10n.activitySelectDifferentDuty),
+              subtitle: Text(draft.dutyFor(person.id) ??
+                  sheetContext.l10n.activityDutyNotSelected),
               onTap: () => Navigator.pop(
                 sheetContext,
                 _PersonnelEditAction.duty,
@@ -174,8 +178,9 @@ class ActivityDetailsStep extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.notes_rounded),
-              title: const Text('Not ekle veya düzenle'),
-              subtitle: Text(draft.notes[person.id] ?? 'Not yok'),
+              title: Text(sheetContext.l10n.activityAddOrEditNote),
+              subtitle: Text(draft.notes[person.id] ??
+                  sheetContext.l10n.activityNoNote),
               onTap: () => Navigator.pop(
                 sheetContext,
                 _PersonnelEditAction.note,
@@ -189,10 +194,12 @@ class ActivityDetailsStep extends StatelessWidget {
     if (action == _PersonnelEditAction.duty) {
       final duty = await showActivityDutyPicker(
         context,
-        title: '${person.adSoyad} için görev',
+        title: context.l10n.activityPersonnelDutyTitle(person.adSoyad),
         duties: availableDuties,
         keyPrefix: 'personnel-duty-${person.id}',
-        inheritLabel: draft.commonDuty.isEmpty ? null : 'Ortak görevi kullan',
+        inheritLabel: draft.commonDuty.isEmpty
+            ? null
+            : context.l10n.activityUseCommonDuty,
       );
       if (!context.mounted) return;
       if (duty == inheritCommonDutyValue) {
@@ -207,23 +214,25 @@ class ActivityDetailsStep extends StatelessWidget {
     final note = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('${person.adSoyad} için not'),
+        title: Text(dialogContext.l10n.activityPersonnelNoteTitle(person.adSoyad)),
         content: TextFormField(
           key: ValueKey('personnel-note-${person.id}'),
           initialValue: noteValue,
           autofocus: true,
           maxLines: 3,
-          decoration: const InputDecoration(hintText: 'İsteğe bağlı not'),
+          decoration: InputDecoration(
+            hintText: dialogContext.l10n.activityOptionalNoteHint,
+          ),
           onChanged: (value) => noteValue = value,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Vazgeç'),
+            child: Text(dialogContext.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, noteValue),
-            child: const Text('Tamam'),
+            child: Text(dialogContext.l10n.commonOk),
           ),
         ],
       ),

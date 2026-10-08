@@ -1,0 +1,134 @@
+{
+  "@@locale": "tr",
+  "appTitle": "Nizam",
+  "@appTitle": {
+    "description": "Uygulama adı"
+  },
+  "commonSave": "Kaydet",
+  "commonCancel": "Vazgeç",
+  "commonClose": "Kapat",
+  "commonDelete": "Sil",
+  "commonEdit": "Düzenle",
+  "commonAdd": "Ekle",
+  "commonSelect": "Seç",
+  "commonSearch": "Ara...",
+  "commonFilter": "Filtrele",
+  "commonClear": "Temizle",
+  "commonSuccess": "Başarılı",
+  "commonError": "Hata",
+  "commonWarning": "Uyarı",
+  "commonInfo": "Bilgi",
+  "commonConfirm": "Onayla",
+  "commonYes": "Evet",
+  "commonNo": "Hayır",
+  "commonOk": "Tamam",
+  "commonAll": "Tümü",
+  "commonRequired": "Zorunlu alan",
+  "commonLoading": "Yükleniyor...",
+  "commonNoData": "Kayıt bulunamadı",
+
+  "activitySelectDutyTitle": "Görev veya İzin Seçin",
+  "activityCommonDuty": "Ortak Görev",
+  "activityPersonalDuty": "Kişisel Görev",
+  "activitySelectPersonalDuty": "Özel Görev Seç",
+  "activityDutyChangeTitle": "Görev / Durum Değiştir",
+  "activityDutyChangeSubtitle": "Seçilen personel için geçerli görev veya izin durumunu güncelleyin.",
+  "activityUpdateSuccess": "Görev başarıyla güncellendi",
+  "activityScheduleTitle": "Faaliyet Çizelgesi",
+  "activityAddPersonnel": "Personel Ekle",
+  "activityArchive": "Faaliyet Arşivi",
+  "activityDate": "Tarih",
+  "activityPersonnelCount": "Personel Sayısı",
+  "activityDuty": "Görev",
+  "activityShift": "Vardiya",
+  "activityNotes": "Notlar",
+  "activitySelectDutyHint": "Bir görev türü seçiniz",
+  "activitySearchDutyHint": "Görev ara...",
+  "activityLeaveType": "İzin Türü",
+  "activityDutyChange": "Görev Değişikliği",
+  "activityDutyOrLeaveType": "Görev / İzin Türü",
+  "activityDutyNoteOptional": "Açıklama / Not (İsteğe Bağlı)",
+  "activityDutyNoteHint": "Örn: Gece nöbeti, özel devriye vb.",
+  "activityAssignCommonDuty": "Ortak Görev",
+  "activityAssignDutyToSelected": "Seçilen personele görev ata",
+  "activitySelectCommonDuty": "Ortak görev seç",
+  "activityUseCommonDuty": "Ortak görevi kullan",
+  "activitySquadDutyAssignTitle": "{squadName} timine görev ata",
+  "@activitySquadDutyAssignTitle": {
+    "placeholders": {
+      "squadName": {
+        "type": "String"
+      }
+    }
+  },
+  "activityPersonnelDutyTitle": "{name} için görev",
+  "@activityPersonnelDutyTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityPersonnelNoteTitle": "{name} için not",
+  "@activityPersonnelNoteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activitySelectDifferentDuty": "Farklı görev seç",
+  "activityDutyNotSelected": "Görev seçilmedi",
+  "activityAddOrEditNote": "Not ekle veya düzenle",
+  "activityNoNote": "Not yok",
+  "activityOptionalNoteHint": "İsteğe bağlı not",
+  "activityPreviewHint": "Bilgileri kontrol ettikten sonra görevlendirme önizlemesine geçebilirsiniz.",
+  "activitySelectedPersonnelCount": "{count} personel seçildi",
+  "@activitySelectedPersonnelCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityChange": "Değiştir",
+  "activityCommonDutyHelper": "Tüm seçilen personele uygular",
+  "activityPersonalDutyLabel": "Kişiye özel görev",
+  "activityOutsideSquad": "Tim Dışı",
+  "activityAdminAddNotice": "Seçilen personel bu faaliyete eklenecek.",
+  "activityUserAddNotice": "Personel eklendikten sonra admin onayına gönderilecek.",
+  "activityCloseNote": "Notu kapat",
+  "activityAddNote": "Not ekle",
+  "activityEditNote": "Notu düzenle",
+  "activityGeneralDutyNoteHint": "Görevle ilgili not",
+
+  "personnelManagementTitle": "Personel Yönetimi",
+  "personnelListTitle": "Personel Listesi",
+  "personnelAddTitle": "Yeni Personel Ekle",
+  "personnelEditTitle": "Personeli Düzenle",
+  "personnelName": "Ad",
+  "personnelSurname": "Soyad",
+  "personnelFullName": "Ad Soyad",
+  "personnelRank": "Rütbe",
+  "personnelBranch": "Sınıf / Kuvvet",
+  "personnelPhone": "Telefon",
+  "personnelRole": "Rol",
+  "personnelStatus": "Durum",
+  "personnelActive": "Aktif",
+  "personnelInactive": "Pasif",
+
+  "dashboardTitle": "Ana Sayfa",
+  "dashboardQuickActions": "Hızlı İşlemler",
+  "dashboardStatistics": "İstatistikler",
+  "dashboardRecentActivities": "Son Faaliyetler",
+
+  "authLoginTitle": "Giriş Yap",
+  "authUsername": "Kullanıcı Adı",
+  "authPassword": "Şifre",
+  "authLoginButton": "Giriş",
+  "authLogoutButton": "Çıkış Yap",
+  "authSessionExpired": "Oturum süresi doldu",
+
+  "matrixTitle": "Matris ve Çizelge",
+  "reportTitle": "Raporlar"
+}
