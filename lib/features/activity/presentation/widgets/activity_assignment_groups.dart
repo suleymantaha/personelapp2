@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
@@ -42,6 +43,22 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
   int? _expandedSquadId;
   bool _hasExpandedTimDisi = false;
   final Set<int?> _selectedSquadIds = {};
+
+  void _toggleSquadSelection(int? squadId) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      if (_selectedSquadIds.contains(squadId)) {
+        _selectedSquadIds.remove(squadId);
+      } else {
+        _selectedSquadIds.add(squadId);
+      }
+    });
+  }
+
+  void _onSquadLongPress(int? squadId) {
+    HapticFeedback.mediumImpact();
+    _toggleSquadSelection(squadId);
+  }
 
   @override
   void initState() {
@@ -89,13 +106,23 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
           return nameA.compareTo(nameB);
         });
 
+    final isSelectionMode = _selectedSquadIds.isNotEmpty;
+
     return Column(
       children: [
-        if (_selectedSquadIds.isNotEmpty)
+        if (isSelectionMode)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(
               children: [
+                IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  tooltip: 'Seçimi İptal Et',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  onPressed: () => setState(_selectedSquadIds.clear),
+                ),
+                const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     '${_selectedSquadIds.length} tim seçildi',
@@ -149,14 +176,19 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
               squadId == null
                   ? _hasExpandedTimDisi
                   : _expandedSquadId == squadId;
+          final isSelected = _selectedSquadIds.contains(squadId);
 
           return CollapsibleSquadCard(
             cardKey: Key('activity-team-card-$squadId'),
             headerKey: Key('activity-team-header-$squadId'),
             title: '$teamName — ${assignments.length} kişi',
             expanded: expanded,
+            isSelected: isSelected,
+            selectionMode: isSelectionMode,
+            onLongPress: () => _onSquadLongPress(squadId),
+            onTap: isSelectionMode ? () => _toggleSquadSelection(squadId) : null,
             actions: [
-              if (widget.onTransferSquad != null && squadId != null)
+              if (widget.onTransferSquad != null && squadId != null && !isSelectionMode)
                 IconButton(
                   key: Key('activity-team-transfer-$squadId'),
                   icon: const Icon(Icons.swap_horiz_rounded, size: 18),
@@ -165,18 +197,6 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
                   constraints: const BoxConstraints(),
                   onPressed: () => widget.onTransferSquad!(squadId, teamName),
                 ),
-              Checkbox(
-                key: Key('activity-team-select-$squadId'),
-                value: _selectedSquadIds.contains(squadId),
-                onChanged:
-                    (selected) => setState(() {
-                      if (selected ?? false) {
-                        _selectedSquadIds.add(squadId);
-                      } else {
-                        _selectedSquadIds.remove(squadId);
-                      }
-                    }),
-              ),
             ],
             onToggle:
                 () => setState(() {

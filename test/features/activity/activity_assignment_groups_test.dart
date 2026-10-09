@@ -146,7 +146,8 @@ void main() {
     );
 
     expect(tester.takeException(), isNull);
-    expect(find.byKey(const Key('activity-team-select-1')), findsOneWidget);
+    expect(find.byKey(const Key('activity-team-header-1')), findsOneWidget);
+    expect(find.byType(Checkbox), findsNothing);
     await tester.tap(find.byKey(const Key('activity-team-header-1')));
     await tester.pump();
     expect(find.byKey(const Key('assignment-1')), findsOneWidget);
@@ -170,9 +171,13 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byKey(const Key('activity-team-select-1')));
+    // Long press to start selection mode on team 1
+    await tester.longPress(find.byKey(const Key('activity-team-header-1')));
     await tester.pump();
-    await tester.tap(find.byKey(const Key('activity-team-select-2')));
+    expect(find.text('1 tim seçildi'), findsOneWidget);
+
+    // In selection mode, single tap on team 2 toggles selection
+    await tester.tap(find.byKey(const Key('activity-team-header-2')));
     await tester.pump();
 
     expect(find.text('2 tim seçildi'), findsOneWidget);

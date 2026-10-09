@@ -125,7 +125,7 @@ void main() {
         if (scenario == 'selected-reassigned') {
           await tester.tap(find.byKey(Key('activity-card-$activity')));
           await tester.pumpAndSettle();
-          await tester.tap(find.byKey(Key('activity-team-select-$team')));
+          await tester.longPress(find.byKey(Key('activity-team-header-$team')));
           await tester.pumpAndSettle();
           await tester.tap(find.byKey(const Key('export-selected-teams')));
           await tester.pumpAndSettle();
