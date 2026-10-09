@@ -38,7 +38,7 @@ class _FilterSearchStrip extends StatelessWidget {
       controller: controller,
       onChanged: onChanged,
       decoration: InputDecoration(
-        hintText: 'Personel, tim veya satır ara',
+        hintText: context.l10n.bulkImportSearchHint,
         prefixIcon: const Icon(Icons.search_rounded),
         isDense: true,
         filled: true,
@@ -113,7 +113,7 @@ class _SegmentedFilters extends StatelessWidget {
         children: [
           Expanded(
             child: _FilterButton(
-              label: 'Sorunlar',
+              label: context.l10n.bulkImportFilterProblemsLabel,
               count: problemCount,
               selected: selected == _PreviewFilter.problems,
               onTap: onProblems,
@@ -121,7 +121,7 @@ class _SegmentedFilters extends StatelessWidget {
           ),
           Expanded(
             child: _FilterButton(
-              label: 'Tümü',
+              label: context.l10n.commonAll,
               count: allCount,
               selected: selected == _PreviewFilter.all,
               onTap: onAll,
@@ -129,7 +129,7 @@ class _SegmentedFilters extends StatelessWidget {
           ),
           Expanded(
             child: _FilterButton(
-              label: 'Hazır',
+              label: context.l10n.bulkImportStatReady,
               count: readyCount,
               selected: selected == _PreviewFilter.ready,
               onTap: onReady,

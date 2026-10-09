@@ -5,6 +5,7 @@ import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 
 /// Açılır diyalog: [assignment] sahibi personeli, [sourceActivity] ile
 /// aynı tarihteki başka bir faaliyet kartına taşır.
@@ -63,8 +64,8 @@ class _TransferPersonnelDialogState
         controller: _newActivityNameController,
         autofocus: true,
         textCapitalization: TextCapitalization.sentences,
-        decoration: const InputDecoration(
-          labelText: 'Yeni faaliyet adı',
+        decoration: InputDecoration(
+          labelText: context.l10n.transferPersonnelNewActivityLabel,
           prefixIcon: Icon(Icons.add_card_rounded),
         ),
         onChanged: (_) => setState(() {}),
@@ -77,7 +78,7 @@ class _TransferPersonnelDialogState
         _selectedTargetId = null;
       }),
       icon: const Icon(Icons.add_card_rounded),
-      label: const Text('YENİ FAALİYET KARTI OLUŞTUR'),
+      label: Text(context.l10n.transferPersonnelCreateNewOption),
     );
   }
 
@@ -155,7 +156,7 @@ class _TransferPersonnelDialogState
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          'Kaynak: ${widget.sourceActivity.faaliyetAdi}',
+                          context.l10n.transferPersonnelSourceLabel(widget.sourceActivity.faaliyetAdi),
                           style: TextStyle(
                             fontSize: 12,
                             color: context.textSecondary,
@@ -167,7 +168,7 @@ class _TransferPersonnelDialogState
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Hedef Faaliyet Kartını Seçin:',
+                  context.l10n.transferPersonnelSelectTarget,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
@@ -299,7 +300,7 @@ class _TransferPersonnelDialogState
               onPressed: _isTransferring
                   ? null
                   : () => Navigator.of(context).pop(false),
-              child: const Text('İPTAL'),
+              child: Text(context.l10n.commonCancel.toUpperCase()),
             ),
             FilledButton.icon(
               key: const Key('personnel-transfer-confirm'),
@@ -313,7 +314,7 @@ class _TransferPersonnelDialogState
                       ),
                     )
                   : const Icon(Icons.person_pin_rounded, size: 18),
-              label: const Text('TAŞI'),
+              label: Text(context.l10n.transferPersonnelButton),
               onPressed:
                   (_isTransferring ||
                       (_selectedTargetId == null &&
@@ -323,6 +324,7 @@ class _TransferPersonnelDialogState
                   : () async {
                       setState(() => _isTransferring = true);
                       final navigator = Navigator.of(context);
+                      final l10n = context.l10n;
                       try {
                         if (session == null) {
                           throw StateError('Oturum bilgisi bulunamadı.');
@@ -348,16 +350,16 @@ class _TransferPersonnelDialogState
 
                         if (result.moved) {
                           AppNotifications.success(
-                            '${widget.personnelDisplayName} başarıyla taşındı.',
+                            l10n.transferPersonnelSuccess(widget.personnelDisplayName),
                           );
                         } else {
                           AppNotifications.warning(
-                            result.reason ?? 'Taşıma yapılamadı.',
+                            result.reason ?? l10n.transferPersonnelFailed,
                           );
                         }
                       } catch (e) {
                         if (!mounted) return;
-                        AppNotifications.error('Taşıma hatası: $e');
+                        AppNotifications.error(l10n.transferPersonnelError('$e'));
                         navigator.pop(false);
                       } finally {
                         if (mounted) setState(() => _isTransferring = false);

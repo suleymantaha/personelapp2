@@ -3,6 +3,7 @@ import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
@@ -65,7 +66,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Eşleşmeyi Sil'),
+        title: Text(context.l10n.bulkImportDeleteAliasTitle),
         content: Text(
           '\'${item.gorunenTakmaAd}\' ➔ \'${item.personelRutbe ?? ''} ${item.personelAdSoyad}\' '
           'öğrenilmiş takma ad eşleşmesi silinsin mi?',
@@ -73,7 +74,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('İPTAL'),
+            child: Text(context.l10n.commonCancel.toUpperCase()),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -81,7 +82,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
               foregroundColor: context.onStatusColor(context.rejectedColor),
             ),
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('SİL'),
+            child: Text(context.l10n.commonDelete.toUpperCase()),
           ),
         ],
       ),
@@ -362,7 +363,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                         ),
                                       ),
                                       IconButton(
-                                        tooltip: 'Takma adı hafızadan sil',
+                                        tooltip: context.l10n.bulkImportDeleteAliasTooltip,
                                         icon: Icon(
                                           Icons.delete_outline_rounded,
                                           color: context.rejectedColor,
@@ -384,7 +385,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                     width: double.infinity,
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('KAPAT'),
+                      child: Text(context.l10n.commonClose.toUpperCase()),
                     ),
                   ),
                 ),

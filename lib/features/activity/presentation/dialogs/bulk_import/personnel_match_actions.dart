@@ -44,9 +44,10 @@ class PersonnelMatchActions extends StatelessWidget {
                       backgroundColor: context.approvedColor,
                       foregroundColor:
                           context.onStatusColor(context.approvedColor),
-                      minimumSize: const Size(0, 48),
+                      minimumSize: const Size(0, 32),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
+                        horizontal: 10,
+                        vertical: 4,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -131,9 +132,9 @@ class PersonnelMatchActions extends StatelessWidget {
                     onTap: onSelect,
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      constraints: const BoxConstraints(minHeight: 48),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
+                        horizontal: 10,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
                         color: context.accentOrOlive.withValues(alpha: 0.12),

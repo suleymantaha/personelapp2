@@ -8,6 +8,7 @@
   "commonCancel": "İptal",
   "commonDismiss": "Vazgeç",
   "commonClose": "Kapat",
+  "commonBack": "Geri",
   "commonDelete": "Sil",
   "commonEdit": "Düzenle",
   "commonAdd": "Ekle",
@@ -30,7 +31,6 @@
   "commonApprove": "Onayla",
   "commonReject": "Reddet",
   "commonUnauthorized": "Bu sayfaya erişim yetkiniz bulunmuyor.",
-
   "activitySelectDutyTitle": "Görev veya İzin Seçin",
   "activityCommonDuty": "Ortak Görev",
   "activityPersonalDuty": "Kişisel Görev",
@@ -105,7 +105,6 @@
   "activityAddNote": "Not ekle",
   "activityEditNote": "Notu düzenle",
   "activityGeneralDutyNoteHint": "Görevle ilgili not",
-
   "personnelManagementTitle": "Personel Yönetimi",
   "personnelListTitle": "Personel Listesi",
   "personnelAddTitle": "Yeni Personel Ekle",
@@ -165,7 +164,6 @@
   "personnelNoCriteriaMatches": "Kriterlere uygun personel bulunamadı.",
   "commonSaving": "KAYDEDİLİYOR…",
   "commonRetry": "TEKRAR DENE",
-
   "authLoginTitle": "Giriş Yap",
   "authUsername": "Kullanıcı Adı",
   "authPassword": "Şifre",
@@ -187,7 +185,6 @@
   "authNewPasswordRepeat": "Yeni Parola (Tekrar)",
   "authPasswordsDoNotMatch": "Parolalar eşleşmiyor!",
   "authSavePasswordAndLogin": "PAROLAYI KAYDET VE GİRİŞ YAP",
-
   "dashboardTitle": "Ana Sayfa",
   "dashboardQuickActions": "Hızlı İşlemler",
   "dashboardStatistics": "İstatistikler",
@@ -230,7 +227,6 @@
   },
   "dashboardPendingTapToReview": "Onaylamak veya reddetmek için dokunun.",
   "dashboardSearchAndReview": "Arama ve İnceleme",
-
   "settingsChangePassword": "Şifremi Değiştir",
   "settingsNewPassword": "Yeni Şifreniz",
   "settingsPasswordUpdated": "Şifreniz başarıyla güncellendi!",
@@ -251,10 +247,8 @@
   "settingsFullBackup": "Tam Yedekleme",
   "settingsFullBackupSubtitle": "Tüm uygulama verilerini cihazda sakla veya geri yükle",
   "settingsUpdate": "GÜNCELLE",
-
   "matrixTitle": "Matris ve Çizelge",
   "reportTitle": "Raporlar",
-
   "rosterOutputTitle": "Çıktı Hazırla",
   "rosterSelectCardsHint": "Yazdırılacak kartları seçin. Önceki gün kartları listenin sonunda yer alır. Aynı kişi bir kez yazılır.",
   "rosterReload": "Yeniden yükle",
@@ -283,7 +277,6 @@
     }
   },
   "rosterNoApprovedPersonnel": "Seçilen kartlarda dışa aktarılacak onaylı personel bulunamadı.",
-
   "activityArchiveTitle": "Faaliyet Arşivi",
   "activityArchiveTeamTitle": "Tim Faaliyet Arşivi",
   "activityArchiveSelectedCount": "{count} faaliyet seçildi",
@@ -343,7 +336,6 @@
       }
     }
   },
-
   "matrixSearchHint": "Personel veya rütbe ara",
   "matrixClearSearchTooltip": "Aramayı temizle",
   "matrixPreviousMonth": "Önceki ay",
@@ -392,7 +384,6 @@
       }
     }
   },
-
   "temgundrapTitle": "TEMGÜNDRAP Çizelgeleri",
   "temgundrapDailyTitle": "Günlük TEMGÜNDRAP",
   "temgundrapArchiveTitle": "TEMGÜNDRAP Arşivi",
@@ -477,7 +468,6 @@
   "temgundrapNoArchivedDocMessage": "Başka bir tarih seçebilir veya tamamlanan bir taslağı arşivleyebilirsiniz.",
   "temgundrapNewDocButton": "YENİ ÇİZELGE",
   "temgundrapPickDateButton": "TARİH SEÇ",
-
   "temgundrapApproverDefaultsLoadFailed": "Onay bilgileri yüklenemedi: {error}",
   "@temgundrapApproverDefaultsLoadFailed": {
     "placeholders": {
@@ -508,7 +498,6 @@
   "temgundrapSaveAsDraft": "Taslak olarak kaydet",
   "temgundrapSaveDocumentButton": "ÇİZELGEYİ KAYDET",
   "temgundrapRequiredField": "Bu alan zorunludur.",
-
   "pendingApprovalsTitle": "Bekleyen Görev Onayları",
   "pendingApprovalsEmptyTitle": "Bekleyen Onay Yok",
   "pendingApprovalsEmptyDesc": "Onay bekleyen veya çakışan görev kaydı bulunmuyor.",
@@ -540,7 +529,6 @@
       }
     }
   },
-
   "activityDeleteTitle": "Faaliyeti Sil",
   "activityDeleteConfirm": "{name} ({date}) faaliyet kaydı silinecektir. Emin misiniz?",
   "@activityDeleteConfirm": {
@@ -647,5 +635,787 @@
         "type": "String"
       }
     }
-  }
+  },
+  "settingsUserNotFound": "Kullanıcı bulunamadı.",
+  "settingsPasswordUpdateFailed": "Şifre güncellenemedi: {error}",
+  "@settingsPasswordUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsAddTestPersonnelTitle": "10'ar Test Personeli Ekle",
+  "settingsAddTestPersonnelSubtitle": "Her time 10 adet sahte personel oluşturur",
+  "settingsTestPersonnelAddedSuccess": "{count} adet test personeli başarıyla eklendi!",
+  "@settingsTestPersonnelAddedSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsClearTestPersonnelTitle": "Test Personellerini Temizle",
+  "settingsClearTestPersonnelSubtitle": "Yalnızca işaretlenmiş test personellerini temizler",
+  "settingsDeletePersonnelConfirmTitle": "Personelleri Sil",
+  "settingsDeleteTestPersonnelConfirmMessage": "Yalnızca test olarak işaretlenmiş personel kayıtları silinecektir. Emin misiniz?",
+  "settingsTestPersonnelCleared": "İşaretlenmiş test personelleri temizlendi!",
+  "activityArchiveSelectedActivitiesCount": "{dateTitle} • {count} Seçili Faaliyet",
+  "@activityArchiveSelectedActivitiesCount": {
+    "placeholders": {
+      "dateTitle": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityArchiveFallbackPersonnelName": "Personel #{id}",
+  "@activityArchiveFallbackPersonnelName": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
+  "activityArchiveUnknownTeamHistory": "Tim geçmişi bilinmiyor",
+  "backupRestoreTitle": "Yedekleme ve Geri Yükleme",
+  "backupExportTab": "Dışa Aktar",
+  "backupImportTab": "İçe Aktar",
+  "backupExportSuccess": "Tam uygulama yedeği dışa aktarıldı.",
+  "backupSaveCancelled": "Kaydetme işlemi iptal edildi.",
+  "backupExportFailed": "Yedek dışa aktarılamadı: {error}",
+  "@backupExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "backupImportSuccess": "Yedek başarıyla geri yüklendi.",
+  "backupImportFailed": "Yedek geri yüklenemedi: {error}",
+  "@backupImportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "backupFilePickerError": "Dosya seçilemedi: {error}",
+  "@backupFilePickerError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "backupInvalidJson": "Geçerli bir JSON yedek verisi giriniz.",
+  "backupVerifyButton": "Yedeği Doğrula",
+  "backupRestoreConfirmTitle": "Yedeği Geri Yükle",
+  "backupRestoreConfirmMessage": "Mevcut tüm veriler yedekteki verilerle değiştirilecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?",
+  "backupRestoreButton": "GERİ YÜKLE",
+  "backupExportSubtitle": "Uygulamanın tam yedeğini cihazınıza kaydedin veya paylaşın.",
+  "backupImportSubtitle": "Daha önce alınmış bir yedeği yükleyerek verilerinizi geri yükleyin.",
+  "backupStatsPersonnel": "Personel Sayısı",
+  "backupStatsActivities": "Faaliyet Sayısı",
+  "backupStatsAssignments": "Atama Sayısı",
+  "backupStatsTemgundrap": "TEMGÜNDRAP Kayıtları",
+  "backupExportDate": "Yedek Tarihi",
+  "backupCopyJson": "JSON Kopyala",
+  "backupJsonCopied": "Yedek verisi panoya kopyalandı.",
+  "backupDownloadFile": "Dosya Olarak Kaydet",
+  "addPersonnelDialogTitle": "Personel Ekle",
+  "addPersonnelResultTitle": "Ekleme sonucu",
+  "addPersonnelResultContent": "{added} personel eklendi.\n{already} personel zaten kayıtlı.\n{conflict} personel çakışma nedeniyle eklenemedi.",
+  "@addPersonnelResultContent": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "already": {
+        "type": "int"
+      },
+      "conflict": {
+        "type": "int"
+      }
+    }
+  },
+  "addPersonnelFailed": "Personel eklenemedi: {error}",
+  "@addPersonnelFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "addPersonnelSelectedCount": "{count} personel seçildi",
+  "@addPersonnelSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addPersonnelLoadError": "Personel bilgileri yüklenemedi. Ekranı kapatıp yeniden deneyin.",
+  "addPersonnelNoAvailable": "Eklenebilecek personel bulunamadı.",
+  "addPersonnelAlreadyRegistered": "Bu faaliyette zaten kayıtlı",
+  "addPersonnelStepPersonnel": "Personel",
+  "addPersonnelStepDuty": "Görev",
+  "addPersonnelAddToActivity": "Faaliyete Ekle",
+  "addPersonnelContinue": "Devam et",
+  "conflictPersonnelTitle": "Bazı personeller eklenmedi",
+  "conflictPersonnelMessage": "Kayıt tamamlandı. Aynı gün için başka kaydı bulunan {count} personel atlandı.",
+  "@conflictPersonnelMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "conflictPersonnelUnderstood": "ANLADIM",
+  "conflictPersonnelFallback": "Çakışan kayıt",
+  "conflictPersonnelDetail": "Bu tarihte başka bir faaliyet kaydı bulunuyor.",
+  "transferPersonnelTitle": "Personel Taşı",
+  "transferPersonnelSourceLabel": "Kaynak: {activityName}",
+  "@transferPersonnelSourceLabel": {
+    "placeholders": {
+      "activityName": {
+        "type": "String"
+      }
+    }
+  },
+  "transferPersonnelSelectTarget": "Hedef Faaliyet Kartını Seçin:",
+  "transferPersonnelNoOtherActivity": "{date} tarihinde başka faaliyet kartı bulunamadı.",
+  "@transferPersonnelNoOtherActivity": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "transferPersonnelCreateNewOption": "YENİ FAALİYET KARTI OLUŞTUR",
+  "transferPersonnelNewActivityLabel": "Yeni faaliyet adı",
+  "transferPersonnelButton": "TAŞI",
+  "transferPersonnelSuccess": "{name} başarıyla taşındı.",
+  "@transferPersonnelSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "transferPersonnelFailed": "Taşıma yapılamadı.",
+  "transferPersonnelError": "Taşıma hatası: {error}",
+  "@transferPersonnelError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "transferSquadTitle": "Tim Taşı",
+  "transferSquadButton": "TAŞI",
+  "transferSquadSuccess": "{squadName}: {count} personel başarıyla taşındı.{skippedNote}",
+  "@transferSquadSuccess": {
+    "placeholders": {
+      "squadName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "skippedNote": {
+        "type": "String"
+      }
+    }
+  },
+  "transferSquadSkippedNote": " ({count} personel zaten hedef faaliyette olduğu için atlandı)",
+  "@transferSquadSkippedNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transferSquadAllExisting": "Tüm personel zaten hedef faaliyette mevcut, taşıma yapılmadı.",
+  "transferSquadError": "Taşıma hatası: {error}",
+  "@transferSquadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "excelPickerSelectCardsTitle": "Çıktıya Eklenecek Kartlar",
+  "excelPickerNotice": "Ana Heybet kartı dahil edilir. Ek kartları seçin; aynı kişi çıktıda yalnızca bir kez yer alır.",
+  "excelPickerNoExtraCards": "Bu güne ait ek kart bulunamadı.",
+  "excelPickerSameDayCards": "Aynı Günün Kartları",
+  "excelPickerPreviousDayCards": "Önceki Günün Kartları",
+  "excelPickerPreviewButton": "Önizleme ({count})",
+  "@excelPickerPreviewButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "excelPickerCombinedPreviewTitle": "Birleşik Çıktı Önizlemesi",
+  "excelPickerCombinedNotice": "{count} personel • Her kişi bir kez • Toplam baskıda gösterilmez",
+  "@excelPickerCombinedNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "excelPickerSelectExport": "Çıktı Seç",
+  "bulkImportHeaderTitle": "Toplu Faaliyet Aktarımı",
+  "bulkImportHeaderSubtitle": "WhatsApp, SMS veya metin listesinden akıllı görev ayrıştırma",
+  "bulkImportMemoryButton": "Eşleşme Hafızası",
+  "bulkImportCloseTooltip": "Kapat",
+  "bulkImportStepPaste": "Metin Girişi",
+  "bulkImportStepPreview": "Önizleme ve Kontrol",
+  "bulkImportStepConfirm": "Onay ve Kayıt",
+  "bulkImportInputPlaceholder": "Görev listesini buraya yapıştırın...\nÖrn:\n01.03.2026 1-A Timi\n1. J.Uzm.Çvş. Ahmet Yılmaz (08:00 - 12:00 Nöbetçi)",
+  "bulkImportKeepAuditTextLabel": "Kaynak metni denetim için kaydet",
+  "bulkImportKeepAuditTextTooltip": "Yapıştırılan ham metin, denetim geçmişinde saklanır.",
+  "bulkImportParseButton": "Metni Ayrıştır",
+  "bulkImportParsingButton": "Ayrıştırılıyor...",
+  "bulkImportClearButton": "Temizle",
+  "bulkImportPasteSampleButton": "Örnek Metin",
+  "bulkImportConfirmTitle": "Aktarım Özeti ve Kayıt",
+  "bulkImportConfirmSubtitle": "Ayrıştırılan kayıtlar doğrulanarak veritabanına aktarılacaktır.",
+  "bulkImportConfirmTotalCards": "Oluşturulacak Kart:",
+  "bulkImportConfirmTotalPersonnel": "Görevlendirilecek Personel:",
+  "bulkImportConfirmSaveButton": "TÜMÜNÜ KAYDET",
+  "bulkImportConfirmReturnButton": "Önizlemeye Dön",
+  "bulkImportEmptyTitle": "Henüz ayrıştırılmış veri yok",
+  "bulkImportEmptySubtitle": "Sol taraftan metin yapıştırıp 'Metni Ayrıştır' butonuna basarak başlayabilirsiniz.",
+  "bulkImportStatTotalCards": "Kart",
+  "bulkImportStatTotalPeople": "Personel",
+  "bulkImportStatReady": "Hazır",
+  "bulkImportStatIssues": "Sorunlu",
+  "bulkImportFilterAll": "Tümü ({count})",
+  "@bulkImportFilterAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportFilterProblems": "Sorunlar ({count})",
+  "@bulkImportFilterProblems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportFilterReady": "Hazır ({count})",
+  "@bulkImportFilterReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportWizardStart": "Sorun Sihirbazı",
+  "bulkImportWizardPrev": "Önceki Sorun",
+  "bulkImportWizardNext": "Sonraki Sorun",
+  "bulkImportConfirmAllSuggestions": "Tüm Önerileri Onayla",
+  "bulkImportClearAllCards": "Tümünü Temizle",
+  "bulkImportClearAllConfirmTitle": "Tüm Kartları Temizle",
+  "bulkImportClearAllConfirmMessage": "Ayrıştırılmış tüm faaliyet kartları silinecektir. Emin misiniz?",
+  "bulkImportSaveBarSave": "KAYDET",
+  "bulkImportSaveBarSaving": "KAYDEDİLİYOR…",
+  "bulkImportSaveBarFixIssues": "Sorunları Düzeltin",
+  "bulkImportNoCardsToSave": "Kaydedilecek kart bulunamadı.",
+  "bulkImportUnresolvedPersonnelError": "{count} personel eşleşmedi. Lütfen tüm personelleri seçin veya listeden kaldırın.",
+  "@bulkImportUnresolvedPersonnelError": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportEmptyCardsError": "Personeli bulunmayan boş kartlar var. Lütfen kartları düzenleyin veya silin.",
+  "bulkImportBlockingIssuesError": "Lütfen önce çözülmemiş kart sorunlarını (tarih, tim veya görev türü) tamamlayın.",
+  "bulkImportCompletedTitle": "Aktarım Tamamlandı",
+  "bulkImportSuccessNotification": "{activityName} faaliyetine {count} personel eklendi.",
+  "@bulkImportSuccessNotification": {
+    "placeholders": {
+      "activityName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportPersonRemoved": "{rank} {name} kaldırıldı.",
+  "@bulkImportPersonRemoved": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportBlockRemoved": "{activityType} kartı kaldırıldı.",
+  "@bulkImportBlockRemoved": {
+    "placeholders": {
+      "activityType": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportUndo": "GERİ AL",
+  "bulkImportDuplicateTitle": "Yinelenen Personel",
+  "bulkImportDuplicateDesc": "Aynı personel aynı gün birden fazla karta atanmış.",
+  "bulkImportEditBlockTitle": "Faaliyet Kartını Düzenle",
+  "bulkImportBlockDate": "Tarih",
+  "bulkImportBlockSquad": "Bağlı Tim",
+  "bulkImportBlockActivity": "Faaliyet / Görev Türü",
+  "bulkImportBlockTimeRange": "Saat Aralığı (İsteğe bağlı)",
+  "bulkImportMemoryTitle": "Öğrenilen İsim Eşleştirmeleri",
+  "bulkImportMemoryEmpty": "Henüz kaydedilmiş bir eşleştirme hafızası bulunmuyor.",
+  "bulkImportMemoryClearAll": "Tüm Hafızayı Temizle",
+  "bulkImportMemoryAliasRemoved": "Eşleştirme silindi.",
+  "backupRestoreSurfaceTitle": "Tam yedekleme ve geri yükleme",
+  "backupRestoreSurfaceSubtitle": "Bulut gerekmez; dosya sizin seçtiğiniz yerde kalır.",
+  "backupModeExport": "Yedekle",
+  "backupModeImport": "Geri yükle",
+  "backupInfoWhatIsInsideTitle": "Yedekte neler var?",
+  "backupInfoWhatIsInsideDesc": "İsimler, timler, kullanıcılar, telefonlar, görevler, aylık matris, faaliyet arşivi, raporlar, takma adlar, toplu aktarım geçmişi ve TEMGÜNDRAP belgeleri.",
+  "backupInfoPreserveTitle": "Uygulama silinse de koruyun",
+  "backupInfoPreserveDesc": "Açılan kaydet ekranından İndirilenler gibi cihazın yerel bir klasörünü seçin. Uygulamanın kendi klasörüne bırakmayın.",
+  "backupInfoSecurityTitle": "Dosyayı güvenli tutun",
+  "backupInfoSecurityDesc": "Yedek kişisel bilgiler içerir. Yalnızca güvenilir bir yerel klasörde saklayın ve başkalarıyla paylaşmayın.",
+  "backupSaveToDeviceButton": "Tam yedeği cihazda sakla",
+  "backupCopyTextButton": "Yedek metnini de kopyala",
+  "backupPickFileButton": "Yedek dosyası seç",
+  "backupPasteFromClipboardButton": "Panodaki eski yedeği kullan",
+  "backupRestoreExecuteButton": "Yedeği geri yükle",
+  "backupPreviewLegacyDate": "Eski yedek",
+  "backupPreviewLegacyTitle": "Eski personel yedeği",
+  "backupPreviewVerifiedTitle": "Doğrulanmış tam yedek",
+  "backupPreviewSummary": "{date} • {personnelCount} personel • {activityCount} faaliyet • {assignmentCount} görev kaydı • {temgundrapCount} TEMGÜNDRAP",
+  "@backupPreviewSummary": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "personnelCount": {
+        "type": "int"
+      },
+      "activityCount": {
+        "type": "int"
+      },
+      "assignmentCount": {
+        "type": "int"
+      },
+      "temgundrapCount": {
+        "type": "int"
+      }
+    }
+  },
+  "backupConfirmOverwriteTitle": "Mevcut veriler değiştirilsin mi?",
+  "backupConfirmOverwriteMessage": "Tam geri yükleme mevcut personel, görev, matris ve TEMGÜNDRAP kayıtlarının yerine yedekteki verileri koyar. Bu işlem geri alınamaz.",
+  "backupClipboardEmpty": "Panoda yedek metni bulunamadı.",
+  "backupClipboardReadError": "Panodaki yedek okunamadı.",
+  "backupPickFilePrompt": "Önce bir yedek dosyası seçin.",
+  "backupTextCopied": "Yedek metni panoya kopyalandı.",
+  "backupVerifiedReady": "Yedek doğrulandı ve geri yüklemeye hazır.",
+  "backupCreateFailed": "Yedek oluşturulamadı. Lütfen tekrar deneyin.",
+  "backupFileReadError": "Yedek dosyası okunamadı.",
+  "backupRestoreFailedDataPreserved": "Yedek geri yüklenemedi; mevcut veriler korunmuştur.",
+  "backupLegacyImportSuccess": "{count} yeni personel eski yedekten aktarıldı.",
+  "@backupLegacyImportSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupFullRestoreSuccess": "Geri yükleme tamamlandı: {personnelCount} personel, {activityCount} faaliyet ve {temgundrapCount} TEMGÜNDRAP belgesi.",
+  "@backupFullRestoreSuccess": {
+    "placeholders": {
+      "personnelCount": {
+        "type": "int"
+      },
+      "activityCount": {
+        "type": "int"
+      },
+      "temgundrapCount": {
+        "type": "int"
+      }
+    }
+  },
+  "activityDutyForPersonnel": "{name} için görev",
+  "@activityDutyForPersonnel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportBannerTitle": "Metinden Toplu Aktarım",
+  "bulkImportManageMemoryTooltip": "Sistem Hafızasını (Takma Adları) Yönet",
+  "bulkImportStepSaveLockedTooltip": "Tüm kart sorunları çözülünce kaydet adımı açılır",
+  "bulkImportConfirmCannotSave": "Kaydedilemiyor",
+  "bulkImportConfirmReadyToSave": "Kayda Hazır",
+  "bulkImportConfirmResolveIssues": "Lütfen önizleme adımına dönüp sorunları çözün.",
+  "bulkImportConfirmSummary": "{cardCount} kart, {personnelCount} personel, {dayCount} gün",
+  "@bulkImportConfirmSummary": {
+    "placeholders": {
+      "cardCount": {
+        "type": "int"
+      },
+      "personnelCount": {
+        "type": "int"
+      },
+      "dayCount": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportInputRawTitle": "Ham Metni Yapıştırın:",
+  "bulkImportInputRawSubtitle": "Tarih, görev türü ve personel listesini içeren mesajı olduğu gibi yapıştırabilirsiniz.",
+  "bulkImportKeepAuditTextDesc": "Varsayılan kapalıdır; veri yalnızca bu cihazda tutulur.",
+  "bulkImportInputPlaceholderShort": "Mesaj metnini buraya yapıştırın…",
+  "bulkImportParseAndCreateCards": "Metni Ayrıştır ve Kartları Oluştur",
+  "bulkImportEmptyNoCardIssues": "Kartlara bağlı sorun kalmadı",
+  "bulkImportEmptyAllIssuesResolved": "Tüm kart sorunları çözüldü",
+  "bulkImportEmptyCheckNoticePanel": "Kalan kritik ayrıştırma sorunlarını yukarıdaki uyarı panelinden inceleyin.",
+  "bulkImportEmptyReturnToAllCards": "İsterseniz tüm faaliyet kartlarına geri dönebilirsiniz.",
+  "bulkImportEmptyShowAllCards": "TÜM KARTLARI GÖSTER",
+  "bulkImportStatCardCount": "{count} Kart",
+  "@bulkImportStatCardCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportStatPersonnelCount": "{count} Personel",
+  "@bulkImportStatPersonnelCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportStatDayCount": "{count} Gün",
+  "@bulkImportStatDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportSearchHint": "Personel, tim veya satır ara",
+  "bulkImportFilterProblemsLabel": "Sorunlar",
+  "bulkImportCorrectnessPanelTitle": "Doğruluk Paneli",
+  "bulkImportCannotSaveStatus": "Kaydedilemiyor",
+  "bulkImportAllChecksPassed": "Tüm kontroller tamam",
+  "bulkImportActionsRequiredBeforeSave": "Kaydetmeden önce {count} işlem tamamlanmalı",
+  "@bulkImportActionsRequiredBeforeSave": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportOptionalReviews": "{count} isteğe bağlı inceleme",
+  "@bulkImportOptionalReviews": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportCriticalErrors": "{count} kritik hata",
+  "@bulkImportCriticalErrors": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportReviewsCount": "{count} inceleme",
+  "@bulkImportReviewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportMetricCard": "kart",
+  "bulkImportMetricPersonnel": "personel",
+  "bulkImportMetricDay": "gün",
+  "bulkImportMetricCritical": "kritik",
+  "bulkImportMetricReview": "inceleme",
+  "bulkImportIgnoredLinesNotice": "{count} başlık, toplam veya not satırı personel kaydı olarak alınmadı.",
+  "@bulkImportIgnoredLinesNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportNoCardsYet": "Henüz Kart Oluşturulmadı",
+  "bulkImportReturnToPastePrompt": "Yapıştır adımına dönüp mesajı yapıştırın.",
+  "bulkImportStatusCritical": "Kritik",
+  "bulkImportStatusReview": "İnceleme",
+  "bulkImportFixAction": "Düzelt",
+  "bulkImportLineNumber": "Satır {number}",
+  "@bulkImportLineNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportDuplicateListTitle": "Bu Liste Daha Önce Aktarıldı",
+  "bulkImportDuplicateListMessage": "{dates} tarihli bu içerik {recordDate} tarihinde {user} tarafından kaydedilmiş.\n\nVeritabanında bu listeye ait {activeCount} personel kaydı aktif duruyor. Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?",
+  "@bulkImportDuplicateListMessage": {
+    "placeholders": {
+      "dates": {
+        "type": "String"
+      },
+      "recordDate": {
+        "type": "String"
+      },
+      "user": {
+        "type": "String"
+      },
+      "activeCount": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportCompleteMissingOrReimport": "EKSİKLERİ TAMAMLA / YENİDEN AKTAR",
+  "bulkImportSummaryActivitiesProcessed": "{count} günlük faaliyet işlendi.",
+  "@bulkImportSummaryActivitiesProcessed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportSummaryPersonnelAdded": "{count} yeni personel eklendi.",
+  "@bulkImportSummaryPersonnelAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportSummaryAlreadyAssigned": "{count} personel zaten o görevde ekliydi.",
+  "@bulkImportSummaryAlreadyAssigned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportSummaryDeduplicated": "{count} tekrar tekilleştirildi.",
+  "@bulkImportSummaryDeduplicated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportSummarySkippedConflict": "{count} çakışan kayıt atlandı.",
+  "@bulkImportSummarySkippedConflict": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportSuccessBanner": "{blockCount} blok → {activityCount} günlük faaliyet, {personnelCount} personel başarıyla eklendi.",
+  "@bulkImportSuccessBanner": {
+    "placeholders": {
+      "blockCount": {
+        "type": "int"
+      },
+      "activityCount": {
+        "type": "int"
+      },
+      "personnelCount": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportSaveButtonSummary": "{blockCount} blok -> {dayCount} günlük faaliyet",
+  "@bulkImportSaveButtonSummary": {
+    "placeholders": {
+      "blockCount": {
+        "type": "int"
+      },
+      "dayCount": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportSaveActivitiesWithCardCount": "Faaliyetleri Kaydet ({count} Kart)",
+  "@bulkImportSaveActivitiesWithCardCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportNextReview": "Sonraki inceleme",
+  "bulkImportOpenNextProblem": "Sonraki sorunu aç",
+  "bulkImportRemainingActionsBeforeSave": "Kaydetmek için {count} işlem kaldı",
+  "@bulkImportRemainingActionsBeforeSave": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportCriticalAndReviewCount": "{criticalCount} kritik hata • {reviewCount} inceleme",
+  "@bulkImportCriticalAndReviewCount": {
+    "placeholders": {
+      "criticalCount": {
+        "type": "int"
+      },
+      "reviewCount": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportPendingReviewItemsTitle": "İnceleme Bekleyen Ögeler Var",
+  "bulkImportReviewItemsSubtitle": "{count} eşleşme/tim kontrolü gerektiriyor",
+  "@bulkImportReviewItemsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportReadyToSaveSubtitle": "Kayda hazır",
+  "bulkImportHighlightedCardsPrompt": "Lütfen aşağıda vurgulanan kartlardaki eksik personelleri eşleştirin, tekrarları düzeltin veya boş kartları silin.",
+  "bulkImportDuplicateSubtitle": "Aynı personel aynı tarihte birden fazla görevde bulunuyor. Aktarmadan önce önizlemedeki tekrarları düzeltin.",
+  "bulkImportReturnToPreviewButton": "ÖNİZLEMEYE DÖN",
+  "bulkImportDefaultTeamOption": "Varsayılan / Personel Timi",
+  "bulkImportCustomOption": "DİĞER (Elle Yaz...)",
+  "bulkImportQuickDutySelection": "Hızlı Görev Seçimi",
+  "bulkImportSelectDutyHint": "Görev seç",
+  "bulkImportSelectDutyType": "Görev / Faaliyet Türü Seçin",
+  "bulkImportCustomDutyName": "Görev / Faaliyet Adı (Elle Düzenle)",
+  "bulkImportSelectTeam": "Takım / Tim Seçin",
+  "bulkImportCustomTeamName": "Takım / Tim Adı (Elle Düzenle)",
+  "bulkImportApplyChanges": "DEĞİŞİKLİKLERİ UYGULA",
+  "bulkImportDeleteAliasTitle": "Eşleşmeyi Sil",
+  "bulkImportDeleteAliasConfirm": "'{rawName}' ➔ '{rank} {name}' öğrenilmiş takma ad eşleşmesi silinsin mi?",
+  "@bulkImportDeleteAliasConfirm": {
+    "placeholders": {
+      "rawName": {
+        "type": "String"
+      },
+      "rank": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportAliasDeletedFromMemory": "'{name}' hafızadan silindi.",
+  "@bulkImportAliasDeletedFromMemory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportSystemMemoryTitle": "Sistem Hafızası",
+  "bulkImportLearnedAliasesCount": "{count} Öğrenilmiş İsim Takma Adı",
+  "@bulkImportLearnedAliasesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportSearchAliasHintMobile": "Yazım veya personel adı ara",
+  "bulkImportSearchAliasHintDesktop": "Metindeki yazım veya personel adıyla ara...",
+  "bulkImportNoAliasFoundForSearch": "Aramanıza uygun takma ad bulunamadı.",
+  "bulkImportNoLearnedAliasesYet": "Henüz öğrenilmiş bir takma ad bulunmuyor.\nToplu aktarımlarda onayladığınız eşleşmeler otomatik hafızaya alınır.",
+  "bulkImportTextName": "Metindeki ad",
+  "bulkImportMatchedPersonnel": "Eşleştiği personel",
+  "bulkImportDeleteAliasTooltip": "Takma adı hafızadan sil",
+  "bulkImportUnassignedOrOtherPersonnel": "Timsiz / Diğer Personeller",
+  "bulkImportPersonnelNotSelected": "Personel seçilmedi",
+  "bulkImportAutoMatchedFromMemory": "Hafızadan Otomatik Eşleşti",
+  "bulkImportFromMemory": "Hafızadan",
+  "bulkImportInText": "Metinde: {text}",
+  "@bulkImportInText": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportRemovePersonnelTooltip": "Personeli kaldır",
+  "bulkImportSelectedError": "SEÇİLİ HATA",
+  "bulkImportReviewedPersonnel": "İNCELENEN PERSONEL",
+  "bulkImportDuplicateOnSameDate": "Aynı tarihte ayrıca: {assignments}",
+  "@bulkImportDuplicateOnSameDate": {
+    "placeholders": {
+      "assignments": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportTeamMismatchAccept": "Tim dışı görev (Kabul et)",
+  "bulkImportUserConfirmed": "Kullanıcı onayladı",
+  "bulkImportTeamMismatchDuty": "Tim dışı görev",
+  "bulkImportCheckMatchWithPercent": "Eşleşmeyi kontrol edin (%{percent})",
+  "@bulkImportCheckMatchWithPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportCheckMatch": "Eşleşmeyi kontrol edin",
+  "bulkImportMatched": "Eşleşti",
+  "bulkImportNotMatched": "Eşleşmedi",
+  "bulkImportError": "Hata oluştu: {error}",
+  "@bulkImportError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportNoPersonnelToAdd": "Eklenecek personel bulunamadı.",
+  "bulkImportClearPreviewTitle": "Önizlemeyi temizle?",
+  "bulkImportClearPreviewMessage": "Oluşturulan tüm kartlar ve ayrıştırma uyarıları kaldırılacak.",
+  "bulkImportAllSuggestionsConfirmed": "Tüm önerilen personel eşleşmeleri onaylandı.",
+  "bulkImportPersonAddedToDbAndMatched": "{rank} {name} veritabanına ({team}) eklendi ve eşleştirildi.",
+  "@bulkImportPersonAddedToDbAndMatched": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "commonNoTeam": "Timsiz",
+  "bulkImportSelectDate": "Tarih seç"
 }

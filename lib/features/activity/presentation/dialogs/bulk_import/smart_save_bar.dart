@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'bulk_import_issue_summary.dart';
 
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_problem_wizard.dart';
@@ -114,10 +115,10 @@ class SmartSaveBar extends StatelessWidget {
         : context.pendingColor;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: context.cardBorderColor),
       ),
       child: Column(
@@ -147,16 +148,16 @@ class SmartSaveBar extends StatelessWidget {
                       : actionLabel ??
                             'Faaliyetleri Kaydet (${blocks.length} Kart)',
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 style: FilledButton.styleFrom(
                   backgroundColor: context.approvedColor,
                   foregroundColor: context.onStatusColor(context.approvedColor),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
               ),
@@ -233,7 +234,7 @@ class SmartSaveBar extends StatelessWidget {
                     onPressed: onGotoProblem,
                     icon: const Icon(Icons.arrow_forward_rounded, size: 18),
                     label: Text(
-                      hasCritical ? 'Sonraki sorunu aç' : 'Sonraki inceleme',
+                      hasCritical ? context.l10n.bulkImportOpenNextProblem : context.l10n.bulkImportNextReview,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 13,

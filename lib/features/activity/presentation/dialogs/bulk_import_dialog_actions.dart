@@ -75,7 +75,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
   Future<void> _saveAllToFaaliyet() async {
     if (_parsedBlocks.isEmpty) {
-      AppNotifications.warning('Kaydedilecek kart bulunamadı.');
+      AppNotifications.warning(context.l10n.bulkImportNoCardsToSave);
       return;
     }
     if (_unresolvedPersonnelCount > 0) {
@@ -130,7 +130,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       );
     } on Object catch (e) {
       if (mounted) {
-        AppNotifications.error('Hata oluştu: $e');
+        AppNotifications.error(context.l10n.bulkImportError(e.toString()));
       }
     } finally {
       if (mounted) {
@@ -174,7 +174,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     }
 
     if (assignments.isEmpty) {
-      AppNotifications.warning('Eklenecek personel bulunamadı.');
+      AppNotifications.warning(context.l10n.bulkImportNoPersonnelToAdd);
       return;
     }
 
@@ -195,22 +195,22 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
       if (!mounted) return;
       final summaryLines = <String>[
-        '${target.faaliyetAdi} faaliyetine ${result.addedCount} personel eklendi.',
+        context.l10n.bulkImportSuccessNotification(target.faaliyetAdi, result.addedCount),
         if (result.alreadyAssignedCount > 0)
-          '${result.alreadyAssignedCount} personel zaten ekliydi.',
+          context.l10n.bulkImportSummaryAlreadyAssigned(result.alreadyAssignedCount),
         if (result.conflictSkippedCount > 0)
-          '${result.conflictSkippedCount} çakışan kayıt atlandı.',
+          context.l10n.bulkImportSummarySkippedConflict(result.conflictSkippedCount),
       ];
       await showDialog<void>(
         context: context,
         builder:
             (dialogContext) => AlertDialog(
-              title: const Text('Aktarım Tamamlandı'),
+              title: Text(context.l10n.bulkImportCompletedTitle),
               content: Text(summaryLines.join('\n')),
               actions: [
                 FilledButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('TAMAM'),
+                  child: Text(context.l10n.commonOk),
                 ),
               ],
             ),
@@ -218,7 +218,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       if (!mounted) return;
       Navigator.pop(context, true);
       AppNotifications.success(
-        '${target.faaliyetAdi} faaliyetine ${result.addedCount} personel eklendi.',
+        context.l10n.bulkImportSuccessNotification(target.faaliyetAdi, result.addedCount),
       );
     } finally {
       if (mounted) {
@@ -248,8 +248,8 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       _parsedBlocks[blockIndex] = block.copyWith(personnelList: updated);
     });
     AppNotifications.info(
-      '${removed.rawRank} ${removed.rawName} kaldırıldı.',
-      actionLabel: 'GERİ AL',
+      context.l10n.bulkImportPersonRemoved(removed.rawRank, removed.rawName),
+      actionLabel: context.l10n.bulkImportUndo,
       onAction: () {
         if (!mounted) return;
         final currentBlockIndex = _parsedBlocks.indexWhere(
@@ -281,8 +281,8 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     final removed = _parsedBlocks[blockIndex];
     _updateState(() => _parsedBlocks.removeAt(blockIndex));
     AppNotifications.info(
-      '${removed.parsedActivityType} kartı kaldırıldı.',
-      actionLabel: 'GERİ AL',
+      context.l10n.bulkImportBlockRemoved(removed.parsedActivityType),
+      actionLabel: context.l10n.bulkImportUndo,
       onAction: () {
         if (!mounted) return;
         _updateState(() {
@@ -313,18 +313,18 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       context: context,
       builder:
           (dialogContext) => AlertDialog(
-            title: const Text('Önizlemeyi temizle?'),
+            title: Text(context.l10n.bulkImportClearPreviewTitle),
             content: const Text(
               'Oluşturulan tüm kartlar ve ayrıştırma uyarıları kaldırılacak.',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('VAZGEÇ'),
+                child: Text(context.l10n.commonDismiss.toUpperCase()),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('TEMİZLE'),
+                child: Text(context.l10n.commonClear.toUpperCase()),
               ),
             ],
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -103,9 +104,9 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
       _reportBackupError('Yedek oluşturulamadı', error, stackTrace);
       if (!mounted) return;
       setState(() {
-        _notice = const _BackupNotice(
+        _notice = _BackupNotice(
           type: _BackupNoticeType.error,
-          message: 'Yedek oluşturulamadı. Lütfen tekrar deneyin.',
+          message: context.l10n.backupCreateFailed,
         );
       });
     } finally {
@@ -128,7 +129,7 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
       if (mounted) _showError(error.message);
     } on Object catch (error, stackTrace) {
       _reportBackupError('Yedek dosyası okunamadı', error, stackTrace);
-      if (mounted) _showError('Yedek dosyası okunamadı.');
+      if (mounted) _showError(context.l10n.backupFileReadError);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -140,9 +141,9 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
     setState(() {
       _textController.text = contents;
       _preview = preview;
-      _notice = const _BackupNotice(
+      _notice = _BackupNotice(
         type: _BackupNoticeType.success,
-        message: 'Yedek doğrulandı ve geri yüklemeye hazır.',
+        message: context.l10n.backupVerifiedReady,
       );
     });
   }
@@ -150,7 +151,7 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
   Future<void> _importBackup() async {
     final input = _textController.text.trim();
     if (input.isEmpty) {
-      _showError('Önce bir yedek dosyası seçin.');
+      _showError(context.l10n.backupPickFilePrompt);
       return;
     }
     try {
@@ -191,7 +192,7 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
     } on Object catch (error, stackTrace) {
       _reportBackupError('Yedek geri yüklenemedi', error, stackTrace);
       if (mounted) {
-        _showError('Yedek geri yüklenemedi; mevcut veriler korunmuştur.');
+        _showError(context.l10n.backupRestoreFailedDataPreserved);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -203,7 +204,7 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Mevcut veriler değiştirilsin mi?'),
+            title: Text(context.l10n.backupConfirmOverwriteTitle),
             content: const Text(
               'Tam geri yükleme mevcut personel, görev, matris ve '
               'TEMGÜNDRAP kayıtlarının yerine yedekteki verileri koyar. '
@@ -212,12 +213,12 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Vazgeç'),
+                child: Text(context.l10n.commonDismiss),
               ),
               FilledButton(
                 key: const Key('backup-confirm-restore'),
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Geri yükle'),
+                child: Text(context.l10n.backupModeImport),
               ),
             ],
           ),
@@ -230,9 +231,9 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
     await Clipboard.setData(ClipboardData(text: _textController.text));
     if (!mounted) return;
     setState(() {
-      _notice = const _BackupNotice(
+      _notice = _BackupNotice(
         type: _BackupNoticeType.success,
-        message: 'Yedek metni panoya kopyalandı.',
+        message: context.l10n.backupTextCopied,
       );
     });
   }
@@ -241,7 +242,7 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
     final text = data?.text;
     if (text == null || text.trim().isEmpty) {
-      if (mounted) _showError('Panoda yedek metni bulunamadı.');
+      if (mounted) _showError(context.l10n.backupClipboardEmpty);
       return;
     }
     setState(() => _isLoading = true);
@@ -252,7 +253,7 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
       if (mounted) _showError(error.message);
     } on Object catch (error, stackTrace) {
       _reportBackupError('Panodaki yedek okunamadı', error, stackTrace);
-      if (mounted) _showError('Panodaki yedek okunamadı.');
+      if (mounted) _showError(context.l10n.backupClipboardReadError);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -443,7 +444,7 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
           key: const Key('backup-create'),
           onPressed: _isLoading ? null : _exportBackup,
           icon: const Icon(Icons.save_alt_rounded),
-          label: const Text('Tam yedeği cihazda sakla'),
+          label: Text(context.l10n.backupSaveToDeviceButton),
         ),
         if (_textController.text.isNotEmpty) ...[
           const SizedBox(height: 8),
@@ -451,7 +452,7 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
             key: const Key('backup-copy'),
             onPressed: _copyBackup,
             icon: const Icon(Icons.copy_rounded),
-            label: const Text('Yedek metnini de kopyala'),
+            label: Text(context.l10n.backupCopyTextButton),
           ),
         ],
       ],
@@ -466,13 +467,13 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
           key: const Key('backup-pick-file'),
           onPressed: _isLoading ? null : _pickBackup,
           icon: const Icon(Icons.folder_open_rounded),
-          label: const Text('Yedek dosyası seç'),
+          label: Text(context.l10n.backupPickFileButton),
         ),
         TextButton.icon(
           key: const Key('backup-paste'),
           onPressed: _isLoading ? null : _pasteBackup,
           icon: const Icon(Icons.content_paste_rounded),
-          label: const Text('Panodaki eski yedeği kullan'),
+          label: Text(context.l10n.backupPasteFromClipboardButton),
         ),
         SizedBox(
           height: 1,
@@ -492,7 +493,7 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
             key: const Key('backup-restore'),
             onPressed: _isLoading ? null : _importBackup,
             icon: const Icon(Icons.restore_rounded),
-            label: const Text('Yedeği geri yükle'),
+            label: Text(context.l10n.backupRestoreExecuteButton),
           ),
         ],
       ],
@@ -608,7 +609,7 @@ enum _BackupMode { export, import }
 enum _BackupNoticeType { success, warning, error }
 
 class _BackupNotice {
-  const _BackupNotice({required this.type, required this.message});
+  _BackupNotice({required this.type, required this.message});
 
   final _BackupNoticeType type;
   final String message;

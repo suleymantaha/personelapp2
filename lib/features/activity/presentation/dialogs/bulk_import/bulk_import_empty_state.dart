@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 
 class BulkImportEmptyState extends StatelessWidget {
@@ -54,7 +55,7 @@ class BulkImportEmptyState extends StatelessWidget {
               key: const Key('bulk-filter-show-all'),
               onPressed: onShowAll,
               icon: const Icon(Icons.view_list_outlined),
-              label: const Text('TÜM KARTLARI GÖSTER'),
+              label: Text(context.l10n.bulkImportEmptyShowAllCards),
             ),
           ],
         ),

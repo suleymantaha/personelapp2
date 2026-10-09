@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 
@@ -43,7 +44,7 @@ class BulkImportConfirmSection extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            hasBlocking ? 'Kaydedilemiyor' : 'Kayda Hazır',
+            hasBlocking ? context.l10n.bulkImportConfirmCannotSave : context.l10n.bulkImportConfirmReadyToSave,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -96,7 +97,7 @@ class BulkImportConfirmSection extends StatelessWidget {
               key: const Key('bulk-goto-problem'),
               onPressed: onReturnToPreview,
               icon: const Icon(Icons.arrow_back_rounded),
-              label: const Text('Önizlemeye Dön'),
+              label: Text(context.l10n.bulkImportConfirmReturnButton),
             ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 
 class BulkImportStatCard extends StatelessWidget {
   const BulkImportStatCard({
@@ -80,11 +81,11 @@ class BulkImportCompactStatBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _StatChip(icon: Icons.assignment_rounded, text: '$cardCount Kart'),
+          _StatChip(icon: Icons.assignment_rounded, text: context.l10n.bulkImportStatCardCount(cardCount)),
           Container(height: 14, width: 1, color: context.cardBorderColor),
-          _StatChip(icon: Icons.groups_rounded, text: '$personnelCount Personel'),
+          _StatChip(icon: Icons.groups_rounded, text: context.l10n.bulkImportStatPersonnelCount(personnelCount)),
           Container(height: 14, width: 1, color: context.cardBorderColor),
-          _StatChip(icon: Icons.calendar_month_rounded, text: '$dayCount Gün'),
+          _StatChip(icon: Icons.calendar_month_rounded, text: context.l10n.bulkImportStatDayCount(dayCount)),
         ],
       ),
     );

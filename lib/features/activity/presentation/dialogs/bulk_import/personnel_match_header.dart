@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
 class PersonnelMatchHeader extends StatelessWidget {
@@ -18,7 +19,7 @@ class PersonnelMatchHeader extends StatelessWidget {
     final rawNameText = item.rawName.trim();
     final matchedName = item.isMatched
         ? '${item.matchedRutbe ?? ''} ${item.matchedAdSoyad}'.trim()
-        : 'Personel seçilmedi';
+        : context.l10n.bulkImportPersonnelNotSelected;
 
     final hasNameDiff = item.isMatched &&
         (rawNameText.toLowerCase() !=
@@ -74,7 +75,7 @@ class PersonnelMatchHeader extends StatelessWidget {
                       hasNameDiff) ...[
                     const SizedBox(width: 6),
                     Tooltip(
-                      message: 'Hafızadan Otomatik Eşleşti',
+                      message: context.l10n.bulkImportAutoMatchedFromMemory,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 6,
@@ -117,9 +118,9 @@ class PersonnelMatchHeader extends StatelessWidget {
                 Text(
                   [
                     if (hasNameDiff || !item.isMatched)
-                      'Metinde: $rawRankText $rawNameText'.trim(),
+                      context.l10n.bulkImportInText('$rawRankText $rawNameText'.trim()),
                     if (item.sourceLineNumber != null)
-                      '📍 Satır ${item.sourceLineNumber}',
+                      '📍 ${context.l10n.bulkImportLineNumber(item.sourceLineNumber!)}',
                   ].join(' • '),
                   style: TextStyle(
                     color: context.textSecondary,
@@ -132,7 +133,7 @@ class PersonnelMatchHeader extends StatelessWidget {
         ),
         IconButton(
           key: const Key('bulk-person-delete'),
-          tooltip: 'Personeli kaldır',
+          tooltip: context.l10n.bulkImportRemovePersonnelTooltip,
           visualDensity: VisualDensity.compact,
           onPressed: onDelete,
           icon: Icon(

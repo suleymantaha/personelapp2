@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_problem_wizard.dart';
 
@@ -58,7 +59,7 @@ class CompactErrorSummary extends StatelessWidget {
       borderColor = context.rejectedBorderColor.withValues(alpha: 0.5);
       textColor = context.rejectedColor;
       icon = Icons.error_rounded;
-      title = 'Kaydedilemiyor';
+      title = context.l10n.bulkImportConfirmCannotSave;
       subtitle = hasReviewWarnings
           ? '$criticalCount kritik hata • $reviewWarningCount inceleme'
           : '$criticalCount kritik hata';
@@ -67,15 +68,15 @@ class CompactErrorSummary extends StatelessWidget {
       borderColor = context.pendingColor.withValues(alpha: 0.4);
       textColor = context.warningColor;
       icon = Icons.warning_amber_rounded;
-      title = 'İnceleme Bekleyen Ögeler Var';
-      subtitle = '$reviewWarningCount eşleşme/tim kontrolü gerektiriyor';
+      title = context.l10n.bulkImportPendingReviewItemsTitle;
+      subtitle = context.l10n.bulkImportReviewItemsSubtitle(reviewWarningCount);
     } else {
       bgColor = context.approvedColor.withValues(alpha: 0.12);
       borderColor = context.approvedColor.withValues(alpha: 0.4);
       textColor = context.approvedColor;
       icon = Icons.task_alt_rounded;
-      title = 'Tüm kontroller tamam';
-      subtitle = 'Kayda hazır';
+      title = context.l10n.bulkImportAllChecksPassed;
+      subtitle = context.l10n.bulkImportReadyToSaveSubtitle;
     }
 
     final displayTotal =

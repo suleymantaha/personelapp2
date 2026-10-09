@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
 class MatchStatusIndicator extends StatelessWidget {
@@ -11,13 +12,13 @@ class MatchStatusIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final (label, color, background, icon) = switch (item) {
       ParsedPersonnelItem(reviewConfirmed: true, isMatched: true) => (
-          'Kullanıcı onayladı',
+          context.l10n.bulkImportUserConfirmed,
           context.approvedColor,
           context.customColors.statusDutyBg,
           Icons.verified_rounded,
         ),
       ParsedPersonnelItem(teamMismatch: true) => (
-          'Tim disi gorev',
+          context.l10n.bulkImportTeamMismatchDuty,
           context.warningColor,
           context.warningBgColor,
           Icons.account_tree_outlined,
@@ -31,13 +32,13 @@ class MatchStatusIndicator extends StatelessWidget {
           Icons.help_rounded,
         ),
       ParsedPersonnelItem(matchConfidence: >= 0.9, isMatched: true) => (
-          'Eşleşti',
+          context.l10n.bulkImportMatched,
           context.approvedColor,
           context.customColors.statusDutyBg,
           Icons.check_circle_rounded,
         ),
       _ => (
-          'Eşleşmedi',
+          context.l10n.bulkImportNotMatched,
           context.rejectedColor,
           context.rejectedBgColor,
           Icons.warning_amber_rounded,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 
 class BulkImportHeaderBanner extends StatelessWidget {
   const BulkImportHeaderBanner({
@@ -16,70 +17,59 @@ class BulkImportHeaderBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: isKeyboardVisible ? 10 : 16,
-      ),
+      height: 46,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
             context.accentOrOlive,
-            context.accentOrOlive.withValues(alpha: 0.85),
+            context.accentOrOlive.withValues(alpha: 0.88),
           ],
         ),
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: context.onAccentOrOlive.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.paste_rounded,
-              color: context.onAccentOrOlive,
-              size: 24,
-            ),
+          Icon(
+            Icons.paste_rounded,
+            color: context.onAccentOrOlive,
+            size: 20,
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 8),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Metinden Toplu Aktarım',
-                  style: TextStyle(
-                    fontSize: isKeyboardVisible ? 16 : 18,
-                    fontWeight: FontWeight.bold,
-                    color: context.onAccentOrOlive,
-                  ),
-                ),
-                if (!isKeyboardVisible) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    'WhatsApp / Telegram nöbet listelerini yapıştırıp akıllı ayrıştırın',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: context.onAccentOrOlive,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
+            child: Text(
+              'Metinden Toplu Aktarım',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: context.onAccentOrOlive,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           if (onOpenMemory != null)
             IconButton(
-              tooltip: 'Sistem Hafızasını (Takma Adları) Yönet',
+              tooltip: context.l10n.bulkImportManageMemoryTooltip,
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               icon: Icon(
                 Icons.psychology_rounded,
                 color: context.onAccentOrOlive,
+                size: 20,
               ),
               onPressed: onOpenMemory,
             ),
           IconButton(
-            icon: Icon(Icons.close, color: context.onAccentOrOlive),
+            tooltip: context.l10n.bulkImportCloseTooltip,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            icon: Icon(
+              Icons.close_rounded,
+              color: context.onAccentOrOlive,
+              size: 20,
+            ),
             onPressed: onClose,
           ),
         ],

@@ -4,6 +4,7 @@ import 'bulk_import_issue_summary.dart';
 
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/activity_block_card.dart';
@@ -125,7 +126,10 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
     );
 
     return Padding(
-      padding: EdgeInsets.all(widget.isMobile ? 16 : 0),
+      padding: EdgeInsets.symmetric(
+        horizontal: widget.isMobile ? 10 : 0,
+        vertical: widget.isMobile ? 4 : 0,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

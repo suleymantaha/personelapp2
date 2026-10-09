@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -91,7 +92,7 @@ class BulkImportSaveHandler {
       context: context,
       builder:
           (dialogContext) => AlertDialog(
-            title: const Text('Bu Liste Daha Önce Aktarıldı'),
+            title: Text(context.l10n.bulkImportDuplicateListTitle),
             content: Text(
               '${existingImport.tarihler} tarihli bu içerik '
               '${existingImport.kayitTarihi} tarihinde '
@@ -102,11 +103,11 @@ class BulkImportSaveHandler {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('İPTAL'),
+                child: Text(context.l10n.commonCancel.toUpperCase()),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('EKSİKLERİ TAMAMLA / YENİDEN AKTAR'),
+                child: Text(context.l10n.bulkImportCompleteMissingOrReimport),
               ),
             ],
           ),
@@ -172,26 +173,26 @@ class BulkImportSaveHandler {
       }
 
       final summaryLines = <String>[
-        '${preparation.requests.length} günlük faaliyet işlendi.',
-        '${result.addedAssignmentCount} yeni personel eklendi.',
+        context.l10n.bulkImportSummaryActivitiesProcessed(preparation.requests.length),
+        context.l10n.bulkImportSummaryPersonnelAdded(result.addedAssignmentCount),
         if (result.alreadyAssignedCount > 0)
-          '${result.alreadyAssignedCount} personel zaten o görevde ekliydi.',
+          context.l10n.bulkImportSummaryAlreadyAssigned(result.alreadyAssignedCount),
         if (deduplicatedPersonnelCount > 0)
-          '$deduplicatedPersonnelCount tekrar tekilleştirildi.',
+          context.l10n.bulkImportSummaryDeduplicated(deduplicatedPersonnelCount),
         if (result.skippedAssignmentCount > 0)
-          '${result.skippedAssignmentCount} çakışan kayıt atlandı.',
+          context.l10n.bulkImportSummarySkippedConflict(result.skippedAssignmentCount),
       ];
 
       await showDialog<void>(
         context: context,
         builder:
             (dialogContext) => AlertDialog(
-              title: const Text('Aktarım Tamamlandı'),
+              title: Text(context.l10n.bulkImportCompletedTitle),
               content: Text(summaryLines.join('\n')),
               actions: [
                 FilledButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('TAMAM'),
+                  child: Text(context.l10n.commonOk),
                 ),
               ],
             ),

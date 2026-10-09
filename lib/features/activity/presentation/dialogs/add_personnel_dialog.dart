@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
@@ -110,14 +111,18 @@ class _AddPersonnelToActivityDialogState
         await showDialog<void>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Ekleme sonucu'),
+            title: Text(dialogContext.l10n.addPersonnelResultTitle),
             content: Text(
-              '${result.addedCount} personel eklendi.\n${result.alreadyAssignedCount} personel zaten kayıtlı.\n${result.conflictSkippedCount} personel çakışma nedeniyle eklenemedi.',
+              dialogContext.l10n.addPersonnelResultContent(
+                result.addedCount,
+                result.alreadyAssignedCount,
+                result.conflictSkippedCount,
+              ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Tamam'),
+                child: Text(dialogContext.l10n.commonOk),
               ),
             ],
           ),
@@ -127,7 +132,7 @@ class _AddPersonnelToActivityDialogState
     } on AssignmentConflictException catch (error) {
       if (mounted) AppNotifications.error(error.message);
     } catch (error) {
-      if (mounted) AppNotifications.error('Personel eklenemedi: $error');
+      if (mounted) AppNotifications.error(context.l10n.addPersonnelFailed('$error'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -163,15 +168,15 @@ class _AddPersonnelToActivityDialogState
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            tooltip: 'Geri',
+            tooltip: context.l10n.commonBack,
             onPressed: _saving ? null : _back,
             icon: const Icon(Icons.arrow_back),
           ),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Personel Ekle',
+              Text(
+                context.l10n.addPersonnelDialogTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -189,7 +194,7 @@ class _AddPersonnelToActivityDialogState
           ),
           actions: [
             IconButton(
-              tooltip: 'Kapat',
+              tooltip: context.l10n.commonClose,
               onPressed: _saving ? null : _close,
               icon: const Icon(Icons.close),
             ),
@@ -210,7 +215,7 @@ class _AddPersonnelToActivityDialogState
                           color: colorScheme.primary,
                         ),
                         const SizedBox(width: 8),
-                        const Text('Personel'),
+                        Text(context.l10n.addPersonnelStepPersonnel),
                         const Expanded(
                           child: Padding(
                             padding: EdgeInsets.symmetric(horizontal: 16),
@@ -224,7 +229,7 @@ class _AddPersonnelToActivityDialogState
                               : colorScheme.outline,
                         ),
                         const SizedBox(width: 8),
-                        const Text('Görev'),
+                        Text(context.l10n.addPersonnelStepDuty),
                       ],
                     ),
                   ),
@@ -250,9 +255,9 @@ class _AddPersonnelToActivityDialogState
                                 if (peopleAsync.hasError ||
                                     squadsAsync.hasError ||
                                     snapshot.hasError) {
-                                  return const Center(
+                                  return Center(
                                     child: Text(
-                                      'Personel bilgileri yüklenemedi. Ekranı kapatıp yeniden deneyin.',
+                                      context.l10n.addPersonnelLoadError,
                                     ),
                                   );
                                 }
@@ -264,9 +269,9 @@ class _AddPersonnelToActivityDialogState
                                   );
                                 }
                                 if (people.isEmpty) {
-                                  return const Center(
+                                  return Center(
                                     child: Text(
-                                      'Eklenebilecek personel bulunamadı.',
+                                      context.l10n.addPersonnelNoAvailable,
                                     ),
                                   );
                                 }
@@ -284,7 +289,7 @@ class _AddPersonnelToActivityDialogState
                                     ...snapshot.data!,
                                     for (final id
                                         in widget.existingPersonnelIds)
-                                      id: 'Bu faaliyette zaten kayıtlı',
+                                      id: context.l10n.addPersonnelAlreadyRegistered,
                                   },
                                   onSelected: _select,
                                 );
@@ -298,7 +303,7 @@ class _AddPersonnelToActivityDialogState
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (!_details) ...[
-                          Text('${selected.length} personel seçildi'),
+                          Text(context.l10n.addPersonnelSelectedCount(selected.length)),
                           const SizedBox(height: 8),
                         ],
                         Row(
@@ -306,7 +311,7 @@ class _AddPersonnelToActivityDialogState
                             if (_details) ...[
                               OutlinedButton(
                                 onPressed: _saving ? null : _back,
-                                child: const Text('Geri'),
+                                child: Text(context.l10n.commonBack),
                               ),
                               const SizedBox(width: 12),
                             ],
@@ -323,10 +328,10 @@ class _AddPersonnelToActivityDialogState
                                       },
                                 child: Text(
                                   _saving
-                                      ? 'Kaydediliyor…'
+                                      ? context.l10n.commonSaving
                                       : _details
-                                      ? 'Faaliyete Ekle'
-                                      : 'Devam et',
+                                      ? context.l10n.addPersonnelAddToActivity
+                                      : context.l10n.addPersonnelContinue,
                                 ),
                               ),
                             ),

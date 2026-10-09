@@ -118,7 +118,7 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
               onTap: () async {
                 final duty = await showActivityDutyPicker(
                   context,
-                  title: '${widget.personnelName} için görev',
+                  title: context.l10n.activityDutyForPersonnel(widget.personnelName),
                   duties: filteredDuties,
                   keyPrefix: 'edit-assignment-duty',
                   selectedDuty: _selectedDuty,
@@ -312,7 +312,7 @@ class _EditAssignmentSheetState extends ConsumerState<_EditAssignmentSheet> {
               onTap: () async {
                 final duty = await showActivityDutyPicker(
                   context,
-                  title: '${widget.personnelName} için görev',
+                  title: context.l10n.activityDutyForPersonnel(widget.personnelName),
                   duties: filteredDuties,
                   keyPrefix: 'sheet-edit-duty',
                   selectedDuty: _selectedDuty,

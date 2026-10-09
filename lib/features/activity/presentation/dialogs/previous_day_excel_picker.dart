@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 
@@ -29,7 +30,7 @@ class _PreviousDayExcelPickerState extends State<PreviousDayExcelPicker> {
           child:
               Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         ),
-        if (cards.isEmpty) const Text('Bu güne ait ek kart bulunamadı.'),
+        if (cards.isEmpty) Text(context.l10n.excelPickerNoExtraCards),
         for (final activity in cards)
           Card(
             child: CheckboxListTile(
@@ -51,33 +52,31 @@ class _PreviousDayExcelPickerState extends State<PreviousDayExcelPicker> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: const Text('Çıktıya Eklenecek Kartlar'),
+        title: Text(context.l10n.excelPickerSelectCardsTitle),
         content: SizedBox(
           width: 600,
           height: (MediaQuery.sizeOf(context).height * 0.5).clamp(160.0, 360.0),
           child: ListView(
             children: [
-              const Text(
-                'Ana Heybet kartı dahil edilir. Ek kartları seçin; aynı kişi çıktıda yalnızca bir kez yer alır.',
-              ),
+              Text(context.l10n.excelPickerNotice),
               ..._section(
-                'Aynı Günün Kartları',
+                context.l10n.excelPickerSameDayCards,
                 widget.currentActivities,
                 'current',
               ),
               ..._section(
-                  'Önceki Günün Kartları', widget.activities, 'previous'),
+                  context.l10n.excelPickerPreviousDayCards, widget.activities, 'previous'),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Vazgeç'),
+            child: Text(context.l10n.commonDismiss),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, {...selected}),
-            child: Text('Önizleme (${selected.length})'),
+            child: Text(context.l10n.excelPickerPreviewButton(selected.length)),
           ),
         ],
       );
@@ -91,7 +90,7 @@ Future<bool> confirmCombinedExcelPreview(
     await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Birleşik Çıktı Önizlemesi'),
+        title: Text(dialogContext.l10n.excelPickerCombinedPreviewTitle),
         content: SizedBox(
           width: 600,
           height: (MediaQuery.sizeOf(dialogContext).height * 0.5).clamp(
@@ -100,9 +99,7 @@ Future<bool> confirmCombinedExcelPreview(
           ),
           child: ListView(
             children: [
-              Text(
-                '${rows.length} personel • Her kişi bir kez • Toplam baskıda gösterilmez',
-              ),
+              Text(dialogContext.l10n.excelPickerCombinedNotice(rows.length)),
               for (final source in sources)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
@@ -120,11 +117,11 @@ Future<bool> confirmCombinedExcelPreview(
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Vazgeç'),
+            child: Text(context.l10n.commonDismiss),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Çıktı Seç'),
+            child: Text(dialogContext.l10n.excelPickerSelectExport),
           ),
         ],
       ),

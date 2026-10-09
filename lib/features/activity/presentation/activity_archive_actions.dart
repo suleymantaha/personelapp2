@@ -99,6 +99,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     List<GunlukFaaliyetTableData> activities,
     List<PersonelTableData> personnelList,
   ) async {
+    final l10n = context.l10n;
     final db = ref.read(databaseProvider);
     final session = ref.read(userSessionProvider);
     if (session == null) throw StateError('Oturum doğrulanamadı.');
@@ -148,8 +149,8 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
       final atama = orderedAssignments[i];
       final p = pMap[atama.personelId];
       final rutbe = p?.rutbe ?? '';
-      final adSoyad = p?.adSoyad ?? 'Personel #${atama.personelId}';
-      final timName = atama.gorevTimAdi ?? 'Tim geçmişi bilinmiyor';
+      final adSoyad = p?.adSoyad ?? l10n.activityArchiveFallbackPersonnelName(atama.personelId);
+      final timName = atama.gorevTimAdi ?? l10n.activityArchiveUnknownTeamHistory;
       final birligi = MilitaryStructureHelper.getRosterBirlikName(
         timName: timName,
         birlik: p?.birlik ?? '',
@@ -321,8 +322,10 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
             .toList();
     if (selected.isEmpty) return;
 
-    final subtitle =
-        '${_buildExportDateTitle(selected)} • ${selected.length} Seçili Faaliyet';
+    final subtitle = context.l10n.activityArchiveSelectedActivitiesCount(
+      _buildExportDateTitle(selected),
+      selected.length,
+    );
     await _exportWithSheet(selected, personnelList, subtitle: subtitle);
   }
 }

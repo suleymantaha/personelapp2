@@ -31,11 +31,94 @@ class _CorrectnessPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
-        builder: (context, constraints) => _buildPanel(
-          context,
-          compact && constraints.maxWidth >= 720,
-        ),
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 600;
+          if (isMobile) {
+            return _buildMobilePanel(context);
+          }
+          return _buildPanel(
+            context,
+            compact && constraints.maxWidth >= 720,
+          );
+        },
       );
+
+  Widget _buildMobilePanel(BuildContext context) {
+    final isAllOk = actionCount == 0 && !hasBlocking;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: context.cardBorderColor),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isAllOk
+                ? Icons.check_circle_rounded
+                : (hasBlocking ? Icons.error_rounded : Icons.info_rounded),
+            size: 16,
+            color: isAllOk
+                ? context.approvedColor
+                : (hasBlocking ? context.rejectedColor : context.pendingColor),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              '$cardCount kart • $personnelCount personel'
+              '${isAllOk ? " • Hazır" : " • ${criticalCount > 0 ? "$criticalCount hata" : "$reviewCount inceleme"}"}',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isAllOk
+                    ? context.approvedColor
+                    : (hasBlocking
+                        ? context.rejectedColor
+                        : context.pendingColor),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (onConfirmAllSuggestions != null) ...[
+            const SizedBox(width: 4),
+            FilledButton.icon(
+              key: const Key('bulk-confirm-all-suggestions'),
+              onPressed: onConfirmAllSuggestions,
+              icon: const Icon(Icons.done_all_rounded, size: 12),
+              label: const Text(
+                'Onayla',
+                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: context.approvedColor,
+                foregroundColor: context.onStatusColor(context.approvedColor),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                visualDensity: VisualDensity.compact,
+                minimumSize: const Size(0, 26),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+          IconButton(
+            onPressed: onClearAll,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            icon: Icon(
+              Icons.delete_outline_rounded,
+              color: context.rejectedColor,
+              size: 18,
+            ),
+            tooltip: context.l10n.bulkImportClearAllCards,
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildPanel(BuildContext context, bool compact) {
     final actionText = actionCount == 0
@@ -66,7 +149,7 @@ class _CorrectnessPanel extends StatelessWidget {
                 onTap: onStartWizard,
                 borderRadius: BorderRadius.circular(999),
                 child: _StatusPill(
-                  text: 'Kaydedilemiyor',
+                  text: context.l10n.bulkImportCannotSaveStatus,
                   color: context.rejectedColor,
                   background: context.rejectedBgColor,
                 ),
@@ -76,8 +159,8 @@ class _CorrectnessPanel extends StatelessWidget {
             if (criticalCount > 0 || reviewCount > 0) ...[
               Text(
                 [
-                  if (criticalCount > 0) '$criticalCount kritik hata',
-                  if (reviewCount > 0) '$reviewCount inceleme',
+                  if (criticalCount > 0) context.l10n.bulkImportCriticalErrors(criticalCount),
+                  if (reviewCount > 0) context.l10n.bulkImportReviewsCount(reviewCount),
                 ].join(' • '),
                 style: TextStyle(
                   color: hasBlocking
@@ -96,7 +179,7 @@ class _CorrectnessPanel extends StatelessWidget {
                     child: _MetricTile(
                       icon: Icons.assignment_rounded,
                       value: '$cardCount',
-                      label: 'kart',
+                      label: context.l10n.bulkImportMetricCard,
                       color: context.accentOrOlive,
                       compact: true,
                     ),
@@ -105,7 +188,7 @@ class _CorrectnessPanel extends StatelessWidget {
                     child: _MetricTile(
                       icon: Icons.groups_rounded,
                       value: '$personnelCount',
-                      label: 'personel',
+                      label: context.l10n.bulkImportMetricPersonnel,
                       color: context.accentOrOlive,
                       compact: true,
                     ),
@@ -114,7 +197,7 @@ class _CorrectnessPanel extends StatelessWidget {
                     child: _MetricTile(
                       icon: Icons.calendar_month_rounded,
                       value: '$dayCount',
-                      label: 'gün',
+                      label: context.l10n.bulkImportMetricDay,
                       color: context.accentOrOlive,
                       compact: true,
                     ),
@@ -123,7 +206,7 @@ class _CorrectnessPanel extends StatelessWidget {
                     child: _MetricTile(
                       icon: Icons.error_rounded,
                       value: '$criticalCount',
-                      label: 'kritik',
+                      label: context.l10n.bulkImportMetricCritical,
                       color: context.rejectedColor,
                       compact: true,
                     ),
@@ -132,7 +215,7 @@ class _CorrectnessPanel extends StatelessWidget {
                     child: _MetricTile(
                       icon: Icons.info_rounded,
                       value: '$reviewCount',
-                      label: 'inceleme',
+                      label: context.l10n.bulkImportMetricReview,
                       color: context.pendingColor,
                       compact: true,
                     ),
@@ -185,7 +268,7 @@ class _CorrectnessPanel extends StatelessWidget {
                 color: context.rejectedColor,
                 size: 20,
               ),
-              tooltip: 'Tümünü Temizle',
+              tooltip: context.l10n.bulkImportClearAllCards,
             ),
           ],
         ),
@@ -221,7 +304,7 @@ class _CorrectnessPanel extends StatelessWidget {
                         onTap: onStartWizard,
                         borderRadius: BorderRadius.circular(999),
                         child: _StatusPill(
-                          text: 'Kaydedilemiyor',
+                          text: context.l10n.bulkImportCannotSaveStatus,
                           color: context.rejectedColor,
                           background: context.rejectedBgColor,
                         ),
@@ -263,7 +346,7 @@ class _CorrectnessPanel extends StatelessWidget {
                   color: context.rejectedColor,
                   size: 20,
                 ),
-                tooltip: 'Tümünü Temizle',
+                tooltip: context.l10n.bulkImportClearAllCards,
               ),
             ],
           ),
@@ -280,8 +363,8 @@ class _CorrectnessPanel extends StatelessWidget {
             const SizedBox(height: 3),
             Text(
               [
-                if (criticalCount > 0) '$criticalCount kritik hata',
-                if (reviewCount > 0) '$reviewCount inceleme',
+                if (criticalCount > 0) context.l10n.bulkImportCriticalErrors(criticalCount),
+                if (reviewCount > 0) context.l10n.bulkImportReviewsCount(reviewCount),
               ].join(' • '),
               style: TextStyle(
                 color:
@@ -298,7 +381,7 @@ class _CorrectnessPanel extends StatelessWidget {
                 child: _MetricTile(
                   icon: Icons.assignment_rounded,
                   value: '$cardCount',
-                  label: 'kart',
+                  label: context.l10n.bulkImportMetricCard,
                   color: context.accentOrOlive,
                 ),
               ),
@@ -306,7 +389,7 @@ class _CorrectnessPanel extends StatelessWidget {
                 child: _MetricTile(
                   icon: Icons.groups_rounded,
                   value: '$personnelCount',
-                  label: 'personel',
+                  label: context.l10n.bulkImportMetricPersonnel,
                   color: context.accentOrOlive,
                 ),
               ),
@@ -314,7 +397,7 @@ class _CorrectnessPanel extends StatelessWidget {
                 child: _MetricTile(
                   icon: Icons.calendar_month_rounded,
                   value: '$dayCount',
-                  label: 'gün',
+                  label: context.l10n.bulkImportMetricDay,
                   color: context.accentOrOlive,
                 ),
               ),
@@ -322,7 +405,7 @@ class _CorrectnessPanel extends StatelessWidget {
                 child: _MetricTile(
                   icon: Icons.error_rounded,
                   value: '$criticalCount',
-                  label: 'kritik',
+                  label: context.l10n.bulkImportMetricCritical,
                   color: context.rejectedColor,
                 ),
               ),
@@ -330,7 +413,7 @@ class _CorrectnessPanel extends StatelessWidget {
                 child: _MetricTile(
                   icon: Icons.info_rounded,
                   value: '$reviewCount',
-                  label: 'inceleme',
+                  label: context.l10n.bulkImportMetricReview,
                   color: context.pendingColor,
                 ),
               ),

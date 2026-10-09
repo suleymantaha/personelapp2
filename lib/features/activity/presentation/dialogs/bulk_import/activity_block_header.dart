@@ -42,7 +42,7 @@ class ActivityBlockHeader extends StatelessWidget {
         bottom: Radius.circular(effectiveIsExpanded ? 0 : 12),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

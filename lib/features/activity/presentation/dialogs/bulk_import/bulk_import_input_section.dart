@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 
 class BulkImportInputSection extends StatelessWidget {
   const BulkImportInputSection({
@@ -101,7 +102,7 @@ class BulkImportInputSection extends StatelessWidget {
               cursorColor: context.accentOrOlive,
               scrollPadding: const EdgeInsets.only(bottom: 80),
               decoration: InputDecoration(
-                hintText: 'Mesaj metnini buraya yapıştırın…',
+                hintText: context.l10n.bulkImportInputPlaceholderShort,
                 hintStyle: TextStyle(color: context.textMuted, fontSize: 13),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),

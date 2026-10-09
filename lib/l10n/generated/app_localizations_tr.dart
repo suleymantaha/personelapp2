@@ -24,6 +24,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get commonClose => 'Kapat';
 
   @override
+  String get commonBack => 'Geri';
+
+  @override
   String get commonDelete => 'Sil';
 
   @override
@@ -1125,4 +1128,1012 @@ class AppLocalizationsTr extends AppLocalizations {
   String activityRenameFailed(String error) {
     return 'Faaliyet adı değiştirilemedi: $error';
   }
+
+  @override
+  String get settingsUserNotFound => 'Kullanıcı bulunamadı.';
+
+  @override
+  String settingsPasswordUpdateFailed(String error) {
+    return 'Şifre güncellenemedi: $error';
+  }
+
+  @override
+  String get settingsAddTestPersonnelTitle => '10\'ar Test Personeli Ekle';
+
+  @override
+  String get settingsAddTestPersonnelSubtitle =>
+      'Her time 10 adet sahte personel oluşturur';
+
+  @override
+  String settingsTestPersonnelAddedSuccess(int count) {
+    return '$count adet test personeli başarıyla eklendi!';
+  }
+
+  @override
+  String get settingsClearTestPersonnelTitle => 'Test Personellerini Temizle';
+
+  @override
+  String get settingsClearTestPersonnelSubtitle =>
+      'Yalnızca işaretlenmiş test personellerini temizler';
+
+  @override
+  String get settingsDeletePersonnelConfirmTitle => 'Personelleri Sil';
+
+  @override
+  String get settingsDeleteTestPersonnelConfirmMessage =>
+      'Yalnızca test olarak işaretlenmiş personel kayıtları silinecektir. Emin misiniz?';
+
+  @override
+  String get settingsTestPersonnelCleared =>
+      'İşaretlenmiş test personelleri temizlendi!';
+
+  @override
+  String activityArchiveSelectedActivitiesCount(String dateTitle, int count) {
+    return '$dateTitle • $count Seçili Faaliyet';
+  }
+
+  @override
+  String activityArchiveFallbackPersonnelName(int id) {
+    return 'Personel #$id';
+  }
+
+  @override
+  String get activityArchiveUnknownTeamHistory => 'Tim geçmişi bilinmiyor';
+
+  @override
+  String get backupRestoreTitle => 'Yedekleme ve Geri Yükleme';
+
+  @override
+  String get backupExportTab => 'Dışa Aktar';
+
+  @override
+  String get backupImportTab => 'İçe Aktar';
+
+  @override
+  String get backupExportSuccess => 'Tam uygulama yedeği dışa aktarıldı.';
+
+  @override
+  String get backupSaveCancelled => 'Kaydetme işlemi iptal edildi.';
+
+  @override
+  String backupExportFailed(String error) {
+    return 'Yedek dışa aktarılamadı: $error';
+  }
+
+  @override
+  String get backupImportSuccess => 'Yedek başarıyla geri yüklendi.';
+
+  @override
+  String backupImportFailed(String error) {
+    return 'Yedek geri yüklenemedi: $error';
+  }
+
+  @override
+  String backupFilePickerError(String error) {
+    return 'Dosya seçilemedi: $error';
+  }
+
+  @override
+  String get backupInvalidJson => 'Geçerli bir JSON yedek verisi giriniz.';
+
+  @override
+  String get backupVerifyButton => 'Yedeği Doğrula';
+
+  @override
+  String get backupRestoreConfirmTitle => 'Yedeği Geri Yükle';
+
+  @override
+  String get backupRestoreConfirmMessage =>
+      'Mevcut tüm veriler yedekteki verilerle değiştirilecektir. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?';
+
+  @override
+  String get backupRestoreButton => 'GERİ YÜKLE';
+
+  @override
+  String get backupExportSubtitle =>
+      'Uygulamanın tam yedeğini cihazınıza kaydedin veya paylaşın.';
+
+  @override
+  String get backupImportSubtitle =>
+      'Daha önce alınmış bir yedeği yükleyerek verilerinizi geri yükleyin.';
+
+  @override
+  String get backupStatsPersonnel => 'Personel Sayısı';
+
+  @override
+  String get backupStatsActivities => 'Faaliyet Sayısı';
+
+  @override
+  String get backupStatsAssignments => 'Atama Sayısı';
+
+  @override
+  String get backupStatsTemgundrap => 'TEMGÜNDRAP Kayıtları';
+
+  @override
+  String get backupExportDate => 'Yedek Tarihi';
+
+  @override
+  String get backupCopyJson => 'JSON Kopyala';
+
+  @override
+  String get backupJsonCopied => 'Yedek verisi panoya kopyalandı.';
+
+  @override
+  String get backupDownloadFile => 'Dosya Olarak Kaydet';
+
+  @override
+  String get addPersonnelDialogTitle => 'Personel Ekle';
+
+  @override
+  String get addPersonnelResultTitle => 'Ekleme sonucu';
+
+  @override
+  String addPersonnelResultContent(int added, int already, int conflict) {
+    return '$added personel eklendi.\n$already personel zaten kayıtlı.\n$conflict personel çakışma nedeniyle eklenemedi.';
+  }
+
+  @override
+  String addPersonnelFailed(String error) {
+    return 'Personel eklenemedi: $error';
+  }
+
+  @override
+  String addPersonnelSelectedCount(int count) {
+    return '$count personel seçildi';
+  }
+
+  @override
+  String get addPersonnelLoadError =>
+      'Personel bilgileri yüklenemedi. Ekranı kapatıp yeniden deneyin.';
+
+  @override
+  String get addPersonnelNoAvailable => 'Eklenebilecek personel bulunamadı.';
+
+  @override
+  String get addPersonnelAlreadyRegistered => 'Bu faaliyette zaten kayıtlı';
+
+  @override
+  String get addPersonnelStepPersonnel => 'Personel';
+
+  @override
+  String get addPersonnelStepDuty => 'Görev';
+
+  @override
+  String get addPersonnelAddToActivity => 'Faaliyete Ekle';
+
+  @override
+  String get addPersonnelContinue => 'Devam et';
+
+  @override
+  String get conflictPersonnelTitle => 'Bazı personeller eklenmedi';
+
+  @override
+  String conflictPersonnelMessage(int count) {
+    return 'Kayıt tamamlandı. Aynı gün için başka kaydı bulunan $count personel atlandı.';
+  }
+
+  @override
+  String get conflictPersonnelUnderstood => 'ANLADIM';
+
+  @override
+  String get conflictPersonnelFallback => 'Çakışan kayıt';
+
+  @override
+  String get conflictPersonnelDetail =>
+      'Bu tarihte başka bir faaliyet kaydı bulunuyor.';
+
+  @override
+  String get transferPersonnelTitle => 'Personel Taşı';
+
+  @override
+  String transferPersonnelSourceLabel(String activityName) {
+    return 'Kaynak: $activityName';
+  }
+
+  @override
+  String get transferPersonnelSelectTarget => 'Hedef Faaliyet Kartını Seçin:';
+
+  @override
+  String transferPersonnelNoOtherActivity(String date) {
+    return '$date tarihinde başka faaliyet kartı bulunamadı.';
+  }
+
+  @override
+  String get transferPersonnelCreateNewOption => 'YENİ FAALİYET KARTI OLUŞTUR';
+
+  @override
+  String get transferPersonnelNewActivityLabel => 'Yeni faaliyet adı';
+
+  @override
+  String get transferPersonnelButton => 'TAŞI';
+
+  @override
+  String transferPersonnelSuccess(String name) {
+    return '$name başarıyla taşındı.';
+  }
+
+  @override
+  String get transferPersonnelFailed => 'Taşıma yapılamadı.';
+
+  @override
+  String transferPersonnelError(String error) {
+    return 'Taşıma hatası: $error';
+  }
+
+  @override
+  String get transferSquadTitle => 'Tim Taşı';
+
+  @override
+  String get transferSquadButton => 'TAŞI';
+
+  @override
+  String transferSquadSuccess(String squadName, int count, String skippedNote) {
+    return '$squadName: $count personel başarıyla taşındı.$skippedNote';
+  }
+
+  @override
+  String transferSquadSkippedNote(int count) {
+    return ' ($count personel zaten hedef faaliyette olduğu için atlandı)';
+  }
+
+  @override
+  String get transferSquadAllExisting =>
+      'Tüm personel zaten hedef faaliyette mevcut, taşıma yapılmadı.';
+
+  @override
+  String transferSquadError(String error) {
+    return 'Taşıma hatası: $error';
+  }
+
+  @override
+  String get excelPickerSelectCardsTitle => 'Çıktıya Eklenecek Kartlar';
+
+  @override
+  String get excelPickerNotice =>
+      'Ana Heybet kartı dahil edilir. Ek kartları seçin; aynı kişi çıktıda yalnızca bir kez yer alır.';
+
+  @override
+  String get excelPickerNoExtraCards => 'Bu güne ait ek kart bulunamadı.';
+
+  @override
+  String get excelPickerSameDayCards => 'Aynı Günün Kartları';
+
+  @override
+  String get excelPickerPreviousDayCards => 'Önceki Günün Kartları';
+
+  @override
+  String excelPickerPreviewButton(int count) {
+    return 'Önizleme ($count)';
+  }
+
+  @override
+  String get excelPickerCombinedPreviewTitle => 'Birleşik Çıktı Önizlemesi';
+
+  @override
+  String excelPickerCombinedNotice(int count) {
+    return '$count personel • Her kişi bir kez • Toplam baskıda gösterilmez';
+  }
+
+  @override
+  String get excelPickerSelectExport => 'Çıktı Seç';
+
+  @override
+  String get bulkImportHeaderTitle => 'Toplu Faaliyet Aktarımı';
+
+  @override
+  String get bulkImportHeaderSubtitle =>
+      'WhatsApp, SMS veya metin listesinden akıllı görev ayrıştırma';
+
+  @override
+  String get bulkImportMemoryButton => 'Eşleşme Hafızası';
+
+  @override
+  String get bulkImportCloseTooltip => 'Kapat';
+
+  @override
+  String get bulkImportStepPaste => 'Metin Girişi';
+
+  @override
+  String get bulkImportStepPreview => 'Önizleme ve Kontrol';
+
+  @override
+  String get bulkImportStepConfirm => 'Onay ve Kayıt';
+
+  @override
+  String get bulkImportInputPlaceholder =>
+      'Görev listesini buraya yapıştırın...\nÖrn:\n01.03.2026 1-A Timi\n1. J.Uzm.Çvş. Ahmet Yılmaz (08:00 - 12:00 Nöbetçi)';
+
+  @override
+  String get bulkImportKeepAuditTextLabel => 'Kaynak metni denetim için kaydet';
+
+  @override
+  String get bulkImportKeepAuditTextTooltip =>
+      'Yapıştırılan ham metin, denetim geçmişinde saklanır.';
+
+  @override
+  String get bulkImportParseButton => 'Metni Ayrıştır';
+
+  @override
+  String get bulkImportParsingButton => 'Ayrıştırılıyor...';
+
+  @override
+  String get bulkImportClearButton => 'Temizle';
+
+  @override
+  String get bulkImportPasteSampleButton => 'Örnek Metin';
+
+  @override
+  String get bulkImportConfirmTitle => 'Aktarım Özeti ve Kayıt';
+
+  @override
+  String get bulkImportConfirmSubtitle =>
+      'Ayrıştırılan kayıtlar doğrulanarak veritabanına aktarılacaktır.';
+
+  @override
+  String get bulkImportConfirmTotalCards => 'Oluşturulacak Kart:';
+
+  @override
+  String get bulkImportConfirmTotalPersonnel => 'Görevlendirilecek Personel:';
+
+  @override
+  String get bulkImportConfirmSaveButton => 'TÜMÜNÜ KAYDET';
+
+  @override
+  String get bulkImportConfirmReturnButton => 'Önizlemeye Dön';
+
+  @override
+  String get bulkImportEmptyTitle => 'Henüz ayrıştırılmış veri yok';
+
+  @override
+  String get bulkImportEmptySubtitle =>
+      'Sol taraftan metin yapıştırıp \'Metni Ayrıştır\' butonuna basarak başlayabilirsiniz.';
+
+  @override
+  String get bulkImportStatTotalCards => 'Kart';
+
+  @override
+  String get bulkImportStatTotalPeople => 'Personel';
+
+  @override
+  String get bulkImportStatReady => 'Hazır';
+
+  @override
+  String get bulkImportStatIssues => 'Sorunlu';
+
+  @override
+  String bulkImportFilterAll(int count) {
+    return 'Tümü ($count)';
+  }
+
+  @override
+  String bulkImportFilterProblems(int count) {
+    return 'Sorunlar ($count)';
+  }
+
+  @override
+  String bulkImportFilterReady(int count) {
+    return 'Hazır ($count)';
+  }
+
+  @override
+  String get bulkImportWizardStart => 'Sorun Sihirbazı';
+
+  @override
+  String get bulkImportWizardPrev => 'Önceki Sorun';
+
+  @override
+  String get bulkImportWizardNext => 'Sonraki Sorun';
+
+  @override
+  String get bulkImportConfirmAllSuggestions => 'Tüm Önerileri Onayla';
+
+  @override
+  String get bulkImportClearAllCards => 'Tümünü Temizle';
+
+  @override
+  String get bulkImportClearAllConfirmTitle => 'Tüm Kartları Temizle';
+
+  @override
+  String get bulkImportClearAllConfirmMessage =>
+      'Ayrıştırılmış tüm faaliyet kartları silinecektir. Emin misiniz?';
+
+  @override
+  String get bulkImportSaveBarSave => 'KAYDET';
+
+  @override
+  String get bulkImportSaveBarSaving => 'KAYDEDİLİYOR…';
+
+  @override
+  String get bulkImportSaveBarFixIssues => 'Sorunları Düzeltin';
+
+  @override
+  String get bulkImportNoCardsToSave => 'Kaydedilecek kart bulunamadı.';
+
+  @override
+  String bulkImportUnresolvedPersonnelError(int count) {
+    return '$count personel eşleşmedi. Lütfen tüm personelleri seçin veya listeden kaldırın.';
+  }
+
+  @override
+  String get bulkImportEmptyCardsError =>
+      'Personeli bulunmayan boş kartlar var. Lütfen kartları düzenleyin veya silin.';
+
+  @override
+  String get bulkImportBlockingIssuesError =>
+      'Lütfen önce çözülmemiş kart sorunlarını (tarih, tim veya görev türü) tamamlayın.';
+
+  @override
+  String get bulkImportCompletedTitle => 'Aktarım Tamamlandı';
+
+  @override
+  String bulkImportSuccessNotification(String activityName, int count) {
+    return '$activityName faaliyetine $count personel eklendi.';
+  }
+
+  @override
+  String bulkImportPersonRemoved(String rank, String name) {
+    return '$rank $name kaldırıldı.';
+  }
+
+  @override
+  String bulkImportBlockRemoved(String activityType) {
+    return '$activityType kartı kaldırıldı.';
+  }
+
+  @override
+  String get bulkImportUndo => 'GERİ AL';
+
+  @override
+  String get bulkImportDuplicateTitle => 'Yinelenen Personel';
+
+  @override
+  String get bulkImportDuplicateDesc =>
+      'Aynı personel aynı gün birden fazla karta atanmış.';
+
+  @override
+  String get bulkImportEditBlockTitle => 'Faaliyet Kartını Düzenle';
+
+  @override
+  String get bulkImportBlockDate => 'Tarih';
+
+  @override
+  String get bulkImportBlockSquad => 'Bağlı Tim';
+
+  @override
+  String get bulkImportBlockActivity => 'Faaliyet / Görev Türü';
+
+  @override
+  String get bulkImportBlockTimeRange => 'Saat Aralığı (İsteğe bağlı)';
+
+  @override
+  String get bulkImportMemoryTitle => 'Öğrenilen İsim Eşleştirmeleri';
+
+  @override
+  String get bulkImportMemoryEmpty =>
+      'Henüz kaydedilmiş bir eşleştirme hafızası bulunmuyor.';
+
+  @override
+  String get bulkImportMemoryClearAll => 'Tüm Hafızayı Temizle';
+
+  @override
+  String get bulkImportMemoryAliasRemoved => 'Eşleştirme silindi.';
+
+  @override
+  String get backupRestoreSurfaceTitle => 'Tam yedekleme ve geri yükleme';
+
+  @override
+  String get backupRestoreSurfaceSubtitle =>
+      'Bulut gerekmez; dosya sizin seçtiğiniz yerde kalır.';
+
+  @override
+  String get backupModeExport => 'Yedekle';
+
+  @override
+  String get backupModeImport => 'Geri yükle';
+
+  @override
+  String get backupInfoWhatIsInsideTitle => 'Yedekte neler var?';
+
+  @override
+  String get backupInfoWhatIsInsideDesc =>
+      'İsimler, timler, kullanıcılar, telefonlar, görevler, aylık matris, faaliyet arşivi, raporlar, takma adlar, toplu aktarım geçmişi ve TEMGÜNDRAP belgeleri.';
+
+  @override
+  String get backupInfoPreserveTitle => 'Uygulama silinse de koruyun';
+
+  @override
+  String get backupInfoPreserveDesc =>
+      'Açılan kaydet ekranından İndirilenler gibi cihazın yerel bir klasörünü seçin. Uygulamanın kendi klasörüne bırakmayın.';
+
+  @override
+  String get backupInfoSecurityTitle => 'Dosyayı güvenli tutun';
+
+  @override
+  String get backupInfoSecurityDesc =>
+      'Yedek kişisel bilgiler içerir. Yalnızca güvenilir bir yerel klasörde saklayın ve başkalarıyla paylaşmayın.';
+
+  @override
+  String get backupSaveToDeviceButton => 'Tam yedeği cihazda sakla';
+
+  @override
+  String get backupCopyTextButton => 'Yedek metnini de kopyala';
+
+  @override
+  String get backupPickFileButton => 'Yedek dosyası seç';
+
+  @override
+  String get backupPasteFromClipboardButton => 'Panodaki eski yedeği kullan';
+
+  @override
+  String get backupRestoreExecuteButton => 'Yedeği geri yükle';
+
+  @override
+  String get backupPreviewLegacyDate => 'Eski yedek';
+
+  @override
+  String get backupPreviewLegacyTitle => 'Eski personel yedeği';
+
+  @override
+  String get backupPreviewVerifiedTitle => 'Doğrulanmış tam yedek';
+
+  @override
+  String backupPreviewSummary(String date, int personnelCount,
+      int activityCount, int assignmentCount, int temgundrapCount) {
+    return '$date • $personnelCount personel • $activityCount faaliyet • $assignmentCount görev kaydı • $temgundrapCount TEMGÜNDRAP';
+  }
+
+  @override
+  String get backupConfirmOverwriteTitle => 'Mevcut veriler değiştirilsin mi?';
+
+  @override
+  String get backupConfirmOverwriteMessage =>
+      'Tam geri yükleme mevcut personel, görev, matris ve TEMGÜNDRAP kayıtlarının yerine yedekteki verileri koyar. Bu işlem geri alınamaz.';
+
+  @override
+  String get backupClipboardEmpty => 'Panoda yedek metni bulunamadı.';
+
+  @override
+  String get backupClipboardReadError => 'Panodaki yedek okunamadı.';
+
+  @override
+  String get backupPickFilePrompt => 'Önce bir yedek dosyası seçin.';
+
+  @override
+  String get backupTextCopied => 'Yedek metni panoya kopyalandı.';
+
+  @override
+  String get backupVerifiedReady => 'Yedek doğrulandı ve geri yüklemeye hazır.';
+
+  @override
+  String get backupCreateFailed =>
+      'Yedek oluşturulamadı. Lütfen tekrar deneyin.';
+
+  @override
+  String get backupFileReadError => 'Yedek dosyası okunamadı.';
+
+  @override
+  String get backupRestoreFailedDataPreserved =>
+      'Yedek geri yüklenemedi; mevcut veriler korunmuştur.';
+
+  @override
+  String backupLegacyImportSuccess(int count) {
+    return '$count yeni personel eski yedekten aktarıldı.';
+  }
+
+  @override
+  String backupFullRestoreSuccess(
+      int personnelCount, int activityCount, int temgundrapCount) {
+    return 'Geri yükleme tamamlandı: $personnelCount personel, $activityCount faaliyet ve $temgundrapCount TEMGÜNDRAP belgesi.';
+  }
+
+  @override
+  String activityDutyForPersonnel(String name) {
+    return '$name için görev';
+  }
+
+  @override
+  String get bulkImportBannerTitle => 'Metinden Toplu Aktarım';
+
+  @override
+  String get bulkImportManageMemoryTooltip =>
+      'Sistem Hafızasını (Takma Adları) Yönet';
+
+  @override
+  String get bulkImportStepSaveLockedTooltip =>
+      'Tüm kart sorunları çözülünce kaydet adımı açılır';
+
+  @override
+  String get bulkImportConfirmCannotSave => 'Kaydedilemiyor';
+
+  @override
+  String get bulkImportConfirmReadyToSave => 'Kayda Hazır';
+
+  @override
+  String get bulkImportConfirmResolveIssues =>
+      'Lütfen önizleme adımına dönüp sorunları çözün.';
+
+  @override
+  String bulkImportConfirmSummary(
+      int cardCount, int personnelCount, int dayCount) {
+    return '$cardCount kart, $personnelCount personel, $dayCount gün';
+  }
+
+  @override
+  String get bulkImportInputRawTitle => 'Ham Metni Yapıştırın:';
+
+  @override
+  String get bulkImportInputRawSubtitle =>
+      'Tarih, görev türü ve personel listesini içeren mesajı olduğu gibi yapıştırabilirsiniz.';
+
+  @override
+  String get bulkImportKeepAuditTextDesc =>
+      'Varsayılan kapalıdır; veri yalnızca bu cihazda tutulur.';
+
+  @override
+  String get bulkImportInputPlaceholderShort =>
+      'Mesaj metnini buraya yapıştırın…';
+
+  @override
+  String get bulkImportParseAndCreateCards =>
+      'Metni Ayrıştır ve Kartları Oluştur';
+
+  @override
+  String get bulkImportEmptyNoCardIssues => 'Kartlara bağlı sorun kalmadı';
+
+  @override
+  String get bulkImportEmptyAllIssuesResolved => 'Tüm kart sorunları çözüldü';
+
+  @override
+  String get bulkImportEmptyCheckNoticePanel =>
+      'Kalan kritik ayrıştırma sorunlarını yukarıdaki uyarı panelinden inceleyin.';
+
+  @override
+  String get bulkImportEmptyReturnToAllCards =>
+      'İsterseniz tüm faaliyet kartlarına geri dönebilirsiniz.';
+
+  @override
+  String get bulkImportEmptyShowAllCards => 'TÜM KARTLARI GÖSTER';
+
+  @override
+  String bulkImportStatCardCount(int count) {
+    return '$count Kart';
+  }
+
+  @override
+  String bulkImportStatPersonnelCount(int count) {
+    return '$count Personel';
+  }
+
+  @override
+  String bulkImportStatDayCount(int count) {
+    return '$count Gün';
+  }
+
+  @override
+  String get bulkImportSearchHint => 'Personel, tim veya satır ara';
+
+  @override
+  String get bulkImportFilterProblemsLabel => 'Sorunlar';
+
+  @override
+  String get bulkImportCorrectnessPanelTitle => 'Doğruluk Paneli';
+
+  @override
+  String get bulkImportCannotSaveStatus => 'Kaydedilemiyor';
+
+  @override
+  String get bulkImportAllChecksPassed => 'Tüm kontroller tamam';
+
+  @override
+  String bulkImportActionsRequiredBeforeSave(int count) {
+    return 'Kaydetmeden önce $count işlem tamamlanmalı';
+  }
+
+  @override
+  String bulkImportOptionalReviews(int count) {
+    return '$count isteğe bağlı inceleme';
+  }
+
+  @override
+  String bulkImportCriticalErrors(int count) {
+    return '$count kritik hata';
+  }
+
+  @override
+  String bulkImportReviewsCount(int count) {
+    return '$count inceleme';
+  }
+
+  @override
+  String get bulkImportMetricCard => 'kart';
+
+  @override
+  String get bulkImportMetricPersonnel => 'personel';
+
+  @override
+  String get bulkImportMetricDay => 'gün';
+
+  @override
+  String get bulkImportMetricCritical => 'kritik';
+
+  @override
+  String get bulkImportMetricReview => 'inceleme';
+
+  @override
+  String bulkImportIgnoredLinesNotice(int count) {
+    return '$count başlık, toplam veya not satırı personel kaydı olarak alınmadı.';
+  }
+
+  @override
+  String get bulkImportNoCardsYet => 'Henüz Kart Oluşturulmadı';
+
+  @override
+  String get bulkImportReturnToPastePrompt =>
+      'Yapıştır adımına dönüp mesajı yapıştırın.';
+
+  @override
+  String get bulkImportStatusCritical => 'Kritik';
+
+  @override
+  String get bulkImportStatusReview => 'İnceleme';
+
+  @override
+  String get bulkImportFixAction => 'Düzelt';
+
+  @override
+  String bulkImportLineNumber(int number) {
+    return 'Satır $number';
+  }
+
+  @override
+  String get bulkImportDuplicateListTitle => 'Bu Liste Daha Önce Aktarıldı';
+
+  @override
+  String bulkImportDuplicateListMessage(
+      String dates, String recordDate, String user, int activeCount) {
+    return '$dates tarihli bu içerik $recordDate tarihinde $user tarafından kaydedilmiş.\n\nVeritabanında bu listeye ait $activeCount personel kaydı aktif duruyor. Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?';
+  }
+
+  @override
+  String get bulkImportCompleteMissingOrReimport =>
+      'EKSİKLERİ TAMAMLA / YENİDEN AKTAR';
+
+  @override
+  String bulkImportSummaryActivitiesProcessed(int count) {
+    return '$count günlük faaliyet işlendi.';
+  }
+
+  @override
+  String bulkImportSummaryPersonnelAdded(int count) {
+    return '$count yeni personel eklendi.';
+  }
+
+  @override
+  String bulkImportSummaryAlreadyAssigned(int count) {
+    return '$count personel zaten o görevde ekliydi.';
+  }
+
+  @override
+  String bulkImportSummaryDeduplicated(int count) {
+    return '$count tekrar tekilleştirildi.';
+  }
+
+  @override
+  String bulkImportSummarySkippedConflict(int count) {
+    return '$count çakışan kayıt atlandı.';
+  }
+
+  @override
+  String bulkImportSuccessBanner(
+      int blockCount, int activityCount, int personnelCount) {
+    return '$blockCount blok → $activityCount günlük faaliyet, $personnelCount personel başarıyla eklendi.';
+  }
+
+  @override
+  String bulkImportSaveButtonSummary(int blockCount, int dayCount) {
+    return '$blockCount blok -> $dayCount günlük faaliyet';
+  }
+
+  @override
+  String bulkImportSaveActivitiesWithCardCount(int count) {
+    return 'Faaliyetleri Kaydet ($count Kart)';
+  }
+
+  @override
+  String get bulkImportNextReview => 'Sonraki inceleme';
+
+  @override
+  String get bulkImportOpenNextProblem => 'Sonraki sorunu aç';
+
+  @override
+  String bulkImportRemainingActionsBeforeSave(int count) {
+    return 'Kaydetmek için $count işlem kaldı';
+  }
+
+  @override
+  String bulkImportCriticalAndReviewCount(int criticalCount, int reviewCount) {
+    return '$criticalCount kritik hata • $reviewCount inceleme';
+  }
+
+  @override
+  String get bulkImportPendingReviewItemsTitle =>
+      'İnceleme Bekleyen Ögeler Var';
+
+  @override
+  String bulkImportReviewItemsSubtitle(int count) {
+    return '$count eşleşme/tim kontrolü gerektiriyor';
+  }
+
+  @override
+  String get bulkImportReadyToSaveSubtitle => 'Kayda hazır';
+
+  @override
+  String get bulkImportHighlightedCardsPrompt =>
+      'Lütfen aşağıda vurgulanan kartlardaki eksik personelleri eşleştirin, tekrarları düzeltin veya boş kartları silin.';
+
+  @override
+  String get bulkImportDuplicateSubtitle =>
+      'Aynı personel aynı tarihte birden fazla görevde bulunuyor. Aktarmadan önce önizlemedeki tekrarları düzeltin.';
+
+  @override
+  String get bulkImportReturnToPreviewButton => 'ÖNİZLEMEYE DÖN';
+
+  @override
+  String get bulkImportDefaultTeamOption => 'Varsayılan / Personel Timi';
+
+  @override
+  String get bulkImportCustomOption => 'DİĞER (Elle Yaz...)';
+
+  @override
+  String get bulkImportQuickDutySelection => 'Hızlı Görev Seçimi';
+
+  @override
+  String get bulkImportSelectDutyHint => 'Görev seç';
+
+  @override
+  String get bulkImportSelectDutyType => 'Görev / Faaliyet Türü Seçin';
+
+  @override
+  String get bulkImportCustomDutyName => 'Görev / Faaliyet Adı (Elle Düzenle)';
+
+  @override
+  String get bulkImportSelectTeam => 'Takım / Tim Seçin';
+
+  @override
+  String get bulkImportCustomTeamName => 'Takım / Tim Adı (Elle Düzenle)';
+
+  @override
+  String get bulkImportApplyChanges => 'DEĞİŞİKLİKLERİ UYGULA';
+
+  @override
+  String get bulkImportDeleteAliasTitle => 'Eşleşmeyi Sil';
+
+  @override
+  String bulkImportDeleteAliasConfirm(
+      String rawName, String rank, String name) {
+    return '\'$rawName\' ➔ \'$rank $name\' öğrenilmiş takma ad eşleşmesi silinsin mi?';
+  }
+
+  @override
+  String bulkImportAliasDeletedFromMemory(String name) {
+    return '\'$name\' hafızadan silindi.';
+  }
+
+  @override
+  String get bulkImportSystemMemoryTitle => 'Sistem Hafızası';
+
+  @override
+  String bulkImportLearnedAliasesCount(int count) {
+    return '$count Öğrenilmiş İsim Takma Adı';
+  }
+
+  @override
+  String get bulkImportSearchAliasHintMobile => 'Yazım veya personel adı ara';
+
+  @override
+  String get bulkImportSearchAliasHintDesktop =>
+      'Metindeki yazım veya personel adıyla ara...';
+
+  @override
+  String get bulkImportNoAliasFoundForSearch =>
+      'Aramanıza uygun takma ad bulunamadı.';
+
+  @override
+  String get bulkImportNoLearnedAliasesYet =>
+      'Henüz öğrenilmiş bir takma ad bulunmuyor.\nToplu aktarımlarda onayladığınız eşleşmeler otomatik hafızaya alınır.';
+
+  @override
+  String get bulkImportTextName => 'Metindeki ad';
+
+  @override
+  String get bulkImportMatchedPersonnel => 'Eşleştiği personel';
+
+  @override
+  String get bulkImportDeleteAliasTooltip => 'Takma adı hafızadan sil';
+
+  @override
+  String get bulkImportUnassignedOrOtherPersonnel =>
+      'Timsiz / Diğer Personeller';
+
+  @override
+  String get bulkImportPersonnelNotSelected => 'Personel seçilmedi';
+
+  @override
+  String get bulkImportAutoMatchedFromMemory => 'Hafızadan Otomatik Eşleşti';
+
+  @override
+  String get bulkImportFromMemory => 'Hafızadan';
+
+  @override
+  String bulkImportInText(String text) {
+    return 'Metinde: $text';
+  }
+
+  @override
+  String get bulkImportRemovePersonnelTooltip => 'Personeli kaldır';
+
+  @override
+  String get bulkImportSelectedError => 'SEÇİLİ HATA';
+
+  @override
+  String get bulkImportReviewedPersonnel => 'İNCELENEN PERSONEL';
+
+  @override
+  String bulkImportDuplicateOnSameDate(String assignments) {
+    return 'Aynı tarihte ayrıca: $assignments';
+  }
+
+  @override
+  String get bulkImportTeamMismatchAccept => 'Tim dışı görev (Kabul et)';
+
+  @override
+  String get bulkImportUserConfirmed => 'Kullanıcı onayladı';
+
+  @override
+  String get bulkImportTeamMismatchDuty => 'Tim dışı görev';
+
+  @override
+  String bulkImportCheckMatchWithPercent(int percent) {
+    return 'Eşleşmeyi kontrol edin (%$percent)';
+  }
+
+  @override
+  String get bulkImportCheckMatch => 'Eşleşmeyi kontrol edin';
+
+  @override
+  String get bulkImportMatched => 'Eşleşti';
+
+  @override
+  String get bulkImportNotMatched => 'Eşleşmedi';
+
+  @override
+  String bulkImportError(String error) {
+    return 'Hata oluştu: $error';
+  }
+
+  @override
+  String get bulkImportNoPersonnelToAdd => 'Eklenecek personel bulunamadı.';
+
+  @override
+  String get bulkImportClearPreviewTitle => 'Önizlemeyi temizle?';
+
+  @override
+  String get bulkImportClearPreviewMessage =>
+      'Oluşturulan tüm kartlar ve ayrıştırma uyarıları kaldırılacak.';
+
+  @override
+  String get bulkImportAllSuggestionsConfirmed =>
+      'Tüm önerilen personel eşleşmeleri onaylandı.';
+
+  @override
+  String bulkImportPersonAddedToDbAndMatched(
+      String rank, String name, String team) {
+    return '$rank $name veritabanına ($team) eklendi ve eşleştirildi.';
+  }
+
+  @override
+  String get commonNoTeam => 'Timsiz';
+
+  @override
+  String get bulkImportSelectDate => 'Tarih seç';
 }

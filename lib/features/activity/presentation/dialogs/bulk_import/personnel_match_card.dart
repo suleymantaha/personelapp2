@@ -54,35 +54,35 @@ class PersonnelMatchCard extends StatelessWidget {
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 2.5),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderColor, width: isFocused ? 2.5 : 1.0),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: borderColor, width: isFocused ? 2.0 : 1.0),
         boxShadow: isFocused
             ? [
                 BoxShadow(
                   color: context.warningColor.withValues(alpha: 0.25),
-                  blurRadius: 10,
-                  spreadRadius: 2,
+                  blurRadius: 8,
+                  spreadRadius: 1,
                 ),
               ]
             : null,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(10),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Sol durum renk şeridi (Left Accent Indicator Bar)
               Container(
-                width: 5,
+                width: 4,
                 color: accentColor,
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                  padding: const EdgeInsets.fromLTRB(10, 7, 10, 7),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

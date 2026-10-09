@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 
 class ConflictPersonnelDialog extends StatelessWidget {
   const ConflictPersonnelDialog({
@@ -43,18 +44,17 @@ class ConflictPersonnelDialog extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  const Text(
-                    'Bazı personeller eklenmedi',
+                  Text(
+                    context.l10n.conflictPersonnelTitle,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Kayıt tamamlandı. Aynı gün için başka kaydı bulunan '
-                    '${conflicts.length} personel atlandı.',
+                    context.l10n.conflictPersonnelMessage(conflicts.length),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: colors.onSurfaceVariant,
@@ -90,7 +90,7 @@ class ConflictPersonnelDialog extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.check_rounded),
-                  label: const Text('ANLADIM'),
+                  label: Text(context.l10n.conflictPersonnelUnderstood),
                 ),
               ),
             ),

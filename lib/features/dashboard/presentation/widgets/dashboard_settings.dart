@@ -82,6 +82,7 @@ class DashboardSettings {
                                     saving = true;
                                     errorText = null;
                                   });
+                                  final l10n = context.l10n;
                                   try {
                                     final changed = await ref
                                         .read(personnelRepositoryProvider)
@@ -90,7 +91,7 @@ class DashboardSettings {
                                           newPassword: newPass,
                                         );
                                     if (changed != 1) {
-                                      throw StateError('Kullanıcı bulunamadı.');
+                                      throw StateError(l10n.settingsUserNotFound);
                                     }
                                     if (ctx.mounted) {
                                       updateDialog(() => saving = false);
@@ -98,7 +99,7 @@ class DashboardSettings {
                                       if (!ctx.mounted) return;
                                       Navigator.of(ctx).pop();
                                       AppNotifications.success(
-                                        context.l10n.settingsPasswordUpdated,
+                                        l10n.settingsPasswordUpdated,
                                       );
                                     }
                                   } catch (error) {
@@ -106,7 +107,7 @@ class DashboardSettings {
                                       updateDialog(
                                         () =>
                                             errorText =
-                                                'Şifre güncellenemedi: $error',
+                                                context.l10n.settingsPasswordUpdateFailed('$error'),
                                       );
                                     }
                                   } finally {
@@ -289,9 +290,9 @@ class DashboardSettings {
                                 Icons.group_add,
                                 color: context.accentOrOlive,
                               ),
-                              title: const Text("10'ar Test Personeli Ekle"),
-                              subtitle: const Text(
-                                'Her time 10 adet sahte personel oluşturur',
+                              title: Text(context.l10n.settingsAddTestPersonnelTitle),
+                              subtitle: Text(
+                                context.l10n.settingsAddTestPersonnelSubtitle,
                               ),
                               onTap: () async {
                                 Navigator.pop(ctx);
@@ -302,7 +303,7 @@ class DashboardSettings {
                                     await repo.seedTestPersonnelPerSquad();
                                 if (context.mounted) {
                                   AppNotifications.success(
-                                    '$count adet test personeli başarıyla eklendi!',
+                                    context.l10n.settingsTestPersonnelAddedSuccess(count),
                                   );
                                 }
                               },
@@ -314,11 +315,11 @@ class DashboardSettings {
                                 color: context.rejectedColor,
                               ),
                               title: Text(
-                                'Test Personellerini Temizle',
+                                context.l10n.settingsClearTestPersonnelTitle,
                                 style: TextStyle(color: context.rejectedColor),
                               ),
-                              subtitle: const Text(
-                                'Yalnızca işaretlenmiş test personellerini temizler',
+                              subtitle: Text(
+                                context.l10n.settingsClearTestPersonnelSubtitle,
                               ),
                               onTap: () async {
                                 Navigator.pop(ctx);
@@ -326,16 +327,16 @@ class DashboardSettings {
                                   context: context,
                                   builder:
                                       (dCtx) => AlertDialog(
-                                        title: const Text('Personelleri Sil'),
-                                        content: const Text(
-                                          'Yalnızca test olarak işaretlenmiş personel kayıtları silinecektir. Emin misiniz?',
+                                        title: Text(context.l10n.settingsDeletePersonnelConfirmTitle),
+                                        content: Text(
+                                          context.l10n.settingsDeleteTestPersonnelConfirmMessage,
                                         ),
                                         actions: [
                                           TextButton(
                                             onPressed:
                                                 () =>
                                                     Navigator.pop(dCtx, false),
-                                            child: const Text('İPTAL'),
+                                            child: Text(context.l10n.commonCancel.toUpperCase()),
                                           ),
                                           ElevatedButton(
                                             style: ElevatedButton.styleFrom(
@@ -345,7 +346,7 @@ class DashboardSettings {
                                             ),
                                             onPressed:
                                                 () => Navigator.pop(dCtx, true),
-                                            child: const Text('SİL'),
+                                            child: Text(context.l10n.commonDelete.toUpperCase()),
                                           ),
                                         ],
                                       ),
@@ -358,7 +359,7 @@ class DashboardSettings {
                                   await repo.deleteAllPersonnel();
                                   if (context.mounted) {
                                     AppNotifications.info(
-                                      'İşaretlenmiş test personelleri temizlendi!',
+                                      context.l10n.settingsTestPersonnelCleared,
                                     );
                                   }
                                 }

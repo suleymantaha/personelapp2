@@ -5,6 +5,7 @@ import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 
 /// Shows a dialog that lets an admin transfer all personnel of [squadId] from
 /// [sourceActivity] to another activity on the same date.
@@ -62,8 +63,8 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
         controller: _newActivityNameController,
         autofocus: true,
         textCapitalization: TextCapitalization.sentences,
-        decoration: const InputDecoration(
-          labelText: 'Yeni faaliyet adı',
+        decoration: InputDecoration(
+          labelText: context.l10n.transferPersonnelNewActivityLabel,
           prefixIcon: Icon(Icons.add_card_rounded),
         ),
         onChanged: (_) => setState(() {}),
@@ -76,7 +77,7 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
         _selectedTargetId = null;
       }),
       icon: const Icon(Icons.add_card_rounded),
-      label: const Text('YENİ FAALİYET KARTI OLUŞTUR'),
+      label: Text(context.l10n.transferPersonnelCreateNewOption),
     );
   }
 
@@ -154,7 +155,7 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          'Kaynak: ${widget.sourceActivity.faaliyetAdi}',
+                          context.l10n.transferPersonnelSourceLabel(widget.sourceActivity.faaliyetAdi),
                           style: TextStyle(
                             fontSize: 12,
                             color: context.textSecondary,
@@ -166,7 +167,7 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Hedef Faaliyet Kartını Seçin:',
+                  context.l10n.transferPersonnelSelectTarget,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
@@ -299,7 +300,7 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
               onPressed: _isTransferring
                   ? null
                   : () => Navigator.of(context).pop(false),
-              child: const Text('İPTAL'),
+              child: Text(context.l10n.commonCancel.toUpperCase()),
             ),
             FilledButton.icon(
               key: const Key('transfer-squad-confirm'),
@@ -313,7 +314,7 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
                       ),
                     )
                   : const Icon(Icons.swap_horiz_rounded, size: 18),
-              label: const Text('TAŞI'),
+              label: Text(context.l10n.transferSquadButton),
               onPressed:
                   (_isTransferring ||
                       (_selectedTargetId == null &&
@@ -323,6 +324,7 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
                   : () async {
                       setState(() => _isTransferring = true);
                       final navigator = Navigator.of(context);
+                      final l10n = context.l10n;
                       try {
                         if (session == null) {
                           throw StateError('Oturum bilgisi bulunamadı.');
@@ -362,7 +364,7 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
                         }
                       } catch (e) {
                         if (!mounted) return;
-                        AppNotifications.error('Taşıma hatası: $e');
+                        AppNotifications.error(l10n.transferSquadError('$e'));
                         navigator.pop(false);
                       } finally {
                         if (mounted) setState(() => _isTransferring = false);

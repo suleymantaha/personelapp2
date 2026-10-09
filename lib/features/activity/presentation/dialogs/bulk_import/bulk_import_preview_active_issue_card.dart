@@ -54,7 +54,7 @@ class _ActiveIssueCard extends StatelessWidget {
         ? _issueReason(issue!)
         : [
             if (parseIssue.rawLine.trim().isNotEmpty) parseIssue.rawLine.trim(),
-            if (parseIssue.lineNumber > 0) 'Satır ${parseIssue.lineNumber}',
+            if (parseIssue.lineNumber > 0) context.l10n.bulkImportLineNumber(parseIssue.lineNumber),
           ].join(' • ');
 
     return Container(
@@ -90,7 +90,7 @@ class _ActiveIssueCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      isCritical ? 'Kritik' : 'İnceleme',
+                      isCritical ? context.l10n.bulkImportStatusCritical : context.l10n.bulkImportStatusReview,
                       style: TextStyle(
                         color: color,
                         fontWeight: FontWeight.w800,

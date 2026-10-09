@@ -2,6 +2,7 @@ import 'package:personelapp2/features/activity/domain/bulk_import_learning_servi
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
@@ -230,13 +231,13 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
                     _dropdownOptions.contains(_selectedDuty)
                 ? _selectedDuty
                 : null,
-            hint: const Text('Görev seç'),
+            hint: Text(context.l10n.bulkImportSelectDutyHint),
             isExpanded: true,
             menuMaxHeight: modernDropdownMenuMaxHeight(context),
             borderRadius: modernDropdownBorderRadius,
             dropdownColor: modernDropdownColor(context),
             decoration: InputDecoration(
-              labelText: 'Görev / Faaliyet Türü Seçin',
+              labelText: context.l10n.bulkImportSelectDutyType,
               prefixIcon: const Icon(Icons.list_alt_rounded),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -264,7 +265,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
             controller: _activityController,
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
-              labelText: 'Görev / Faaliyet Adı (Elle Düzenle)',
+              labelText: context.l10n.bulkImportCustomDutyName,
               prefixIcon: const Icon(Icons.edit_rounded),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -286,7 +287,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
             borderRadius: modernDropdownBorderRadius,
             dropdownColor: modernDropdownColor(context),
             decoration: InputDecoration(
-              labelText: 'Takım / Tim Seçin',
+              labelText: context.l10n.bulkImportSelectTeam,
               prefixIcon: const Icon(Icons.groups_rounded),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -311,7 +312,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
             key: const Key('bulk-edit-team'),
             controller: _teamController,
             decoration: InputDecoration(
-              labelText: 'Takım / Tim Adı (Elle Düzenle)',
+              labelText: context.l10n.bulkImportCustomTeamName,
               prefixIcon: const Icon(Icons.edit_note_rounded),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -326,7 +327,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
             key: const Key('bulk-edit-time'),
             controller: _timeController,
             decoration: InputDecoration(
-              labelText: 'Saat aralığı (isteğe bağlı)',
+              labelText: context.l10n.bulkImportBlockTimeRange,
               hintText: '08:00 - 19:30',
               prefixIcon: const Icon(Icons.schedule_rounded),
               border: OutlineInputBorder(
@@ -360,7 +361,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
             icon: const Icon(Icons.calendar_today_rounded),
             label: Text(
               selectedDate == null
-                  ? 'Tarih seç'
+                  ? context.l10n.bulkImportSelectDate
                   : '${selectedDate.day.toString().padLeft(2, '0')}.'
                       '${selectedDate.month.toString().padLeft(2, '0')}.'
                       '${selectedDate.year}',
@@ -409,7 +410,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
                   }
                 : null,
             icon: const Icon(Icons.check_rounded),
-            label: const Text('DEĞİŞİKLİKLERİ UYGULA'),
+            label: Text(context.l10n.bulkImportApplyChanges),
           ),
         ],
       ),

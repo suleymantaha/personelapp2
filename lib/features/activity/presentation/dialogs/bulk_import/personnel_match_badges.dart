@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'match_status_indicator.dart';
 
@@ -50,7 +51,7 @@ class PersonnelMatchBadges extends StatelessWidget {
                 ),
                 const SizedBox(width: 3),
                 Text(
-                  !item.isMatched ? 'SEÇİLİ HATA' : 'İNCELENEN PERSONEL',
+                  !item.isMatched ? context.l10n.bulkImportSelectedError : context.l10n.bulkImportReviewedPersonnel,
                   style: TextStyle(
                     color: context.onStatusColor(!item.isMatched
                         ? context.rejectedColor
@@ -74,7 +75,7 @@ class PersonnelMatchBadges extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              'Aynı tarihte ayrıca: ${duplicateAssignments!.join(', ')}',
+              context.l10n.bulkImportDuplicateOnSameDate(duplicateAssignments!.join(', ')),
               key: const Key('bulk-duplicate-warning'),
               style: TextStyle(
                 color: context.rejectedColor,
