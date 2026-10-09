@@ -86,6 +86,7 @@ class _TransferPersonnelDialogState
   Widget build(BuildContext context) {
     final activitiesAsync = ref.watch(filteredActivitiesProvider);
     final session = ref.watch(userSessionProvider);
+    final l10n = context.l10n;
 
     return PopScope(
       canPop: !_isTransferring,
@@ -109,7 +110,7 @@ class _TransferPersonnelDialogState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Personel Taşı',
+                      l10n.transferPersonnelTitle,
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,

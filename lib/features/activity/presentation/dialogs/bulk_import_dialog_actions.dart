@@ -210,7 +210,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
               actions: [
                 FilledButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: Text(context.l10n.commonOk),
+                  child: Text(context.l10n.commonOk.toUpperCase()),
                 ),
               ],
             ),

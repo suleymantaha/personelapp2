@@ -192,7 +192,7 @@ class BulkImportSaveHandler {
               actions: [
                 FilledButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: Text(context.l10n.commonOk),
+                  child: Text(context.l10n.commonOk.toUpperCase()),
                 ),
               ],
             ),

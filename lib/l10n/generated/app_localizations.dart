@@ -2576,13 +2576,13 @@ abstract class AppLocalizations {
   /// No description provided for @bulkImportHeaderTitle.
   ///
   /// In tr, this message translates to:
-  /// **'Toplu Faaliyet Aktarımı'**
+  /// **'Metinden Toplu Aktarım'**
   String get bulkImportHeaderTitle;
 
   /// No description provided for @bulkImportHeaderSubtitle.
   ///
   /// In tr, this message translates to:
-  /// **'WhatsApp, SMS veya metin listesinden akıllı görev ayrıştırma'**
+  /// **'WhatsApp / Telegram nöbet listelerini yapıştırıp akıllı ayrıştırın'**
   String get bulkImportHeaderSubtitle;
 
   /// No description provided for @bulkImportMemoryButton.
@@ -2600,43 +2600,43 @@ abstract class AppLocalizations {
   /// No description provided for @bulkImportStepPaste.
   ///
   /// In tr, this message translates to:
-  /// **'Metin Girişi'**
+  /// **'Yapıştır'**
   String get bulkImportStepPaste;
 
   /// No description provided for @bulkImportStepPreview.
   ///
   /// In tr, this message translates to:
-  /// **'Önizleme ve Kontrol'**
+  /// **'Önizleme'**
   String get bulkImportStepPreview;
 
   /// No description provided for @bulkImportStepConfirm.
   ///
   /// In tr, this message translates to:
-  /// **'Onay ve Kayıt'**
+  /// **'Kaydet'**
   String get bulkImportStepConfirm;
 
   /// No description provided for @bulkImportInputPlaceholder.
   ///
   /// In tr, this message translates to:
-  /// **'Görev listesini buraya yapıştırın...\nÖrn:\n01.03.2026 1-A Timi\n1. J.Uzm.Çvş. Ahmet Yılmaz (08:00 - 12:00 Nöbetçi)'**
+  /// **'Mesaj metnini buraya yapıştırın…'**
   String get bulkImportInputPlaceholder;
 
   /// No description provided for @bulkImportKeepAuditTextLabel.
   ///
   /// In tr, this message translates to:
-  /// **'Kaynak metni denetim için kaydet'**
+  /// **'Ham metni yerel denetim kaydında sakla'**
   String get bulkImportKeepAuditTextLabel;
 
   /// No description provided for @bulkImportKeepAuditTextTooltip.
   ///
   /// In tr, this message translates to:
-  /// **'Yapıştırılan ham metin, denetim geçmişinde saklanır.'**
+  /// **'Varsayılan kapalıdır; veri yalnızca bu cihazda tutulur.'**
   String get bulkImportKeepAuditTextTooltip;
 
   /// No description provided for @bulkImportParseButton.
   ///
   /// In tr, this message translates to:
-  /// **'Metni Ayrıştır'**
+  /// **'Metni Ayrıştır ve Kartları Oluştur'**
   String get bulkImportParseButton;
 
   /// No description provided for @bulkImportParsingButton.
@@ -2644,6 +2644,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Ayrıştırılıyor...'**
   String get bulkImportParsingButton;
+
+  /// No description provided for @bulkImportStepperUnlockHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüm kart sorunları çözülünce kaydet adımı açılır'**
+  String get bulkImportStepperUnlockHint;
 
   /// No description provided for @bulkImportClearButton.
   ///
@@ -3679,7 +3685,7 @@ abstract class AppLocalizations {
   /// No description provided for @bulkImportTeamMismatchAccept.
   ///
   /// In tr, this message translates to:
-  /// **'Tim dışı görev (Kabul et)'**
+  /// **'Tim disi gorev (Kabul et)'**
   String get bulkImportTeamMismatchAccept;
 
   /// No description provided for @bulkImportUserConfirmed.
@@ -3691,8 +3697,14 @@ abstract class AppLocalizations {
   /// No description provided for @bulkImportTeamMismatchDuty.
   ///
   /// In tr, this message translates to:
-  /// **'Tim dışı görev'**
+  /// **'Tim disi gorev'**
   String get bulkImportTeamMismatchDuty;
+
+  /// No description provided for @bulkImportDeleteAliasAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'SİL'**
+  String get bulkImportDeleteAliasAction;
 
   /// No description provided for @bulkImportCheckMatchWithPercent.
   ///

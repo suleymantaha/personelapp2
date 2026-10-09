@@ -1418,11 +1418,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get excelPickerSelectExport => 'Çıktı Seç';
 
   @override
-  String get bulkImportHeaderTitle => 'Toplu Faaliyet Aktarımı';
+  String get bulkImportHeaderTitle => 'Metinden Toplu Aktarım';
 
   @override
   String get bulkImportHeaderSubtitle =>
-      'WhatsApp, SMS veya metin listesinden akıllı görev ayrıştırma';
+      'WhatsApp / Telegram nöbet listelerini yapıştırıp akıllı ayrıştırın';
 
   @override
   String get bulkImportMemoryButton => 'Eşleşme Hafızası';
@@ -1431,30 +1431,34 @@ class AppLocalizationsTr extends AppLocalizations {
   String get bulkImportCloseTooltip => 'Kapat';
 
   @override
-  String get bulkImportStepPaste => 'Metin Girişi';
+  String get bulkImportStepPaste => 'Yapıştır';
 
   @override
-  String get bulkImportStepPreview => 'Önizleme ve Kontrol';
+  String get bulkImportStepPreview => 'Önizleme';
 
   @override
-  String get bulkImportStepConfirm => 'Onay ve Kayıt';
+  String get bulkImportStepConfirm => 'Kaydet';
 
   @override
-  String get bulkImportInputPlaceholder =>
-      'Görev listesini buraya yapıştırın...\nÖrn:\n01.03.2026 1-A Timi\n1. J.Uzm.Çvş. Ahmet Yılmaz (08:00 - 12:00 Nöbetçi)';
+  String get bulkImportInputPlaceholder => 'Mesaj metnini buraya yapıştırın…';
 
   @override
-  String get bulkImportKeepAuditTextLabel => 'Kaynak metni denetim için kaydet';
+  String get bulkImportKeepAuditTextLabel =>
+      'Ham metni yerel denetim kaydında sakla';
 
   @override
   String get bulkImportKeepAuditTextTooltip =>
-      'Yapıştırılan ham metin, denetim geçmişinde saklanır.';
+      'Varsayılan kapalıdır; veri yalnızca bu cihazda tutulur.';
 
   @override
-  String get bulkImportParseButton => 'Metni Ayrıştır';
+  String get bulkImportParseButton => 'Metni Ayrıştır ve Kartları Oluştur';
 
   @override
   String get bulkImportParsingButton => 'Ayrıştırılıyor...';
+
+  @override
+  String get bulkImportStepperUnlockHint =>
+      'Tüm kart sorunları çözülünce kaydet adımı açılır';
 
   @override
   String get bulkImportClearButton => 'Temizle';
@@ -2084,13 +2088,16 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get bulkImportTeamMismatchAccept => 'Tim dışı görev (Kabul et)';
+  String get bulkImportTeamMismatchAccept => 'Tim disi gorev (Kabul et)';
 
   @override
   String get bulkImportUserConfirmed => 'Kullanıcı onayladı';
 
   @override
-  String get bulkImportTeamMismatchDuty => 'Tim dışı görev';
+  String get bulkImportTeamMismatchDuty => 'Tim disi gorev';
+
+  @override
+  String get bulkImportDeleteAliasAction => 'SİL';
 
   @override
   String bulkImportCheckMatchWithPercent(int percent) {

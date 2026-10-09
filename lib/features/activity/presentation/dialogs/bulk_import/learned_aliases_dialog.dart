@@ -82,7 +82,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
               foregroundColor: context.onStatusColor(context.rejectedColor),
             ),
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(context.l10n.commonDelete.toUpperCase()),
+            child: Text(context.l10n.bulkImportDeleteAliasAction),
           ),
         ],
       ),

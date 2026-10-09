@@ -32,8 +32,7 @@ class _CorrectnessPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
         builder: (context, constraints) {
-          final isMobile = constraints.maxWidth < 600;
-          if (isMobile) {
+          if (compact && constraints.maxWidth < 600) {
             return _buildMobilePanel(context);
           }
           return _buildPanel(
