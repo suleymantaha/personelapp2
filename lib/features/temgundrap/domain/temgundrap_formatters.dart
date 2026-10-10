@@ -1,28 +1,10 @@
+import 'package:personelapp2/core/utils/turkish_date_helper.dart';
+
 class TemgundrapFormatters {
   const TemgundrapFormatters._();
 
-  static const _months = <String>[
-    'OCA',
-    'ŞUB',
-    'MAR',
-    'NİS',
-    'MAY',
-    'HAZ',
-    'TEM',
-    'AGU',
-    'EYL',
-    'EKİ',
-    'KAS',
-    'ARA',
-  ];
-
-  static String militaryDateTime(DateTime value) {
-    final day = value.day.toString().padLeft(2, '0');
-    final hour = value.hour.toString().padLeft(2, '0');
-    final minute = value.minute.toString().padLeft(2, '0');
-    final year = (value.year % 100).toString().padLeft(2, '0');
-    return '$day $hour$minute ${_months[value.month - 1]} $year';
-  }
+  static String militaryDateTime(DateTime value) =>
+      TurkishDateHelper.formatMilitaryDtg(value);
 
   static String normalizePhone(String input) {
     var digits = input.replaceAll(RegExp(r'\D'), '');

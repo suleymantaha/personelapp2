@@ -2800,5 +2800,26 @@
   "temgundrapSigned": "(İMZALI)",
   "temgundrapCommanderLabel": "Komutan",
   "temgundrapForceLabel": "Kuvvet",
-  "temgundrapTimeLabel": "Zaman"
+  "temgundrapTimeLabel": "Zaman",
+  "temgundrapExportDocumentTitle": "{unitTitle} {date} TARİHİNDE PLANLANAN OPERASYON TAKİP ÇİZELGESİ",
+  "@temgundrapExportDocumentTitle": {
+    "placeholders": {
+      "unitTitle": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+  "temgundrapExportColSequence": "S.NU",
+  "temgundrapExportColIssuingUnit": "ÇIKARAN BİRLİK",
+  "temgundrapExportColOperationArea": "OPERASYON BÖLGESİ",
+  "temgundrapExportColForceHeader": "OPERASYON KUVVETİ",
+  "temgundrapExportColForce": "KUVVETİ",
+  "temgundrapExportColCommander": "OPERASYON KOMUTANI",
+  "temgundrapExportColPresent": "MEVCUT",
+  "temgundrapExportColStartTime": "BAŞLAMA ZAMANI",
+  "temgundrapExportColEndTime": "BİTİŞ ZAMANI",
+  "temgundrapExportColPurpose": "OPERASYON MAKSADI",
+  "temgundrapExportColDescription": "AÇIKLAMA",
+  "temgundrapExportTotal": "TOPLAM",
+  "temgundrapExportShareText": "TEMGÜNDRAP operasyon takip çizelgesi",
+  "temgundrapExportShareTextExcel": "TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı"
 }

@@ -3861,4 +3861,53 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get temgundrapTimeLabel => 'Zaman';
+
+  @override
+  String temgundrapExportDocumentTitle(String unitTitle, String date) {
+    return '$unitTitle $date TARİHİNDE PLANLANAN OPERASYON TAKİP ÇİZELGESİ';
+  }
+
+  @override
+  String get temgundrapExportColSequence => 'S.NU';
+
+  @override
+  String get temgundrapExportColIssuingUnit => 'ÇIKARAN BİRLİK';
+
+  @override
+  String get temgundrapExportColOperationArea => 'OPERASYON BÖLGESİ';
+
+  @override
+  String get temgundrapExportColForceHeader => 'OPERASYON KUVVETİ';
+
+  @override
+  String get temgundrapExportColForce => 'KUVVETİ';
+
+  @override
+  String get temgundrapExportColCommander => 'OPERASYON KOMUTANI';
+
+  @override
+  String get temgundrapExportColPresent => 'MEVCUT';
+
+  @override
+  String get temgundrapExportColStartTime => 'BAŞLAMA ZAMANI';
+
+  @override
+  String get temgundrapExportColEndTime => 'BİTİŞ ZAMANI';
+
+  @override
+  String get temgundrapExportColPurpose => 'OPERASYON MAKSADI';
+
+  @override
+  String get temgundrapExportColDescription => 'AÇIKLAMA';
+
+  @override
+  String get temgundrapExportTotal => 'TOPLAM';
+
+  @override
+  String get temgundrapExportShareText =>
+      'TEMGÜNDRAP operasyon takip çizelgesi';
+
+  @override
+  String get temgundrapExportShareTextExcel =>
+      'TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı';
 }

@@ -6550,6 +6550,96 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Zaman'**
   String get temgundrapTimeLabel;
+
+  /// No description provided for @temgundrapExportDocumentTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'{unitTitle} {date} TARİHİNDE PLANLANAN OPERASYON TAKİP ÇİZELGESİ'**
+  String temgundrapExportDocumentTitle(String unitTitle, String date);
+
+  /// No description provided for @temgundrapExportColSequence.
+  ///
+  /// In tr, this message translates to:
+  /// **'S.NU'**
+  String get temgundrapExportColSequence;
+
+  /// No description provided for @temgundrapExportColIssuingUnit.
+  ///
+  /// In tr, this message translates to:
+  /// **'ÇIKARAN BİRLİK'**
+  String get temgundrapExportColIssuingUnit;
+
+  /// No description provided for @temgundrapExportColOperationArea.
+  ///
+  /// In tr, this message translates to:
+  /// **'OPERASYON BÖLGESİ'**
+  String get temgundrapExportColOperationArea;
+
+  /// No description provided for @temgundrapExportColForceHeader.
+  ///
+  /// In tr, this message translates to:
+  /// **'OPERASYON KUVVETİ'**
+  String get temgundrapExportColForceHeader;
+
+  /// No description provided for @temgundrapExportColForce.
+  ///
+  /// In tr, this message translates to:
+  /// **'KUVVETİ'**
+  String get temgundrapExportColForce;
+
+  /// No description provided for @temgundrapExportColCommander.
+  ///
+  /// In tr, this message translates to:
+  /// **'OPERASYON KOMUTANI'**
+  String get temgundrapExportColCommander;
+
+  /// No description provided for @temgundrapExportColPresent.
+  ///
+  /// In tr, this message translates to:
+  /// **'MEVCUT'**
+  String get temgundrapExportColPresent;
+
+  /// No description provided for @temgundrapExportColStartTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'BAŞLAMA ZAMANI'**
+  String get temgundrapExportColStartTime;
+
+  /// No description provided for @temgundrapExportColEndTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'BİTİŞ ZAMANI'**
+  String get temgundrapExportColEndTime;
+
+  /// No description provided for @temgundrapExportColPurpose.
+  ///
+  /// In tr, this message translates to:
+  /// **'OPERASYON MAKSADI'**
+  String get temgundrapExportColPurpose;
+
+  /// No description provided for @temgundrapExportColDescription.
+  ///
+  /// In tr, this message translates to:
+  /// **'AÇIKLAMA'**
+  String get temgundrapExportColDescription;
+
+  /// No description provided for @temgundrapExportTotal.
+  ///
+  /// In tr, this message translates to:
+  /// **'TOPLAM'**
+  String get temgundrapExportTotal;
+
+  /// No description provided for @temgundrapExportShareText.
+  ///
+  /// In tr, this message translates to:
+  /// **'TEMGÜNDRAP operasyon takip çizelgesi'**
+  String get temgundrapExportShareText;
+
+  /// No description provided for @temgundrapExportShareTextExcel.
+  ///
+  /// In tr, this message translates to:
+  /// **'TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı'**
+  String get temgundrapExportShareTextExcel;
 }
 
 class _AppLocalizationsDelegate

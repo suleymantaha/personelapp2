@@ -1,38 +1,8 @@
 part of 'bulk_text_parser.dart';
 
-const Map<String, int> _turkishMonths = {
-  'ocak': 1,
-  'şubat': 2,
-  'subat': 2,
-  'mart': 3,
-  'nisan': 4,
-  'mayıs': 5,
-  'mayis': 5,
-  'haziran': 6,
-  'temmuz': 7,
-  'ağustos': 8,
-  'agustos': 8,
-  'eylül': 9,
-  'eylul': 9,
-  'ekim': 10,
-  'kasım': 11,
-  'kasim': 11,
-  'aralık': 12,
-  'aralik': 12,
-};
+Map<String, int> get _turkishMonths => TurkishDateHelper.monthAliases;
 
-const Set<String> _dayNames = {
-  'pazartesi',
-  'sali',
-  'salı',
-  'carsamba',
-  'çarşamba',
-  'persembe',
-  'perşembe',
-  'cuma',
-  'cumartesi',
-  'pazar',
-};
+Set<String> get _dayNames => TurkishDateHelper.dayAliases.keys.toSet();
 
 final RegExp _datePattern =
     RegExp(r'(?<!\d)(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?!\d)');
@@ -156,9 +126,8 @@ String? _extractDateFromLine(String line, [String? defaultDate]) {
   final textMatch = _textMonthDatePattern.firstMatch(line);
   if (textMatch != null) {
     final day = int.parse(textMatch.group(1)!);
-    final monthName = _fold(textMatch.group(2)!);
-    if (_turkishMonths.containsKey(monthName)) {
-      final month = _turkishMonths[monthName]!;
+    final month = TurkishDateHelper.parseMonthNumber(textMatch.group(2)!);
+    if (month != null) {
       int year;
       if (textMatch.group(3) != null) {
         year = int.parse(textMatch.group(3)!);

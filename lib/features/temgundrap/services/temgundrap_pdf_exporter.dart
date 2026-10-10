@@ -4,37 +4,31 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:personelapp2/core/utils/export_file_name_helper.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
+import 'package:personelapp2/core/utils/turkish_date_helper.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
+import 'package:personelapp2/l10n/generated/app_localizations.dart';
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
 class TemgundrapPdfExporter {
   const TemgundrapPdfExporter._();
 
-  static const _turkishMonths = <String>[
-    'OCAK',
-    'ŞUBAT',
-    'MART',
-    'NİSAN',
-    'MAYIS',
-    'HAZİRAN',
-    'TEMMUZ',
-    'AĞUSTOS',
-    'EYLÜL',
-    'EKİM',
-    'KASIM',
-    'ARALIK',
-  ];
-
-  static String documentTitle(TemgundrapDocument document) {
-    final date = document.date;
-    final day = date.day.toString().padLeft(2, '0');
-    final month = _turkishMonths[date.month - 1];
-    return '${document.unitTitle} $day $month ${date.year} TARİHİNDE '
+  static String documentTitle(TemgundrapDocument document, [AppLocalizations? l10n]) {
+    final dateStr = TurkishDateHelper.formatOfficialDate(
+      document.date,
+      uppercase: true,
+    );
+    if (l10n != null) {
+      return l10n.temgundrapExportDocumentTitle(document.unitTitle, dateStr);
+    }
+    return '${document.unitTitle} $dateStr TARİHİNDE '
         'PLANLANAN OPERASYON TAKİP ÇİZELGESİ';
   }
 
-  static Future<pw.Document> build(TemgundrapDocument document) async {
+  static Future<pw.Document> build(
+    TemgundrapDocument document, [
+    AppLocalizations? l10n,
+  ]) async {
     final regular = pw.Font.ttf(
       await rootBundle.load('assets/fonts/Roboto-Regular.ttf'),
     );
@@ -83,7 +77,7 @@ class TemgundrapPdfExporter {
                     border: pw.Border(bottom: pw.BorderSide(width: .6)),
                   ),
                   child: pw.Text(
-                    'OPERASYON KUVVETİ',
+                    l10n?.temgundrapExportColForceHeader ?? 'OPERASYON KUVVETİ',
                     style: pw.TextStyle(
                       fontSize: 7,
                       fontWeight: pw.FontWeight.bold,
@@ -104,7 +98,7 @@ class TemgundrapPdfExporter {
                 width: double.infinity,
                 alignment: pw.Alignment.center,
                 child: pw.Text(
-                  documentTitle(document),
+                  documentTitle(document, l10n),
                   textAlign: pw.TextAlign.center,
                   style: pw.TextStyle(
                     fontWeight: pw.FontWeight.bold,
@@ -131,26 +125,26 @@ class TemgundrapPdfExporter {
                       color: PdfColors.grey200,
                     ),
                     children: [
-                      cell('S.NU', bold: true),
-                      cell('ÇIKARAN BİRLİK', bold: true),
-                      cell('OPERASYON BÖLGESİ', bold: true),
+                      cell(l10n?.temgundrapExportColSequence ?? 'S.NU', bold: true),
+                      cell(l10n?.temgundrapExportColIssuingUnit ?? 'ÇIKARAN BİRLİK', bold: true),
+                      cell(l10n?.temgundrapExportColOperationArea ?? 'OPERASYON BÖLGESİ', bold: true),
                       forceGroup([
-                        'KUVVETİ',
-                        'OPERASYON KOMUTANI',
-                        'MEVCUT',
+                        l10n?.temgundrapExportColForce ?? 'KUVVETİ',
+                        l10n?.temgundrapExportColCommander ?? 'OPERASYON KOMUTANI',
+                        l10n?.temgundrapExportColPresent ?? 'MEVCUT',
                         '',
                       ], header: true),
-                      cell('BAŞLAMA ZAMANI', bold: true),
-                      cell('BİTİŞ ZAMANI', bold: true),
-                      cell('OPERASYON MAKSADI', bold: true),
-                      cell('AÇIKLAMA', bold: true),
+                      cell(l10n?.temgundrapExportColStartTime ?? 'BAŞLAMA ZAMANI', bold: true),
+                      cell(l10n?.temgundrapExportColEndTime ?? 'BİTİŞ ZAMANI', bold: true),
+                      cell(l10n?.temgundrapExportColPurpose ?? 'OPERASYON MAKSADI', bold: true),
+                      cell(l10n?.temgundrapExportColDescription ?? 'AÇIKLAMA', bold: true),
                     ],
                   ),
                   ...document.operations.asMap().entries.map((entry) {
                     final item = entry.value;
                     final labels = [
                       ...item.strength.byLabel.keys,
-                      'TOPLAM',
+                      l10n?.temgundrapExportTotal ?? 'TOPLAM',
                     ].join('\n');
                     final counts = [
                       ...item.strength.byLabel.values,
@@ -190,7 +184,7 @@ class TemgundrapPdfExporter {
                       crossAxisAlignment: pw.CrossAxisAlignment.center,
                       children: [
                         pw.Text(
-                          '(İMZALI)',
+                          l10n?.temgundrapSigned ?? '(İMZALI)',
                           textAlign: pw.TextAlign.center,
                           style: pw.TextStyle(
                             fontSize: 8,
@@ -230,13 +224,19 @@ class TemgundrapPdfExporter {
     return pdf;
   }
 
-  static Future<void> printDocument(TemgundrapDocument document) async {
-    final bytes = await (await build(document)).save();
+  static Future<void> printDocument(
+    TemgundrapDocument document, [
+    AppLocalizations? l10n,
+  ]) async {
+    final bytes = await (await build(document, l10n)).save();
     await Printing.layoutPdf(name: 'TEMGÜNDRAP', onLayout: (_) async => bytes);
   }
 
-  static Future<void> shareDocument(TemgundrapDocument document) async {
-    final bytes = await (await build(document)).save();
+  static Future<void> shareDocument(
+    TemgundrapDocument document, [
+    AppLocalizations? l10n,
+  ]) async {
+    final bytes = await (await build(document, l10n)).save();
     final dateStr =
         '${document.date.year}-${document.date.month.toString().padLeft(2, '0')}-${document.date.day.toString().padLeft(2, '0')}';
     final fileName = formatExportFileName(
@@ -248,7 +248,7 @@ class TemgundrapPdfExporter {
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
-        text: 'TEMGÜNDRAP operasyon takip çizelgesi',
+        text: l10n?.temgundrapExportShareText ?? 'TEMGÜNDRAP operasyon takip çizelgesi',
       ),
     );
   }
