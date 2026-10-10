@@ -3129,8 +3129,9 @@ abstract class AppLocalizations {
   /// No description provided for @backupFullRestoreSuccess.
   ///
   /// In tr, this message translates to:
-  /// **'Geri yükleme tamamlandı: {personnel} personel, {activity} faaliyet ve {temgundrap} TEMGÜNDRAP belgesi.'**
-  String backupFullRestoreSuccess(int personnel, int activity, int temgundrap);
+  /// **'Geri yükleme tamamlandı: {personnelCount} personel, {activityCount} faaliyet ve {temgundrapCount} TEMGÜNDRAP belgesi.'**
+  String backupFullRestoreSuccess(
+      int personnelCount, int activityCount, int temgundrapCount);
 
   /// No description provided for @activityDutyForPersonnel.
   ///

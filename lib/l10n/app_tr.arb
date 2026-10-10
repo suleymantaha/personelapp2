@@ -2625,14 +2625,6 @@
       "count": { "type": "int" }
     }
   },
-  "backupFullRestoreSuccess": "Geri yükleme tamamlandı: {personnel} personel, {activity} faaliyet ve {temgundrap} TEMGÜNDRAP belgesi.",
-  "@backupFullRestoreSuccess": {
-    "placeholders": {
-      "personnel": { "type": "int" },
-      "activity": { "type": "int" },
-      "temgundrap": { "type": "int" }
-    }
-  },
   "backupConfirmOverwriteContent": "Tam geri yükleme mevcut personel, görev, matris ve TEMGÜNDRAP kayıtlarının yerine yedekteki verileri koyar. Bu işlem geri alınamaz.",
   "bulkImportCriticalErrorsCount": "{count} kritik hata",
   "@bulkImportCriticalErrorsCount": {
@@ -2646,7 +2638,6 @@
       "line": { "type": "int" }
     }
   },
-  "bulkImportConfirmAllAction": "Tümünü Onayla",
   "bulkImportEmptySummaryHint": "Lütfen aşağıda vurgulanan kartlardaki eksik personelleri eşleştirin, tekrarları düzeltin veya boş kartları silin.",
   "bulkParseEmptyInput": "Ayrıştırılacak metin boş.",
   "bulkParseMissingDate": "Bu personel grubu için geçerli bir tarih bulunamadı.",

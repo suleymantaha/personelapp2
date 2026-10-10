@@ -1731,8 +1731,9 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String backupFullRestoreSuccess(int personnel, int activity, int temgundrap) {
-    return 'Geri yükleme tamamlandı: $personnel personel, $activity faaliyet ve $temgundrap TEMGÜNDRAP belgesi.';
+  String backupFullRestoreSuccess(
+      int personnelCount, int activityCount, int temgundrapCount) {
+    return 'Geri yükleme tamamlandı: $personnelCount personel, $activityCount faaliyet ve $temgundrapCount TEMGÜNDRAP belgesi.';
   }
 
   @override
