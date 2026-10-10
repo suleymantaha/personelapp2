@@ -306,10 +306,63 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
       case ArchiveExportType.text:
         await _exportMasterText(activities, personnelList);
         return;
+      case ArchiveExportType.temgundrap:
+        await _exportToTemgundrap(activities, personnelList);
+        return;
     }
     } catch (error) {
       if (mounted) AppNotifications.error(context.l10n.activityArchiveExportFailed('$error'));
     }
+  }
+
+  Future<void> _exportToTemgundrap(
+    List<GunlukFaaliyetTableData> activities,
+    List<PersonelTableData> personnelList,
+  ) async {
+    if (activities.isEmpty) {
+      AppNotifications.info(context.l10n.activityArchiveNoActivitiesToExport);
+      return;
+    }
+
+    final db = ref.read(databaseProvider);
+    final actIds = activities.map((a) => a.id).toSet();
+    final assignments = await (db.select(db.faaliyetPersonelAtamaTable)
+          ..where((tbl) => tbl.faaliyetId.isIn(actIds)))
+        .get();
+
+    final pMap = {for (final p in personnelList) p.id: p};
+
+    final operations = TemgundrapActivityConverter.convertAll(
+      activities: activities,
+      allAssignments: assignments,
+      personnelMap: pMap,
+    );
+
+    final repo = TemgundrapRepository();
+    final defaults = await repo.getApproverDefaults();
+
+    DateTime docDate = _selectedDateFilter;
+    if (activities.isNotEmpty) {
+      final parsed = DateTime.tryParse(activities.first.tarih);
+      if (parsed != null) docDate = parsed;
+    }
+
+    final draft = TemgundrapDocument(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      date: docDate,
+      unitTitle: defaults.unitTitle.isNotEmpty
+          ? defaults.unitTitle
+          : defaultTemgundrapUnitTitle,
+      approverName: defaults.name,
+      approverRank: defaults.rank,
+      approverDuty: defaults.duty,
+      operations: operations,
+      isDraft: true,
+      updatedAt: DateTime.now(),
+    );
+
+    if (!mounted) return;
+    await AppNavigator.toTemgundrapForm(context, document: draft, date: docDate);
   }
 
   Future<void> _showSelectedExportOptions(

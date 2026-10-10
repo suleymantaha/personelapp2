@@ -164,7 +164,7 @@
   "personnelAllUnit": "Tüm Birlik",
   "personnelNoSubscription": "Abonelik Yok",
   "personnelNoCriteriaMatches": "Kriterlere uygun personel bulunamadı.",
-  "commonSaving": "Kaydediliyor...",
+  "commonSaving": "Kaydediliyor…",
   "commonRetry": "TEKRAR DENE",
   "authLoginTitle": "Giriş Yap",
   "authUsername": "Kullanıcı Adı",
@@ -500,6 +500,28 @@
   "temgundrapSaveAsDraft": "Taslak olarak kaydet",
   "temgundrapSaveDocumentButton": "ÇİZELGEYİ KAYDET",
   "temgundrapRequiredField": "Bu alan zorunludur.",
+  "temgundrapImportFromActivities": "Faaliyetlerden İçe Aktar",
+  "temgundrapImportDialogTitle": "Faaliyetlerden İçe Aktar",
+  "temgundrapImportDialogSubtitle": "Günün faaliyetlerini TEMGÜNDRAP operasyonlarına dönüştürün",
+  "temgundrapImportDialogNoActivities": "Bu tarihte kayıtlı faaliyet bulunamadı.",
+  "temgundrapImportDialogSubmit": "FORMA AKTAR ({count})",
+  "@temgundrapImportDialogSubmit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "temgundrapImportSuccess": "{count} faaliyet forma aktarıldı.",
+  "@temgundrapImportSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityArchiveExportToTemgundrap": "TEMGÜNDRAP Olarak Aç",
+  "activityArchiveExportToTemgundrapSubtitle": "Seçilen faaliyetlerle TEMGÜNDRAP taslağı oluştur",
   "pendingApprovalsTitle": "Bekleyen Görev Onayları",
   "pendingApprovalsEmptyTitle": "Bekleyen Onay Yok",
   "pendingApprovalsEmptyDesc": "Onay bekleyen veya çakışan görev kaydı bulunmuyor.",
@@ -2595,5 +2617,231 @@
   "temgundrapUnitHint": "Örn: KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI",
   "temgundrapApproverNameHint": "Örn: İhsan DAĞLI",
   "temgundrapApproverRankHint": "Örn: J.Ütğm.",
-  "temgundrapApproverDutyHint": "Örn: Tb. K. V."
+  "temgundrapApproverDutyHint": "Örn: Tb. K. V.",
+  "backupDialogTitle": "Tam yedekleme ve geri yükleme",
+  "backupDialogSubtitle": "Bulut gerekmez; dosya sizin seçtiğiniz yerde kalır.",
+  "backupTabExport": "Yedekle",
+  "backupTabImport": "Geri yükle",
+  "backupWhatsIncludedTitle": "Yedekte neler var?",
+  "backupWhatsIncludedText": "İsimler, timler, kullanıcılar, telefonlar, görevler, aylık matris, faaliyet arşivi, raporlar, takma adlar, toplu aktarım geçmişi ve TEMGÜNDRAP belgeleri.",
+  "backupKeepSafeTitle": "Uygulama silinse de koruyun",
+  "backupKeepSafeText": "Açılan kaydet ekranından İndirilenler gibi cihazın yerel bir klasörünü seçin. Uygulamanın kendi klasörüne bırakmayın.",
+  "backupSecurityTitle": "Dosyayı güvenli tutun",
+  "backupSecurityText": "Yedek kişisel bilgiler içerir. Yalnızca güvenilir bir yerel klasörde saklayın ve başkalarıyla paylaşmayın.",
+  "backupLegacyDateText": "Eski yedek",
+  "backupLegacyTitle": "Eski personel yedeği",
+  "backupVerifiedFullTitle": "Doğrulanmış tam yedek",
+  "backupPreviewStats": "{date} • {personnel} personel • {activity} faaliyet • {assignment} görev kaydı • {temgundrap} TEMGÜNDRAP",
+  "@backupPreviewStats": {
+    "placeholders": {
+      "date": { "type": "String" },
+      "personnel": { "type": "int" },
+      "activity": { "type": "int" },
+      "assignment": { "type": "int" },
+      "temgundrap": { "type": "int" }
+    }
+  },
+  "backupLegacyRestoreSuccess": "{count} yeni personel eski yedekten aktarıldı.",
+  "@backupLegacyRestoreSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "backupConfirmOverwriteContent": "Tam geri yükleme mevcut personel, görev, matris ve TEMGÜNDRAP kayıtlarının yerine yedekteki verileri koyar. Bu işlem geri alınamaz.",
+  "bulkImportCriticalErrorsCount": "{count} kritik hata",
+  "@bulkImportCriticalErrorsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "bulkImportLinePrefix": "Satır {line}: ",
+  "@bulkImportLinePrefix": {
+    "placeholders": {
+      "line": { "type": "int" }
+    }
+  },
+  "bulkImportEmptySummaryHint": "Lütfen aşağıda vurgulanan kartlardaki eksik personelleri eşleştirin, tekrarları düzeltin veya boş kartları silin.",
+  "bulkParseEmptyInput": "Ayrıştırılacak metin boş.",
+  "bulkParseMissingDate": "Bu personel grubu için geçerli bir tarih bulunamadı.",
+  "bulkParseUnknownTeam": "Takım/tim bilgisi tanınamadı.",
+  "bulkParseUnknownActivity": "Görev türü tanınamadı.",
+  "bulkParseInvalidTime": "Saat aralığı geçerli değil.",
+  "bulkParseInvalidDate": "Tarih geçerli değil.",
+  "bulkParseInvalidPersonnel": "Personel satırı çözümlenemedi.",
+  "bulkParseUnknownRank": "Rütbe tanınamadı; ham personel adı korundu.",
+  "bulkParseNoBlocks": "Metinde aktarılabilecek personel bloğu bulunamadı.",
+  "commonFix": "Düzelt",
+  "assignmentConflictHasRecord": "{date} tarihinde personelin başka bir kaydı bulunuyor.",
+  "@assignmentConflictHasRecord": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "assignmentConflictHasDutyOrRecord": "{date} tarihinde personelin başka bir görevi veya kaydı bulunuyor.",
+  "@assignmentConflictHasDutyOrRecord": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "assignmentConflictDateChange": "{date} tarihinde personelin başka bir kaydı bulunuyor. Faaliyet tarihi değiştirilmedi.",
+  "@assignmentConflictDateChange": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "assignmentConflictReport": "{date} tarihinde personelin başka bir görevi, izni veya raporu bulunuyor. Rapor kaydedilmedi.",
+  "@assignmentConflictReport": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "transferPersonnelAlreadyInTarget": "Bu personel zaten hedef faaliyette mevcut.",
+  "bulkImportDuplicateWarningContent": "{dates} tarihli bu içerik {recordDate} tarihinde {user} tarafından kaydedilmiş.\n\nVeritabanında bu listeye ait {count} personel kaydı aktif duruyor. Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?",
+  "@bulkImportDuplicateWarningContent": {
+    "placeholders": {
+      "dates": { "type": "String" },
+      "recordDate": { "type": "String" },
+      "user": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "bulkImportDefaultSquad": "Varsayılan Tim",
+  "bulkImportBlockPersonnelCount": "{count} personel",
+  "@bulkImportBlockPersonnelCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "bulkImportFocusedError": "ODAKLANILAN HATA",
+  "bulkImportInspectedCard": "İNCELENEN KART",
+  "bulkImportEmptyCard": "Boş Kart",
+  "bulkImportUnmatchedCount": "{count} Eşleşmedi",
+  "@bulkImportUnmatchedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "bulkImportWarningCount": "{count} Uyarı",
+  "@bulkImportWarningCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "bulkImportCardActionsTooltip": "Kart işlemleri",
+  "bulkImportCardActionsTitle": "Kart İşlemleri",
+  "bulkImportCardActionsSubtitle": "İçe aktarma kartını yönet",
+  "bulkImportEditCardTitle": "Kartı düzenle",
+  "bulkImportEditCardSubtitle": "Faaliyet ve personel bilgilerini güncelle",
+  "bulkImportDeleteCardTitle": "Kartı sil",
+  "bulkImportDeleteCardSubtitle": "Kartı içe aktarma listesinden kaldır",
+  "bulkImportProblemNoPersonnelInCard": "{title} kartında personel bulunamadı.",
+  "@bulkImportProblemNoPersonnelInCard": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "bulkImportProblemInvalidDate": "Kart #{cardNumber}: Geçerli bir tarih bulunamadı.",
+  "@bulkImportProblemInvalidDate": {
+    "placeholders": {
+      "cardNumber": { "type": "int" }
+    }
+  },
+  "bulkImportProblemMissingTeam": "Kart #{cardNumber}: Takım adı belirtilmedi (Personelin kayıtlı timi kullanılacak).",
+  "@bulkImportProblemMissingTeam": {
+    "placeholders": {
+      "cardNumber": { "type": "int" }
+    }
+  },
+  "bulkImportProblemUnknownActivity": "Kart #{cardNumber}: Görev türü tanınamadı.",
+  "@bulkImportProblemUnknownActivity": {
+    "placeholders": {
+      "cardNumber": { "type": "int" }
+    }
+  },
+  "bulkImportProblemPersonnelNotSelected": "{prefix}{rank} {name} - Personel seçilmedi.",
+  "@bulkImportProblemPersonnelNotSelected": {
+    "placeholders": {
+      "prefix": { "type": "String" },
+      "rank": { "type": "String" },
+      "name": { "type": "String" }
+    }
+  },
+  "bulkImportProblemConflictingDuty": "{prefix}{rank} {name} - Çakışan görev ekli.",
+  "@bulkImportProblemConflictingDuty": {
+    "placeholders": {
+      "prefix": { "type": "String" },
+      "rank": { "type": "String" },
+      "name": { "type": "String" }
+    }
+  },
+  "bulkImportProblemCheckTeam": "Tim kontrolü gerektiriyor.",
+  "bulkImportProblemCheckMatch": "Eşleşme kontrolü gerektiriyor.",
+  "bulkImportProblemLinePrefix": "Satır {lineNumber}: ",
+  "@bulkImportProblemLinePrefix": {
+    "placeholders": {
+      "lineNumber": { "type": "int" }
+    }
+  },
+  "temgundrapIssuingUnitRequired": "Çıkaran birlik zorunludur.",
+  "temgundrapCommanderRequired": "Operasyon komutanı seçilmelidir.",
+  "temgundrapCommanderPhoneRequired": "Komutan telefonu zorunludur.",
+  "temgundrapEndTimeMustBeAfterStart": "Bitiş zamanı başlangıçtan sonra olmalıdır.",
+  "temgundrapPurposeRequired": "Operasyon maksadı zorunludur.",
+  "temgundrapVehiclePlateAlreadyExists": "Bu plaka zaten eklendi.",
+  "temgundrapPlateHint": "Örn. 23 ABC 123",
+  "temgundrapAreaHint": "Örn: ELAZIĞ ...",
+  "temgundrapPlateLabel": "Plaka",
+  "commonConfirmAndSave": "Onayla ve Kaydet",
+  "monthlyMatrixOriginalDate": "{duty} • Asıl tarih: {date}",
+  "@monthlyMatrixOriginalDate": {
+    "placeholders": {
+      "duty": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+  "monthlyMatrixContinuedFromPreviousDay": "Önceki günden devam",
+  "monthlyMatrixActivePersonnelLabel": "Aktif Personel",
+  "monthlyMatrixMissingData": "Veri eksik",
+  "activityDetailPersonnelFallback": "Personel #{id}",
+  "@activityDetailPersonnelFallback": {
+    "placeholders": {
+      "id": { "type": "int" }
+    }
+  },
+  "bulkImportSuccessMessage": "{blockCount} blok → {requestCount} günlük faaliyet, {personnelCount} personel başarıyla eklendi.",
+  "@bulkImportSuccessMessage": {
+    "placeholders": {
+      "blockCount": { "type": "int" },
+      "requestCount": { "type": "int" },
+      "personnelCount": { "type": "int" }
+    }
+  },
+  "bulkImportDuplicateDatePersonnelWarning": "Aynı personel aynı tarihte birden fazla görevde bulunuyor. Aktarmadan önce önizlemedeki tekrarları düzeltin.",
+  "bulkImportNoPersonnelLeftInCard": "Bu kartta personel kalmadı. Kartı silin veya metni yeniden ayrıştırın.",
+  "temgundrapSigned": "(İMZALI)",
+  "temgundrapCommanderLabel": "Komutan",
+  "temgundrapForceLabel": "Kuvvet",
+  "temgundrapTimeLabel": "Zaman",
+  "temgundrapExportDocumentTitle": "{unitTitle} {date} TARİHİNDE PLANLANAN OPERASYON TAKİP ÇİZELGESİ",
+  "@temgundrapExportDocumentTitle": {
+    "placeholders": {
+      "unitTitle": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+  "temgundrapExportColSequence": "S.NU",
+  "temgundrapExportColIssuingUnit": "ÇIKARAN BİRLİK",
+  "temgundrapExportColOperationArea": "OPERASYON BÖLGESİ",
+  "temgundrapExportColForceHeader": "OPERASYON KUVVETİ",
+  "temgundrapExportColForce": "KUVVETİ",
+  "temgundrapExportColCommander": "OPERASYON KOMUTANI",
+  "temgundrapExportColPresent": "MEVCUT",
+  "temgundrapExportColStartTime": "BAŞLAMA ZAMANI",
+  "temgundrapExportColEndTime": "BİTİŞ ZAMANI",
+  "temgundrapExportColPurpose": "OPERASYON MAKSADI",
+  "temgundrapExportColDescription": "AÇIKLAMA",
+  "temgundrapExportTotal": "TOPLAM",
+  "temgundrapExportShareText": "TEMGÜNDRAP operasyon takip çizelgesi",
+  "temgundrapExportShareTextExcel": "TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı",
+  "bulkImportParsedActivityFallback": "Ayrıştırılan Faaliyet"
 }

@@ -1,0 +1,43 @@
+{
+  "utc": "2026-10-10T17:27:24.718617+00:00",
+  "sha256": {
+    ".gitignore": "62883da8ae1a99cd0922e318bfd6a85811896c702b1d96e40cc53b736fe6ba33",
+    "AGENTS.md": "8394d01e40e728c7643320a140bf85a55b44fb69a598a12b077a6259f73c06ba",
+    "CHECKS.md": "f9fca348e95d89f0eebaa477ca0cc1cd2dc0d55fff396a76369986fd7d2fcc00",
+    "PROJECT.md": "2a67211ad7441cf16b573689e88973d1d98ec24b97ee381bdce837300c183296",
+    "README.md": "41e5679ad72a7274ecba3f4b7396a7f1aeb5386352d4fd0afc6cf94d116e0ab2",
+    ".agents/framework.json": "e80ae145d0da536c35f6e3745f7b8a4c4a8d27c4a35cadd222a70c082477a9dd",
+    ".agents/README.md": "1230bd12f353ee911bdfedd523d941624209a1253662722027433a23ae574104",
+    "docs/adoption.md": "d55cfad9434cd1a8af399560bfb1540ba02a29b632c2e1938aed7867d4b833bd",
+    "docs/architecture.md": "59716457c1e750feb0cfad3bada8e0ac58e88b997d78c0107c483e3446a046e5",
+    "docs/globalization-report.md": "a4601522f1b5ac46971c49c9ca7b63133ae6b1cdc14e28c5992e99916610eb88",
+    "scripts/validate_package.py": "aacb983e50997180a27f7a3c6d4014e99bad7524966e630669391daf74597e11",
+    "tasks/ledger.md": "b82317bd022c7f8eb3ab0aae590936aa931e27ea734e61b2f12bc6e4fef17ceb",
+    "tests/test_validate_package.py": "1452b2fcf49a8ea363260afb7bffc2fdad4545d95286e6ddf2ad70316d0d1abb",
+    "validation/changes.diff": "1eb5464abc8f49e61752bf8ef9c80c50ccd78f74c2efbd4c12a9ebcad2a5232c",
+    "validation/result.json": "65e903e3cf4d6b7ea2b4adfb7e48622bd6c2f3b8296614281f039f8a91971238",
+    "validation/tests.log": "e4e9fdfeefdbc0295c46300facb14ba7ed17d31c886010be0a3d497662fcf827",
+    "tasks/active/README.md": "812ddfdc5fca69346e223b3501fe03bcd409b58e876f23fad906d7ada6ea6e7e",
+    "tasks/history/README.md": "91052d427d6dfcc88d8068cc5168820ae28f5b01aa2f2e9563e1d329e3e11fbd",
+    ".agents/policies/contracts.md": "310215fc23f63d002287fe753d4fd3cf4a97f55c089ed1eab27eca6f0840e0b9",
+    ".agents/policies/orchestration.md": "c731c51bda1c99c2b8fcb448b180e1c85cc1b6a7f20faa7340bc672a58437ab1",
+    ".agents/policies/quality.md": "64efcd4d55aa8f626114d2317cb7fa3ac48968a07e7c39a75e214dce13ad2d94",
+    ".agents/policies/risk.md": "aca4e4e7f769c6187659bdc3f06aa3e257fc8ebf5df5514d2f26896a1d6a8512",
+    ".agents/policies/security.md": "cf530e560e07e1fa36fa2954d7e9cce693ea1fee193a7b2960880d912b5ba72f",
+    ".agents/roles/coordinator.md": "7d06f32147f00e8b70be7bec16779284dbd6ccadde84c5cafb61bccd6bc0b2a0",
+    ".agents/roles/researcher.md": "16968db2a2db997c9a4828860ee423c0585bb18d5315d5029350b2075f41ea44",
+    ".agents/roles/security-auditor.md": "9e0f89361a753a53df06d239c6eb25f9e3627a5ff2b771c3ada72c0d5d705cfc",
+    ".agents/roles/verifier.md": "bf7f32294bb4aa87f01d32a02240a961accf995c097df57faae376b8eaf04812",
+    ".agents/roles/worker.md": "203b646434198f598612117098d67936523e783911342129c41b4c8756f18259",
+    ".agents/templates/contract.md": "f46a8f4a7ca37cf6fabb4ecc1896494e81943e8016232e443cb08e987b65e9a5",
+    ".agents/templates/report.md": "3c1f482290797d3ea64204ecbfac480d96d24a907cc94907229643a10e981c08",
+    ".agents/templates/task.md": "df11a463f8889ccd55439ea1cd4999675bd006ddc7adf99a52f4b4cd8248f303",
+    ".agents/workflows/context.md": "703f41b79276262f73698b4f7ce7455dd16f5aae4a14412d3493f32fd8d20cb6",
+    ".agents/workflows/isolation.md": "5ef5d4c4b8260ae125425c77d012caeac1ba0338851e4a75b2d910f1c56729d5",
+    ".agents/workflows/recovery.md": "4ed0ebab0eda271a30ec45a09606b4d2390f5dbf823e605d678911a412d29eea"
+  },
+  "excluded": [
+    "validation/manifest.json (self-reference)"
+  ],
+  "file_count": 34
+}

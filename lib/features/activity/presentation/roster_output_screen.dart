@@ -9,6 +9,9 @@ import 'package:personelapp2/features/activity/presentation/widgets/roster_selec
 import 'package:personelapp2/features/activity/services/combined_heybet_excel_service.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 
+class _SessionException implements Exception {}
+class _TeamRevokedException implements Exception {}
+
 class RosterOutputScreen extends ConsumerStatefulWidget {
   const RosterOutputScreen({
     super.key,
@@ -39,12 +42,12 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
 
   Future<int?> _authorizedTeam() async {
     final session = ref.read(userSessionProvider);
-    if (session == null) throw StateError('Oturum doğrulanamadı.');
+    if (session == null) throw _SessionException();
     if (session.isAdmin) return null;
     final team = await ref
         .read(personnelRepositoryProvider)
         .currentCommanderTeam(session.username);
-    if (team == null) throw StateError('Tim yetkiniz sona erdi.');
+    if (team == null) throw _TeamRevokedException();
     return team;
   }
 
@@ -80,8 +83,14 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
       });
     } catch (error) {
       if (mounted && date == _date) {
+        final message = switch (error) {
+          _SessionException() => context.l10n.authSessionUnverified,
+          _TeamRevokedException() =>
+            context.l10n.rosterOutputCommanderTeamRevoked,
+          _ => '$error',
+        };
         setState(() {
-          _error = '$error';
+          _error = message;
           _loading = false;
         });
       }

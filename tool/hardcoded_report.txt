@@ -1,0 +1,708 @@
+=====================================================
+AKILLI L10N DENETİM RAPORU
+Oluşturulma Tarihi: 2026-10-10T21:14:49.719016
+UI Dosyası Sayısı: 6 (23 satır)
+Diğer Dosya Sayısı: 52
+=====================================================
+
+#####################################################
+### 1. BÖLÜM: KULLANICI ARAYÜZÜ (UI / PRESENTATION) ###
+#####################################################
+
+-----------------------------------------------------
+lib\features\personnel\presentation\widgets\personnel_form_dialog.dart (7 öğe)
+-----------------------------------------------------
+Line 48: _selectedRank = isStandardRank ? normalizedRutbe : 'DİĞER / ÖZEL RÜTBE';
+Line 82: final finalRank = (_selectedRank == 'DİĞER / ÖZEL RÜTBE')
+Line 95: birlik = 'Asayiş Timi';
+Line 193: value: 'DİĞER / ÖZEL RÜTBE',
+Line 201: if (_selectedRank == 'DİĞER / ÖZEL RÜTBE') ...[
+Line 280: "3'üncü Bl.",
+Line 283: "3'üncü Bl. K.H",
+
+-----------------------------------------------------
+lib\features\activity\presentation\activity_form_screen.dart (6 öğe)
+-----------------------------------------------------
+Line 41: 'Hazır Kıta',
+Line 42: 'Gülüşkür',
+Line 43: 'Nöbet',
+Line 45: 'Görev',
+Line 46: 'Diğer',
+Line 226: final value = template == 'Diğer' ? '' : template;
+
+-----------------------------------------------------
+lib\features\dashboard\presentation\dashboard_screen.dart (3 öğe)
+-----------------------------------------------------
+Line 46: title: 'TEMGÜNDRAP',
+Line 277: title: 'TEMGÜNDRAP',
+Line 278: subtitle: 'Çizelge oluştur ve yönet',
+
+-----------------------------------------------------
+lib\features\matrix\presentation\monthly_matrix_actions.dart (3 öğe)
+-----------------------------------------------------
+Line 9: 'İZ' => 'İZİN',
+Line 10: 'İST' => 'İSTİRAHAT',
+Line 11: 'RAP' => 'RAPOR',
+
+-----------------------------------------------------
+lib\features\activity\presentation\widgets\activity_form\activity_form_header.dart (2 öğe)
+-----------------------------------------------------
+Line 99: final isOther = template == 'Diğer';
+Line 146: if (template == 'Diğer') {
+
+-----------------------------------------------------
+lib\features\personnel\presentation\dialogs\bulk_personnel_import_dialog.dart (2 öğe)
+-----------------------------------------------------
+Line 216: '1. J.Asb.Çvş. Ahmet YILMAZ\n'
+Line 217: '2. J.Uzm.Çvş. Mehmet DEMİR',
+
+
+#####################################################
+### 2. BÖLÜM: VERİ / DOMAIN / UTILS (ARKA PLAN)    ###
+#####################################################
+
+-----------------------------------------------------
+lib\core\utils\turkish_date_helper.dart (36 öğe)
+-----------------------------------------------------
+Line 9: 'Şubat',
+Line 12: 'Mayıs',
+Line 15: 'Ağustos',
+Line 16: 'Eylül',
+Line 18: 'Kasım',
+Line 19: 'Aralık',
+Line 25: 'ŞUBAT',
+Line 27: 'NİSAN',
+Line 29: 'HAZİRAN',
+Line 31: 'AĞUSTOS',
+Line 32: 'EYLÜL',
+Line 33: 'EKİM',
+Line 41: 'Şub',
+Line 47: 'Ağu',
+Line 51: 'Ara',
+Line 57: 'ŞUB',
+Line 59: 'NİS',
+Line 65: 'EKİ',
+Line 67: 'ARA',
+Line 73: 'Salı',
+Line 74: 'Çarşamba',
+Line 75: 'Perşembe',
+Line 83: 'PAZARTESİ',
+Line 85: 'ÇARŞAMBA',
+Line 86: 'PERŞEMBE',
+Line 88: 'CUMARTESİ',
+Line 96: 'Çar',
+Line 108: '2': 2, '02': 2, 'şubat': 2, 'subat': 2, 'şub': 2, 'sub': 2,
+Line 114: '5': 5, '05': 5, 'mayıs': 5, 'mayis': 5, 'may': 5,
+Line 120: '8': 8, '08': 8, 'ağustos': 8, 'agustos': 8, 'ağu': 8, 'agu': 8,
+Line 122: '9': 9, '09': 9, 'eylül': 9, 'eylul': 9, 'eyl': 9,
+Line 126: '11': 11, 'kasım': 11, 'kasim': 11, 'kas': 11,
+Line 128: '12': 12, 'aralık': 12, 'aralik': 12, 'ara': 12,
+Line 134: 'salı': 2, 'sali': 2, 'sal': 2,
+Line 135: 'çarşamba': 3, 'carsamba': 3, 'çar': 3, 'car': 3,
+Line 136: 'perşembe': 4, 'persembe': 4, 'per': 4,
+
+-----------------------------------------------------
+lib\features\personnel\data\personnel_repository.dart (34 öğe)
+-----------------------------------------------------
+Line 150: throw ArgumentError('Güncellenecek personel bulunamadı.');
+Line 158: ? 'Asayiş Timi'
+Line 195: 'Aynı adlı personel var. Mevcut kişiyi güncelleyin veya ayrı kişi oluşturmayı seçin.',
+Line 211: ? 'Asayiş Timi'
+Line 255: final islemStr = data.timId == null ? 'çıkarıldı' : 'eklendi';
+Line 297: islem: 'çıkarıldı',
+Line 415: throw ArgumentError('Tim komutanı hesabı bulunamadı.');
+Line 423: throw ArgumentError('Tim bulunamadı.');
+Line 460: throw ArgumentError('Aktif gerçek personel seçilmeli.');
+Line 501: 'Test verisi yalnızca geliştirme sürümünde oluşturulur.',
+Line 512: 'Hüseyin',
+Line 514: 'İbrahim',
+Line 515: 'İsmail',
+Line 518: 'Ömer',
+Line 525: 'Gökhan',
+Line 537: 'DEMİR',
+Line 538: 'ÇELİK',
+Line 539: 'ŞAHİN',
+Line 542: 'ÖZTÜRK',
+Line 544: 'ÖZDEMİR',
+Line 546: 'DOĞAN',
+Line 547: 'KILIÇ',
+Line 549: 'ÇETİN',
+Line 550: 'KOÇ',
+Line 552: 'ÖZKAN',
+Line 553: 'ŞEN',
+Line 557: 'J.Asb.Kd.Bçvş.',
+Line 558: 'J.Asb.Bçvş.',
+Line 559: 'J.Asb.Kd.Üçvş.',
+Line 560: 'J.Asb.Üçvş.',
+Line 561: 'J.Asb.Kd.Çvş.',
+Line 562: 'Uzm.J.VII.Kad.Kıd.Çvş.',
+Line 563: 'J.Uzm.Çvş.',
+Line 611: 'Test verisi temizliği yalnızca geliştirme sürümünde yapılır.',
+
+-----------------------------------------------------
+lib\features\activity\domain\parser\bulk_text_title_parser.dart (32 öğe)
+-----------------------------------------------------
+Line 68: 'gülüşkür': DutyOrLeaveType.guluskur,
+Line 70: 'hazır kıta': DutyOrLeaveType.hazirKita,
+Line 73: 'garaj nöb': DutyOrLeaveType.garajNob,
+Line 75: 'garaj nöbet': DutyOrLeaveType.garajNob,
+Line 77: 'ttza nöb': DutyOrLeaveType.ttzaNob,
+Line 79: 'ttza nöbet': DutyOrLeaveType.ttzaNob,
+Line 81: 'mebs nöb': DutyOrLeaveType.mebsNob,
+Line 83: 'kule nöb': DutyOrLeaveType.kuleNob,
+Line 87: 'görev': DutyOrLeaveType.gorevli,
+Line 88: 'gorev': DutyOrLeaveType.gorevli,
+Line 89: 'nöbetçi': DutyOrLeaveType.nobetci,
+Line 94: 'gülüşkür': 'Gülüşkür',
+Line 95: 'guluskur': 'Gülüşkür',
+Line 96: 'hazır kıta': 'Hazır Kıta',
+Line 97: 'hazir kita': 'Hazır Kıta',
+Line 99: 'garaj nöb': 'GARAJ NÖB.',
+Line 100: 'garaj nob': 'GARAJ NÖB.',
+Line 101: 'garaj nöbet': 'GARAJ NÖB.',
+Line 102: 'garaj nobet': 'GARAJ NÖB.',
+Line 103: 'ttza nöb': 'TTZA NÖB.',
+Line 104: 'ttza nob': 'TTZA NÖB.',
+Line 105: 'ttza nöbet': 'TTZA NÖB.',
+Line 106: 'ttza nobet': 'TTZA NÖB.',
+Line 107: 'mebs nöb': 'MEBS NÖB.',
+Line 108: 'mebs nob': 'MEBS NÖB.',
+Line 109: 'kule nöb': 'KULE NÖB.',
+Line 110: 'kule nob': 'KULE NÖB.',
+Line 111: 'ihtiyat': 'İhtiyat',
+Line 113: 'görev': 'Görev',
+Line 114: 'gorev': 'Görev',
+Line 115: 'nöbetçi': 'Nöbetçi',
+Line 116: 'nobetci': 'Nöbetçi',
+
+-----------------------------------------------------
+lib\features\temgundrap\domain\temgundrap_defaults.dart (24 öğe)
+-----------------------------------------------------
+Line 1: const defaultTemgundrapIssuingUnit = 'ELAZIĞ İL J.K.LIĞI\nJ.KOMD.ÖZ.HRK.K.LIĞI';
+Line 4: 'GÖREVLENDİRME',
+Line 5: 'ASAYİŞ',
+Line 6: 'YOL EMNİYETİ',
+Line 8: 'DEVRİYE',
+Line 10: 'NAKİL EMNİYETİ',
+Line 12: 'DİĞER',
+Line 15: const customTemgundrapOperationArea = 'ELLE EKLE';
+Line 18: 'ELAZIĞ İL J.K.LIĞI',
+Line 19: 'ELAZIĞ İL MERKEZ',
+Line 20: 'AĞIN İLÇE J.K.LIĞI',
+Line 21: 'ALACAKAYA İLÇE J.K.LIĞI',
+Line 22: 'ARICAK İLÇE J.K.LIĞI',
+Line 23: 'BASKİL İLÇE J.K.LIĞI',
+Line 24: 'KARAKOÇAN İLÇE J.K.LIĞI',
+Line 25: 'KEBAN İLÇE J.K.LIĞI',
+Line 26: 'KOVANCILAR İLÇE J.K.LIĞI',
+Line 27: 'MADEN İLÇE J.K.LIĞI',
+Line 28: 'PALU İLÇE J.K.LIĞI',
+Line 29: 'SİVRİCE İLÇE J.K.LIĞI',
+Line 34: 'TRANSİT': ['23 JAA 240'],
+Line 39: 'KİRPİ': [],
+Line 43: 'MİNİBÜS': [],
+Line 44: 'OTOMOBİL': [],
+
+-----------------------------------------------------
+lib\core\services\app_backup_service.dart (19 öğe)
+-----------------------------------------------------
+Line 182: 'Bu yedek biçimi veya sürümü desteklenmiyor.',
+Line 193: 'Yedek dosyasının bütünlük kontrolü başarısız. Dosya bozulmuş olabilir.',
+Line 258: 'Faaliyet-atama bağlantısı',
+Line 263: 'Personel-atama bağlantısı',
+Line 306: throw const FormatException('Yedek tarihi geçersiz.');
+Line 398: _ => throw FormatException('${entry.key} tercihi geçersiz.'),
+Line 409: throw const FormatException('Yedek dosyası izin verilen boyutu aşıyor.');
+Line 417: throw const FormatException('Yedek dosyası geçerli JSON içermiyor.');
+Line 474: throw FormatException('$field alanı geçersiz.');
+Line 481: throw FormatException('$field alanı geçersiz.');
+Line 493: throw FormatException('$key kayıtları geçersiz veya çok büyük.');
+Line 502: throw FormatException('$key kayıtlarından biri geçersiz.');
+Line 527: if (!valid) throw FormatException('${entry.key} tercihi geçersiz.');
+Line 537: throw const FormatException('Onaylayan varsayılanları geçersiz.');
+Line 546: throw const FormatException('Faaliyet kart sıralaması geçersiz.');
+Line 556: throw const FormatException('TEMGÜNDRAP verisi geçersiz.');
+Line 561: throw const FormatException('TEMGÜNDRAP verisi geçersiz.');
+Line 567: throw const FormatException('TEMGÜNDRAP verisi geçersiz.');
+Line 584: throw FormatException('$label yedekte eksik bir kayda işaret ediyor.');
+
+-----------------------------------------------------
+lib\features\activity\domain\ocr\roster_ocr_name_extractor.dart (18 öğe)
+-----------------------------------------------------
+Line 49: 'İsim Listesi',
+Line 137: 'Ç': 'C',
+Line 138: 'Ğ': 'G',
+Line 139: 'İ': 'I',
+Line 141: 'Ö': 'O',
+Line 142: 'Ş': 'S',
+Line 143: 'Ü': 'U',
+Line 144: 'ç': 'c',
+Line 145: 'ğ': 'g',
+Line 146: 'ı': 'i',
+Line 148: 'ö': 'o',
+Line 149: 'ş': 's',
+Line 150: 'ü': 'u',
+Line 178: 'rütbesi',
+Line 180: 'adı soyadı',
+Line 182: 'açıklamalar',
+Line 184: 'görevli isim çizelgesi',
+Line 187: 'nöbet',
+
+-----------------------------------------------------
+lib\features\activity\domain\parser\bulk_text_personnel_parser.dart (18 öğe)
+-----------------------------------------------------
+Line 36: message: 'Personel satırı çözümlenemedi.',
+Line 49: message: 'Rütbe tanınamadı.',
+Line 186: 'günaydın',
+Line 188: 'iyigünler',
+Line 190: 'toplantı',
+Line 192: 'yarın',
+Line 196: 'teşekkürler',
+Line 198: 'tamam',
+Line 199: 'evet',
+Line 200: 'hayır',
+Line 201: 'hayir',
+Line 202: 'sağol',
+Line 204: 'bilgi',
+Line 206: 'açıklama',
+Line 223: return 'METİ';
+Line 244: if (suffix == 'TIM' ||
+Line 246: suffix == 'BÖLÜK' ||
+Line 276: value.toLowerCase().replaceAll('ı', 'i').replaceAll('İ', 'i');
+
+-----------------------------------------------------
+lib\core\utils\military_structure_helper.dart (17 öğe)
+-----------------------------------------------------
+Line 3: final normalized = value.toUpperCase().replaceAll('İ', 'I').trim();
+Line 28: return "3'üncü Bl. K.H";
+Line 43: return "3'üncü Bl.";
+Line 67: return "3'üncü Bl.";
+Line 70: return timOrBirlik.isNotEmpty ? timOrBirlik : 'Asayiş Timi';
+Line 111: return 'GÜLÜŞKÜR';
+Line 160: return 'Nöbet Heyeti';
+Line 170: return 'Nöbet Heyeti';
+Line 203: return "3'üncü Bl. K.H";
+Line 215: return 'METİ Timi';
+Line 241: if (isNobetciHeyetiDuty(duty)) return 'Nöbet Heyeti';
+Line 249: (timName.trim().isNotEmpty && timName != 'Tim geçmişi bilinmiyor')
+Line 251: : (birlik.trim().isNotEmpty ? birlik : 'Tim geçmişi bilinmiyor');
+Line 261: 'Nöbet Heyeti',
+Line 273: "3'üncü Bl. K.H",
+Line 278: 'METİ Timi',
+Line 291: "3'üncü Bl.": 12,
+
+-----------------------------------------------------
+lib\features\activity\services\exporter\excel_xml_generator.dart (13 öğe)
+-----------------------------------------------------
+Line 120: ..writeln(' <Worksheet ss:Name="İsim Listesi">')
+Line 138: '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">BİRLİĞİ</Data></Cell>',
+Line 141: '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">RÜTBE</Data></Cell>',
+Line 147: '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">DİĞER</Data></Cell>',
+Line 221: '    <Cell ss:MergeAcross="4" ss:StyleID="SubTitle"><Data ss:Type="String">GÖREV VE MEVCUT ÖZETİ</Data></Cell>',
+Line 226: MilitaryRosterExporter.specialDutyRankSummary('Hazır Kıta', 'HAZIR_KITA', rows),
+Line 227: MilitaryRosterExporter.specialDutyRankSummary('Gülüşkür', 'GULUSKUR', rows),
+Line 232: if (counts.uzmanErbasCount > 0) 'Uzman Erbaş: ${counts.uzmanErbasCount}',
+Line 233: if (counts.erCount > 0) 'Er / Erbaş: ${counts.erCount}',
+Line 355: ..writeln(' <Worksheet ss:Name="Tüm Faaliyetler">')
+Line 381: '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">BİRLİĞİ</Data></Cell>',
+Line 384: '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">RÜTBE</Data></Cell>',
+Line 390: '    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">DİĞER</Data></Cell>',
+
+-----------------------------------------------------
+lib\features\activity\services\exporter\excel_html_generator.dart (13 öğe)
+-----------------------------------------------------
+Line 29: ..writeln('    <x:Name>İsim Listesi</x:Name>')
+Line 71: ..writeln('    <th style="width: 140px;">BİRLİĞİ</th>')
+Line 72: ..writeln('    <th style="width: 130px;">RÜTBE</th>')
+Line 74: ..writeln('    <th style="width: 160px;">DİĞER</th>')
+Line 154: '  <tr><td colspan="5" class="summary-hdr">GÖREV VE MEVCUT ÖZETİ</td></tr>',
+Line 158: MilitaryRosterExporter.specialDutyRankSummary('Hazır Kıta', 'HAZIR_KITA', rows),
+Line 159: MilitaryRosterExporter.specialDutyRankSummary('Gülüşkür', 'GULUSKUR', rows),
+Line 160: 'Diğer Görevler: $digerCount Personel',
+Line 169: MilitaryRosterExporter.specialDutyRankSummary('Hazır Kıta', 'HAZIR_KITA', rows),
+Line 170: MilitaryRosterExporter.specialDutyRankSummary('Gülüşkür', 'GULUSKUR', rows),
+Line 175: if (counts.uzmanErbasCount > 0) 'Uzman Erbaş: ${counts.uzmanErbasCount}',
+Line 176: if (counts.erCount > 0) 'Er / Erbaş: ${counts.erCount}',
+Line 177: 'TOPLAM MEVCUT: ${counts.totalCount} Personel',
+
+-----------------------------------------------------
+lib\features\temgundrap\services\temgundrap_pdf_exporter.dart (13 öğe)
+-----------------------------------------------------
+Line 24: return '${document.unitTitle} $dateStr TARİHİNDE '
+Line 25: 'PLANLANAN OPERASYON TAKİP ÇİZELGESİ';
+Line 80: l10n?.temgundrapExportColForceHeader ?? 'OPERASYON KUVVETİ',
+Line 129: cell(l10n?.temgundrapExportColIssuingUnit ?? 'ÇIKARAN BİRLİK', bold: true),
+Line 130: cell(l10n?.temgundrapExportColOperationArea ?? 'OPERASYON BÖLGESİ', bold: true),
+Line 132: l10n?.temgundrapExportColForce ?? 'KUVVETİ',
+Line 137: cell(l10n?.temgundrapExportColStartTime ?? 'BAŞLAMA ZAMANI', bold: true),
+Line 138: cell(l10n?.temgundrapExportColEndTime ?? 'BİTİŞ ZAMANI', bold: true),
+Line 140: cell(l10n?.temgundrapExportColDescription ?? 'AÇIKLAMA', bold: true),
+Line 187: l10n?.temgundrapSigned ?? '(İMZALI)',
+Line 232: await Printing.layoutPdf(name: 'TEMGÜNDRAP', onLayout: (_) async => bytes);
+Line 243: title: 'TEMGÜNDRAP_${document.unitTitle}',
+Line 251: text: l10n?.temgundrapExportShareText ?? 'TEMGÜNDRAP operasyon takip çizelgesi',
+
+-----------------------------------------------------
+lib\core\utils\rank_helper.dart (12 öğe)
+-----------------------------------------------------
+Line 7: 'J.Ütğm.',
+Line 8: 'J.Tğm.',
+Line 9: 'J.Astğm.',
+Line 10: 'J.Asb.Kd.Bçvş.',
+Line 11: 'J.Asb.Bçvş.',
+Line 12: 'J.Asb.Kd.Üçvş.',
+Line 13: 'J.Asb.Üçvş.',
+Line 14: 'J.Asb.Kd.Çvş.',
+Line 15: 'J.Asb.Çvş.',
+Line 17: 'J.Uzm.Çvş.',
+Line 18: 'J.Söz.Er',
+Line 20: 'DİĞER / ÖZEL RÜTBE',
+
+-----------------------------------------------------
+lib\features\personnel\services\personnel_backup_service.dart (12 öğe)
+-----------------------------------------------------
+Line 39: 'birlik': p.birlik,
+Line 66: throw const FormatException('Yedek dosyası izin verilen boyutu aşıyor.');
+Line 71: 'Yedek verisi beklenen JSON nesnesi formatında değil.',
+Line 75: throw const FormatException('Yedek sürümü desteklenmiyor.');
+Line 89: throw const FormatException('Yedek çok fazla kayıt içeriyor.');
+Line 129: final rutbe = _readString(p, 'rutbe', fallback: 'J.Uzm.Çvş.');
+Line 130: final birlik = _readString(p, 'birlik', fallback: '1.J.KÖK.Tug.K.lığı');
+Line 218: throw const FormatException('Yedek kod bloğu boş.');
+Line 232: 'Yedek metni geçerli JSON biçiminde değil. Metnin tamamını kopyalayın.',
+Line 243: throw FormatException('$fieldName alanı bir liste olmalıdır.');
+Line 246: throw FormatException('$fieldName alanında geçersiz kayıt var.');
+Line 267: throw FormatException('$key alanı geçersiz.');
+
+-----------------------------------------------------
+lib\features\activity\domain\parser\bulk_text_block_parser.dart (12 öğe)
+-----------------------------------------------------
+Line 18: message: 'Ayrıştırılacak metin boş.',
+Line 59: message: 'Bu personel grubu için geçerli bir tarih bulunamadı.',
+Line 68: message: 'Takım/tim bilgisi tanınamadı.',
+Line 77: message: 'Görev türü tanınamadı.',
+Line 82: rawTitle: currentTitle.isEmpty ? 'Ayrıştırılan Faaliyet' : currentTitle,
+Line 121: message: 'Saat aralığı geçerli değil.',
+Line 193: message: 'Tarih geçerli değil.',
+Line 250: message: 'Saat aralığı geçerli değil.',
+Line 311: message: 'Personel satırı çözümlenemedi.',
+Line 322: message: 'Rütbe tanınamadı; ham personel adı korundu.',
+Line 335: message: 'Personel satırı çözümlenemedi.',
+Line 349: message: 'Metinde aktarılabilecek personel bloğu bulunamadı.',
+
+-----------------------------------------------------
+lib\features\temgundrap\services\temgundrap_excel_exporter.dart (11 öğe)
+-----------------------------------------------------
+Line 15: const sheetName = 'TEMGÜNDRAP';
+Line 67: 1: l10n?.temgundrapExportColIssuingUnit ?? 'ÇIKARAN BİRLİK',
+Line 68: 2: l10n?.temgundrapExportColOperationArea ?? 'OPERASYON BÖLGESİ',
+Line 69: 7: l10n?.temgundrapExportColStartTime ?? 'BAŞLAMA ZAMANI',
+Line 70: 8: l10n?.temgundrapExportColEndTime ?? 'BİTİŞ ZAMANI',
+Line 72: 10: l10n?.temgundrapExportColDescription ?? 'AÇIKLAMA',
+Line 78: set(3, 1, l10n?.temgundrapExportColForceHeader ?? 'OPERASYON KUVVETİ', headerStyle);
+Line 81: l10n?.temgundrapExportColForce ?? 'KUVVETİ',
+Line 148: setSigLine(l10n?.temgundrapSigned ?? '(İMZALI)', sigStyleBold);
+Line 190: title: 'TEMGÜNDRAP_${document.unitTitle}',
+Line 198: text: l10n?.temgundrapExportShareTextExcel ?? 'TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı',
+
+-----------------------------------------------------
+lib\features\activity\data\activity_repository_transfers.dart (10 öğe)
+-----------------------------------------------------
+Line 18: throw ArgumentError('Kaynak faaliyet bulunamadı: $sourceActivityId');
+Line 25: throw ArgumentError('Hedef faaliyet bulunamadı: $targetActivityId');
+Line 119: throw ArgumentError.value(activityName, 'activityName', 'Boş olamaz.');
+Line 127: throw ArgumentError('Kaynak faaliyet bulunamadı: $sourceActivityId');
+Line 173: throw ArgumentError('Atama bulunamadı: $assignmentId');
+Line 182: throw ArgumentError('Hedef faaliyet bulunamadı: $targetActivityId');
+Line 196: reason: 'Bu personel zaten hedef faaliyette mevcut.',
+Line 243: throw ArgumentError.value(activityName, 'activityName', 'Boş olamaz.');
+Line 251: throw ArgumentError('Atama bulunamadı: $assignmentId');
+Line 259: 'Kaynak faaliyet bulunamadı: ${assignment.faaliyetId}',
+
+-----------------------------------------------------
+lib\features\activity\domain\conflict_checker.dart (10 öğe)
+-----------------------------------------------------
+Line 13: static const String nobSb = 'NÖB. SB.';
+Line 14: static const String mebsNob = 'MEBS NÖB.';
+Line 15: static const String garajNob = 'GARAJ NÖB.';
+Line 16: static const String ttzaNob = 'TTZA NÖB.';
+Line 17: static const String kuleNob = 'KULE NÖB.';
+Line 19: static const String guluskur = 'GÜLÜŞKÜR';
+Line 22: static const String nobetci = 'NÖBETÇİ';
+Line 23: static const String izinli = 'İZİNLİ';
+Line 24: static const String istirahatli = 'İSTİRAHATLİ';
+Line 27: static const String diger = 'DİĞER';
+
+-----------------------------------------------------
+lib\features\activity\services\pdf_roster_styles.dart (8 öğe)
+-----------------------------------------------------
+Line 25: ('Hazır Kıta', rows.where((row) => row.groupCode == 'HAZIR_KITA').toList()),
+Line 26: ('Gülüşkür', rows.where((row) => row.groupCode == 'GULUSKUR').toList()),
+Line 28: 'Diğer Tüm Personel',
+Line 61: if (counts.uzmanErbasCount > 0) 'J.UZM.ÇVŞ. ${counts.uzmanErbasCount}',
+Line 62: if (counts.erCount > 0) 'ER/SÖZ.ER ${counts.erCount}',
+Line 136: child: pw.Text('BİRLİĞİ', style: headerStyle),
+Line 144: child: pw.Text('RÜTBE', style: headerStyle),
+Line 160: child: pw.Text('DİĞER', style: headerStyle),
+
+-----------------------------------------------------
+lib\features\activity\services\pdf_roster_actions.dart (8 öğe)
+-----------------------------------------------------
+Line 30: text: '$faaliyetAdi - Resmi İsim Listesi PDF Dökümanı',
+Line 82: 'PDF Şablon Görünüm Stili Seçiniz',
+Line 87: 'Çıktı almak istediğiniz resmi PDF düzenini seçin:',
+Line 107: 'Birlik ve özel görev alanlarını kesintisiz blok görünümünde gösterir.',
+Line 120: 'Stil 2: Akıllı Sayfa Kırılımı Formatı',
+Line 124: 'Klasik 5 sütunlu tablo. Her satır tam çizgili ve sayfa geçişlerine dayanıklıdır.',
+Line 137: 'Stil 3: Askeri Şerit Başlık Formatı',
+Line 141: 'Her Birlik/Tim grubunun ilk satırını gri bantla vurgular.',
+
+-----------------------------------------------------
+lib\core\utils\duty_abbreviation_mapper.dart (7 öğe)
+-----------------------------------------------------
+Line 6: 'GÜLÜŞKÜR': {
+Line 7: 'code': 'Gş',
+Line 20: 'NÖBET': {
+Line 27: 'İZİNLİ': {
+Line 28: 'code': 'İzn',
+Line 34: 'İSTİRAHATLİ': {
+Line 35: 'code': 'İst',
+
+-----------------------------------------------------
+lib\features\temgundrap\data\temgundrap_repository.dart (7 öğe)
+-----------------------------------------------------
+Line 11: this.unitTitle = 'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI',
+Line 33: 'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI',
+Line 62: 'TEMGÜNDRAP onay bilgileri okunamadı. Kayıt korunuyor; yedeği kontrol edin.',
+Line 70: throw StateError('TEMGÜNDRAP onay bilgileri kaydedilemedi.');
+Line 93: 'TEMGÜNDRAP kayıtları okunamadı. Mevcut veri korunuyor; yedeği kontrol edin.',
+Line 138: 'TEMGÜNDRAP kaydı ve geri alma tamamlanamadı. Yeniden denemeden önce kayıtları kontrol edin.',
+Line 157: if (!saved) throw StateError('TEMGÜNDRAP kaydedilemedi. Yeniden deneyin.');
+
+-----------------------------------------------------
+lib\features\activity\data\activity_repository.dart (6 öğe)
+-----------------------------------------------------
+Line 30: 'Bu işlem yalnızca yöneticiler tarafından yapılabilir.',
+Line 47: 'Atama listesindeki personelden biri bulunamadı.',
+Line 52: 'Atama için aktif gerçek personel seçilmeli.',
+Line 75: 'Tim komutanı yalnızca kendi timindeki personele atama yapabilir.',
+Line 105: throw ArgumentError('Görev timi bulunamadı.');
+Line 107: teamName = team?.timAdi ?? 'Tim dışı';
+
+-----------------------------------------------------
+lib\features\activity\services\roster_image_import_service.dart (6 öğe)
+-----------------------------------------------------
+Line 28: label: 'Liste görseli',
+Line 49: confirmButtonText: 'Görseli seç',
+Line 79: sourceName: 'Android görsel seçici',
+Line 121: 'Görselden aktarım yalnızca Android ve iOS cihazlarda kullanılabilir.';
+Line 128: String toString() => 'Görselde eşleştirilecek personel adı bulunamadı.';
+Line 135: String toString() => 'Seçilen görsel dosyası boş okunuyor.';
+
+-----------------------------------------------------
+lib\features\activity\services\combined_heybet_excel_service.dart (6 öğe)
+-----------------------------------------------------
+Line 55: throw ArgumentError('Kartlar seçilen güne veya önceki güne ait olmalı.');
+Line 69: 'Seçilen kart değişti veya silindi. Önizlemeyi yeniden açın.',
+Line 92: birligi: 'J.Komd.Öz.Hrk.Tb.Klığı',
+Line 191: throw ArgumentError('Birleşik çıktı yalnızca Heybet için oluşturulur.');
+Line 200: 'Ana faaliyet değişti veya silindi. Listeyi yeniden açın.',
+Line 212: birligi: 'J.Komd.Öz.Hrk.Tb.Klığı',
+
+-----------------------------------------------------
+lib\features\activity\services\military_roster_exporter.dart (6 öğe)
+-----------------------------------------------------
+Line 94: return '$label: ${counts.totalCount} Personel '
+Line 98: 'Uzman Erbaş: ${counts.uzmanErbasCount} • '
+Line 99: 'Diğer: ${counts.digerCount})';
+Line 143: 'S.NU | BİRLİĞİ          | RÜTBE        | ADI SOYADI            | DİĞER',
+Line 223: text: '$faaliyetAdi - Resmi İsim Listesi Excel Dökümanı',
+Line 312: text: '$title - Günlük Tüm Faaliyetler Birleşik Excel Dökümanı',
+
+-----------------------------------------------------
+lib\features\activity\data\activity_repository_queries.dart (5 öğe)
+-----------------------------------------------------
+Line 12: throw ArgumentError.value(newName, 'newName', 'Faaliyet adı boş olamaz.');
+Line 42: 'Aynı tarihte birden fazla faaliyet desteklenir. '
+Line 43: 'Tarih bazlı birleştirme veri kaybına yol açar.',
+Line 396: 'Toplu faaliyet içe aktarma yalnızca yöneticilere açıktır.',
+Line 479: '${item.date} tarihinde mevcut kaydı nedeniyle '
+
+-----------------------------------------------------
+lib\features\activity\services\roster_signature.dart (5 öğe)
+-----------------------------------------------------
+Line 11: 'TANZİM EDEN',
+Line 12: 'İhsan DAĞLI',
+Line 13: 'J.Asb.Kd.Bçvş.',
+Line 14: 'Eğt.Hrk. ve İsth.Ks.A',
+Line 16: RosterSigner('TASDİK EDEN', 'Serdar YILDIZ', 'J.Yb.', 'J.Komd.Öz.Hrk.Tb.K.'),
+
+-----------------------------------------------------
+lib\core\notifications\app_notification_card.dart (5 öğe)
+-----------------------------------------------------
+Line 72: tooltip: 'Bildirimi kapat',
+Line 92: semanticLabel: 'Başarılı',
+Line 97: semanticLabel: 'Hata',
+Line 102: semanticLabel: 'Uyarı',
+Line 107: semanticLabel: 'Bilgi',
+
+-----------------------------------------------------
+lib\core\database\database.dart (5 öğe)
+-----------------------------------------------------
+Line 94: SELECT CASE WHEN h.islem = 'çıkarıldı' THEN NULL ELSE h.tim_id END
+Line 130: rol: 'yönetici',
+Line 151: timAdi: 'METİ Timi',
+Line 171: "3'üncü Bl. K.H",
+Line 176: 'METİ Timi',
+
+-----------------------------------------------------
+lib\features\activity\domain\duty_coverage.dart (5 öğe)
+-----------------------------------------------------
+Line 8: 'GÜLÜŞKÜR',
+Line 9: 'NÖB. SB.',
+Line 10: 'GARAJ NÖB.',
+Line 11: 'TTZA NÖB.',
+Line 12: 'MEBS NÖB.',
+
+-----------------------------------------------------
+lib\core\services\backup_file_gateway.dart (5 öğe)
+-----------------------------------------------------
+Line 20: label: 'Nizam yedek dosyası',
+Line 48: subject: 'Nizam uygulama yedeği',
+Line 50: 'Bu dosyayı cihazın yerel depolamasında güvenli bir klasöre kaydedin.',
+Line 60: confirmButtonText: 'Yedeği kaydet',
+Line 79: confirmButtonText: 'Yedeği seç',
+
+-----------------------------------------------------
+lib\features\activity\services\exporter\excel_xlsx_support.dart (5 öğe)
+-----------------------------------------------------
+Line 4: ('Hazır Kıta', 'HAZIR_KITA'),
+Line 5: ('Gülüşkür', 'GULUSKUR'),
+Line 6: ('Diğer Tüm Personel', 'DIGER_TUM_PERSONEL'),
+Line 144: if (counts.uzmanErbasCount > 0) 'J.UZM.ÇVŞ. ${counts.uzmanErbasCount}',
+Line 145: if (counts.erCount > 0) 'ER/SÖZ.ER ${counts.erCount}',
+
+-----------------------------------------------------
+lib\features\matrix\services\excel_xml_generator.dart (4 öğe)
+-----------------------------------------------------
+Line 27: const sheetName = 'Aylık Faaliyet Matrisi';
+Line 89: ..value = TextCellValue('Rütbesi')
+Line 93: ..value = TextCellValue('Adı Soyadı')
+Line 210: text: 'Jandarma Görev Takip - Aylık Faaliyet Matrisi Excel Çıktısı',
+
+-----------------------------------------------------
+lib\features\temgundrap\domain\temgundrap_models.dart (4 öğe)
+-----------------------------------------------------
+Line 7: 'J.UZM.ÇVŞ.',
+Line 55: specialistSergeant: read('DİĞER'),
+Line 135: final lines = <String>['($totalStrength) PERSONEL'];
+Line 167: issuingUnit: rawIssuingUnit == 'ELAZIĞ İL J.K.LIĞI\nJ.KOMD.ÖZ.K.LIĞI'
+
+-----------------------------------------------------
+lib\features\activity\services\pdf_roster_document.dart (4 öğe)
+-----------------------------------------------------
+Line 66: 'Sayfa ${context.pageNumber} / ${context.pagesCount} • Tarih: $tarih',
+Line 110: 'Düzenleyen: Jandarma Görev Takip',
+Line 114: 'Sayfa ${context.pageNumber} / ${context.pagesCount} • Tarih: $tarih',
+Line 125: _buildPageTitle('$titleText - GÖREV VE MEVCUT ÖZETİ'),
+
+-----------------------------------------------------
+lib\core\utils\official_roster_title.dart (4 öğe)
+-----------------------------------------------------
+Line 4: static const unitName = 'KOVANCILAR JÖH TB.K.LIĞI';
+Line 5: static const defaultActivityName = 'HEYBET TEPE PUSU FAALİYETİ';
+Line 16: ? ' ($cleanTime SAATLERİ ARASI)'
+Line 18: return '$unitName $formattedDate TARİHİ$timePart $defaultActivityName PERSONEL İSİM LİSTESİ';
+
+-----------------------------------------------------
+lib\features\activity\domain\bulk_activity_import_preparer.dart (3 öğe)
+-----------------------------------------------------
+Line 86: '${total.teamName} ${total.activityType}: bildirilen ${total.expectedCount} kişi, ayrıştırılan $count kişi. Kaynak listeyi tamamlayıp yeniden ayrıştırın.',
+Line 280: 'Görev Türü: $duty${item.person.sourceTimeRanges.isEmpty ? '' : ' (${item.person.sourceTimeRanges.join('; ')})'}',
+Line 292: olusturanKullanici: 'Admin (Toplu Aktarım)',
+
+-----------------------------------------------------
+lib\features\matrix\domain\team_duty_analytics_dto.dart (3 öğe)
+-----------------------------------------------------
+Line 29: final Map<String, int> gorevTuruDagilimi; // {'GÜLÜŞKÜR': 12, 'HAZIR KITA': 5}
+Line 50: final String gorevKodu; // 'Gş', 'H.K', 'Nbt'
+Line 51: final String gorevTamAdi; // 'GÜLÜŞKÜR'
+
+-----------------------------------------------------
+lib\core\database\tables.dart (3 öğe)
+-----------------------------------------------------
+Line 8: TextColumn get rol => text()(); // 'yönetici' veya 'tim_komutani'
+Line 76: text()(); // 'GÖREVLİ', 'NÖBETÇİ', 'İZİNLİ', 'İSTİRAHATLİ', 'RAPORLU', 'SEVK'
+Line 97: TextColumn get islem => text()(); // 'eklendi', 'çıkarıldı'
+
+-----------------------------------------------------
+lib\features\activity\services\exporter\excel_xlsx_military_generator.dart (3 öğe)
+-----------------------------------------------------
+Line 12: const sheetName = 'İsim Listesi';
+Line 117: final headers = ['S. NU', 'BİRLİĞİ', 'RÜTBE', 'ADI SOYADI', 'DİĞER'];
+Line 324: if ('MW@%ĞÖÜ'.contains(c)) return 9;
+
+-----------------------------------------------------
+lib\features\activity\services\exporter\excel_xlsx_master_generator.dart (2 öğe)
+-----------------------------------------------------
+Line 8: const sheetName = 'Tüm Faaliyetler';
+Line 121: final headers = ['S. NU', 'BİRLİĞİ', 'RÜTBE', 'ADI SOYADI', 'DİĞER'];
+
+-----------------------------------------------------
+lib\features\matrix\data\matrix_repository.dart (2 öğe)
+-----------------------------------------------------
+Line 269: ? 'Boş / Serbest'
+Line 272: : '${groups.length} görev / durum',
+
+-----------------------------------------------------
+lib\features\activity\data\activity_repository_dates.dart (2 öğe)
+-----------------------------------------------------
+Line 104: final automaticTitle = 'Günlük Faaliyet (${activity.tarih})';
+Line 107: ? 'Günlük Faaliyet ($newDate)'
+
+-----------------------------------------------------
+lib\features\activity\data\activity_repository_conflicts.dart (2 öğe)
+-----------------------------------------------------
+Line 77: () => 'Rapor • ${report.raporBaslangic} - ${report.raporBitis}',
+Line 121: .add('Rapor');
+
+-----------------------------------------------------
+lib\features\activity\data\activity_repository_assignments.dart (2 öğe)
+-----------------------------------------------------
+Line 160: 'Personel #${assignment.personnelId}: '
+Line 161: '${activity.tarih} tarihinde başka bir kayıt bulunuyor.',
+
+-----------------------------------------------------
+lib\features\activity\domain\models\team_activity_card.dart (1 öğe)
+-----------------------------------------------------
+Line 41: 'Tim kimliği ve adı zorunludur',
+
+-----------------------------------------------------
+lib\features\activity\domain\models\parsed_activity_block.dart (1 öğe)
+-----------------------------------------------------
+Line 90: parsedActivityType; // e.g. "Gülüşkür", "Hazır Kıta", "Heybet", "İhtiyat"
+
+-----------------------------------------------------
+lib\features\activity\domain\activity_assignment_order.dart (1 öğe)
+-----------------------------------------------------
+Line 68: timName: assignment.gorevTimAdi ?? 'Tim geçmişi bilinmiyor',
+
+-----------------------------------------------------
+lib\core\auth\domain\user_session.dart (1 öğe)
+-----------------------------------------------------
+Line 2: admin('yönetici'),
+
+-----------------------------------------------------
+lib\features\personnel\domain\personnel_import_models.dart (1 öğe)
+-----------------------------------------------------
+Line 30: if (teamId == null) fold(unit.trim().isEmpty ? 'Asayiş Timi' : unit),
+
+-----------------------------------------------------
+lib\core\utils\password_policy.dart (1 öğe)
+-----------------------------------------------------
+Line 3: static const message = 'Parola en az 12 karakter olmalıdır.';
+
+-----------------------------------------------------
+lib\core\utils\password_hasher.dart (1 öğe)
+-----------------------------------------------------
+Line 40: throw ArgumentError.value(password, 'password', 'Parola boş olamaz.');

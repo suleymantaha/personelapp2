@@ -1,6 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
+import 'package:personelapp2/l10n/generated/app_localizations.dart';
 
 class TemgundrapOperationDraft extends ChangeNotifier {
   TemgundrapOperationDraft({DateTime? now, TemgundrapOperation? initial})
@@ -63,15 +65,26 @@ class TemgundrapOperationDraft extends ChangeNotifier {
     notifyListeners();
   }
 
-  String? validate() {
-    if (issuingUnit.trim().isEmpty) return 'Çıkaran birlik zorunludur.';
-    if (operationArea.trim().isEmpty) return 'Operasyon bölgesi zorunludur.';
-    if (commander == null) return 'Operasyon komutanı seçilmelidir.';
-    if (commander!.phone.trim().isEmpty) return 'Komutan telefonu zorunludur.';
-    if (!endAt.isAfter(startAt)) {
-      return 'Bitiş zamanı başlangıçtan sonra olmalıdır.';
+  String? validate([AppLocalizations? l10n]) {
+    final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
+    if (issuingUnit.trim().isEmpty) {
+      return localizations.temgundrapIssuingUnitRequired;
     }
-    if (purpose.trim().isEmpty) return 'Operasyon maksadı zorunludur.';
+    if (operationArea.trim().isEmpty) {
+      return localizations.temgundrapOperationAreaRequired;
+    }
+    if (commander == null) {
+      return localizations.temgundrapCommanderRequired;
+    }
+    if (commander!.phone.trim().isEmpty) {
+      return localizations.temgundrapCommanderPhoneRequired;
+    }
+    if (!endAt.isAfter(startAt)) {
+      return localizations.temgundrapEndTimeMustBeAfterStart;
+    }
+    if (purpose.trim().isEmpty) {
+      return localizations.temgundrapPurposeRequired;
+    }
     return null;
   }
 

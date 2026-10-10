@@ -769,7 +769,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonSaving.
   ///
   /// In tr, this message translates to:
-  /// **'Kaydediliyor...'**
+  /// **'Kaydediliyor…'**
   String get commonSaving;
 
   /// No description provided for @commonRetry.
@@ -1857,6 +1857,54 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Bu alan zorunludur.'**
   String get temgundrapRequiredField;
+
+  /// No description provided for @temgundrapImportFromActivities.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyetlerden İçe Aktar'**
+  String get temgundrapImportFromActivities;
+
+  /// No description provided for @temgundrapImportDialogTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyetlerden İçe Aktar'**
+  String get temgundrapImportDialogTitle;
+
+  /// No description provided for @temgundrapImportDialogSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günün faaliyetlerini TEMGÜNDRAP operasyonlarına dönüştürün'**
+  String get temgundrapImportDialogSubtitle;
+
+  /// No description provided for @temgundrapImportDialogNoActivities.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu tarihte kayıtlı faaliyet bulunamadı.'**
+  String get temgundrapImportDialogNoActivities;
+
+  /// No description provided for @temgundrapImportDialogSubmit.
+  ///
+  /// In tr, this message translates to:
+  /// **'FORMA AKTAR ({count})'**
+  String temgundrapImportDialogSubmit(int count);
+
+  /// No description provided for @temgundrapImportSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} faaliyet forma aktarıldı.'**
+  String temgundrapImportSuccess(int count);
+
+  /// No description provided for @activityArchiveExportToTemgundrap.
+  ///
+  /// In tr, this message translates to:
+  /// **'TEMGÜNDRAP Olarak Aç'**
+  String get activityArchiveExportToTemgundrap;
+
+  /// No description provided for @activityArchiveExportToTemgundrapSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçilen faaliyetlerle TEMGÜNDRAP taslağı oluştur'**
+  String get activityArchiveExportToTemgundrapSubtitle;
 
   /// No description provided for @pendingApprovalsTitle.
   ///
@@ -6065,6 +6113,587 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Örn: Tb. K. V.'**
   String get temgundrapApproverDutyHint;
+
+  /// No description provided for @backupDialogTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tam yedekleme ve geri yükleme'**
+  String get backupDialogTitle;
+
+  /// No description provided for @backupDialogSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bulut gerekmez; dosya sizin seçtiğiniz yerde kalır.'**
+  String get backupDialogSubtitle;
+
+  /// No description provided for @backupTabExport.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yedekle'**
+  String get backupTabExport;
+
+  /// No description provided for @backupTabImport.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geri yükle'**
+  String get backupTabImport;
+
+  /// No description provided for @backupWhatsIncludedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yedekte neler var?'**
+  String get backupWhatsIncludedTitle;
+
+  /// No description provided for @backupWhatsIncludedText.
+  ///
+  /// In tr, this message translates to:
+  /// **'İsimler, timler, kullanıcılar, telefonlar, görevler, aylık matris, faaliyet arşivi, raporlar, takma adlar, toplu aktarım geçmişi ve TEMGÜNDRAP belgeleri.'**
+  String get backupWhatsIncludedText;
+
+  /// No description provided for @backupKeepSafeTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uygulama silinse de koruyun'**
+  String get backupKeepSafeTitle;
+
+  /// No description provided for @backupKeepSafeText.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açılan kaydet ekranından İndirilenler gibi cihazın yerel bir klasörünü seçin. Uygulamanın kendi klasörüne bırakmayın.'**
+  String get backupKeepSafeText;
+
+  /// No description provided for @backupSecurityTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Dosyayı güvenli tutun'**
+  String get backupSecurityTitle;
+
+  /// No description provided for @backupSecurityText.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yedek kişisel bilgiler içerir. Yalnızca güvenilir bir yerel klasörde saklayın ve başkalarıyla paylaşmayın.'**
+  String get backupSecurityText;
+
+  /// No description provided for @backupLegacyDateText.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eski yedek'**
+  String get backupLegacyDateText;
+
+  /// No description provided for @backupLegacyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eski personel yedeği'**
+  String get backupLegacyTitle;
+
+  /// No description provided for @backupVerifiedFullTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Doğrulanmış tam yedek'**
+  String get backupVerifiedFullTitle;
+
+  /// No description provided for @backupPreviewStats.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} • {personnel} personel • {activity} faaliyet • {assignment} görev kaydı • {temgundrap} TEMGÜNDRAP'**
+  String backupPreviewStats(
+      String date, int personnel, int activity, int assignment, int temgundrap);
+
+  /// No description provided for @backupLegacyRestoreSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} yeni personel eski yedekten aktarıldı.'**
+  String backupLegacyRestoreSuccess(int count);
+
+  /// No description provided for @backupConfirmOverwriteContent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tam geri yükleme mevcut personel, görev, matris ve TEMGÜNDRAP kayıtlarının yerine yedekteki verileri koyar. Bu işlem geri alınamaz.'**
+  String get backupConfirmOverwriteContent;
+
+  /// No description provided for @bulkImportCriticalErrorsCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} kritik hata'**
+  String bulkImportCriticalErrorsCount(int count);
+
+  /// No description provided for @bulkImportLinePrefix.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satır {line}: '**
+  String bulkImportLinePrefix(int line);
+
+  /// No description provided for @bulkImportEmptySummaryHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen aşağıda vurgulanan kartlardaki eksik personelleri eşleştirin, tekrarları düzeltin veya boş kartları silin.'**
+  String get bulkImportEmptySummaryHint;
+
+  /// No description provided for @bulkParseEmptyInput.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ayrıştırılacak metin boş.'**
+  String get bulkParseEmptyInput;
+
+  /// No description provided for @bulkParseMissingDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu personel grubu için geçerli bir tarih bulunamadı.'**
+  String get bulkParseMissingDate;
+
+  /// No description provided for @bulkParseUnknownTeam.
+  ///
+  /// In tr, this message translates to:
+  /// **'Takım/tim bilgisi tanınamadı.'**
+  String get bulkParseUnknownTeam;
+
+  /// No description provided for @bulkParseUnknownActivity.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görev türü tanınamadı.'**
+  String get bulkParseUnknownActivity;
+
+  /// No description provided for @bulkParseInvalidTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'Saat aralığı geçerli değil.'**
+  String get bulkParseInvalidTime;
+
+  /// No description provided for @bulkParseInvalidDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih geçerli değil.'**
+  String get bulkParseInvalidDate;
+
+  /// No description provided for @bulkParseInvalidPersonnel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel satırı çözümlenemedi.'**
+  String get bulkParseInvalidPersonnel;
+
+  /// No description provided for @bulkParseUnknownRank.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rütbe tanınamadı; ham personel adı korundu.'**
+  String get bulkParseUnknownRank;
+
+  /// No description provided for @bulkParseNoBlocks.
+  ///
+  /// In tr, this message translates to:
+  /// **'Metinde aktarılabilecek personel bloğu bulunamadı.'**
+  String get bulkParseNoBlocks;
+
+  /// No description provided for @commonFix.
+  ///
+  /// In tr, this message translates to:
+  /// **'Düzelt'**
+  String get commonFix;
+
+  /// No description provided for @assignmentConflictHasRecord.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} tarihinde personelin başka bir kaydı bulunuyor.'**
+  String assignmentConflictHasRecord(String date);
+
+  /// No description provided for @assignmentConflictHasDutyOrRecord.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} tarihinde personelin başka bir görevi veya kaydı bulunuyor.'**
+  String assignmentConflictHasDutyOrRecord(String date);
+
+  /// No description provided for @assignmentConflictDateChange.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} tarihinde personelin başka bir kaydı bulunuyor. Faaliyet tarihi değiştirilmedi.'**
+  String assignmentConflictDateChange(String date);
+
+  /// No description provided for @assignmentConflictReport.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} tarihinde personelin başka bir görevi, izni veya raporu bulunuyor. Rapor kaydedilmedi.'**
+  String assignmentConflictReport(String date);
+
+  /// No description provided for @transferPersonnelAlreadyInTarget.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu personel zaten hedef faaliyette mevcut.'**
+  String get transferPersonnelAlreadyInTarget;
+
+  /// No description provided for @bulkImportDuplicateWarningContent.
+  ///
+  /// In tr, this message translates to:
+  /// **'{dates} tarihli bu içerik {recordDate} tarihinde {user} tarafından kaydedilmiş.\n\nVeritabanında bu listeye ait {count} personel kaydı aktif duruyor. Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?'**
+  String bulkImportDuplicateWarningContent(
+      String dates, String recordDate, String user, int count);
+
+  /// No description provided for @bulkImportDefaultSquad.
+  ///
+  /// In tr, this message translates to:
+  /// **'Varsayılan Tim'**
+  String get bulkImportDefaultSquad;
+
+  /// No description provided for @bulkImportBlockPersonnelCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} personel'**
+  String bulkImportBlockPersonnelCount(int count);
+
+  /// No description provided for @bulkImportFocusedError.
+  ///
+  /// In tr, this message translates to:
+  /// **'ODAKLANILAN HATA'**
+  String get bulkImportFocusedError;
+
+  /// No description provided for @bulkImportInspectedCard.
+  ///
+  /// In tr, this message translates to:
+  /// **'İNCELENEN KART'**
+  String get bulkImportInspectedCard;
+
+  /// No description provided for @bulkImportEmptyCard.
+  ///
+  /// In tr, this message translates to:
+  /// **'Boş Kart'**
+  String get bulkImportEmptyCard;
+
+  /// No description provided for @bulkImportUnmatchedCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} Eşleşmedi'**
+  String bulkImportUnmatchedCount(int count);
+
+  /// No description provided for @bulkImportWarningCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} Uyarı'**
+  String bulkImportWarningCount(int count);
+
+  /// No description provided for @bulkImportCardActionsTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart işlemleri'**
+  String get bulkImportCardActionsTooltip;
+
+  /// No description provided for @bulkImportCardActionsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart İşlemleri'**
+  String get bulkImportCardActionsTitle;
+
+  /// No description provided for @bulkImportCardActionsSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İçe aktarma kartını yönet'**
+  String get bulkImportCardActionsSubtitle;
+
+  /// No description provided for @bulkImportEditCardTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kartı düzenle'**
+  String get bulkImportEditCardTitle;
+
+  /// No description provided for @bulkImportEditCardSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet ve personel bilgilerini güncelle'**
+  String get bulkImportEditCardSubtitle;
+
+  /// No description provided for @bulkImportDeleteCardTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kartı sil'**
+  String get bulkImportDeleteCardTitle;
+
+  /// No description provided for @bulkImportDeleteCardSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kartı içe aktarma listesinden kaldır'**
+  String get bulkImportDeleteCardSubtitle;
+
+  /// No description provided for @bulkImportProblemNoPersonnelInCard.
+  ///
+  /// In tr, this message translates to:
+  /// **'{title} kartında personel bulunamadı.'**
+  String bulkImportProblemNoPersonnelInCard(String title);
+
+  /// No description provided for @bulkImportProblemInvalidDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart #{cardNumber}: Geçerli bir tarih bulunamadı.'**
+  String bulkImportProblemInvalidDate(int cardNumber);
+
+  /// No description provided for @bulkImportProblemMissingTeam.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart #{cardNumber}: Takım adı belirtilmedi (Personelin kayıtlı timi kullanılacak).'**
+  String bulkImportProblemMissingTeam(int cardNumber);
+
+  /// No description provided for @bulkImportProblemUnknownActivity.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart #{cardNumber}: Görev türü tanınamadı.'**
+  String bulkImportProblemUnknownActivity(int cardNumber);
+
+  /// No description provided for @bulkImportProblemPersonnelNotSelected.
+  ///
+  /// In tr, this message translates to:
+  /// **'{prefix}{rank} {name} - Personel seçilmedi.'**
+  String bulkImportProblemPersonnelNotSelected(
+      String prefix, String rank, String name);
+
+  /// No description provided for @bulkImportProblemConflictingDuty.
+  ///
+  /// In tr, this message translates to:
+  /// **'{prefix}{rank} {name} - Çakışan görev ekli.'**
+  String bulkImportProblemConflictingDuty(
+      String prefix, String rank, String name);
+
+  /// No description provided for @bulkImportProblemCheckTeam.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tim kontrolü gerektiriyor.'**
+  String get bulkImportProblemCheckTeam;
+
+  /// No description provided for @bulkImportProblemCheckMatch.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleşme kontrolü gerektiriyor.'**
+  String get bulkImportProblemCheckMatch;
+
+  /// No description provided for @bulkImportProblemLinePrefix.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satır {lineNumber}: '**
+  String bulkImportProblemLinePrefix(int lineNumber);
+
+  /// No description provided for @temgundrapIssuingUnitRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıkaran birlik zorunludur.'**
+  String get temgundrapIssuingUnitRequired;
+
+  /// No description provided for @temgundrapCommanderRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyon komutanı seçilmelidir.'**
+  String get temgundrapCommanderRequired;
+
+  /// No description provided for @temgundrapCommanderPhoneRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Komutan telefonu zorunludur.'**
+  String get temgundrapCommanderPhoneRequired;
+
+  /// No description provided for @temgundrapEndTimeMustBeAfterStart.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bitiş zamanı başlangıçtan sonra olmalıdır.'**
+  String get temgundrapEndTimeMustBeAfterStart;
+
+  /// No description provided for @temgundrapPurposeRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyon maksadı zorunludur.'**
+  String get temgundrapPurposeRequired;
+
+  /// No description provided for @temgundrapVehiclePlateAlreadyExists.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu plaka zaten eklendi.'**
+  String get temgundrapVehiclePlateAlreadyExists;
+
+  /// No description provided for @temgundrapPlateHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn. 23 ABC 123'**
+  String get temgundrapPlateHint;
+
+  /// No description provided for @temgundrapAreaHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: ELAZIĞ ...'**
+  String get temgundrapAreaHint;
+
+  /// No description provided for @temgundrapPlateLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Plaka'**
+  String get temgundrapPlateLabel;
+
+  /// No description provided for @commonConfirmAndSave.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onayla ve Kaydet'**
+  String get commonConfirmAndSave;
+
+  /// No description provided for @monthlyMatrixOriginalDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'{duty} • Asıl tarih: {date}'**
+  String monthlyMatrixOriginalDate(String duty, String date);
+
+  /// No description provided for @monthlyMatrixContinuedFromPreviousDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Önceki günden devam'**
+  String get monthlyMatrixContinuedFromPreviousDay;
+
+  /// No description provided for @monthlyMatrixActivePersonnelLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aktif Personel'**
+  String get monthlyMatrixActivePersonnelLabel;
+
+  /// No description provided for @monthlyMatrixMissingData.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veri eksik'**
+  String get monthlyMatrixMissingData;
+
+  /// No description provided for @activityDetailPersonnelFallback.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel #{id}'**
+  String activityDetailPersonnelFallback(int id);
+
+  /// No description provided for @bulkImportSuccessMessage.
+  ///
+  /// In tr, this message translates to:
+  /// **'{blockCount} blok → {requestCount} günlük faaliyet, {personnelCount} personel başarıyla eklendi.'**
+  String bulkImportSuccessMessage(
+      int blockCount, int requestCount, int personnelCount);
+
+  /// No description provided for @bulkImportDuplicateDatePersonnelWarning.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aynı personel aynı tarihte birden fazla görevde bulunuyor. Aktarmadan önce önizlemedeki tekrarları düzeltin.'**
+  String get bulkImportDuplicateDatePersonnelWarning;
+
+  /// No description provided for @bulkImportNoPersonnelLeftInCard.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu kartta personel kalmadı. Kartı silin veya metni yeniden ayrıştırın.'**
+  String get bulkImportNoPersonnelLeftInCard;
+
+  /// No description provided for @temgundrapSigned.
+  ///
+  /// In tr, this message translates to:
+  /// **'(İMZALI)'**
+  String get temgundrapSigned;
+
+  /// No description provided for @temgundrapCommanderLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Komutan'**
+  String get temgundrapCommanderLabel;
+
+  /// No description provided for @temgundrapForceLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kuvvet'**
+  String get temgundrapForceLabel;
+
+  /// No description provided for @temgundrapTimeLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Zaman'**
+  String get temgundrapTimeLabel;
+
+  /// No description provided for @temgundrapExportDocumentTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'{unitTitle} {date} TARİHİNDE PLANLANAN OPERASYON TAKİP ÇİZELGESİ'**
+  String temgundrapExportDocumentTitle(String unitTitle, String date);
+
+  /// No description provided for @temgundrapExportColSequence.
+  ///
+  /// In tr, this message translates to:
+  /// **'S.NU'**
+  String get temgundrapExportColSequence;
+
+  /// No description provided for @temgundrapExportColIssuingUnit.
+  ///
+  /// In tr, this message translates to:
+  /// **'ÇIKARAN BİRLİK'**
+  String get temgundrapExportColIssuingUnit;
+
+  /// No description provided for @temgundrapExportColOperationArea.
+  ///
+  /// In tr, this message translates to:
+  /// **'OPERASYON BÖLGESİ'**
+  String get temgundrapExportColOperationArea;
+
+  /// No description provided for @temgundrapExportColForceHeader.
+  ///
+  /// In tr, this message translates to:
+  /// **'OPERASYON KUVVETİ'**
+  String get temgundrapExportColForceHeader;
+
+  /// No description provided for @temgundrapExportColForce.
+  ///
+  /// In tr, this message translates to:
+  /// **'KUVVETİ'**
+  String get temgundrapExportColForce;
+
+  /// No description provided for @temgundrapExportColCommander.
+  ///
+  /// In tr, this message translates to:
+  /// **'OPERASYON KOMUTANI'**
+  String get temgundrapExportColCommander;
+
+  /// No description provided for @temgundrapExportColPresent.
+  ///
+  /// In tr, this message translates to:
+  /// **'MEVCUT'**
+  String get temgundrapExportColPresent;
+
+  /// No description provided for @temgundrapExportColStartTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'BAŞLAMA ZAMANI'**
+  String get temgundrapExportColStartTime;
+
+  /// No description provided for @temgundrapExportColEndTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'BİTİŞ ZAMANI'**
+  String get temgundrapExportColEndTime;
+
+  /// No description provided for @temgundrapExportColPurpose.
+  ///
+  /// In tr, this message translates to:
+  /// **'OPERASYON MAKSADI'**
+  String get temgundrapExportColPurpose;
+
+  /// No description provided for @temgundrapExportColDescription.
+  ///
+  /// In tr, this message translates to:
+  /// **'AÇIKLAMA'**
+  String get temgundrapExportColDescription;
+
+  /// No description provided for @temgundrapExportTotal.
+  ///
+  /// In tr, this message translates to:
+  /// **'TOPLAM'**
+  String get temgundrapExportTotal;
+
+  /// No description provided for @temgundrapExportShareText.
+  ///
+  /// In tr, this message translates to:
+  /// **'TEMGÜNDRAP operasyon takip çizelgesi'**
+  String get temgundrapExportShareText;
+
+  /// No description provided for @temgundrapExportShareTextExcel.
+  ///
+  /// In tr, this message translates to:
+  /// **'TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı'**
+  String get temgundrapExportShareTextExcel;
+
+  /// No description provided for @bulkImportParsedActivityFallback.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ayrıştırılan Faaliyet'**
+  String get bulkImportParsedActivityFallback;
 }
 
 class _AppLocalizationsDelegate

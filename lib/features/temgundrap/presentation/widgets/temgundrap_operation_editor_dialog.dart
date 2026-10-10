@@ -63,7 +63,7 @@ class _TemgundrapOperationEditorDialogState
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     _draft.description = _descriptionController.text;
-    final error = _draft.validate();
+    final error = _draft.validate(context.l10n);
     if (error != null) {
       AppNotifications.warning(error);
       return;
@@ -163,7 +163,9 @@ class _TemgundrapOperationEditorDialogState
                 error: (error, _) => Card(
                     child: Padding(
                         padding: const EdgeInsets.all(16),
-                        child: Text('Personel listesi yüklenemedi: $error'))),
+                        child: Text(context.l10n.temgundrapPersonnelListLoadError(
+                          error.toString(),
+                        )))),
               ),
               TemgundrapStrengthEditor(
                   value: _draft.strength, onChanged: _draft.setStrength),
@@ -172,7 +174,9 @@ class _TemgundrapOperationEditorDialogState
                 vehicles: _draft.vehicles,
                 onAdd: (vehicle) {
                   if (!_draft.addVehicle(vehicle)) {
-                    AppNotifications.info('Bu plaka zaten eklendi.');
+                    AppNotifications.info(
+                      context.l10n.temgundrapVehiclePlateAlreadyExists,
+                    );
                   }
                 },
                 onRemove: _draft.removeVehicle,

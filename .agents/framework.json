@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "execution_mode": "native",
+  "max_active_agents": 3,
+  "max_delegation_depth": 1,
+  "checkpoint_tool_operations": 30,
+  "checkpoint_minutes": 15,
+  "max_fix_attempts_per_error": 3,
+  "progress_interval_seconds": 60,
+  "ledger_writer": "coordinator",
+  "task_states": [
+    "PLANNED",
+    "READY",
+    "RUNNING",
+    "BLOCKED",
+    "IN_REVIEW",
+    "DONE",
+    "FAILED",
+    "STOPPED"
+  ],
+  "check_results": [
+    "NOT_RUN",
+    "PASS",
+    "FAIL",
+    "BLOCKED",
+    "N/A"
+  ],
+  "contract_states": [
+    "DRAFT",
+    "REVIEWED",
+    "ACCEPTED",
+    "SUPERSEDED"
+  ],
+  "release_states": [
+    "NOT_REQUESTED",
+    "PENDING",
+    "BLOCKED",
+    "COMPLETED"
+  ],
+  "enforcement": "documentation_only",
+  "kit_version": "1.0"
+}

@@ -1,4 +1,5 @@
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
+import 'package:personelapp2/l10n/generated/app_localizations.dart';
 
 typedef ParsedActivityTitle = ({
   String? timName,
@@ -25,6 +26,31 @@ class BulkParseIssue {
   final BulkParseIssueSeverity severity;
 
   bool get isBlocking => severity == BulkParseIssueSeverity.error;
+
+  String localizedMessage(AppLocalizations l10n) {
+    switch (code) {
+      case 'empty_input':
+        return l10n.bulkParseEmptyInput;
+      case 'missing_date':
+        return l10n.bulkParseMissingDate;
+      case 'unknown_team':
+        return l10n.bulkParseUnknownTeam;
+      case 'unknown_activity':
+        return l10n.bulkParseUnknownActivity;
+      case 'invalid_time':
+        return l10n.bulkParseInvalidTime;
+      case 'invalid_date':
+        return l10n.bulkParseInvalidDate;
+      case 'invalid_personnel':
+        return l10n.bulkParseInvalidPersonnel;
+      case 'unknown_rank':
+        return l10n.bulkParseUnknownRank;
+      case 'no_blocks':
+        return l10n.bulkParseNoBlocks;
+      default:
+        return message;
+    }
+  }
 }
 
 class BulkParseResult {

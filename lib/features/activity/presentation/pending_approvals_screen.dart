@@ -60,7 +60,8 @@ class PendingApprovalsScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final atama = pendingList[index];
                   final p = pMap[atama.personelId];
-                  final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
+                  final nameText = p?.adSoyad ??
+                      context.l10n.activityDetailPersonnelFallback(atama.personelId);
                   final rutbeText = p?.rutbe ?? '';
                   final birlikInfo = p?.birlik ?? '';
                   final fullPersonName =

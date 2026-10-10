@@ -93,8 +93,10 @@ extension ActivityRepositoryDateOperations on ActivityRepository {
         );
         if (status == AssignmentStatus.beklemede) {
           throw AssignmentConflictException(
-            '$newDate tarihinde personelin başka bir kaydı bulunuyor. '
-            'Faaliyet tarihi değiştirilmedi.',
+            'Assignment conflict: personnel has an existing record on $newDate. Activity date was not changed.',
+            code: 'date_change_conflict',
+            date: newDate,
+            personnelId: assignment.personelId,
           );
         }
       }

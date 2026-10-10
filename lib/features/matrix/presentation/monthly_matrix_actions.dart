@@ -68,8 +68,13 @@ extension _MonthlyMatrixActions on _MonthlyMatrixScreenState {
                   contentPadding: EdgeInsets.zero,
                   title: Text(entry.activityName),
                   subtitle: Text(
-                    '${entry.duty} • Asıl tarih: ${entry.sourceDate}'
-                    '${entry.isContinuationDay ? '\nÖnceki günden devam' : ''}',
+                    context.l10n.monthlyMatrixOriginalDate(
+                      entry.duty,
+                      entry.sourceDate,
+                    ) +
+                        (entry.isContinuationDay
+                            ? '\n${context.l10n.monthlyMatrixContinuedFromPreviousDay}'
+                            : ''),
                   ),
                   trailing: Text(entry.isPending ? 'B' : 'X'),
                 ),
@@ -85,20 +90,10 @@ extension _MonthlyMatrixActions on _MonthlyMatrixScreenState {
     var tempYear = _selectedMonth.year;
     var tempMonth = _selectedMonth.month;
 
-    final months = [
-      'Ocak',
-      'Şubat',
-      'Mart',
-      'Nisan',
-      'Mayıs',
-      'Haziran',
-      'Temmuz',
-      'Ağustos',
-      'Eylül',
-      'Ekim',
-      'Kasım',
-      'Aralık',
-    ];
+    final months = List.generate(
+      12,
+      (i) => DateFormat('MMMM', 'tr_TR').format(DateTime(2024, i + 1)),
+    );
 
     await showDialog<void>(
       context: context,
@@ -246,7 +241,7 @@ extension _MonthlyMatrixActions on _MonthlyMatrixScreenState {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text('Tamam'),
+                  child: Text(context.l10n.commonOk),
                 ),
               ],
             );
@@ -262,7 +257,10 @@ extension _MonthlyMatrixActions on _MonthlyMatrixScreenState {
     required Map<int, MatrixDayCell> statusByDay,
     required int daysInMonth,
   }) {
-    const weekdayLabels = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+    final weekdayLabels = List.generate(7, (i) {
+      final date = DateTime(2024, 1, 1 + i);
+      return DateFormat.E('tr_TR').format(date);
+    });
     final leadingEmptyCells =
         DateTime(_selectedMonth.year, _selectedMonth.month).weekday - 1;
     final cellCount = ((leadingEmptyCells + daysInMonth + 6) ~/ 7) * 7;

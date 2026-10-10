@@ -130,7 +130,7 @@ class _AddPersonnelToActivityDialogState
       }
       await _leave(result.addedCount > 0);
     } on AssignmentConflictException catch (error) {
-      if (mounted) AppNotifications.error(error.message);
+      if (mounted) AppNotifications.error(error.localizedMessage(context.l10n));
     } catch (error) {
       if (mounted) AppNotifications.error(context.l10n.addPersonnelFailed('$error'));
     } finally {

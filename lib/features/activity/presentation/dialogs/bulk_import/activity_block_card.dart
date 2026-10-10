@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'activity_block_header.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -190,7 +191,7 @@ class _ActivityBlockCardState extends State<ActivityBlockCard> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          'Bu kartta personel kalmadı. Kartı silin veya metni yeniden ayrıştırın.',
+                          context.l10n.bulkImportNoPersonnelLeftInCard,
                           style: TextStyle(color: context.rejectedColor),
                         ),
                       )

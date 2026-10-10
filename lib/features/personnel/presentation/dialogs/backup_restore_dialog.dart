@@ -149,9 +149,10 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
   }
 
   Future<void> _importBackup() async {
+    final l10n = context.l10n;
     final input = _textController.text.trim();
     if (input.isEmpty) {
-      _showError(context.l10n.backupPickFilePrompt);
+      _showError(l10n.backupPickFilePrompt);
       return;
     }
     try {
@@ -181,10 +182,12 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
         _notice = _BackupNotice(
           type: _BackupNoticeType.success,
           message: result.legacy
-              ? '${result.importedPersonnel} yeni personel eski yedekten aktarıldı.'
-              : 'Geri yükleme tamamlandı: ${result.importedPersonnel} personel, '
-                    '${result.importedActivities} faaliyet ve '
-                    '${result.importedTemgundrapDocuments} TEMGÜNDRAP belgesi.',
+              ? l10n.backupLegacyRestoreSuccess(result.importedPersonnel)
+              : l10n.backupFullRestoreSuccess(
+                  result.importedPersonnel,
+                  result.importedActivities,
+                  result.importedTemgundrapDocuments,
+                ),
         );
       });
     } on FormatException catch (error) {
@@ -205,10 +208,8 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
           context: context,
           builder: (context) => AlertDialog(
             title: Text(context.l10n.backupConfirmOverwriteTitle),
-            content: const Text(
-              'Tam geri yükleme mevcut personel, görev, matris ve '
-              'TEMGÜNDRAP kayıtlarının yerine yedekteki verileri koyar. '
-              'Bu işlem geri alınamaz.',
+            content: Text(
+              context.l10n.backupConfirmOverwriteContent,
             ),
             actions: [
               TextButton(
@@ -349,17 +350,17 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Tam yedekleme ve geri yükleme',
+                  context.l10n.backupDialogTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
-                Text('Bulut gerekmez; dosya sizin seçtiğiniz yerde kalır.'),
+                Text(context.l10n.backupDialogSubtitle),
               ],
             ),
           ),
@@ -380,16 +381,16 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SegmentedButton<_BackupMode>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: _BackupMode.export,
-                icon: Icon(Icons.save_alt_rounded),
-                label: Text('Yedekle'),
+                icon: const Icon(Icons.save_alt_rounded),
+                label: Text(context.l10n.backupTabExport),
               ),
               ButtonSegment(
                 value: _BackupMode.import,
-                icon: Icon(Icons.restore_rounded),
-                label: Text('Geri yükle'),
+                icon: const Icon(Icons.restore_rounded),
+                label: Text(context.l10n.backupTabImport),
               ),
             ],
             selected: {_mode},
@@ -415,29 +416,22 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _InfoCard(
+        _InfoCard(
           icon: Icons.inventory_2_outlined,
-          title: 'Yedekte neler var?',
-          text:
-              'İsimler, timler, kullanıcılar, telefonlar, görevler, aylık '
-              'matris, faaliyet arşivi, raporlar, takma adlar, toplu aktarım '
-              'geçmişi ve TEMGÜNDRAP belgeleri.',
+          title: context.l10n.backupWhatsIncludedTitle,
+          text: context.l10n.backupWhatsIncludedText,
         ),
         const SizedBox(height: 12),
-        const _InfoCard(
+        _InfoCard(
           icon: Icons.folder_outlined,
-          title: 'Uygulama silinse de koruyun',
-          text:
-              'Açılan kaydet ekranından İndirilenler gibi cihazın yerel '
-              'bir klasörünü seçin. Uygulamanın kendi klasörüne bırakmayın.',
+          title: context.l10n.backupKeepSafeTitle,
+          text: context.l10n.backupKeepSafeText,
         ),
         const SizedBox(height: 12),
-        const _InfoCard(
+        _InfoCard(
           icon: Icons.privacy_tip_outlined,
-          title: 'Dosyayı güvenli tutun',
-          text:
-              'Yedek kişisel bilgiler içerir. Yalnızca güvenilir bir yerel '
-              'klasörde saklayın ve başkalarıyla paylaşmayın.',
+          title: context.l10n.backupSecurityTitle,
+          text: context.l10n.backupSecurityText,
         ),
         const SizedBox(height: 20),
         FilledButton.icon(
@@ -509,16 +503,20 @@ class _BackupPreviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final date = preview.exportedAt.millisecondsSinceEpoch == 0
-        ? 'Eski yedek'
+        ? context.l10n.backupLegacyDateText
         : DateFormat('dd.MM.yyyy HH:mm').format(preview.exportedAt.toLocal());
     return _InfoCard(
       icon: Icons.fact_check_outlined,
-      title: preview.legacy ? 'Eski personel yedeği' : 'Doğrulanmış tam yedek',
-      text:
-          '$date • ${preview.personnelCount} personel • '
-          '${preview.activityCount} faaliyet • '
-          '${preview.assignmentCount} görev kaydı • '
-          '${preview.temgundrapDocumentCount} TEMGÜNDRAP',
+      title: preview.legacy
+          ? context.l10n.backupLegacyTitle
+          : context.l10n.backupVerifiedFullTitle,
+      text: context.l10n.backupPreviewStats(
+        date,
+        preview.personnelCount,
+        preview.activityCount,
+        preview.assignmentCount,
+        preview.temgundrapDocumentCount,
+      ),
     );
   }
 }

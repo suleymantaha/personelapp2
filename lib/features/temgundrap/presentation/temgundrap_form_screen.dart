@@ -7,6 +7,7 @@ import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_operation_editor_dialog.dart';
+import 'package:personelapp2/features/temgundrap/presentation/widgets/temgundrap_import_activities_dialog.dart';
 import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 class TemgundrapFormScreen extends StatefulWidget {
@@ -141,6 +142,20 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
     if (operation != null) setState(() => _operations.add(operation));
   }
 
+  Future<void> _importFromActivities() async {
+    final imported = await showDialog<List<TemgundrapOperation>>(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => TemgundrapImportActivitiesDialog(initialDate: _date),
+    );
+    if (imported != null && imported.isNotEmpty && mounted) {
+      setState(() => _operations.addAll(imported));
+      AppNotifications.success(
+        context.l10n.temgundrapImportSuccess(imported.length),
+      );
+    }
+  }
+
   Future<void> _editOperation(int index) async {
     final operation = await showDialog<TemgundrapOperation>(
       context: context,
@@ -251,6 +266,13 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                             ),
                           ),
                         ),
+                        OutlinedButton.icon(
+                          key: const Key('import-from-activities'),
+                          onPressed: _importFromActivities,
+                          icon: const Icon(Icons.playlist_add_rounded),
+                          label: Text(context.l10n.temgundrapImportFromActivities),
+                        ),
+                        const SizedBox(width: 8),
                         FilledButton.icon(
                           key: const Key('add-operation'),
                           onPressed: _addOperation,
@@ -281,7 +303,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                               ),
                             ),
                             subtitle: Text(
-                              '${entry.value.commander.name} • ${entry.value.totalStrength} personel\n${entry.value.purpose}',
+                              '${entry.value.commander.name} • ${context.l10n.bulkImportBlockPersonnelCount(entry.value.totalStrength)}\n${entry.value.purpose}',
                             ),
                             isThreeLine: true,
                             onTap: () => _editOperation(entry.key),

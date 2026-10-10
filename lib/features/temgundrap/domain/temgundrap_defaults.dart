@@ -1,3 +1,4 @@
+const defaultTemgundrapUnitTitle = 'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI';
 const defaultTemgundrapIssuingUnit = 'ELAZIĞ İL J.K.LIĞI\nJ.KOMD.ÖZ.HRK.K.LIĞI';
 
 const defaultTemgundrapPurposes = <String>[

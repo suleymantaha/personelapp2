@@ -114,6 +114,35 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                   timeRange: action.timeRange,
                 );
                 return;
+              case ArchiveExportType.temgundrap:
+                final db = ref.read(databaseProvider);
+                final personnel = await db.select(db.personelTable).get();
+                final pMap = {for (final p in personnel) p.id: p};
+                final op = TemgundrapActivityConverter.convert(
+                  activity: activity,
+                  assignments: selectedAssignments,
+                  personnelMap: pMap,
+                );
+                final repo = TemgundrapRepository();
+                final defaults = await repo.getApproverDefaults();
+                final docDate = DateTime.tryParse(activity.tarih) ?? DateTime.now();
+                final draft = TemgundrapDocument(
+                  id: DateTime.now().microsecondsSinceEpoch.toString(),
+                  date: docDate,
+                  unitTitle: defaults.unitTitle.isNotEmpty
+                      ? defaults.unitTitle
+                      : defaultTemgundrapUnitTitle,
+                  approverName: defaults.name,
+                  approverRank: defaults.rank,
+                  approverDuty: defaults.duty,
+                  operations: [op],
+                  isDraft: true,
+                  updatedAt: DateTime.now(),
+                );
+                if (context.mounted) {
+                  await AppNavigator.toTemgundrapForm(context, document: draft, date: docDate);
+                }
+                return;
             }
             } catch (error) {
               if (context.mounted) {
@@ -187,7 +216,8 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                   },
           assignmentBuilder: (atama) {
             final p = pMap[atama.personelId];
-            final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
+            final nameText = p?.adSoyad ??
+                context.l10n.activityDetailPersonnelFallback(atama.personelId);
             final rutbeText = p?.rutbe ?? '';
             final birlikInfo = p?.birlik ?? '';
             final subInfo = [

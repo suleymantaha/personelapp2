@@ -80,9 +80,9 @@ class _TemgundrapVehicleEditorState extends State<TemgundrapVehicleEditor> {
                       controller: _plateController,
                       enabled: _model != null,
                       textCapitalization: TextCapitalization.characters,
-                      decoration: const InputDecoration(
-                        labelText: 'Plaka',
-                        hintText: 'Örn. 23 ABC 123',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.temgundrapPlateLabel,
+                        hintText: context.l10n.temgundrapPlateHint,
                       ),
                       onChanged: (_) => setState(() {}),
                       onFieldSubmitted: (_) => _addVehicle(),
@@ -94,7 +94,7 @@ class _TemgundrapVehicleEditorState extends State<TemgundrapVehicleEditor> {
                               ? null
                               : _addVehicle,
                       icon: const Icon(Icons.add),
-                      label: const Text('Ekle'),
+                      label: Text(context.l10n.commonAdd),
                     ),
                   ];
                   if (compact) {

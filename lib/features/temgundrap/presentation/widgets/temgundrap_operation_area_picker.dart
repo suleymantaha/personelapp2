@@ -72,7 +72,7 @@ class _TemgundrapOperationAreaPickerState
             textCapitalization: TextCapitalization.characters,
             decoration: InputDecoration(
               labelText: context.l10n.temgundrapTypeOperationArea,
-              hintText: 'Örn: ELAZIĞ ...',
+              hintText: context.l10n.temgundrapAreaHint,
             ),
             validator: (value) => value == null || value.trim().isEmpty
                 ? context.l10n.temgundrapEnterCustomOperationArea

@@ -219,7 +219,7 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
       }
     } on AssignmentConflictException catch (error) {
       if (mounted) {
-        AppNotifications.error(error.message);
+        AppNotifications.error(error.localizedMessage(context.l10n));
       }
     }
   }
@@ -440,7 +440,7 @@ class _EditAssignmentSheetState extends ConsumerState<_EditAssignmentSheet> {
     } on AssignmentConflictException catch (error) {
       if (mounted) {
         setState(() => _saving = false);
-        AppNotifications.error(error.message);
+        AppNotifications.error(error.localizedMessage(context.l10n));
       }
     } catch (_) {
       if (mounted) {

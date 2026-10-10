@@ -5,6 +5,7 @@ import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.da
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/bulk_import_problem_wizard.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/personnel_match_card.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/smart_save_bar.dart';
+import 'package:personelapp2/l10n/generated/app_localizations.dart';
 
 void main() {
   group('safe bulk import panel', () {
@@ -166,6 +167,9 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('tr'),
             home: Scaffold(
               body: SmartSaveBar(
                 problemCount: 0,
@@ -183,7 +187,7 @@ void main() {
           ),
         );
 
-        expect(find.text('Kaydediliyor...'), findsOneWidget);
+        expect(find.text('Kaydediliyor…'), findsOneWidget);
         expect(find.textContaining('Kaydedilemiyor'), findsNothing);
         expect(find.textContaining('(1/0)'), findsNothing);
       },

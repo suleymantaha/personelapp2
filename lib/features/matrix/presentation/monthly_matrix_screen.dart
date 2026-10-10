@@ -125,7 +125,7 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, st) => Center(child: Text('Hata: $err')),
+      error: (err, st) => Center(child: Text('${context.l10n.commonError}: $err')),
     );
 
     if (MediaQuery.sizeOf(context).width < 680) {

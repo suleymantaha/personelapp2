@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'team_duty_day_details.dart';
@@ -30,24 +31,10 @@ class TeamDutyCalendarModal extends StatefulWidget {
 class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
   TeamDayDutyDto? selectedDay;
 
-  static const _aylar = [
-    '',
-    'Ocak',
-    'Şubat',
-    'Mart',
-    'Nisan',
-    'Mayıs',
-    'Haziran',
-    'Temmuz',
-    'Ağustos',
-    'Eylül',
-    'Ekim',
-    'Kasım',
-    'Aralık',
-  ];
-
   String _getAyAdi(int month) {
-    if (month >= 1 && month <= 12) return _aylar[month];
+    if (month >= 1 && month <= 12) {
+      return DateFormat('MMMM', 'tr_TR').format(DateTime(2024, month));
+    }
     return '$month.';
   }
 

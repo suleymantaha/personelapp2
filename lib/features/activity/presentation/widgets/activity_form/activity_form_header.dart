@@ -47,7 +47,7 @@ class ActivityFormHeader extends StatelessWidget {
           _ActionRow(
             key: const Key('activity-date-row'),
             icon: Icons.calendar_month_rounded,
-            label: 'Tarih',
+            label: context.l10n.activityDate,
             value: dateFormatted,
             onTap: onPickDate,
           ),

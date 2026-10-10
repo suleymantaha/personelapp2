@@ -24,12 +24,15 @@ class TemgundrapPreviewScreen extends StatelessWidget {
   final Future<void> Function()? onShare;
   final Future<void> Function()? onExcel;
 
-  Future<void> _print() =>
-      onPrint?.call() ?? TemgundrapPdfExporter.printDocument(document);
-  Future<void> _share() =>
-      onShare?.call() ?? TemgundrapPdfExporter.shareDocument(document);
-  Future<void> _shareExcel() =>
-      onExcel?.call() ?? TemgundrapExcelExporter.share(document);
+  Future<void> _print(BuildContext context) =>
+      onPrint?.call() ??
+      TemgundrapPdfExporter.printDocument(document, context.l10n);
+  Future<void> _share(BuildContext context) =>
+      onShare?.call() ??
+      TemgundrapPdfExporter.shareDocument(document, context.l10n);
+  Future<void> _shareExcel(BuildContext context) =>
+      onExcel?.call() ??
+      TemgundrapExcelExporter.share(document, context.l10n);
 
   Future<void> _output(
     BuildContext context,
@@ -57,21 +60,21 @@ class TemgundrapPreviewScreen extends StatelessWidget {
           IconButton(
             key: const Key('preview-print-icon'),
             tooltip: context.l10n.commonPrint,
-            onPressed: () => _output(context, _print),
+            onPressed: () => _output(context, () => _print(context)),
             icon: const Icon(Icons.print_outlined),
           ),
           IconButton(
             key: const Key('preview-share-icon'),
             tooltip: context.l10n.temgundrapSharePdfAction,
-            onPressed: () => _output(context, _share),
+            onPressed: () => _output(context, () => _share(context)),
             icon: const Icon(Icons.ios_share_outlined),
           ),
         ],
       ),
       bottomNavigationBar: _OutputBar(
-        onPrint: () => _output(context, _print),
-        onShare: () => _output(context, _share),
-        onExcel: () => _output(context, _shareExcel),
+        onPrint: () => _output(context, () => _print(context)),
+        onShare: () => _output(context, () => _share(context)),
+        onExcel: () => _output(context, () => _shareExcel(context)),
       ),
       body: TurkishFlagWatermarkBackground(
         child: LayoutBuilder(
@@ -173,10 +176,10 @@ class _ApproverCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text(
-            '(İMZALI)',
+          Text(
+            context.l10n.temgundrapSigned,
             textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
           ),
           const SizedBox(height: 4),
           if (document.approverName.isNotEmpty)
@@ -300,17 +303,17 @@ class _OperationCard extends StatelessWidget {
           ),
           _InfoRow(
             icon: Icons.shield_outlined,
-            label: 'Komutan',
+            label: context.l10n.temgundrapCommanderLabel,
             value: operation.commander.displayText,
           ),
           _InfoRow(
             icon: Icons.route_outlined,
-            label: 'Kuvvet',
+            label: context.l10n.temgundrapForceLabel,
             value: operation.forceDescription,
           ),
           _InfoRow(
             icon: Icons.schedule_outlined,
-            label: 'Zaman',
+            label: context.l10n.temgundrapTimeLabel,
             value:
                 '${TemgundrapFormatters.militaryDateTime(operation.startAt)}\n${TemgundrapFormatters.militaryDateTime(operation.endAt)}',
           ),

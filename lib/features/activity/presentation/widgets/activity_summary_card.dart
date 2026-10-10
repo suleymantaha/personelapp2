@@ -356,7 +356,7 @@ class ActivityCard extends ConsumerWidget {
       );
     } on AssignmentConflictException catch (error) {
       if (context.mounted) {
-        AppNotifications.error(error.message);
+        AppNotifications.error(error.localizedMessage(context.l10n));
       }
       return;
     }

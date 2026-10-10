@@ -30,7 +30,7 @@ class TeamDutyCalendarSummary extends StatelessWidget {
                   icon: Icons.assignment_outlined,
                 ),
                 _CalendarStatItem(
-                  label: 'Aktif Personel',
+                  label: context.l10n.monthlyMatrixActivePersonnelLabel,
                   value: context.l10n.matrixActivePersonnelCount(summary.aktifPersonelSayisi),
                   icon: Icons.groups_outlined,
                 ),
@@ -39,7 +39,7 @@ class TeamDutyCalendarSummary extends StatelessWidget {
                   value:
                       summary.yukHesabiTam
                           ? '%${summary.ortalamaYukYuzdesi.toStringAsFixed(0)}'
-                          : 'Veri eksik',
+                          : context.l10n.monthlyMatrixMissingData,
                   icon: Icons.speed_rounded,
                   valueColor:
                       summary.ortalamaYukYuzdesi > 70

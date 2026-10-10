@@ -1,15 +1,18 @@
+import 'dart:ui';
 import 'package:excel/excel.dart';
 import 'package:personelapp2/features/activity/services/roster_share_file.dart';
 import 'package:personelapp2/core/utils/export_file_name_helper.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/temgundrap/services/temgundrap_pdf_exporter.dart';
+import 'package:personelapp2/l10n/generated/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
 
 class TemgundrapExcelExporter {
   const TemgundrapExcelExporter._();
 
-  static List<int> build(TemgundrapDocument document) {
+  static List<int> build(TemgundrapDocument document, [AppLocalizations? l10n]) {
+    final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
     final excel = Excel.createExcel();
     const sheetName = 'TEMGÜNDRAP';
     final sheet = excel[sheetName];
@@ -59,24 +62,29 @@ class TemgundrapExcelExporter {
     }
 
     // Keep the official document heading identical in both export formats.
-    set(0, 0, TemgundrapPdfExporter.documentTitle(document), titleStyle);
+    set(0, 0, TemgundrapPdfExporter.documentTitle(document, localizations), titleStyle);
     merge(0, 0, 10, 0);
-    const mainHeaders = <int, String>{
-      0: 'S.NU',
-      1: 'ÇIKARAN BİRLİK',
-      2: 'OPERASYON BÖLGESİ',
-      7: 'BAŞLAMA ZAMANI',
-      8: 'BİTİŞ ZAMANI',
-      9: 'OPERASYON MAKSADI',
-      10: 'AÇIKLAMA',
+    final mainHeaders = <int, String>{
+      0: localizations.temgundrapExportColSequence,
+      1: localizations.temgundrapExportColIssuingUnit,
+      2: localizations.temgundrapExportColOperationArea,
+      7: localizations.temgundrapExportColStartTime,
+      8: localizations.temgundrapExportColEndTime,
+      9: localizations.temgundrapExportColPurpose,
+      10: localizations.temgundrapExportColDescription,
     };
     for (final entry in mainHeaders.entries) {
       set(entry.key, 1, entry.value, headerStyle);
       merge(entry.key, 1, entry.key, 2);
     }
-    set(3, 1, 'OPERASYON KUVVETİ', headerStyle);
+    set(3, 1, localizations.temgundrapExportColForceHeader, headerStyle);
     merge(3, 1, 6, 1);
-    const subHeaders = ['KUVVETİ', 'OPERASYON KOMUTANI', 'MEVCUT', ''];
+    final subHeaders = [
+      localizations.temgundrapExportColForce,
+      localizations.temgundrapExportColCommander,
+      localizations.temgundrapExportColPresent,
+      '',
+    ];
     for (var index = 0; index < subHeaders.length; index++) {
       set(3 + index, 2, subHeaders[index], headerStyle);
     }
@@ -86,7 +94,7 @@ class TemgundrapExcelExporter {
       final operation = entry.value;
       final strengthLabels = [
         ...operation.strength.byLabel.keys,
-        'TOPLAM',
+        localizations.temgundrapExportTotal,
       ].join('\n');
       final strengthValues = [
         ...operation.strength.byLabel.values,
@@ -139,7 +147,7 @@ class TemgundrapExcelExporter {
         sigRow++;
       }
 
-      setSigLine('(İMZALI)', sigStyleBold);
+      setSigLine(localizations.temgundrapSigned, sigStyleBold);
       if (document.approverName.isNotEmpty) {
         setSigLine(document.approverName, sigStyleNormal);
       }
@@ -174,7 +182,11 @@ class TemgundrapExcelExporter {
     return excel.encode() ?? <int>[];
   }
 
-  static Future<void> share(TemgundrapDocument document) async {
+  static Future<void> share(
+    TemgundrapDocument document, [
+    AppLocalizations? l10n,
+  ]) async {
+    final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
     final dateStr =
         '${document.date.year}-${document.date.month.toString().padLeft(2, '0')}-${document.date.day.toString().padLeft(2, '0')}';
     final fileName = formatExportFileName(
@@ -182,11 +194,11 @@ class TemgundrapExcelExporter {
       date: dateStr,
       extension: 'xlsx',
     );
-    final file = await createRosterShareFile(fileName, build(document));
+    final file = await createRosterShareFile(fileName, build(document, localizations));
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
-        text: 'TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı',
+        text: localizations.temgundrapExportShareTextExcel,
       ),
     );
   }

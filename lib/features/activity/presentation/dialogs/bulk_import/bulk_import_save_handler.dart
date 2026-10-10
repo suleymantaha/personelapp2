@@ -73,7 +73,7 @@ class BulkImportSaveHandler {
     }
 
     if (actor == null) {
-      throw StateError('Oturum doğrulanamadı.');
+      throw StateError(context.l10n.authSessionFailed);
     }
 
     final learningService = BulkImportLearningService(database);
@@ -94,11 +94,12 @@ class BulkImportSaveHandler {
           (dialogContext) => AlertDialog(
             title: Text(context.l10n.bulkImportDuplicateListTitle),
             content: Text(
-              '${existingImport.tarihler} tarihli bu içerik '
-              '${existingImport.kayitTarihi} tarihinde '
-              '${existingImport.aktaranKullanici} tarafından kaydedilmiş.\n\n'
-              'Veritabanında bu listeye ait $activeCount personel kaydı aktif duruyor. '
-              'Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?',
+              context.l10n.bulkImportDuplicateWarningContent(
+                existingImport.tarihler,
+                existingImport.kayitTarihi,
+                existingImport.aktaranKullanici,
+                activeCount,
+              ),
             ),
             actions: [
               TextButton(
@@ -127,6 +128,7 @@ class BulkImportSaveHandler {
     required int deduplicatedPersonnelCount,
     bool skipPreflight = false,
   }) async {
+    final l10n = context.l10n;
     final preparation = BulkActivityImportPreparer.prepare(blocks);
     if (!skipPreflight) {
       final confirmed = await confirmSavePreflight(
@@ -141,7 +143,7 @@ class BulkImportSaveHandler {
     }
 
     if (actor == null) {
-      throw StateError('Oturum doğrulanamadı.');
+      throw StateError(l10n.authSessionFailed);
     }
 
     final learningService = BulkImportLearningService(database);
@@ -200,9 +202,11 @@ class BulkImportSaveHandler {
       if (!context.mounted) return null;
       Navigator.pop(context, true);
       AppNotifications.success(
-        '${blocks.length} blok → ${preparation.requests.length} '
-        'günlük faaliyet, ${result.addedAssignmentCount} personel '
-        'başarıyla eklendi.',
+        context.l10n.bulkImportSuccessMessage(
+          blocks.length,
+          preparation.requests.length,
+          result.addedAssignmentCount,
+        ),
       );
       return true;
     }

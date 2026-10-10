@@ -1,0 +1,78 @@
+{
+  "status": "PASS",
+  "utc": "2026-10-10T17:27:24.697363+00:00",
+  "python": "3.13.15",
+  "root": "C:\\Users\\baba\\Documents\\Codex\\2026-10-10\\referenced-chatgpt-conversation-this-is-an-3\\outputs\\global-agent-kit",
+  "checks": {
+    "check_links": {
+      "checked": 89,
+      "errors": []
+    },
+    "check_templates": {
+      "checked": 2,
+      "errors": []
+    },
+    "check_settings": {
+      "checked": 13,
+      "errors": []
+    },
+    "check_structure": {
+      "checked": 25,
+      "errors": []
+    }
+  },
+  "errors": [],
+  "scope": "generic documentation structure only; no application or global agent integration tests",
+  "unit_tests": {
+    "count": 19,
+    "result": "PASS",
+    "exit_code": 0,
+    "command": "python -B -m unittest discover -s tests -v",
+    "cwd": "C:\\Users\\baba\\Documents\\Codex\\2026-10-10\\referenced-chatgpt-conversation-this-is-an-3\\outputs\\global-agent-kit",
+    "log": "validation/tests.log"
+  },
+  "previous_copy_integrity": {
+    "status": "PASS",
+    "checked_files": 79
+  },
+  "archived_original_integrity": {
+    "status": "PASS",
+    "checked_files": 22
+  },
+  "live_source_observation": {
+    "status": "EXTERNAL_CHANGES_DETECTED",
+    "writes_by_this_task": false,
+    "observed_head": "147292efb7a158fcd813e274d3a430c2bb89eb2a",
+    "missing_old_paths": [
+      ".agents/rules/01-orchestrator-protocol.md",
+      ".agents/rules/02-tier-classification.md",
+      ".agents/rules/03-quality-gate.md",
+      ".agents/rules/04-safety-and-security.md",
+      ".agents/rules/05-contract-first-design.md",
+      ".agents/subagents/architect-depth0.md",
+      ".agents/subagents/explorer-researcher.md",
+      ".agents/subagents/security-auditor.md",
+      ".agents/subagents/verifier-shadow.md",
+      ".agents/subagents/worker-scoped.md",
+      ".agents/templates/contract-spec-template.md",
+      ".agents/templates/subagent-report-template.md",
+      ".agents/templates/tasks-ledger-template.md",
+      ".agents/workflows/circuit-breaker-and-rollback.md",
+      ".agents/workflows/context-hygiene-guide.md",
+      ".agents/workflows/git-worktree-isolation.md",
+      "docs/plans/dosya-platformu-ana-plan.md",
+      "VALIDATION.json"
+    ],
+    "changed_old_paths": [
+      ".gitignore",
+      "AGENTS.md",
+      "README.md",
+      "tasks/ledger.md"
+    ]
+  },
+  "product_dependency_scan": {
+    "status": "PASS",
+    "scope": "all current Markdown/JSON/Python except validation"
+  },
+  "automatic_global_installation": "NOT_PERFORMED"
+}

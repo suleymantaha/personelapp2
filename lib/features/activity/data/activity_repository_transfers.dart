@@ -192,6 +192,7 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
       if (alreadyInTarget != null) {
         return const PersonnelTransferResult(
           moved: false,
+          reasonCode: 'already_in_target',
           reason: 'Bu personel zaten hedef faaliyette mevcut.',
         );
       }
@@ -301,8 +302,10 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
         );
         if (status == AssignmentStatus.beklemede) {
           throw AssignmentConflictException(
-            '$date tarihinde personelin başka bir görevi, izni veya raporu '
-            'bulunuyor. Rapor kaydedilmedi.',
+            'Assignment conflict: personnel has an existing duty, leave, or report on $date. Report was not saved.',
+            code: 'report_conflict',
+            date: date,
+            personnelId: personelId,
           );
         }
         day = day.add(const Duration(days: 1));

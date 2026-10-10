@@ -20,9 +20,8 @@ Future<void> showDuplicatePersonnelDialog({
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Aynı personel aynı tarihte birden fazla görevde bulunuyor. '
-                'Aktarmadan önce önizlemedeki tekrarları düzeltin.',
+              Text(
+                context.l10n.bulkImportDuplicateDatePersonnelWarning,
               ),
               const SizedBox(height: 12),
               for (final duplicate in duplicates)

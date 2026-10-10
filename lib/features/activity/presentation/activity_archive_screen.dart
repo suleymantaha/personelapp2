@@ -20,6 +20,10 @@ import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/services/activity_order_preferences.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
+import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
+import 'package:personelapp2/features/temgundrap/domain/services/temgundrap_activity_converter.dart';
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 part 'activity_archive_actions.dart';
@@ -251,7 +255,18 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
         ),
         actions: [
-          if (_selectionMode)
+          if (_selectionMode) ...[
+            TextButton.icon(
+              key: const Key('activity-selection-temgundrap'),
+              icon: const Icon(Icons.assignment_outlined, size: 18),
+              label: Text(context.l10n.activityArchiveExportToTemgundrap),
+              onPressed: () {
+                final selected = (activitiesAsync.value ?? [])
+                    .where((act) => _selectedActivityIds.contains(act.id))
+                    .toList();
+                _exportToTemgundrap(selected, personnelList);
+              },
+            ),
             IconButton(
               key: const Key('activity-selection-export'),
               icon: const Icon(Icons.ios_share),
@@ -260,7 +275,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                 activitiesAsync.value ?? [],
                 personnelList,
               ),
-            )
+            ),
+          ]
           else if (!context.isMobile)
             TextButton.icon(
               key: const Key('activity-selection-start'),
@@ -600,20 +616,6 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
 }
 
 String _formatTurkishDay(String isoDate) {
-  const months = <String>[
-    'Ocak',
-    'Şubat',
-    'Mart',
-    'Nisan',
-    'Mayıs',
-    'Haziran',
-    'Temmuz',
-    'Ağustos',
-    'Eylül',
-    'Ekim',
-    'Kasım',
-    'Aralık',
-  ];
   final date = DateTime.parse(isoDate);
-  return '${date.day} ${months[date.month - 1]}';
+  return DateFormat('d MMMM', 'tr_TR').format(date);
 }

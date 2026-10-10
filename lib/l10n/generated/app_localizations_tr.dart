@@ -364,7 +364,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Kriterlere uygun personel bulunamadı.';
 
   @override
-  String get commonSaving => 'Kaydediliyor...';
+  String get commonSaving => 'Kaydediliyor…';
 
   @override
   String get commonRetry => 'TEKRAR DENE';
@@ -977,6 +977,37 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get temgundrapRequiredField => 'Bu alan zorunludur.';
+
+  @override
+  String get temgundrapImportFromActivities => 'Faaliyetlerden İçe Aktar';
+
+  @override
+  String get temgundrapImportDialogTitle => 'Faaliyetlerden İçe Aktar';
+
+  @override
+  String get temgundrapImportDialogSubtitle =>
+      'Günün faaliyetlerini TEMGÜNDRAP operasyonlarına dönüştürün';
+
+  @override
+  String get temgundrapImportDialogNoActivities =>
+      'Bu tarihte kayıtlı faaliyet bulunamadı.';
+
+  @override
+  String temgundrapImportDialogSubmit(int count) {
+    return 'FORMA AKTAR ($count)';
+  }
+
+  @override
+  String temgundrapImportSuccess(int count) {
+    return '$count faaliyet forma aktarıldı.';
+  }
+
+  @override
+  String get activityArchiveExportToTemgundrap => 'TEMGÜNDRAP Olarak Aç';
+
+  @override
+  String get activityArchiveExportToTemgundrapSubtitle =>
+      'Seçilen faaliyetlerle TEMGÜNDRAP taslağı oluştur';
 
   @override
   String get pendingApprovalsTitle => 'Bekleyen Görev Onayları';
@@ -3557,4 +3588,360 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get temgundrapApproverDutyHint => 'Örn: Tb. K. V.';
+
+  @override
+  String get backupDialogTitle => 'Tam yedekleme ve geri yükleme';
+
+  @override
+  String get backupDialogSubtitle =>
+      'Bulut gerekmez; dosya sizin seçtiğiniz yerde kalır.';
+
+  @override
+  String get backupTabExport => 'Yedekle';
+
+  @override
+  String get backupTabImport => 'Geri yükle';
+
+  @override
+  String get backupWhatsIncludedTitle => 'Yedekte neler var?';
+
+  @override
+  String get backupWhatsIncludedText =>
+      'İsimler, timler, kullanıcılar, telefonlar, görevler, aylık matris, faaliyet arşivi, raporlar, takma adlar, toplu aktarım geçmişi ve TEMGÜNDRAP belgeleri.';
+
+  @override
+  String get backupKeepSafeTitle => 'Uygulama silinse de koruyun';
+
+  @override
+  String get backupKeepSafeText =>
+      'Açılan kaydet ekranından İndirilenler gibi cihazın yerel bir klasörünü seçin. Uygulamanın kendi klasörüne bırakmayın.';
+
+  @override
+  String get backupSecurityTitle => 'Dosyayı güvenli tutun';
+
+  @override
+  String get backupSecurityText =>
+      'Yedek kişisel bilgiler içerir. Yalnızca güvenilir bir yerel klasörde saklayın ve başkalarıyla paylaşmayın.';
+
+  @override
+  String get backupLegacyDateText => 'Eski yedek';
+
+  @override
+  String get backupLegacyTitle => 'Eski personel yedeği';
+
+  @override
+  String get backupVerifiedFullTitle => 'Doğrulanmış tam yedek';
+
+  @override
+  String backupPreviewStats(String date, int personnel, int activity,
+      int assignment, int temgundrap) {
+    return '$date • $personnel personel • $activity faaliyet • $assignment görev kaydı • $temgundrap TEMGÜNDRAP';
+  }
+
+  @override
+  String backupLegacyRestoreSuccess(int count) {
+    return '$count yeni personel eski yedekten aktarıldı.';
+  }
+
+  @override
+  String get backupConfirmOverwriteContent =>
+      'Tam geri yükleme mevcut personel, görev, matris ve TEMGÜNDRAP kayıtlarının yerine yedekteki verileri koyar. Bu işlem geri alınamaz.';
+
+  @override
+  String bulkImportCriticalErrorsCount(int count) {
+    return '$count kritik hata';
+  }
+
+  @override
+  String bulkImportLinePrefix(int line) {
+    return 'Satır $line: ';
+  }
+
+  @override
+  String get bulkImportEmptySummaryHint =>
+      'Lütfen aşağıda vurgulanan kartlardaki eksik personelleri eşleştirin, tekrarları düzeltin veya boş kartları silin.';
+
+  @override
+  String get bulkParseEmptyInput => 'Ayrıştırılacak metin boş.';
+
+  @override
+  String get bulkParseMissingDate =>
+      'Bu personel grubu için geçerli bir tarih bulunamadı.';
+
+  @override
+  String get bulkParseUnknownTeam => 'Takım/tim bilgisi tanınamadı.';
+
+  @override
+  String get bulkParseUnknownActivity => 'Görev türü tanınamadı.';
+
+  @override
+  String get bulkParseInvalidTime => 'Saat aralığı geçerli değil.';
+
+  @override
+  String get bulkParseInvalidDate => 'Tarih geçerli değil.';
+
+  @override
+  String get bulkParseInvalidPersonnel => 'Personel satırı çözümlenemedi.';
+
+  @override
+  String get bulkParseUnknownRank =>
+      'Rütbe tanınamadı; ham personel adı korundu.';
+
+  @override
+  String get bulkParseNoBlocks =>
+      'Metinde aktarılabilecek personel bloğu bulunamadı.';
+
+  @override
+  String get commonFix => 'Düzelt';
+
+  @override
+  String assignmentConflictHasRecord(String date) {
+    return '$date tarihinde personelin başka bir kaydı bulunuyor.';
+  }
+
+  @override
+  String assignmentConflictHasDutyOrRecord(String date) {
+    return '$date tarihinde personelin başka bir görevi veya kaydı bulunuyor.';
+  }
+
+  @override
+  String assignmentConflictDateChange(String date) {
+    return '$date tarihinde personelin başka bir kaydı bulunuyor. Faaliyet tarihi değiştirilmedi.';
+  }
+
+  @override
+  String assignmentConflictReport(String date) {
+    return '$date tarihinde personelin başka bir görevi, izni veya raporu bulunuyor. Rapor kaydedilmedi.';
+  }
+
+  @override
+  String get transferPersonnelAlreadyInTarget =>
+      'Bu personel zaten hedef faaliyette mevcut.';
+
+  @override
+  String bulkImportDuplicateWarningContent(
+      String dates, String recordDate, String user, int count) {
+    return '$dates tarihli bu içerik $recordDate tarihinde $user tarafından kaydedilmiş.\n\nVeritabanında bu listeye ait $count personel kaydı aktif duruyor. Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?';
+  }
+
+  @override
+  String get bulkImportDefaultSquad => 'Varsayılan Tim';
+
+  @override
+  String bulkImportBlockPersonnelCount(int count) {
+    return '$count personel';
+  }
+
+  @override
+  String get bulkImportFocusedError => 'ODAKLANILAN HATA';
+
+  @override
+  String get bulkImportInspectedCard => 'İNCELENEN KART';
+
+  @override
+  String get bulkImportEmptyCard => 'Boş Kart';
+
+  @override
+  String bulkImportUnmatchedCount(int count) {
+    return '$count Eşleşmedi';
+  }
+
+  @override
+  String bulkImportWarningCount(int count) {
+    return '$count Uyarı';
+  }
+
+  @override
+  String get bulkImportCardActionsTooltip => 'Kart işlemleri';
+
+  @override
+  String get bulkImportCardActionsTitle => 'Kart İşlemleri';
+
+  @override
+  String get bulkImportCardActionsSubtitle => 'İçe aktarma kartını yönet';
+
+  @override
+  String get bulkImportEditCardTitle => 'Kartı düzenle';
+
+  @override
+  String get bulkImportEditCardSubtitle =>
+      'Faaliyet ve personel bilgilerini güncelle';
+
+  @override
+  String get bulkImportDeleteCardTitle => 'Kartı sil';
+
+  @override
+  String get bulkImportDeleteCardSubtitle =>
+      'Kartı içe aktarma listesinden kaldır';
+
+  @override
+  String bulkImportProblemNoPersonnelInCard(String title) {
+    return '$title kartında personel bulunamadı.';
+  }
+
+  @override
+  String bulkImportProblemInvalidDate(int cardNumber) {
+    return 'Kart #$cardNumber: Geçerli bir tarih bulunamadı.';
+  }
+
+  @override
+  String bulkImportProblemMissingTeam(int cardNumber) {
+    return 'Kart #$cardNumber: Takım adı belirtilmedi (Personelin kayıtlı timi kullanılacak).';
+  }
+
+  @override
+  String bulkImportProblemUnknownActivity(int cardNumber) {
+    return 'Kart #$cardNumber: Görev türü tanınamadı.';
+  }
+
+  @override
+  String bulkImportProblemPersonnelNotSelected(
+      String prefix, String rank, String name) {
+    return '$prefix$rank $name - Personel seçilmedi.';
+  }
+
+  @override
+  String bulkImportProblemConflictingDuty(
+      String prefix, String rank, String name) {
+    return '$prefix$rank $name - Çakışan görev ekli.';
+  }
+
+  @override
+  String get bulkImportProblemCheckTeam => 'Tim kontrolü gerektiriyor.';
+
+  @override
+  String get bulkImportProblemCheckMatch => 'Eşleşme kontrolü gerektiriyor.';
+
+  @override
+  String bulkImportProblemLinePrefix(int lineNumber) {
+    return 'Satır $lineNumber: ';
+  }
+
+  @override
+  String get temgundrapIssuingUnitRequired => 'Çıkaran birlik zorunludur.';
+
+  @override
+  String get temgundrapCommanderRequired => 'Operasyon komutanı seçilmelidir.';
+
+  @override
+  String get temgundrapCommanderPhoneRequired => 'Komutan telefonu zorunludur.';
+
+  @override
+  String get temgundrapEndTimeMustBeAfterStart =>
+      'Bitiş zamanı başlangıçtan sonra olmalıdır.';
+
+  @override
+  String get temgundrapPurposeRequired => 'Operasyon maksadı zorunludur.';
+
+  @override
+  String get temgundrapVehiclePlateAlreadyExists => 'Bu plaka zaten eklendi.';
+
+  @override
+  String get temgundrapPlateHint => 'Örn. 23 ABC 123';
+
+  @override
+  String get temgundrapAreaHint => 'Örn: ELAZIĞ ...';
+
+  @override
+  String get temgundrapPlateLabel => 'Plaka';
+
+  @override
+  String get commonConfirmAndSave => 'Onayla ve Kaydet';
+
+  @override
+  String monthlyMatrixOriginalDate(String duty, String date) {
+    return '$duty • Asıl tarih: $date';
+  }
+
+  @override
+  String get monthlyMatrixContinuedFromPreviousDay => 'Önceki günden devam';
+
+  @override
+  String get monthlyMatrixActivePersonnelLabel => 'Aktif Personel';
+
+  @override
+  String get monthlyMatrixMissingData => 'Veri eksik';
+
+  @override
+  String activityDetailPersonnelFallback(int id) {
+    return 'Personel #$id';
+  }
+
+  @override
+  String bulkImportSuccessMessage(
+      int blockCount, int requestCount, int personnelCount) {
+    return '$blockCount blok → $requestCount günlük faaliyet, $personnelCount personel başarıyla eklendi.';
+  }
+
+  @override
+  String get bulkImportDuplicateDatePersonnelWarning =>
+      'Aynı personel aynı tarihte birden fazla görevde bulunuyor. Aktarmadan önce önizlemedeki tekrarları düzeltin.';
+
+  @override
+  String get bulkImportNoPersonnelLeftInCard =>
+      'Bu kartta personel kalmadı. Kartı silin veya metni yeniden ayrıştırın.';
+
+  @override
+  String get temgundrapSigned => '(İMZALI)';
+
+  @override
+  String get temgundrapCommanderLabel => 'Komutan';
+
+  @override
+  String get temgundrapForceLabel => 'Kuvvet';
+
+  @override
+  String get temgundrapTimeLabel => 'Zaman';
+
+  @override
+  String temgundrapExportDocumentTitle(String unitTitle, String date) {
+    return '$unitTitle $date TARİHİNDE PLANLANAN OPERASYON TAKİP ÇİZELGESİ';
+  }
+
+  @override
+  String get temgundrapExportColSequence => 'S.NU';
+
+  @override
+  String get temgundrapExportColIssuingUnit => 'ÇIKARAN BİRLİK';
+
+  @override
+  String get temgundrapExportColOperationArea => 'OPERASYON BÖLGESİ';
+
+  @override
+  String get temgundrapExportColForceHeader => 'OPERASYON KUVVETİ';
+
+  @override
+  String get temgundrapExportColForce => 'KUVVETİ';
+
+  @override
+  String get temgundrapExportColCommander => 'OPERASYON KOMUTANI';
+
+  @override
+  String get temgundrapExportColPresent => 'MEVCUT';
+
+  @override
+  String get temgundrapExportColStartTime => 'BAŞLAMA ZAMANI';
+
+  @override
+  String get temgundrapExportColEndTime => 'BİTİŞ ZAMANI';
+
+  @override
+  String get temgundrapExportColPurpose => 'OPERASYON MAKSADI';
+
+  @override
+  String get temgundrapExportColDescription => 'AÇIKLAMA';
+
+  @override
+  String get temgundrapExportTotal => 'TOPLAM';
+
+  @override
+  String get temgundrapExportShareText =>
+      'TEMGÜNDRAP operasyon takip çizelgesi';
+
+  @override
+  String get temgundrapExportShareTextExcel =>
+      'TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı';
+
+  @override
+  String get bulkImportParsedActivityFallback => 'Ayrıştırılan Faaliyet';
 }

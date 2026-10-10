@@ -23,6 +23,10 @@ import 'package:personelapp2/features/activity/presentation/widgets/archive_expo
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/roster_image_import_service.dart';
+import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
+import 'package:personelapp2/features/temgundrap/domain/services/temgundrap_activity_converter.dart';
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 
 part 'activity_detail_assignments.dart';
 
@@ -104,7 +108,8 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                 duty: atama.gorevVeyaIzin,
               ),
               rutbe: p?.rutbe ?? '',
-              adSoyad: p?.adSoyad ?? 'Personel #${atama.personelId}',
+              adSoyad: p?.adSoyad ??
+                  context.l10n.activityDetailPersonnelFallback(atama.personelId),
               diger: MilitaryStructureHelper.getDigerCellText(
                 atama.gorevVeyaIzin,
                 aciklama: atama.aciklama,

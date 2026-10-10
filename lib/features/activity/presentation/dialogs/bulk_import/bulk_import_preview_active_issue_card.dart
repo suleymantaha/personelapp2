@@ -29,10 +29,10 @@ class _ActiveIssueCard extends StatelessWidget {
           children: [
             Icon(Icons.task_alt_rounded, color: context.approvedColor),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Text(
-                'Tüm kontroller tamam',
-                style: TextStyle(fontWeight: FontWeight.w800),
+                context.l10n.bulkImportAllChecksPassed,
+                style: const TextStyle(fontWeight: FontWeight.w800),
               ),
             ),
           ],
@@ -49,9 +49,9 @@ class _ActiveIssueCard extends StatelessWidget {
     final issue = showingParseIssue ? null : problemLocations[safeIndex];
     final isCritical = parseIssue?.isBlocking ?? issue!.isCritical;
     final color = isCritical ? context.rejectedColor : context.pendingColor;
-    final title = parseIssue?.message ?? _issueTitle(issue!);
+    final title = parseIssue?.localizedMessage(context.l10n) ?? _issueTitle(issue!);
     final reason = parseIssue == null
-        ? _issueReason(issue!)
+        ? _issueReason(issue!, context)
         : [
             if (parseIssue.rawLine.trim().isNotEmpty) parseIssue.rawLine.trim(),
             if (parseIssue.lineNumber > 0) context.l10n.bulkImportLineNumber(parseIssue.lineNumber),
@@ -130,9 +130,9 @@ class _ActiveIssueCard extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onFix,
             icon: const Icon(Icons.chevron_right_rounded, size: 18),
-            label: const Text(
-              'Düzelt',
-              style: TextStyle(fontWeight: FontWeight.w800),
+            label: Text(
+              context.l10n.commonFix,
+              style: const TextStyle(fontWeight: FontWeight.w800),
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: color,
@@ -158,7 +158,7 @@ class _ActiveIssueCard extends StatelessWidget {
     return withoutLine.trim();
   }
 
-  static String _issueReason(ProblemLocation issue) {
+  static String _issueReason(ProblemLocation issue, BuildContext context) {
     final parts = <String>[];
     final text = issue.description;
     final dashIndex = text.indexOf(' - ');
@@ -168,7 +168,7 @@ class _ActiveIssueCard extends StatelessWidget {
       parts.add(text);
     }
     if (issue.sourceLineNumber != null) {
-      parts.add('Satır ${issue.sourceLineNumber}');
+      parts.add(context.l10n.bulkImportLineNumber(issue.sourceLineNumber!));
     }
     return parts.join(' • ');
   }

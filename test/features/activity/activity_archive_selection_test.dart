@@ -108,8 +108,11 @@ void main() {
     await tester.pump();
     expect(find.text('2 faaliyet seçildi'), findsOneWidget);
 
+    expect(find.byKey(const Key('activity-selection-temgundrap')), findsOneWidget);
+
     await tester.tap(find.byKey(const Key('activity-selection-export')));
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('export-option-temgundrap')), findsOneWidget);
     expect(find.text('PDF Belgesi Paylaş'), findsOneWidget);
     expect(find.text('Doğrudan Yazdır'), findsOneWidget);
     expect(find.text('Excel Olarak Aktar (.xlsx)'), findsOneWidget);

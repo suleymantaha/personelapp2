@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
@@ -89,7 +90,7 @@ class ActivityBlockHeader extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            'Varsayılan Tim',
+                            context.l10n.bulkImportDefaultSquad,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 12,
@@ -130,7 +131,9 @@ class ActivityBlockHeader extends StatelessWidget {
                         ),
                       _PersonnelCountPill(
                         text: visiblePersonnelIndexes == null
-                            ? '${block.personnelList.length} personel'
+                            ? context.l10n.bulkImportBlockPersonnelCount(
+                                block.personnelList.length,
+                              )
                             : '$problemCount sorun / ${block.personnelList.length} p.',
                       ),
                       if (isBlockFocused)
@@ -164,11 +167,11 @@ class ActivityBlockHeader extends StatelessWidget {
                                           : context.warningColor),
                                 ),
                                 const SizedBox(width: 4),
-                                Text(
+                                 Text(
                                   (unmatchedCount > 0 ||
                                           block.personnelList.isEmpty)
-                                      ? 'ODAKLANILAN HATA'
-                                      : 'İNCELENEN KART',
+                                      ? context.l10n.bulkImportFocusedError
+                                      : context.l10n.bulkImportInspectedCard,
                                   style: TextStyle(
                                     color: context.onStatusColor(
                                         unmatchedCount > 0 ||
@@ -195,7 +198,7 @@ class ActivityBlockHeader extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            'Boş Kart',
+                            context.l10n.bulkImportEmptyCard,
                             style: TextStyle(
                               color: context.rejectedColor,
                               fontSize: 11,
@@ -215,7 +218,7 @@ class ActivityBlockHeader extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            '$unmatchedCount Eşleşmedi',
+                            context.l10n.bulkImportUnmatchedCount(unmatchedCount),
                             style: TextStyle(
                               color: context.rejectedColor,
                               fontSize: 11,
@@ -234,7 +237,7 @@ class ActivityBlockHeader extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            '$warningCount Uyarı',
+                            context.l10n.bulkImportWarningCount(warningCount),
                             style: TextStyle(
                               color: context.warningColor,
                               fontSize: 11,
@@ -266,7 +269,7 @@ class ActivityBlockHeader extends StatelessWidget {
 
             PopupMenuButton<String>(
               key: Key('bulk-card-menu-$blockIdx'),
-              tooltip: 'Kart işlemleri',
+              tooltip: context.l10n.bulkImportCardActionsTooltip,
               elevation: 5,
               shadowColor: context.shadowColor,
               surfaceTintColor: context.colorScheme.surface,
@@ -280,26 +283,26 @@ class ActivityBlockHeader extends StatelessWidget {
                 }
               },
               itemBuilder: (context) => [
-                const ModernMenuHeader<String>(
-                  title: 'Kart İşlemleri',
-                  subtitle: 'İçe aktarma kartını yönet',
+                ModernMenuHeader<String>(
+                  title: context.l10n.bulkImportCardActionsTitle,
+                  subtitle: context.l10n.bulkImportCardActionsSubtitle,
                   icon: Icons.view_agenda_outlined,
                 ),
                 const PopupMenuDivider(),
                 ModernPopupMenuItem(
-                  option: const ModernActionOption(
+                  option: ModernActionOption(
                     value: 'edit',
-                    title: 'Kartı düzenle',
-                    subtitle: 'Faaliyet ve personel bilgilerini güncelle',
+                    title: context.l10n.bulkImportEditCardTitle,
+                    subtitle: context.l10n.bulkImportEditCardSubtitle,
                     icon: Icons.edit_outlined,
                   ),
                 ),
                 const PopupMenuDivider(),
                 ModernPopupMenuItem(
-                  option: const ModernActionOption(
+                  option: ModernActionOption(
                     value: 'delete',
-                    title: 'Kartı sil',
-                    subtitle: 'Kartı içe aktarma listesinden kaldır',
+                    title: context.l10n.bulkImportDeleteCardTitle,
+                    subtitle: context.l10n.bulkImportDeleteCardSubtitle,
                     icon: Icons.delete_outline_rounded,
                     isDestructive: true,
                   ),

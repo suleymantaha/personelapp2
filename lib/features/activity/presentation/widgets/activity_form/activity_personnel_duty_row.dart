@@ -40,7 +40,7 @@ class ActivityPersonnelDutyRow extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Birlik: ${personnel.birlik}',
+                  '${context.l10n.personnelUnitLabel}: ${personnel.birlik}',
                   style: TextStyle(
                     color: context.textSecondary,
                     fontSize: 13,
