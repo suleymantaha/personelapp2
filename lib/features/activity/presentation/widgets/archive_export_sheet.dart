@@ -7,6 +7,7 @@ enum ArchiveExportType {
   pdf,
   print,
   text,
+  temgundrap,
 }
 
 class ArchiveExportResult {
@@ -245,6 +246,26 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
               const SizedBox(height: 12),
               const Divider(height: 1),
               const SizedBox(height: 6),
+              ListTile(
+                key: const Key('export-option-temgundrap'),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.assignment_outlined,
+                    color: Colors.teal,
+                  ),
+                ),
+                title: Text(
+                  context.l10n.activityArchiveExportToTemgundrap,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(context.l10n.activityArchiveExportToTemgundrapSubtitle),
+                onTap: () => _select(ArchiveExportType.temgundrap),
+              ),
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),

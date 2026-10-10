@@ -979,6 +979,37 @@ class AppLocalizationsTr extends AppLocalizations {
   String get temgundrapRequiredField => 'Bu alan zorunludur.';
 
   @override
+  String get temgundrapImportFromActivities => 'Faaliyetlerden İçe Aktar';
+
+  @override
+  String get temgundrapImportDialogTitle => 'Faaliyetlerden İçe Aktar';
+
+  @override
+  String get temgundrapImportDialogSubtitle =>
+      'Günün faaliyetlerini TEMGÜNDRAP operasyonlarına dönüştürün';
+
+  @override
+  String get temgundrapImportDialogNoActivities =>
+      'Bu tarihte kayıtlı faaliyet bulunamadı.';
+
+  @override
+  String temgundrapImportDialogSubmit(int count) {
+    return 'FORMA AKTAR ($count)';
+  }
+
+  @override
+  String temgundrapImportSuccess(int count) {
+    return '$count faaliyet forma aktarıldı.';
+  }
+
+  @override
+  String get activityArchiveExportToTemgundrap => 'TEMGÜNDRAP Olarak Aç';
+
+  @override
+  String get activityArchiveExportToTemgundrapSubtitle =>
+      'Seçilen faaliyetlerle TEMGÜNDRAP taslağı oluştur';
+
+  @override
   String get pendingApprovalsTitle => 'Bekleyen Görev Onayları';
 
   @override

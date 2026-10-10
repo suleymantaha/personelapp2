@@ -1858,6 +1858,54 @@ abstract class AppLocalizations {
   /// **'Bu alan zorunludur.'**
   String get temgundrapRequiredField;
 
+  /// No description provided for @temgundrapImportFromActivities.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyetlerden İçe Aktar'**
+  String get temgundrapImportFromActivities;
+
+  /// No description provided for @temgundrapImportDialogTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyetlerden İçe Aktar'**
+  String get temgundrapImportDialogTitle;
+
+  /// No description provided for @temgundrapImportDialogSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günün faaliyetlerini TEMGÜNDRAP operasyonlarına dönüştürün'**
+  String get temgundrapImportDialogSubtitle;
+
+  /// No description provided for @temgundrapImportDialogNoActivities.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu tarihte kayıtlı faaliyet bulunamadı.'**
+  String get temgundrapImportDialogNoActivities;
+
+  /// No description provided for @temgundrapImportDialogSubmit.
+  ///
+  /// In tr, this message translates to:
+  /// **'FORMA AKTAR ({count})'**
+  String temgundrapImportDialogSubmit(int count);
+
+  /// No description provided for @temgundrapImportSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} faaliyet forma aktarıldı.'**
+  String temgundrapImportSuccess(int count);
+
+  /// No description provided for @activityArchiveExportToTemgundrap.
+  ///
+  /// In tr, this message translates to:
+  /// **'TEMGÜNDRAP Olarak Aç'**
+  String get activityArchiveExportToTemgundrap;
+
+  /// No description provided for @activityArchiveExportToTemgundrapSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçilen faaliyetlerle TEMGÜNDRAP taslağı oluştur'**
+  String get activityArchiveExportToTemgundrapSubtitle;
+
   /// No description provided for @pendingApprovalsTitle.
   ///
   /// In tr, this message translates to:

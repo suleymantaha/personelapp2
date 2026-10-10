@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/roster_signature.dart';
+import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
+import 'package:personelapp2/features/temgundrap/domain/services/temgundrap_activity_converter.dart';
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 
-class RosterOutputPreviewScreen extends StatefulWidget {
+class RosterOutputPreviewScreen extends ConsumerStatefulWidget {
   const RosterOutputPreviewScreen({
     super.key,
     required this.date,
@@ -21,11 +27,12 @@ class RosterOutputPreviewScreen extends StatefulWidget {
   final List<MilitaryRosterRow> rows;
   final Future<List<MilitaryRosterRow>> Function() loadRows;
   @override
-  State<RosterOutputPreviewScreen> createState() =>
+  ConsumerState<RosterOutputPreviewScreen> createState() =>
       _RosterOutputPreviewScreenState();
 }
 
-class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
+class _RosterOutputPreviewScreenState
+    extends ConsumerState<RosterOutputPreviewScreen> {
   bool _busy = false;
   String? _error;
   Future<List<MilitaryRosterRow>> _validatedRows() async {
@@ -98,6 +105,42 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
             rows: rows,
             timeRange: action.timeRange,
           );
+        case ArchiveExportType.temgundrap:
+          final db = ref.read(databaseProvider);
+          final actIds = widget.sources.map((a) => a.id).toSet();
+          final assignments = await (db.select(db.faaliyetPersonelAtamaTable)
+                ..where((tbl) => tbl.faaliyetId.isIn(actIds)))
+              .get();
+          final personnel = await db.select(db.personelTable).get();
+          final pMap = {for (final p in personnel) p.id: p};
+          final operations = TemgundrapActivityConverter.convertAll(
+            activities: widget.sources,
+            allAssignments: assignments,
+            personnelMap: pMap,
+          );
+          final repo = TemgundrapRepository();
+          final defaults = await repo.getApproverDefaults();
+          final docDate = DateTime.tryParse(widget.date) ?? DateTime.now();
+          final draft = TemgundrapDocument(
+            id: DateTime.now().microsecondsSinceEpoch.toString(),
+            date: docDate,
+            unitTitle: defaults.unitTitle.isNotEmpty
+                ? defaults.unitTitle
+                : defaultTemgundrapUnitTitle,
+            approverName: defaults.name,
+            approverRank: defaults.rank,
+            approverDuty: defaults.duty,
+            operations: operations,
+            isDraft: true,
+            updatedAt: DateTime.now(),
+          );
+          if (mounted) {
+            await AppNavigator.toTemgundrapForm(
+              context,
+              document: draft,
+              date: docDate,
+            );
+          }
       }
     } catch (error) {
       if (mounted) {

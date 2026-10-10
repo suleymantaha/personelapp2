@@ -164,7 +164,7 @@
   "personnelAllUnit": "Tüm Birlik",
   "personnelNoSubscription": "Abonelik Yok",
   "personnelNoCriteriaMatches": "Kriterlere uygun personel bulunamadı.",
-  "commonSaving": "Kaydediliyor...",
+  "commonSaving": "Kaydediliyor…",
   "commonRetry": "TEKRAR DENE",
   "authLoginTitle": "Giriş Yap",
   "authUsername": "Kullanıcı Adı",
@@ -500,6 +500,28 @@
   "temgundrapSaveAsDraft": "Taslak olarak kaydet",
   "temgundrapSaveDocumentButton": "ÇİZELGEYİ KAYDET",
   "temgundrapRequiredField": "Bu alan zorunludur.",
+  "temgundrapImportFromActivities": "Faaliyetlerden İçe Aktar",
+  "temgundrapImportDialogTitle": "Faaliyetlerden İçe Aktar",
+  "temgundrapImportDialogSubtitle": "Günün faaliyetlerini TEMGÜNDRAP operasyonlarına dönüştürün",
+  "temgundrapImportDialogNoActivities": "Bu tarihte kayıtlı faaliyet bulunamadı.",
+  "temgundrapImportDialogSubmit": "FORMA AKTAR ({count})",
+  "@temgundrapImportDialogSubmit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "temgundrapImportSuccess": "{count} faaliyet forma aktarıldı.",
+  "@temgundrapImportSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityArchiveExportToTemgundrap": "TEMGÜNDRAP Olarak Aç",
+  "activityArchiveExportToTemgundrapSubtitle": "Seçilen faaliyetlerle TEMGÜNDRAP taslağı oluştur",
   "pendingApprovalsTitle": "Bekleyen Görev Onayları",
   "pendingApprovalsEmptyTitle": "Bekleyen Onay Yok",
   "pendingApprovalsEmptyDesc": "Onay bekleyen veya çakışan görev kaydı bulunmuyor.",
@@ -2769,7 +2791,6 @@
   "temgundrapPlateHint": "Örn. 23 ABC 123",
   "temgundrapAreaHint": "Örn: ELAZIĞ ...",
   "temgundrapPlateLabel": "Plaka",
-  "commonSaving": "Kaydediliyor…",
   "commonConfirmAndSave": "Onayla ve Kaydet",
   "monthlyMatrixOriginalDate": "{duty} • Asıl tarih: {date}",
   "@monthlyMatrixOriginalDate": {
