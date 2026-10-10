@@ -200,8 +200,9 @@ class _TransferPersonnelDialogState
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    '${widget.sourceActivity.tarih} tarihinde '
-                                    'başka faaliyet kartı bulunamadı.',
+                                    context.l10n.transferActivitiesNoOtherActivities(
+                                      widget.sourceActivity.tarih,
+                                    ),
                                     style: TextStyle(
                                       color: context.pendingColor,
                                       fontStyle: FontStyle.italic,
@@ -289,7 +290,7 @@ class _TransferPersonnelDialogState
                     child: Center(child: CircularProgressIndicator()),
                   ),
                   error: (err, _) => Text(
-                    'Hata: $err',
+                    context.l10n.commonErrorWithDetails(err.toString()),
                     style: TextStyle(color: context.rejectedColor),
                   ),
                 ),

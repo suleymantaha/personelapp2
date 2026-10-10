@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/providers/providers.dart';
-import 'package:personelapp2/features/activity/presentation/roster_output_preview_screen.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/roster_selected_cards.dart';
 import 'package:personelapp2/features/activity/services/combined_heybet_excel_service.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
@@ -134,14 +134,13 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
         );
         return;
       }
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute(
-          builder: (_) => RosterOutputPreviewScreen(
-            date: date,
-            sources: sources,
-            rows: rows,
-            loadRows: () => _loadRows(date, sources),
-          ),
+      await AppNavigator.toRosterOutputPreview(
+        context,
+        args: RosterOutputPreviewArgs(
+          date: date,
+          sources: sources,
+          rows: rows,
+          loadRows: () => _loadRows(date, sources),
         ),
       );
     } catch (error) {
@@ -235,7 +234,10 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(context.l10n.rosterOutputTitle)),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: Text(context.l10n.rosterOutputTitle),
+    ),
     body: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900),

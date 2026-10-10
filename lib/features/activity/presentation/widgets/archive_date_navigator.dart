@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 
 class ArchiveDateNavigator extends StatelessWidget {
@@ -42,7 +43,7 @@ class ArchiveDateNavigator extends StatelessWidget {
           _DateArrowButton(
             key: const Key('archive-previous-day'),
             icon: Icons.chevron_left_rounded,
-            tooltip: 'Önceki gün',
+            tooltip: context.l10n.archivePreviousDayTooltip,
             onPressed: () =>
                 onDateSelected(selectedDate.subtract(const Duration(days: 1))),
           ),
@@ -60,7 +61,7 @@ class ArchiveDateNavigator extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '$activityCount faaliyet',
+                  context.l10n.archiveActivityCount(activityCount),
                   style: TextStyle(
                     color: context.textSecondary,
                     fontSize: 12,
@@ -73,7 +74,7 @@ class ArchiveDateNavigator extends StatelessWidget {
           _DateArrowButton(
             key: const Key('archive-next-day'),
             icon: Icons.chevron_right_rounded,
-            tooltip: 'Sonraki gün',
+            tooltip: context.l10n.archiveNextDayTooltip,
             onPressed: () =>
                 onDateSelected(selectedDate.add(const Duration(days: 1))),
           ),

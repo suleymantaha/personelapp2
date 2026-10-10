@@ -19,7 +19,7 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Personel Ekle',
+                    context.l10n.personnelAddModalTitle,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -28,15 +28,15 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                   ListTile(
                     key: const Key('add-single-personnel-option'),
                     leading: const Icon(Icons.person_add_alt_1_rounded),
-                    title: const Text('Tek Personel Ekle'),
-                    subtitle: const Text('Bilgileri form üzerinden girin'),
+                    title: Text(context.l10n.personnelAddSingleOptionTitle),
+                    subtitle: Text(context.l10n.personnelAddSingleOptionSubtitle),
                     onTap: () => Navigator.of(context).pop('single'),
                   ),
                   ListTile(
                     key: const Key('add-personnel-from-text-option'),
                     leading: const Icon(Icons.content_paste_go_rounded),
-                    title: const Text('Metinden Toplu Ekle'),
-                    subtitle: const Text('Listeyi yapıştırıp önizleyin'),
+                    title: Text(context.l10n.personnelAddBulkOptionTitle),
+                    subtitle: Text(context.l10n.personnelAddBulkOptionSubtitle),
                     onTap: () => Navigator.of(context).pop('bulk'),
                   ),
                 ],
@@ -57,8 +57,11 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
     final result = await showBulkPersonnelImportDialog(context);
     if (!mounted || result == null) return;
     AppNotifications.success(
-      '${result.addedCount} personel eklendi, '
-      '${result.updatedCount} personel güncellendi, ${result.skippedCount} satır atlandı.',
+      context.l10n.personnelBulkImportSuccess(
+        result.addedCount,
+        result.updatedCount,
+        result.skippedCount,
+      ),
     );
   }
 
@@ -92,14 +95,16 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
               final squadsAsync = ref.watch(allSquadsProvider);
 
               return AlertDialog(
-                title: Text('⭐ Tim Komutanı Yap: ${p.rutbe} ${p.adSoyad}'),
+                title: Text(
+                  context.l10n.personnelMakeCommanderTitle(p.rutbe, p.adSoyad),
+                ),
                 content: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Bu personeli bir Time Komutan olarak atayabilir ve giriş yetkisi verebilirsiniz.',
+                        context.l10n.personnelMakeCommanderDescription,
                         style: TextStyle(
                           fontSize: 13,
                           color: context.textPrimary,
@@ -108,9 +113,9 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                       const SizedBox(height: 16),
                       TextField(
                         controller: userCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Kullanıcı Adı (Giriş için)',
-                          prefixIcon: Icon(Icons.person),
+                        decoration: InputDecoration(
+                          labelText: context.l10n.personnelUsernameLabel,
+                          prefixIcon: const Icon(Icons.person),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -121,8 +126,8 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                             borderRadius: modernDropdownBorderRadius,
                             dropdownColor: modernDropdownColor(context),
                             initialValue: selectedSquadId,
-                            decoration: const InputDecoration(
-                              labelText: 'Komutanı Olacağı Tim',
+                            decoration: InputDecoration(
+                              labelText: context.l10n.personnelTargetSquadLabel,
                             ),
                             items:
                                 squads.map((s) {
@@ -137,11 +142,13 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                           );
                         },
                         loading: () => const LinearProgressIndicator(),
-                        error: (err, st) => Text('Hata: $err'),
+                        error: (err, st) => Text(
+                          context.l10n.commonErrorWithDetails(err.toString()),
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '💡 Personel ilk girişinde kendi parolasını belirleyecektir.',
+                        context.l10n.personnelFirstLoginPasswordHint,
                         style: TextStyle(
                           fontSize: 12,
                           color: context.textSecondary,
@@ -153,7 +160,7 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Text('İPTAL'),
+                    child: Text(context.l10n.commonCancel),
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -164,7 +171,7 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                       final u = userCtrl.text.trim();
                       if (u.isEmpty || selectedSquadId == null) {
                         AppNotifications.warning(
-                          'Lütfen kullanıcı adı ve tim seçiniz.',
+                          context.l10n.personnelUsernameAndSquadWarning,
                         );
                         return;
                       }
@@ -179,11 +186,11 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                       if (ctx.mounted) {
                         Navigator.of(ctx).pop();
                         AppNotifications.success(
-                          '${p.adSoyad} Tim Komutanı olarak yetkilendirildi!',
+                          context.l10n.personnelCommanderSuccess(p.adSoyad),
                         );
                       }
                     },
-                    child: const Text('KOMUTAN YAP VE YETKİLENDİR'),
+                    child: Text(context.l10n.personnelMakeCommanderAction),
                   ),
                 ],
               );
@@ -201,7 +208,7 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Tim Komutanı Yetki Devri / Atama'),
+          title: Text(context.l10n.personnelCommanderDelegationTitle),
           content: SizedBox(
             width: double.maxFinite,
             child: Consumer(
@@ -212,8 +219,8 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                 return commandersAsync.when(
                   data: (commanders) {
                     if (commanders.isEmpty) {
-                      return const Text(
-                        'Kayıtlı Tim Komutanı hesabı bulunamadı.',
+                      return Text(
+                        context.l10n.personnelNoCommandersFound,
                       );
                     }
 
@@ -231,7 +238,7 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Komutan: ${cmd.kullaniciAdi}',
+                                      context.l10n.personnelCommanderLabel(cmd.kullaniciAdi),
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -245,14 +252,14 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                                         context,
                                       ),
                                       initialValue: cmd.timId,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Atanan Tim',
+                                      decoration: InputDecoration(
+                                        labelText: context.l10n.personnelAssignedSquadLabel,
                                         isDense: true,
                                       ),
                                       items: [
                                         DropdownMenuItem<int?>(
                                           child: Text(
-                                            'BOŞTA / Yetkisiz',
+                                            context.l10n.personnelUnassignedOrUnauthorized,
                                             style: TextStyle(
                                               color: context.rejectedColor,
                                             ),
@@ -281,14 +288,18 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                             );
                           },
                           loading: () => const LinearProgressIndicator(),
-                          error: (err, st) => Text('Hata: $err'),
+                          error: (err, st) => Text(
+                            context.l10n.commonErrorWithDetails(err.toString()),
+                          ),
                         );
                       },
                     );
                   },
                   loading:
                       () => const Center(child: CircularProgressIndicator()),
-                  error: (err, st) => Text('Hata: $err'),
+                  error: (err, st) => Text(
+                    context.l10n.commonErrorWithDetails(err.toString()),
+                  ),
                 );
               },
             ),
@@ -296,28 +307,28 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
           actions: [
             TextButton.icon(
               icon: const Icon(Icons.person_add_alt_1),
-              label: const Text('YENİ KOMUTAN YETKİLENDİR'),
+              label: Text(context.l10n.personnelAuthorizeNewCommander),
               onPressed: () async {
                 final userCtrl = TextEditingController();
                 await showDialog<void>(
                   context: ctx,
                   builder:
                       (dialogCtx) => AlertDialog(
-                        title: const Text('Yeni Komutan Yetkilendirme'),
+                        title: Text(context.l10n.personnelNewCommanderDialogTitle),
                         content: SingleChildScrollView(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               TextField(
                                 controller: userCtrl,
-                                decoration: const InputDecoration(
-                                  labelText: 'Kullanıcı Adı (Örn: ahmet.kaya)',
-                                  prefixIcon: Icon(Icons.person),
+                                decoration: InputDecoration(
+                                  labelText: context.l10n.personnelUsernameExampleLabel,
+                                  prefixIcon: const Icon(Icons.person),
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                '💡 Şifre istenmez. Kullanıcı ilk girişinde kendi parolasını belirler.',
+                                context.l10n.personnelNoPasswordNeededHint,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: context.textSecondary,
@@ -329,7 +340,7 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(dialogCtx).pop(),
-                            child: const Text('İPTAL'),
+                            child: Text(context.l10n.commonCancel),
                           ),
                           ElevatedButton(
                             onPressed: () async {
@@ -347,7 +358,7 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
                                 }
                               }
                             },
-                            child: const Text('YETKİLENDİR'),
+                            child: Text(context.l10n.personnelAuthorizeAction),
                           ),
                         ],
                       ),
@@ -356,7 +367,7 @@ extension _PersonnelManagementActions on _PersonnelManagementScreenState {
             ),
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('KAPAT'),
+              child: Text(context.l10n.commonClose),
             ),
           ],
         );

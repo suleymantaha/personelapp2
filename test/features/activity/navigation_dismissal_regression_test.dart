@@ -457,8 +457,10 @@ void main() {
             await tester.tapAt(const Offset(5, 5));
           } else if (surface == 'activity-import') {
             await tester.tap(find.byIcon(Icons.close));
-          } else {
+          } else if (surface == 'personnel') {
             await tester.tap(find.text('İPTAL'));
+          } else {
+            await tester.tap(find.text('İptal'));
           }
           await tester.pump();
           await tester.pump(const Duration(milliseconds: 350));

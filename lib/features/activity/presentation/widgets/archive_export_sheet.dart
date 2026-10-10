@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 
 enum ArchiveExportType {
@@ -103,7 +104,7 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Dışa Aktar ve Yazdır',
+                          context.l10n.archiveExportSheetTitle,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -145,7 +146,7 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Saat Aralığı (İsteğe Bağlı)',
+                          context.l10n.archiveExportSheetTimeRangeLabel,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -157,7 +158,7 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
                           GestureDetector(
                             onTap: () => setState(() => _timeController.clear()),
                             child: Text(
-                              'Temizle',
+                              context.l10n.commonClear,
                               style: TextStyle(
                                 fontSize: 11,
                                 color: context.accentOrOlive,
@@ -178,7 +179,7 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
                           horizontal: 10,
                           vertical: 9,
                         ),
-                        hintText: 'Örn: 06.00-08.00 veya 20.00-08.00',
+                        hintText: context.l10n.archiveExportSheetTimeRangeHint,
                         hintStyle: TextStyle(
                           fontSize: 12,
                           color: context.textSecondary,
@@ -232,7 +233,7 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Saat girmek istemiyorsanız boş bırakıp doğrudan aşağıdaki seçeneklerden birine basabilirsiniz.',
+                      context.l10n.archiveExportSheetTimeRangeNote,
                       style: TextStyle(
                         fontSize: 10.5,
                         color: context.textSecondary,
@@ -256,11 +257,11 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
                     color: context.accentOrOlive,
                   ),
                 ),
-                title: const Text(
-                  'Excel Olarak Aktar (.xlsx)',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                title: Text(
+                  context.l10n.archiveExportExcelTitle,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text('Hesap tabloları ve dijital arşiv için'),
+                subtitle: Text(context.l10n.archiveExportExcelSubtitle),
                 onTap: () => _select(ArchiveExportType.excel),
               ),
               ListTile(
@@ -275,12 +276,11 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
                     color: context.pdfButtonBg,
                   ),
                 ),
-                title: const Text(
-                  'PDF Belgesi Paylaş',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                title: Text(
+                  context.l10n.archiveExportPdfTitle,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle:
-                    const Text('Askeri formatta PDF oluşturur ve paylaşır'),
+                subtitle: Text(context.l10n.archiveExportPdfSubtitle),
                 onTap: () => _select(ArchiveExportType.pdf),
               ),
               ListTile(
@@ -295,11 +295,11 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
                     color: Colors.blue,
                   ),
                 ),
-                title: const Text(
-                  'Doğrudan Yazdır',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                title: Text(
+                  context.l10n.archiveExportPrintTitle,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text('Bağlı yazıcıdan doğrudan çıktı alır'),
+                subtitle: Text(context.l10n.archiveExportPrintSubtitle),
                 onTap: () => _select(ArchiveExportType.print),
               ),
               ListTile(
@@ -314,11 +314,11 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
                     color: context.textPrimary,
                   ),
                 ),
-                title: const Text(
-                  'Metin Listesi Paylaş',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                title: Text(
+                  context.l10n.archiveExportTextTitle,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: const Text('WhatsApp/SMS için hizalı metin çıktısı'),
+                subtitle: Text(context.l10n.archiveExportTextSubtitle),
                 onTap: () => _select(ArchiveExportType.text),
               ),
             ],

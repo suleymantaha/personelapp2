@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/widgets/app_card.dart';
@@ -49,6 +50,7 @@ class TemgundrapPreviewScreen extends StatelessWidget {
     final date = DateFormat('dd MMMM yyyy', 'tr_TR').format(document.date);
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: const Text('TEMGÜNDRAP Önizleme'),
         actions: [
           IconButton(

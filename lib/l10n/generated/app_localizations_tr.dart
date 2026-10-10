@@ -2143,4 +2143,750 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get bulkImportSelectDate => 'Tarih seç';
+
+  @override
+  String get personnelPageTitle => 'Personel ve Timler';
+
+  @override
+  String get personnelBackupRestoreTooltip => 'Yedekle ve geri yükle';
+
+  @override
+  String get personnelCommanderDelegationTooltip => 'Komutan yetkileri';
+
+  @override
+  String get personnelNewSquadTooltip => 'Yeni tim';
+
+  @override
+  String get personnelManagementActionsTooltip => 'Yönetim işlemleri';
+
+  @override
+  String get personnelManagementActionsTitle => 'Yönetim İşlemleri';
+
+  @override
+  String get personnelManagementActionsSubtitle =>
+      'Personel ve uygulama yönetimi';
+
+  @override
+  String get personnelCreateSquadOptionTitle => 'Yeni tim';
+
+  @override
+  String get personnelCreateSquadOptionSubtitle => 'Yeni bir tim oluştur';
+
+  @override
+  String get personnelCommanderOptionTitle => 'Komutan yetkileri';
+
+  @override
+  String get personnelCommanderOptionSubtitle =>
+      'Tim komutanlarını ve yetkileri yönet';
+
+  @override
+  String get personnelBackupOptionTitle => 'Yedekle ve geri yükle';
+
+  @override
+  String get personnelBackupOptionSubtitle =>
+      'Uygulama verilerini güvenli şekilde yönet';
+
+  @override
+  String get personnelAddButton => 'Personel Ekle';
+
+  @override
+  String personnelListCount(int count) {
+    return 'Personel Listesi ($count Kişi)';
+  }
+
+  @override
+  String get personnelOfficialOrderSubtitle => 'Resmi Tim & Kıdem Sıralı';
+
+  @override
+  String get personnelUnassignedSquad => 'Boşta / Kadro Dışı Personeller';
+
+  @override
+  String get personnelUnknownSquad => 'Bilinmeyen Tim';
+
+  @override
+  String personnelCountSubtitle(int count) {
+    return '$count personel';
+  }
+
+  @override
+  String personnelUnitAndRegistration(String unit, String date) {
+    return 'Birlik: $unit | Kayıt: $date';
+  }
+
+  @override
+  String get personnelActionsTooltip => 'İşlemler';
+
+  @override
+  String get personnelDeactivateTitle => 'Personeli Pasifleştir';
+
+  @override
+  String personnelDeactivateConfirm(String rank, String name) {
+    return '$rank $name isimli personel pasifleştirilecektir. Geçmiş görev ve raporları korunur. Emin misiniz?';
+  }
+
+  @override
+  String get personnelDeactivateAction => 'PASİFLEŞTİR';
+
+  @override
+  String get personnelActionsMenuTitle => 'Personel İşlemleri';
+
+  @override
+  String get personnelEditOptionTitle => 'Düzenle / Tim değiştir';
+
+  @override
+  String get personnelEditOptionSubtitle => 'Personel bilgilerini güncelle';
+
+  @override
+  String get personnelMakeCommanderOptionTitle => 'Komutan yetkileri';
+
+  @override
+  String get personnelMakeCommanderOptionSubtitle =>
+      'Tim komutanı yap veya yetki ver';
+
+  @override
+  String get personnelDeleteOptionTitle => 'Personeli sil';
+
+  @override
+  String get personnelDeleteOptionSubtitle => 'Bu işlem geri alınamaz';
+
+  @override
+  String get personnelAddModalTitle => 'Personel Ekle';
+
+  @override
+  String get personnelAddSingleOptionTitle => 'Tek Personel Ekle';
+
+  @override
+  String get personnelAddSingleOptionSubtitle =>
+      'Bilgileri form üzerinden girin';
+
+  @override
+  String get personnelAddBulkOptionTitle => 'Metinden Toplu Ekle';
+
+  @override
+  String get personnelAddBulkOptionSubtitle => 'Listeyi yapıştırıp önizleyin';
+
+  @override
+  String personnelBulkImportSuccess(int added, int updated, int skipped) {
+    return '$added personel eklendi, $updated personel güncellendi, $skipped satır atlandı.';
+  }
+
+  @override
+  String personnelMakeCommanderTitle(String rank, String name) {
+    return '⭐ Tim Komutanı Yap: $rank $name';
+  }
+
+  @override
+  String get personnelMakeCommanderDescription =>
+      'Bu personeli bir Time Komutan olarak atayabilir ve giriş yetkisi verebilirsiniz.';
+
+  @override
+  String get personnelUsernameLabel => 'Kullanıcı Adı (Giriş için)';
+
+  @override
+  String get personnelTargetSquadLabel => 'Komutanı Olacağı Tim';
+
+  @override
+  String get personnelFirstLoginPasswordHint =>
+      '💡 Personel ilk girişinde kendi parolasını belirleyecektir.';
+
+  @override
+  String get personnelMakeCommanderAction => 'KOMUTAN YAP VE YETKİLENDİR';
+
+  @override
+  String get personnelUsernameAndSquadWarning =>
+      'Lütfen kullanıcı adı ve tim seçiniz.';
+
+  @override
+  String personnelCommanderSuccess(String name) {
+    return '$name Tim Komutanı olarak yetkilendirildi!';
+  }
+
+  @override
+  String get personnelCommanderDelegationTitle =>
+      'Tim Komutanı Yetki Devri / Atama';
+
+  @override
+  String get personnelNoCommandersFound =>
+      'Kayıtlı Tim Komutanı hesabı bulunamadı.';
+
+  @override
+  String personnelCommanderLabel(String name) {
+    return 'Komutan: $name';
+  }
+
+  @override
+  String get personnelAssignedSquadLabel => 'Atanan Tim';
+
+  @override
+  String get personnelUnassignedOrUnauthorized => 'BOŞTA / Yetkisiz';
+
+  @override
+  String get personnelAuthorizeNewCommander => 'YENİ KOMUTAN YETKİLENDİR';
+
+  @override
+  String get personnelNewCommanderDialogTitle => 'Yeni Komutan Yetkilendirme';
+
+  @override
+  String get personnelUsernameExampleLabel => 'Kullanıcı Adı (Örn: ahmet.kaya)';
+
+  @override
+  String get personnelNoPasswordNeededHint =>
+      '💡 Şifre istenmez. Kullanıcı ilk girişinde kendi parolasını belirler.';
+
+  @override
+  String get personnelAuthorizeAction => 'YETKİLENDİR';
+
+  @override
+  String get squadCreateTitle => 'Yeni Tim Oluştur';
+
+  @override
+  String get squadCreateDescription =>
+      'Tim bilgilerini girin. Komutan hesabını şimdi veya daha sonra atayabilirsiniz.';
+
+  @override
+  String get squadNameLabel => 'Tim adı';
+
+  @override
+  String get squadNameHint => 'Örn. 1-B Timi';
+
+  @override
+  String get squadNameRequired => 'Tim adı zorunludur';
+
+  @override
+  String get squadCommanderUserLabel => 'Komutan kullanıcı adı';
+
+  @override
+  String get squadCommanderPasswordHint =>
+      'Komutan ilk girişinde kendi parolasını belirler.';
+
+  @override
+  String get squadCreateAction => 'Tim Oluştur';
+
+  @override
+  String get personnelCustomRankDropdownOption =>
+      'DİĞER / ÖZEL RÜTBE (Elle Gir)';
+
+  @override
+  String personnelSquadsLoadError(String error) {
+    return 'Timler yüklenemedi: $error';
+  }
+
+  @override
+  String get bulkPersonnelImportTitle => 'Metinden Personel Ekle';
+
+  @override
+  String get bulkPersonnelInputLabel => 'Personel listesini yapıştırın';
+
+  @override
+  String get bulkPersonnelTargetSquadLabel => 'Hedef tim';
+
+  @override
+  String get bulkPersonnelOutsideSquad => 'Tim dışı';
+
+  @override
+  String bulkPersonnelCountFound(int count) {
+    return '$count personel bulundu';
+  }
+
+  @override
+  String bulkPersonnelUnknownRankCount(int count) {
+    return '$count satırda rütbe bulunamadı. Kaydetmeden önce seçin.';
+  }
+
+  @override
+  String bulkPersonnelUnreadableLines(int count) {
+    return '$count satır okunamadı ve eklenmeyecek.';
+  }
+
+  @override
+  String bulkPersonnelDuplicatesSkipped(int count) {
+    return '$count mükerrer satır kayıtta atlanacak.';
+  }
+
+  @override
+  String get bulkPersonnelNeedsIdentityDecision =>
+      'Mevcut kişi veya ayrı kişi seçilmeli';
+
+  @override
+  String get bulkPersonnelDuplicateWillSkip => 'Mükerrer kayıt • Atlanacak';
+
+  @override
+  String get bulkPersonnelRankRequired => 'Rütbe seçilmeli';
+
+  @override
+  String get bulkPersonnelRemoveTooltip => 'Listeden çıkar';
+
+  @override
+  String get bulkPersonnelIdentityDecisionLabel => 'Personel kimliği';
+
+  @override
+  String get bulkPersonnelDecisionAuto => 'Karar seçin / aynı kayıt atlanır';
+
+  @override
+  String get bulkPersonnelDecisionNew => 'Ayrı bir kişi olarak ekle';
+
+  @override
+  String get bulkPersonnelDecisionSkip => 'Bu satırı atla';
+
+  @override
+  String bulkPersonnelDecisionUpdate(
+      int id, String rank, String unit, String passiveSuffix) {
+    return 'Güncelle: #$id • $rank • $unit$passiveSuffix';
+  }
+
+  @override
+  String get bulkPersonnelPassiveSuffix => ' • Pasif kalır';
+
+  @override
+  String get bulkPersonnelNameLabel => 'Ad Soyad';
+
+  @override
+  String get bulkPersonnelRankLabel => 'Rütbe';
+
+  @override
+  String get bulkPersonnelUnitLabel => 'Birlik';
+
+  @override
+  String get bulkPersonnelSquadLabel => 'Tim';
+
+  @override
+  String get bulkPersonnelPreviewAction => 'ÖNİZLE';
+
+  @override
+  String get bulkPersonnelSavingAction => 'KAYDEDİLİYOR';
+
+  @override
+  String get bulkPersonnelSaveAction => 'KAYDET';
+
+  @override
+  String get commonActions => 'İşlemler';
+
+  @override
+  String commonErrorWithDetails(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get squadCommanderOptionalHint => 'İsteğe bağlı';
+
+  @override
+  String bulkPersonnelErrorSaveFailed(String error) {
+    return 'Personel aktarımı kaydedilemedi: $error';
+  }
+
+  @override
+  String transferActivitiesNoOtherActivities(String date) {
+    return '$date tarihinde başka faaliyet kartı bulunamadı.';
+  }
+
+  @override
+  String get transferSquadAllAlreadyPresent =>
+      'Tüm personel zaten hedef faaliyette mevcut, taşıma yapılmadı.';
+
+  @override
+  String get activityArchiveOrderSaveFailed => 'Sıralama kaydedilemedi.';
+
+  @override
+  String get activityArchiveOrderResetFailed => 'Sıralama sıfırlanamadı.';
+
+  @override
+  String activityArchiveDayActivityCount(String day, int count) {
+    return '$day • $count faaliyet';
+  }
+
+  @override
+  String activityArchiveExportSubtitle(
+      String date, int count, String squadText) {
+    return '$date • $count Faaliyet$squadText';
+  }
+
+  @override
+  String get rosterSelectedCardsEmpty => 'Henüz kart eklenmedi.';
+
+  @override
+  String get rosterSelectedCardsRemoveTooltip => 'Çıktıdan çıkar';
+
+  @override
+  String collapsibleSquadCardWarningCount(int count) {
+    return '$count uyarı';
+  }
+
+  @override
+  String get archiveHeaderControlCenter => 'KONTROL MERKEZİ';
+
+  @override
+  String get archiveHeaderSquadArchive => 'TİM ARŞİVİ';
+
+  @override
+  String archiveHeaderRecordCount(int count) {
+    return '$count Kayıt';
+  }
+
+  @override
+  String archiveHeaderPendingCount(int count) {
+    return '$count Bekliyor';
+  }
+
+  @override
+  String get archiveHeaderExportPrint => 'Dışa Aktar / Yazdır';
+
+  @override
+  String get archiveExportSheetTitle => 'Dışa Aktar ve Yazdır';
+
+  @override
+  String get archiveExportSheetTimeRangeLabel => 'Saat Aralığı (İsteğe Bağlı)';
+
+  @override
+  String get archiveExportSheetTimeRangeHint =>
+      'Örn: 06.00-08.00 veya 20.00-08.00';
+
+  @override
+  String get archiveExportSheetTimeRangeNote =>
+      'Saat girmek istemiyorsanız boş bırakıp doğrudan aşağıdaki seçeneklerden birine basabilirsiniz.';
+
+  @override
+  String get archiveExportExcelTitle => 'Excel Olarak Aktar (.xlsx)';
+
+  @override
+  String get archiveExportExcelSubtitle =>
+      'Hesap tabloları ve dijital arşiv için';
+
+  @override
+  String get archiveExportPdfTitle => 'PDF Belgesi Paylaş';
+
+  @override
+  String get archiveExportPdfSubtitle =>
+      'Askeri formatta PDF oluşturur ve paylaşır';
+
+  @override
+  String get archiveExportPrintTitle => 'Doğrudan Yazdır';
+
+  @override
+  String get archiveExportPrintSubtitle =>
+      'Bağlı yazıcıdan doğrudan çıktı alır';
+
+  @override
+  String get archiveExportTextTitle => 'Metin Listesi Paylaş';
+
+  @override
+  String get archiveExportTextSubtitle =>
+      'WhatsApp/SMS için hizalı metin çıktısı';
+
+  @override
+  String get archivePreviousDayTooltip => 'Önceki gün';
+
+  @override
+  String get archiveNextDayTooltip => 'Sonraki gün';
+
+  @override
+  String archiveActivityCount(int count) {
+    return '$count faaliyet';
+  }
+
+  @override
+  String get personnelPickerTitle => 'Personel Seç';
+
+  @override
+  String get personnelPickerSearchHintSingle => 'İsim, soyisim veya rütbe ara';
+
+  @override
+  String get personnelPickerSearchHintMulti => 'İsim, rütbe veya tim ara';
+
+  @override
+  String get personnelPickerAll => 'Tümü';
+
+  @override
+  String get personnelPickerSuggestedMatch => 'Önerilen Eşleşme';
+
+  @override
+  String get personnelPickerSelectedPersonnel => 'Seçilen Personel';
+
+  @override
+  String get personnelPickerRecent => 'Son Seçilenler';
+
+  @override
+  String get personnelPickerUnassignedTeam => 'Tim Dışı';
+
+  @override
+  String get personnelPickerUnknownTeam => 'Bilinmeyen Tim';
+
+  @override
+  String personnelPickerTeamMemberCount(String teamName, int count) {
+    return '$teamName — $count kişi';
+  }
+
+  @override
+  String personnelPickerSelectedCount(int count) {
+    return '$count kişi seçili';
+  }
+
+  @override
+  String get personnelPickerNoMorePersonnel =>
+      'Eklenebilecek personel kalmadı.';
+
+  @override
+  String personnelPickerRegisteredWithReason(String teamName, String reason) {
+    return '$teamName • Kayıtlı: $reason';
+  }
+
+  @override
+  String get personnelPickerNotFoundTitle =>
+      'Aramanızla eşleşen personel bulunamadı.';
+
+  @override
+  String get personnelPickerNotFoundSubtitle =>
+      'Yeni bir kayıt gerekiyorsa Personel Yönetimi ekranını kullanın.';
+
+  @override
+  String get activityExistingDialogTitle => 'Aynı faaliyet zaten var';
+
+  @override
+  String activityExistingDialogFound(String activityName, int count) {
+    return '“$activityName” adlı $count kayıt bulundu.';
+  }
+
+  @override
+  String get activityExistingDialogToUpdate => 'Güncellenecek faaliyet';
+
+  @override
+  String activityExistingDialogFoundDate(
+      String date, String activityName, int count) {
+    return '$date tarihinde “$activityName” adlı $count kayıt bulundu.';
+  }
+
+  @override
+  String activityExistingDialogNewPersonnelToAdd(int count) {
+    return '$count yeni personel eklenecek';
+  }
+
+  @override
+  String activityExistingDialogAlreadyRegistered(int count) {
+    return '$count personel zaten kayıtlı';
+  }
+
+  @override
+  String activityExistingDialogDifferentPersonnelCountNote(int count) {
+    return '$count personelin görev/not bilgisi farklı';
+  }
+
+  @override
+  String get activityExistingDialogDifferentDutyNote =>
+      'görev/not bilgisi farklı';
+
+  @override
+  String get activityExistingDialogUpdateDifferent =>
+      'Farklı görev/not bilgilerini güncelle';
+
+  @override
+  String get activityExistingDialogKeepIfUnselected =>
+      'Seçilmezse mevcut bilgiler korunur.';
+
+  @override
+  String get activityExistingDialogCreateNew => 'YENİ FAALİYET OLUŞTUR';
+
+  @override
+  String get activityExistingDialogAddToExisting => 'MEVCUDA EKLE';
+
+  @override
+  String get activityBatchDutyResetDialogTitle => 'Görevler sıfırlansın mı?';
+
+  @override
+  String activityBatchDutyResetDialogDesc(String squadName) {
+    return '$squadName timindeki tüm görev seçimleri kaldırılacak.';
+  }
+
+  @override
+  String get activityBatchDutyAssignTitle => 'Toplu görev ata';
+
+  @override
+  String activityBatchDutyAssignSquadDesc(String squadName) {
+    return '$squadName timindeki tüm personele uygulanır';
+  }
+
+  @override
+  String get activityBatchDutyResetActionTitle => 'Görevleri sıfırla';
+
+  @override
+  String get activityBatchDutyResetActionSubtitle =>
+      'Timdeki tüm görev seçimlerini kaldır';
+
+  @override
+  String activityBatchDutyAssignSquadTooltip(String squadName) {
+    return '$squadName timine toplu görev ata';
+  }
+
+  @override
+  String get activitySelectedPersonnelEditHint =>
+      'Bir personele farklı görev veya not vermek için adına dokunun.';
+
+  @override
+  String get activityPersonnelSelectionEmpty =>
+      'Aramaya uygun personel bulunamadı.';
+
+  @override
+  String get activityFormSelectActivityPrompt => 'Faaliyet seçin';
+
+  @override
+  String get activityFormSelectActivityTitle => 'Faaliyet Seç';
+
+  @override
+  String get activityFormActivityNameTitle => 'Faaliyet adı';
+
+  @override
+  String get activityFormActivityNameHint => 'Faaliyet adını yazın';
+
+  @override
+  String get activityFormActivityNameRequired => 'Faaliyet adı zorunludur';
+
+  @override
+  String activityFormSelectedBadge(int count) {
+    return 'Seçilenler ($count)';
+  }
+
+  @override
+  String activityFormEditDutyLabel(String name) {
+    return '$name görevini düzenle';
+  }
+
+  @override
+  String activityFormRemoveSelectionTooltip(String name) {
+    return '$name seçimini kaldır';
+  }
+
+  @override
+  String activityAssignmentPreviewError(String error) {
+    return 'Görevlendirme kaydedilemedi: $error';
+  }
+
+  @override
+  String get activityAssignmentPreviewTitle => 'Görevlendirme Önizlemesi';
+
+  @override
+  String get activityAssignmentBackAndEdit => 'Geri dön ve düzelt';
+
+  @override
+  String activityAssignmentConflictWarning(int count) {
+    return '$count personel mevcut görev, izin veya rapor çakışması nedeniyle kaydedilmeyecek.';
+  }
+
+  @override
+  String activityAssignmentTeamSummary(
+      String teamName, int count, String summary) {
+    return '$teamName • $count kişi • $summary';
+  }
+
+  @override
+  String get activityAssignmentPendingApproval => 'Admin onayı bekleyecek';
+
+  @override
+  String get activityFormTitle => 'Faaliyet Çizelgesi';
+
+  @override
+  String get activityFormBulkPasteTooltip => 'Toplu metin yapıştır';
+
+  @override
+  String activityFormSquadError(String error) {
+    return 'Tim verileri alınamadı: $error';
+  }
+
+  @override
+  String activityFormPersonnelLoadError(String error) {
+    return 'Personel yüklenemedi: $error';
+  }
+
+  @override
+  String get activityFormNoSquadWarning =>
+      'Henüz bir time atanmadınız. Lütfen yöneticinizle iletişime geçin.';
+
+  @override
+  String get activityFormNoPersonnelWarning =>
+      'Görevlendirilecek kayıtlı personel bulunamadı.';
+
+  @override
+  String activityFormPreviewAndSave(int count) {
+    return 'Önizle ve Kaydet ($count)';
+  }
+
+  @override
+  String activityFormPreviewAndSend(int count) {
+    return 'Önizle ve Onaya Gönder ($count)';
+  }
+
+  @override
+  String get activityFormDiscardChangesTitle => 'Değişiklikler silinsin mi?';
+
+  @override
+  String get activityFormDiscardChangesMessage =>
+      'Seçtiğiniz personel ve faaliyet bilgileri kaydedilmedi.';
+
+  @override
+  String get activityFormCompletePersonnelSelection =>
+      'Personel seçimini tamamlayın';
+
+  @override
+  String get activityFormCompleteActivityInfo =>
+      'Faaliyet bilgilerini tamamlayın';
+
+  @override
+  String get activityFormSelectAtLeastOneDuty =>
+      'Lütfen en az bir personel için görev seçiniz.';
+
+  @override
+  String activityFormPreviewPrepareError(String error) {
+    return 'Önizleme hazırlanamadı: $error';
+  }
+
+  @override
+  String get activityFormSavedAdminPending =>
+      'Faaliyet Kaydedildi! Admin onayına gönderildi.';
+
+  @override
+  String get activityFormSavedConflictChecked =>
+      'Faaliyet Çizelgesi Kaydedildi & Çakışma Denetimi Yapıldı!';
+
+  @override
+  String activityFormMergedSummary(int updated, int skipped) {
+    return '$updated güncellendi, $skipped kayıt korundu.';
+  }
+
+  @override
+  String get activityFormBulkImportTitle => 'Toplu metin içe aktar';
+
+  @override
+  String get activityFormBulkImportSubtitle =>
+      'Birden fazla faaliyet ve personel kaydını panodaki metinden hızlıca oluşturun.';
+
+  @override
+  String get activityFormBulkImportPasteAction => 'Metni yapıştır';
+
+  @override
+  String get rosterOutputRecordsChangedError =>
+      'Kayıtlar değişti. Önizlemeyi yeniden açın.';
+
+  @override
+  String rosterOutputSignedOutput(String date, int count) {
+    return '$date • $count personel • İmzalı çıktı';
+  }
+
+  @override
+  String get rosterOutputSelectedCardsTitle => 'Seçilen Kartlar';
+
+  @override
+  String get rosterOutputPreviewTitle => 'Birleşik Çıktı Önizlemesi';
+
+  @override
+  String rosterOutputPreviewDeduplicationNote(int count) {
+    return '$count personel • Her kişi bir kez • Toplam baskıda gösterilmez';
+  }
+
+  @override
+  String get rosterOutputPreparing => 'Çıktı hazırlanıyor…';
+
+  @override
+  String get rosterOutputGetOutput => 'Çıktı Al';
+
+  @override
+  String rosterOutputExportError(String error) {
+    return 'Dışa aktarılamadı: $error';
+  }
 }

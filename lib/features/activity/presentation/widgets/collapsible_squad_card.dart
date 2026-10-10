@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/widgets/app_card.dart';
@@ -102,7 +103,7 @@ class CollapsibleSquadCard extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: Text(
-                      '$warningCount uyarı',
+                      context.l10n.collapsibleSquadCardWarningCount(warningCount),
                       style: TextStyle(
                         color: context.pendingColor,
                         fontSize: 11,

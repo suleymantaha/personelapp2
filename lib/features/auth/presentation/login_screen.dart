@@ -1,8 +1,8 @@
-import 'package:personelapp2/core/utils/password_policy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/utils/password_policy.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
@@ -52,7 +52,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
 
       if (session != null && mounted) {
-        context.go('/dashboard');
+        AppNavigator.toDashboard(context);
       }
     });
   }
@@ -101,7 +101,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.read(userSessionProvider.notifier).state = session;
 
     if (mounted) {
-      context.go('/dashboard');
+      AppNavigator.toDashboard(context);
     }
   }
 

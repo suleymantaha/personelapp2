@@ -10,6 +10,7 @@ import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/personnel/data/personnel_repository.dart';
 import 'package:personelapp2/features/personnel/domain/personnel_import_draft.dart';
 
@@ -105,7 +106,11 @@ class _BulkPersonnelImportDialogState
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Personel aktarımı kaydedilemedi: $error')),
+          SnackBar(
+            content: Text(
+              context.l10n.bulkPersonnelErrorSaveFailed(error.toString()),
+            ),
+          ),
         );
       }
     } finally {
@@ -186,11 +191,11 @@ class _BulkPersonnelImportDialogState
       child: AbsorbPointer(
         absorbing: _saving,
         child: AlertDialog(
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.content_paste_go_rounded),
-              SizedBox(width: AppSpacing.iconTextGap),
-              Expanded(child: Text('Metinden Personel Ekle')),
+              const Icon(Icons.content_paste_go_rounded),
+              const SizedBox(width: AppSpacing.iconTextGap),
+              Expanded(child: Text(context.l10n.bulkPersonnelImportTitle)),
             ],
           ),
           content: SizedBox(
@@ -205,8 +210,8 @@ class _BulkPersonnelImportDialogState
                     controller: _textController,
                     minLines: 6,
                     maxLines: 10,
-                    decoration: const InputDecoration(
-                      labelText: 'Personel listesini yapıştırın',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.bulkPersonnelInputLabel,
                       hintText:
                           '1. J.Asb.Çvş. Ahmet YILMAZ\n'
                           '2. J.Uzm.Çvş. Mehmet DEMİR',
@@ -224,11 +229,13 @@ class _BulkPersonnelImportDialogState
                     key: const Key('bulk-personnel-squad-field'),
                     initialValue: _selectedSquadId,
                     isExpanded: true,
-                    decoration: const InputDecoration(labelText: 'Hedef tim'),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.bulkPersonnelTargetSquadLabel,
+                    ),
                     items: [
-                      const DropdownMenuItem<int?>(
+                      DropdownMenuItem<int?>(
                         value: null,
-                        child: Text('Tim dışı'),
+                        child: Text(context.l10n.bulkPersonnelOutsideSquad),
                       ),
                       ...squads.map(
                         (squad) => DropdownMenuItem<int?>(
@@ -260,7 +267,7 @@ class _BulkPersonnelImportDialogState
                   if (_previewReady) ...[
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      '${_items.length} personel bulundu',
+                      context.l10n.bulkPersonnelCountFound(_items.length),
                       style: Theme.of(context).textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w700),
                     ),
@@ -268,7 +275,7 @@ class _BulkPersonnelImportDialogState
                       Padding(
                         padding: const EdgeInsets.only(top: AppSpacing.sm),
                         child: Text(
-                          '$unknownRankCount satırda rütbe bulunamadı. Kaydetmeden önce seçin.',
+                          context.l10n.bulkPersonnelUnknownRankCount(unknownRankCount),
                           style: TextStyle(color: context.pendingColor),
                         ),
                       ),
@@ -276,7 +283,9 @@ class _BulkPersonnelImportDialogState
                       Padding(
                         padding: const EdgeInsets.only(top: AppSpacing.sm),
                         child: Text(
-                          '${_issues.where((issue) => issue.isBlocking).length} satır okunamadı ve eklenmeyecek.',
+                          context.l10n.bulkPersonnelUnreadableLines(
+                            _issues.where((issue) => issue.isBlocking).length,
+                          ),
                           style: TextStyle(color: context.rejectedColor),
                         ),
                       ),
@@ -284,7 +293,7 @@ class _BulkPersonnelImportDialogState
                       Padding(
                         padding: const EdgeInsets.only(top: AppSpacing.sm),
                         child: Text(
-                          '${duplicateIndexes.length} mükerrer satır kayıtta atlanacak.',
+                          context.l10n.bulkPersonnelDuplicatesSkipped(duplicateIndexes.length),
                           style: TextStyle(color: context.pendingColor),
                         ),
                       ),
@@ -303,15 +312,15 @@ class _BulkPersonnelImportDialogState
                           ),
                           subtitle: Text(
                             needsDecision(entry.value)
-                                ? 'Mevcut kişi veya ayrı kişi seçilmeli'
+                                ? context.l10n.bulkPersonnelNeedsIdentityDecision
                                 : duplicateIndexes.contains(entry.key)
-                                ? 'Mükerrer kayıt • Atlanacak'
+                                ? context.l10n.bulkPersonnelDuplicateWillSkip
                                 : entry.value.rank.isEmpty
-                                ? 'Rütbe seçilmeli'
+                                ? context.l10n.bulkPersonnelRankRequired
                                 : entry.value.rank,
                           ),
                           trailing: IconButton(
-                            tooltip: 'Listeden çıkar',
+                            tooltip: context.l10n.bulkPersonnelRemoveTooltip,
                             icon: const Icon(Icons.close_rounded),
                             onPressed: () => setState(() {
                               _items = List.of(_items)..removeAt(entry.key);
@@ -341,23 +350,23 @@ class _BulkPersonnelImportDialogState
                                     ? 'skip'
                                     : 'auto',
                                 isExpanded: true,
-                                decoration: const InputDecoration(
-                                  labelText: 'Personel kimliği',
+                                decoration: InputDecoration(
+                                  labelText: context.l10n.bulkPersonnelIdentityDecisionLabel,
                                 ),
                                 items: [
-                                  const DropdownMenuItem(
+                                  DropdownMenuItem(
                                     value: 'auto',
                                     child: Text(
-                                      'Karar seçin / aynı kayıt atlanır',
+                                      context.l10n.bulkPersonnelDecisionAuto,
                                     ),
                                   ),
-                                  const DropdownMenuItem(
+                                  DropdownMenuItem(
                                     value: 'new',
-                                    child: Text('Ayrı bir kişi olarak ekle'),
+                                    child: Text(context.l10n.bulkPersonnelDecisionNew),
                                   ),
-                                  const DropdownMenuItem(
+                                  DropdownMenuItem(
                                     value: 'skip',
-                                    child: Text('Bu satırı atla'),
+                                    child: Text(context.l10n.bulkPersonnelDecisionSkip),
                                   ),
                                   ..._matchingPeople(
                                     entry.value,
@@ -366,7 +375,12 @@ class _BulkPersonnelImportDialogState
                                     (p) => DropdownMenuItem(
                                       value: 'update:${p.id}',
                                       child: Text(
-                                        'Güncelle: #${p.id} • ${p.rutbe} • ${p.birlik}${p.aktif ? '' : ' • Pasif kalır'}',
+                                        context.l10n.bulkPersonnelDecisionUpdate(
+                                          p.id,
+                                          p.rutbe,
+                                          p.birlik,
+                                          p.aktif ? '' : context.l10n.bulkPersonnelPassiveSuffix,
+                                        ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -395,8 +409,8 @@ class _BulkPersonnelImportDialogState
                             TextFormField(
                               key: Key('bulk-personnel-name-${entry.key}'),
                               initialValue: entry.value.name,
-                              decoration: const InputDecoration(
-                                labelText: 'Ad Soyad',
+                              decoration: InputDecoration(
+                                labelText: context.l10n.bulkPersonnelNameLabel,
                               ),
                               onChanged: (value) => _updateItem(
                                 entry.key,
@@ -415,8 +429,8 @@ class _BulkPersonnelImportDialogState
                                   ? null
                                   : entry.value.rank,
                               isExpanded: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Rütbe',
+                              decoration: InputDecoration(
+                                labelText: context.l10n.bulkPersonnelRankLabel,
                               ),
                               items: kAskeriRutbeler
                                   .map(
@@ -439,8 +453,8 @@ class _BulkPersonnelImportDialogState
                             TextFormField(
                               key: Key('bulk-personnel-unit-${entry.key}'),
                               initialValue: entry.value.unit,
-                              decoration: const InputDecoration(
-                                labelText: 'Birlik',
+                              decoration: InputDecoration(
+                                labelText: context.l10n.bulkPersonnelUnitLabel,
                               ),
                               onChanged: (value) => _updateItem(
                                 entry.key,
@@ -457,13 +471,13 @@ class _BulkPersonnelImportDialogState
                               key: Key('bulk-personnel-squad-${entry.key}'),
                               initialValue: entry.value.squadId,
                               isExpanded: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Tim',
+                              decoration: InputDecoration(
+                                labelText: context.l10n.bulkPersonnelSquadLabel,
                               ),
                               items: [
-                                const DropdownMenuItem<int?>(
+                                DropdownMenuItem<int?>(
                                   value: null,
-                                  child: Text('Tim dışı'),
+                                  child: Text(context.l10n.bulkPersonnelOutsideSquad),
                                 ),
                                 ...squads.map(
                                   (squad) => DropdownMenuItem<int?>(
@@ -492,14 +506,14 @@ class _BulkPersonnelImportDialogState
           actions: [
             TextButton(
               onPressed: _saving ? null : () => Navigator.of(context).pop(),
-              child: const Text('İPTAL'),
+              child: Text(context.l10n.commonCancel),
             ),
             if (!_previewReady)
               FilledButton.icon(
                 key: const Key('bulk-personnel-preview-button'),
                 onPressed: _textController.text.trim().isEmpty ? null : _parse,
                 icon: const Icon(Icons.preview_outlined),
-                label: const Text('ÖNİZLE'),
+                label: Text(context.l10n.bulkPersonnelPreviewAction),
               )
             else
               FilledButton.icon(
@@ -517,7 +531,11 @@ class _BulkPersonnelImportDialogState
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.person_add_alt_1_rounded),
-                label: Text(_saving ? 'KAYDEDİLİYOR' : 'KAYDET'),
+                label: Text(
+                  _saving
+                      ? context.l10n.bulkPersonnelSavingAction
+                      : context.l10n.bulkPersonnelSaveAction,
+                ),
               ),
           ],
         ),

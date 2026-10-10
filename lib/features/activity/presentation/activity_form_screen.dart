@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
@@ -9,7 +10,6 @@ import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
-import 'package:personelapp2/features/activity/presentation/activity_assignment_preview_screen.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/view_models/activity_form_draft.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_details_step.dart';
@@ -81,14 +81,14 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
           setState(_draft.goToPersonnelSelection);
           return;
         }
-        final navigator = Navigator.of(context);
         final discard = await _confirmDiscardChanges();
-        if (!mounted || !discard) return;
+        if (!mounted || !context.mounted || !discard) return;
         setState(() => _allowPop = true);
-        navigator.pop();
+        AppNavigator.popOrDashboard<void>(context);
       },
       child: Scaffold(
         appBar: AppBar(
+          leading: const AppBackButton(),
           centerTitle: false,
           titleSpacing: 0,
           title: const Text(

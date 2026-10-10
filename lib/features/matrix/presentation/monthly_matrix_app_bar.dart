@@ -14,6 +14,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
       snap: true,
       toolbarHeight: 64,
       titleSpacing: 8,
+      leading: _isMobileSearchOpen ? null : const AppBackButton(),
       title: _isMobileSearchOpen
           ? TextField(
               key: const ValueKey('matrix-personnel-search'),
@@ -161,9 +162,10 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
     final bottomHeight = isCompact ? 126.0 : 78.0;
 
     return AppBar(
+      leading: const AppBackButton(),
       centerTitle: false,
       toolbarHeight: 64,
-      titleSpacing: 20,
+      titleSpacing: 0,
       title: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

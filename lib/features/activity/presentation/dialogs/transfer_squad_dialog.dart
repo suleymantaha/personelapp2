@@ -200,8 +200,9 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    '${widget.sourceActivity.tarih} tarihinde başka '
-                                    'faaliyet kartı bulunamadı.',
+                                    context.l10n.transferActivitiesNoOtherActivities(
+                                      widget.sourceActivity.tarih,
+                                    ),
                                     style: TextStyle(
                                       color: context.pendingColor,
                                       fontStyle: FontStyle.italic,
@@ -289,7 +290,7 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
                     child: Center(child: CircularProgressIndicator()),
                   ),
                   error: (err, _) => Text(
-                    'Hata: $err',
+                    context.l10n.commonErrorWithDetails(err.toString()),
                     style: TextStyle(color: context.rejectedColor),
                   ),
                 ),
@@ -350,17 +351,18 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
 
                         if (result.movedCount > 0) {
                           final skippedNote = result.skippedCount > 0
-                              ? ' (${result.skippedCount} personel zaten hedef '
-                                    'faaliyette olduğu için atlandı)'
+                              ? l10n.transferSquadSkippedNote(result.skippedCount)
                               : '';
                           AppNotifications.success(
-                            '${widget.squadName}: ${result.movedCount} '
-                            'personel başarıyla taşındı.$skippedNote',
+                            l10n.transferSquadSuccess(
+                              widget.squadName,
+                              result.movedCount,
+                              skippedNote,
+                            ),
                           );
                         } else if (result.skippedCount > 0) {
                           AppNotifications.info(
-                            'Tüm personel zaten hedef faaliyette mevcut, '
-                            'taşıma yapılmadı.',
+                            l10n.transferSquadAllAlreadyPresent,
                           );
                         }
                       } catch (e) {

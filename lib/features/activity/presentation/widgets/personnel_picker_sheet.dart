@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
@@ -117,10 +118,11 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
       for (final squad in widget.squads) squad.id: squad.timAdi,
     };
     final normalizedQuery = _normalize(_query);
+    final unassignedTeamName = context.l10n.personnelPickerUnassignedTeam;
     final filtered = widget.personnel.where((person) {
       if (_filterTimId != null && person.timId != _filterTimId) return false;
       if (normalizedQuery.isEmpty) return true;
-      final teamName = squadNames[person.timId] ?? 'Tim Dışı';
+      final teamName = squadNames[person.timId] ?? unassignedTeamName;
       return _normalize(
         '${person.rutbe} ${person.adSoyad} ${person.birlik} $teamName',
       ).contains(normalizedQuery);
@@ -195,15 +197,15 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                   children: [
                     Icon(Icons.groups_rounded, color: context.accentOrOlive),
                     const SizedBox(width: 10),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Personel Seç',
-                        style: TextStyle(
+                        context.l10n.personnelPickerTitle,
+                        style: const TextStyle(
                             fontSize: 19, fontWeight: FontWeight.bold),
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Kapat',
+                      tooltip: context.l10n.commonClose,
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.close),
                     ),
@@ -220,13 +222,13 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
                   hintText: widget.onSelected == null
-                      ? 'İsim, soyisim veya rütbe ara'
-                      : 'İsim, rütbe veya tim ara',
+                      ? context.l10n.personnelPickerSearchHintSingle
+                      : context.l10n.personnelPickerSearchHintMulti,
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: _query.isEmpty
                       ? null
                       : IconButton(
-                          tooltip: 'Aramayı temizle',
+                          tooltip: context.l10n.commonClear,
                           onPressed: () {
                             _searchController.clear();
                             setState(() => _query = '');
@@ -251,7 +253,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                         Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: ChoiceChip(
-                                label: const Text('Tümü'),
+                                label: Text(context.l10n.personnelPickerAll),
                                 selected: _filterTimId == null,
                                 onSelected: (_) =>
                                     setState(() => _filterTimId = null))),
@@ -277,9 +279,9 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                             padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
                             child: Text(
                               widget.onSelected == null
-                                  ? 'Önerilen Eşleşme'
-                                  : 'Seçilen Personel',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                                  ? context.l10n.personnelPickerSuggestedMatch
+                                  : context.l10n.personnelPickerSelectedPersonnel,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                           Card(
@@ -288,7 +290,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                             child: _PersonnelTile(
                               person: suggested,
                               teamName:
-                                  squadNames[suggested.timId] ?? 'Tim Dışı',
+                                  squadNames[suggested.timId] ?? unassignedTeamName,
                               selected: true,
                               disabledReason:
                                   widget.disabledReasons[suggested.id],
@@ -300,17 +302,17 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                         if (widget.onSelected == null &&
                             recent.isNotEmpty &&
                             normalizedQuery.isEmpty) ...[
-                          const Padding(
-                            padding: EdgeInsets.fromLTRB(8, 10, 8, 6),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
                             child: Text(
-                              'Son Seçilenler',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              context.l10n.personnelPickerRecent,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                           ...recent.map(
                             (person) => _PersonnelTile(
                               person: person,
-                              teamName: squadNames[person.timId] ?? 'Tim Dışı',
+                              teamName: squadNames[person.timId] ?? unassignedTeamName,
                               selected: _isSelected(person),
                               disabledReason: widget.disabledReasons[person.id],
                               onTap: () => _select(person),
@@ -324,8 +326,8 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                               .where((person) => person.id != suggested?.id)
                               .toList();
                           final teamName = timId == null
-                              ? 'Tim Dışı'
-                              : (squadNames[timId] ?? 'Bilinmeyen Tim');
+                              ? unassignedTeamName
+                              : (squadNames[timId] ?? context.l10n.personnelPickerUnknownTeam);
                           final expanded = normalizedQuery.isNotEmpty ||
                               _expandedTimIds.contains(timId);
                           final selectedCount = members
@@ -361,14 +363,21 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                                     color: context.accentOrOlive,
                                   ),
                                   title: Text(
-                                    '$teamName — ${members.length} kişi',
+                                    context.l10n.personnelPickerTeamMemberCount(
+                                      teamName,
+                                      members.length,
+                                    ),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   subtitle: selectedCount == 0
                                       ? null
-                                      : Text('$selectedCount kişi seçili'),
+                                      : Text(
+                                          context.l10n.personnelPickerSelectedCount(
+                                            selectedCount,
+                                          ),
+                                        ),
                                   trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
@@ -393,11 +402,11 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                                   if (members.isEmpty)
                                     Padding(
                                       padding:
-                                          EdgeInsets.fromLTRB(16, 0, 16, 14),
+                                          const EdgeInsets.fromLTRB(16, 0, 16, 14),
                                       child: Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          'Eklenebilecek personel kalmadı.',
+                                          context.l10n.personnelPickerNoMorePersonnel,
                                           style: TextStyle(
                                               color: context.textMuted),
                                         ),
@@ -461,7 +470,10 @@ class _PersonnelTile extends StatelessWidget {
       subtitle: Text(
         disabledReason == null
             ? '${person.rutbe} • $teamName'
-            : '$teamName • Kayıtlı: $disabledReason',
+            : context.l10n.personnelPickerRegisteredWithReason(
+                teamName,
+                disabledReason!,
+              ),
       ),
       trailing: disabledReason != null
           ? Icon(Icons.block, color: context.rejectedColor)
@@ -480,21 +492,21 @@ class _EmptySearchResult extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.person_search_rounded,
                 size: 52, color: context.textMuted),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
-              'Aramanızla eşleşen personel bulunamadı.',
+              context.l10n.personnelPickerNotFoundTitle,
               textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 6),
+            const SizedBox(height: 6),
             Text(
-              'Yeni bir kayıt gerekiyorsa Personel Yönetimi ekranını kullanın.',
+              context.l10n.personnelPickerNotFoundSubtitle,
               textAlign: TextAlign.center,
             ),
           ],

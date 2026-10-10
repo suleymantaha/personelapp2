@@ -1419,5 +1419,640 @@
     }
   },
   "commonNoTeam": "Timsiz",
-  "bulkImportSelectDate": "Tarih seç"
+  "bulkImportSelectDate": "Tarih seç",
+  "personnelPageTitle": "Personel ve Timler",
+  "personnelBackupRestoreTooltip": "Yedekle ve geri yükle",
+  "personnelCommanderDelegationTooltip": "Komutan yetkileri",
+  "personnelNewSquadTooltip": "Yeni tim",
+  "personnelManagementActionsTooltip": "Yönetim işlemleri",
+  "personnelManagementActionsTitle": "Yönetim İşlemleri",
+  "personnelManagementActionsSubtitle": "Personel ve uygulama yönetimi",
+  "personnelCreateSquadOptionTitle": "Yeni tim",
+  "personnelCreateSquadOptionSubtitle": "Yeni bir tim oluştur",
+  "personnelCommanderOptionTitle": "Komutan yetkileri",
+  "personnelCommanderOptionSubtitle": "Tim komutanlarını ve yetkileri yönet",
+  "personnelBackupOptionTitle": "Yedekle ve geri yükle",
+  "personnelBackupOptionSubtitle": "Uygulama verilerini güvenli şekilde yönet",
+  "personnelAddButton": "Personel Ekle",
+  "personnelListCount": "Personel Listesi ({count} Kişi)",
+  "@personnelListCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personnelOfficialOrderSubtitle": "Resmi Tim & Kıdem Sıralı",
+  "personnelUnassignedSquad": "Boşta / Kadro Dışı Personeller",
+  "personnelUnknownSquad": "Bilinmeyen Tim",
+  "personnelCountSubtitle": "{count} personel",
+  "@personnelCountSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personnelUnitAndRegistration": "Birlik: {unit} | Kayıt: {date}",
+  "@personnelUnitAndRegistration": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "personnelActionsTooltip": "İşlemler",
+  "personnelDeactivateTitle": "Personeli Pasifleştir",
+  "personnelDeactivateConfirm": "{rank} {name} isimli personel pasifleştirilecektir. Geçmiş görev ve raporları korunur. Emin misiniz?",
+  "@personnelDeactivateConfirm": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "personnelDeactivateAction": "PASİFLEŞTİR",
+  "personnelActionsMenuTitle": "Personel İşlemleri",
+  "personnelEditOptionTitle": "Düzenle / Tim değiştir",
+  "personnelEditOptionSubtitle": "Personel bilgilerini güncelle",
+  "personnelMakeCommanderOptionTitle": "Komutan yetkileri",
+  "personnelMakeCommanderOptionSubtitle": "Tim komutanı yap veya yetki ver",
+  "personnelDeleteOptionTitle": "Personeli sil",
+  "personnelDeleteOptionSubtitle": "Bu işlem geri alınamaz",
+  "personnelAddModalTitle": "Personel Ekle",
+  "personnelAddSingleOptionTitle": "Tek Personel Ekle",
+  "personnelAddSingleOptionSubtitle": "Bilgileri form üzerinden girin",
+  "personnelAddBulkOptionTitle": "Metinden Toplu Ekle",
+  "personnelAddBulkOptionSubtitle": "Listeyi yapıştırıp önizleyin",
+  "personnelBulkImportSuccess": "{added} personel eklendi, {updated} personel güncellendi, {skipped} satır atlandı.",
+  "@personnelBulkImportSuccess": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "personnelMakeCommanderTitle": "⭐ Tim Komutanı Yap: {rank} {name}",
+  "@personnelMakeCommanderTitle": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "personnelMakeCommanderDescription": "Bu personeli bir Time Komutan olarak atayabilir ve giriş yetkisi verebilirsiniz.",
+  "personnelUsernameLabel": "Kullanıcı Adı (Giriş için)",
+  "personnelTargetSquadLabel": "Komutanı Olacağı Tim",
+  "personnelFirstLoginPasswordHint": "💡 Personel ilk girişinde kendi parolasını belirleyecektir.",
+  "personnelMakeCommanderAction": "KOMUTAN YAP VE YETKİLENDİR",
+  "personnelUsernameAndSquadWarning": "Lütfen kullanıcı adı ve tim seçiniz.",
+  "personnelCommanderSuccess": "{name} Tim Komutanı olarak yetkilendirildi!",
+  "@personnelCommanderSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "personnelCommanderDelegationTitle": "Tim Komutanı Yetki Devri / Atama",
+  "personnelNoCommandersFound": "Kayıtlı Tim Komutanı hesabı bulunamadı.",
+  "personnelCommanderLabel": "Komutan: {name}",
+  "@personnelCommanderLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "personnelAssignedSquadLabel": "Atanan Tim",
+  "personnelUnassignedOrUnauthorized": "BOŞTA / Yetkisiz",
+  "personnelAuthorizeNewCommander": "YENİ KOMUTAN YETKİLENDİR",
+  "personnelNewCommanderDialogTitle": "Yeni Komutan Yetkilendirme",
+  "personnelUsernameExampleLabel": "Kullanıcı Adı (Örn: ahmet.kaya)",
+  "personnelNoPasswordNeededHint": "💡 Şifre istenmez. Kullanıcı ilk girişinde kendi parolasını belirler.",
+  "personnelAuthorizeAction": "YETKİLENDİR",
+  "squadCreateTitle": "Yeni Tim Oluştur",
+  "squadCreateDescription": "Tim bilgilerini girin. Komutan hesabını şimdi veya daha sonra atayabilirsiniz.",
+  "squadNameLabel": "Tim adı",
+  "squadNameHint": "Örn. 1-B Timi",
+  "squadNameRequired": "Tim adı zorunludur",
+  "squadCommanderUserLabel": "Komutan kullanıcı adı",
+  "squadCommanderPasswordHint": "Komutan ilk girişinde kendi parolasını belirler.",
+  "squadCreateAction": "Tim Oluştur",
+  "personnelCustomRankDropdownOption": "DİĞER / ÖZEL RÜTBE (Elle Gir)",
+  "personnelSquadsLoadError": "Timler yüklenemedi: {error}",
+  "@personnelSquadsLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkPersonnelImportTitle": "Metinden Personel Ekle",
+  "bulkPersonnelInputLabel": "Personel listesini yapıştırın",
+  "bulkPersonnelTargetSquadLabel": "Hedef tim",
+  "bulkPersonnelOutsideSquad": "Tim dışı",
+  "bulkPersonnelCountFound": "{count} personel bulundu",
+  "@bulkPersonnelCountFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkPersonnelUnknownRankCount": "{count} satırda rütbe bulunamadı. Kaydetmeden önce seçin.",
+  "@bulkPersonnelUnknownRankCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkPersonnelUnreadableLines": "{count} satır okunamadı ve eklenmeyecek.",
+  "@bulkPersonnelUnreadableLines": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkPersonnelDuplicatesSkipped": "{count} mükerrer satır kayıtta atlanacak.",
+  "@bulkPersonnelDuplicatesSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkPersonnelNeedsIdentityDecision": "Mevcut kişi veya ayrı kişi seçilmeli",
+  "bulkPersonnelDuplicateWillSkip": "Mükerrer kayıt • Atlanacak",
+  "bulkPersonnelRankRequired": "Rütbe seçilmeli",
+  "bulkPersonnelRemoveTooltip": "Listeden çıkar",
+  "bulkPersonnelIdentityDecisionLabel": "Personel kimliği",
+  "bulkPersonnelDecisionAuto": "Karar seçin / aynı kayıt atlanır",
+  "bulkPersonnelDecisionNew": "Ayrı bir kişi olarak ekle",
+  "bulkPersonnelDecisionSkip": "Bu satırı atla",
+  "bulkPersonnelDecisionUpdate": "Güncelle: #{id} • {rank} • {unit}{passiveSuffix}",
+  "@bulkPersonnelDecisionUpdate": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      },
+      "rank": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "passiveSuffix": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkPersonnelPassiveSuffix": " • Pasif kalır",
+  "bulkPersonnelNameLabel": "Ad Soyad",
+  "bulkPersonnelRankLabel": "Rütbe",
+  "bulkPersonnelUnitLabel": "Birlik",
+  "bulkPersonnelSquadLabel": "Tim",
+  "bulkPersonnelPreviewAction": "ÖNİZLE",
+  "bulkPersonnelSavingAction": "KAYDEDİLİYOR",
+  "bulkPersonnelSaveAction": "KAYDET",
+  "commonActions": "İşlemler",
+  "commonErrorWithDetails": "Hata: {error}",
+  "@commonErrorWithDetails": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "squadCommanderOptionalHint": "İsteğe bağlı",
+  "bulkPersonnelErrorSaveFailed": "Personel aktarımı kaydedilemedi: {error}",
+  "@bulkPersonnelErrorSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "transferActivitiesNoOtherActivities": "{date} tarihinde başka faaliyet kartı bulunamadı.",
+  "@transferActivitiesNoOtherActivities": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "transferSquadSuccess": "{squadName}: {count} personel başarıyla taşındı.{skippedNote}",
+  "@transferSquadSuccess": {
+    "placeholders": {
+      "squadName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "skippedNote": {
+        "type": "String"
+      }
+    }
+  },
+  "transferSquadSkippedNote": " ({count} personel zaten hedef faaliyette olduğu için atlandı)",
+  "@transferSquadSkippedNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transferSquadAllAlreadyPresent": "Tüm personel zaten hedef faaliyette mevcut, taşıma yapılmadı.",
+  "activityArchiveOrderSaveFailed": "Sıralama kaydedilemedi.",
+  "activityArchiveOrderResetFailed": "Sıralama sıfırlanamadı.",
+  "activityArchiveOrderResetSuccess": "Kart sıralaması varsayılana döndürüldü.",
+  "activityArchiveDayActivityCount": "{day} • {count} faaliyet",
+  "@activityArchiveDayActivityCount": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityArchiveExportSubtitle": "{date} • {count} Faaliyet{squadText}",
+  "@activityArchiveExportSubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "squadText": {
+        "type": "String"
+      }
+    }
+  },
+  "rosterSelectedCardsEmpty": "Henüz kart eklenmedi.",
+  "rosterSelectedCardsRemoveTooltip": "Çıktıdan çıkar",
+  "collapsibleSquadCardWarningCount": "{count} uyarı",
+  "@collapsibleSquadCardWarningCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "archiveHeaderControlCenter": "KONTROL MERKEZİ",
+  "archiveHeaderSquadArchive": "TİM ARŞİVİ",
+  "archiveHeaderRecordCount": "{count} Kayıt",
+  "@archiveHeaderRecordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "archiveHeaderPendingCount": "{count} Bekliyor",
+  "@archiveHeaderPendingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "archiveHeaderExportPrint": "Dışa Aktar / Yazdır",
+  "archiveExportSheetTitle": "Dışa Aktar ve Yazdır",
+  "archiveExportSheetTimeRangeLabel": "Saat Aralığı (İsteğe Bağlı)",
+  "archiveExportSheetTimeRangeHint": "Örn: 06.00-08.00 veya 20.00-08.00",
+  "archiveExportSheetTimeRangeNote": "Saat girmek istemiyorsanız boş bırakıp doğrudan aşağıdaki seçeneklerden birine basabilirsiniz.",
+  "archiveExportExcelTitle": "Excel Olarak Aktar (.xlsx)",
+  "archiveExportExcelSubtitle": "Hesap tabloları ve dijital arşiv için",
+  "archiveExportPdfTitle": "PDF Belgesi Paylaş",
+  "archiveExportPdfSubtitle": "Askeri formatta PDF oluşturur ve paylaşır",
+  "archiveExportPrintTitle": "Doğrudan Yazdır",
+  "archiveExportPrintSubtitle": "Bağlı yazıcıdan doğrudan çıktı alır",
+  "archiveExportTextTitle": "Metin Listesi Paylaş",
+  "archiveExportTextSubtitle": "WhatsApp/SMS için hizalı metin çıktısı",
+  "archivePreviousDayTooltip": "Önceki gün",
+  "archiveNextDayTooltip": "Sonraki gün",
+  "archiveActivityCount": "{count} faaliyet",
+  "@archiveActivityCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personnelPickerTitle": "Personel Seç",
+  "personnelPickerSearchHintSingle": "İsim, soyisim veya rütbe ara",
+  "personnelPickerSearchHintMulti": "İsim, rütbe veya tim ara",
+  "personnelPickerAll": "Tümü",
+  "personnelPickerSuggestedMatch": "Önerilen Eşleşme",
+  "personnelPickerSelectedPersonnel": "Seçilen Personel",
+  "personnelPickerRecent": "Son Seçilenler",
+  "personnelPickerUnassignedTeam": "Tim Dışı",
+  "personnelPickerUnknownTeam": "Bilinmeyen Tim",
+  "personnelPickerTeamMemberCount": "{teamName} — {count} kişi",
+  "@personnelPickerTeamMemberCount": {
+    "placeholders": {
+      "teamName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personnelPickerSelectedCount": "{count} kişi seçili",
+  "@personnelPickerSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personnelPickerNoMorePersonnel": "Eklenebilecek personel kalmadı.",
+  "personnelPickerRegisteredWithReason": "{teamName} • Kayıtlı: {reason}",
+  "@personnelPickerRegisteredWithReason": {
+    "placeholders": {
+      "teamName": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "personnelPickerNotFoundTitle": "Aramanızla eşleşen personel bulunamadı.",
+  "personnelPickerNotFoundSubtitle": "Yeni bir kayıt gerekiyorsa Personel Yönetimi ekranını kullanın.",
+  "activityExistingDialogTitle": "Aynı faaliyet zaten var",
+  "activityExistingDialogFound": "“{activityName}” adlı {count} kayıt bulundu.",
+  "@activityExistingDialogFound": {
+    "placeholders": {
+      "activityName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityExistingDialogToUpdate": "Güncellenecek faaliyet",
+  "activityExistingDialogFoundDate": "{date} tarihinde “{activityName}” adlı {count} kayıt bulundu.",
+  "@activityExistingDialogFoundDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "activityName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityExistingDialogNewPersonnelToAdd": "{count} yeni personel eklenecek",
+  "@activityExistingDialogNewPersonnelToAdd": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityExistingDialogAlreadyRegistered": "{count} personel zaten kayıtlı",
+  "@activityExistingDialogAlreadyRegistered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityExistingDialogDifferentPersonnelCountNote": "{count} personelin görev/not bilgisi farklı",
+  "@activityExistingDialogDifferentPersonnelCountNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityExistingDialogDifferentDutyNote": "görev/not bilgisi farklı",
+  "activityExistingDialogUpdateDifferent": "Farklı görev/not bilgilerini güncelle",
+  "activityExistingDialogKeepIfUnselected": "Seçilmezse mevcut bilgiler korunur.",
+  "activityExistingDialogCreateNew": "YENİ FAALİYET OLUŞTUR",
+  "activityExistingDialogAddToExisting": "MEVCUDA EKLE",
+  "activityBatchDutyResetDialogTitle": "Görevler sıfırlansın mı?",
+  "activityBatchDutyResetDialogDesc": "{squadName} timindeki tüm görev seçimleri kaldırılacak.",
+  "@activityBatchDutyResetDialogDesc": {
+    "placeholders": {
+      "squadName": {
+        "type": "String"
+      }
+    }
+  },
+  "activityBatchDutyAssignTitle": "Toplu görev ata",
+  "activityBatchDutyAssignSquadDesc": "{squadName} timindeki tüm personele uygulanır",
+  "@activityBatchDutyAssignSquadDesc": {
+    "placeholders": {
+      "squadName": {
+        "type": "String"
+      }
+    }
+  },
+  "activityBatchDutyResetActionTitle": "Görevleri sıfırla",
+  "activityBatchDutyResetActionSubtitle": "Timdeki tüm görev seçimlerini kaldır",
+  "activityBatchDutyAssignSquadTooltip": "{squadName} timine toplu görev ata",
+  "@activityBatchDutyAssignSquadTooltip": {
+    "placeholders": {
+      "squadName": {
+        "type": "String"
+      }
+    }
+  },
+  "activitySelectedPersonnelCount": "{count} personel seçildi",
+  "@activitySelectedPersonnelCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activitySelectedPersonnelEditHint": "Bir personele farklı görev veya not vermek için adına dokunun.",
+  "activityPersonnelSelectionEmpty": "Aramaya uygun personel bulunamadı.",
+  "activityFormSelectActivityPrompt": "Faaliyet seçin",
+  "activityFormSelectActivityTitle": "Faaliyet Seç",
+  "activityFormActivityNameTitle": "Faaliyet adı",
+  "activityFormActivityNameHint": "Faaliyet adını yazın",
+  "activityFormActivityNameRequired": "Faaliyet adı zorunludur",
+  "activityFormSelectedBadge": "Seçilenler ({count})",
+  "@activityFormSelectedBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityFormEditDutyLabel": "{name} görevini düzenle",
+  "@activityFormEditDutyLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityFormRemoveSelectionTooltip": "{name} seçimini kaldır",
+  "@activityFormRemoveSelectionTooltip": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityAssignmentPreviewError": "Görevlendirme kaydedilemedi: {error}",
+  "@activityAssignmentPreviewError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "activityAssignmentPreviewTitle": "Görevlendirme Önizlemesi",
+  "activityAssignmentBackAndEdit": "Geri dön ve düzelt",
+  "activityAssignmentConflictWarning": "{count} personel mevcut görev, izin veya rapor çakışması nedeniyle kaydedilmeyecek.",
+  "@activityAssignmentConflictWarning": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityAssignmentTeamSummary": "{teamName} • {count} kişi • {summary}",
+  "@activityAssignmentTeamSummary": {
+    "placeholders": {
+      "teamName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+  "activityAssignmentPendingApproval": "Admin onayı bekleyecek",
+  "activityFormTitle": "Faaliyet Çizelgesi",
+  "activityFormBulkPasteTooltip": "Toplu metin yapıştır",
+  "activityFormSquadError": "Tim verileri alınamadı: {error}",
+  "@activityFormSquadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "activityFormPersonnelLoadError": "Personel yüklenemedi: {error}",
+  "@activityFormPersonnelLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "activityFormNoSquadWarning": "Henüz bir time atanmadınız. Lütfen yöneticinizle iletişime geçin.",
+  "activityFormNoPersonnelWarning": "Görevlendirilecek kayıtlı personel bulunamadı.",
+  "activityFormPreviewAndSave": "Önizle ve Kaydet ({count})",
+  "@activityFormPreviewAndSave": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityFormPreviewAndSend": "Önizle ve Onaya Gönder ({count})",
+  "@activityFormPreviewAndSend": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityFormDiscardChangesTitle": "Değişiklikler silinsin mi?",
+  "activityFormDiscardChangesMessage": "Seçtiğiniz personel ve faaliyet bilgileri kaydedilmedi.",
+  "activityFormCompletePersonnelSelection": "Personel seçimini tamamlayın",
+  "activityFormCompleteActivityInfo": "Faaliyet bilgilerini tamamlayın",
+  "activityFormSelectAtLeastOneDuty": "Lütfen en az bir personel için görev seçiniz.",
+  "activityFormPreviewPrepareError": "Önizleme hazırlanamadı: {error}",
+  "@activityFormPreviewPrepareError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "activityFormSavedAdminPending": "Faaliyet Kaydedildi! Admin onayına gönderildi.",
+  "activityFormSavedConflictChecked": "Faaliyet Çizelgesi Kaydedildi & Çakışma Denetimi Yapıldı!",
+  "activityFormMergedSummary": "{updated} güncellendi, {skipped} kayıt korundu.",
+  "@activityFormMergedSummary": {
+    "placeholders": {
+      "updated": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "activityFormBulkImportTitle": "Toplu metin içe aktar",
+  "activityFormBulkImportSubtitle": "Birden fazla faaliyet ve personel kaydını panodaki metinden hızlıca oluşturun.",
+  "activityFormBulkImportPasteAction": "Metni yapıştır",
+  "rosterOutputRecordsChangedError": "Kayıtlar değişti. Önizlemeyi yeniden açın.",
+  "rosterOutputSignedOutput": "{date} • {count} personel • İmzalı çıktı",
+  "@rosterOutputSignedOutput": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rosterOutputSelectedCardsTitle": "Seçilen Kartlar",
+  "rosterOutputPreviewTitle": "Birleşik Çıktı Önizlemesi",
+  "rosterOutputPreviewDeduplicationNote": "{count} personel • Her kişi bir kez • Toplam baskıda gösterilmez",
+  "@rosterOutputPreviewDeduplicationNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rosterOutputPreparing": "Çıktı hazırlanıyor…",
+  "rosterOutputGetOutput": "Çıktı Al",
+  "rosterOutputExportError": "Dışa aktarılamadı: {error}",
+  "@rosterOutputExportError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

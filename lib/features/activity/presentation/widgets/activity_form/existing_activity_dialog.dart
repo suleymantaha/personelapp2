@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 
@@ -55,16 +56,18 @@ class _ExistingActivityDialogState extends State<ExistingActivityDialog> {
     );
 
     return AlertDialog(
-      title: const Text('Aynı faaliyet zaten var'),
+      title: Text(context.l10n.activityExistingDialogTitle),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${selected.activity.tarih} tarihinde '
-              '“${selected.activity.faaliyetAdi}” adlı '
-              '${widget.matches.length} kayıt bulundu.',
+              context.l10n.activityExistingDialogFoundDate(
+                selected.activity.tarih,
+                selected.activity.faaliyetAdi,
+                widget.matches.length,
+              ),
             ),
             const SizedBox(height: 12),
             if (widget.matches.length > 1)
@@ -73,9 +76,9 @@ class _ExistingActivityDialogState extends State<ExistingActivityDialog> {
                 borderRadius: modernDropdownBorderRadius,
                 dropdownColor: modernDropdownColor(context),
                 initialValue: _selectedId,
-                decoration: const InputDecoration(
-                  labelText: 'Güncellenecek faaliyet',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: context.l10n.activityExistingDialogToUpdate,
+                  border: const OutlineInputBorder(),
                 ),
                 items: widget.matches
                     .map(
@@ -98,23 +101,30 @@ class _ExistingActivityDialogState extends State<ExistingActivityDialog> {
                 },
               ),
             if (widget.matches.length > 1) const SizedBox(height: 12),
-            Text('${selected.newPersonnelCount} yeni personel eklenecek'),
             Text(
-              '${selected.unchangedPersonnelCount} personel zaten kayıtlı',
+              context.l10n.activityExistingDialogNewPersonnelToAdd(
+                selected.newPersonnelCount,
+              ),
             ),
             Text(
-              '${selected.differentPersonnelCount} personelin '
-              'görev/not bilgisi farklı',
+              context.l10n.activityExistingDialogAlreadyRegistered(
+                selected.unchangedPersonnelCount,
+              ),
+            ),
+            Text(
+              context.l10n.activityExistingDialogDifferentPersonnelCountNote(
+                selected.differentPersonnelCount,
+              ),
             ),
             if (selected.differentPersonnelCount > 0)
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
                 value: _updateDifferent,
-                title: const Text(
-                  'Farklı görev/not bilgilerini güncelle',
+                title: Text(
+                  context.l10n.activityExistingDialogUpdateDifferent,
                 ),
-                subtitle: const Text(
-                  'Seçilmezse mevcut bilgiler korunur.',
+                subtitle: Text(
+                  context.l10n.activityExistingDialogKeepIfUnselected,
                 ),
                 onChanged: (value) => setState(
                   () => _updateDifferent = value ?? false,
@@ -126,7 +136,7 @@ class _ExistingActivityDialogState extends State<ExistingActivityDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('İPTAL'),
+          child: Text(context.l10n.commonCancel.toUpperCase()),
         ),
         OutlinedButton(
           onPressed: () => Navigator.pop(
@@ -135,7 +145,7 @@ class _ExistingActivityDialogState extends State<ExistingActivityDialog> {
               action: ExistingActivityAction.createNew,
             ),
           ),
-          child: const Text('YENİ FAALİYET OLUŞTUR'),
+          child: Text(context.l10n.activityExistingDialogCreateNew),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(
@@ -146,7 +156,7 @@ class _ExistingActivityDialogState extends State<ExistingActivityDialog> {
               updateDifferentAssignments: _updateDifferent,
             ),
           ),
-          child: const Text('MEVCUDA EKLE'),
+          child: Text(context.l10n.activityExistingDialogAddToExisting),
         ),
       ],
     );

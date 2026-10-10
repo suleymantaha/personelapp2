@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -44,10 +44,10 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
   }
 
   Future<void> _openForm([TemgundrapDocument? document]) async {
-    final date = _isoDate(document?.date ?? _selectedDate);
-    final changed = await context.push<bool>(
-      '/temgundrap/form?date=$date',
-      extra: document,
+    final changed = await AppNavigator.toTemgundrapForm(
+      context,
+      document: document,
+      date: document?.date ?? _selectedDate,
     );
     if (changed == true && mounted) {
       setState(_reload);
@@ -194,6 +194,7 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
 
       return Scaffold(
         appBar: AppBar(
+          leading: const AppBackButton(),
           title: Text(
             _section == _TemgundrapSection.daily
                 ? context.l10n.temgundrapDailyTitle
@@ -288,9 +289,9 @@ class _TemgundrapScreenState extends State<TemgundrapScreen> {
                                       (context, index) => _DocumentCard(
                                         document: visible[index],
                                         onOpen:
-                                            () => context.push(
-                                              '/temgundrap/preview',
-                                              extra: visible[index],
+                                            () => AppNavigator.toTemgundrapPreview(
+                                              context,
+                                              document: visible[index],
                                             ),
                                         onActions:
                                             () => _showDocumentActions(
@@ -570,11 +571,6 @@ class _EmptySection extends StatelessWidget {
     );
   }
 }
-
-String _isoDate(DateTime date) =>
-    '${date.year.toString().padLeft(4, '0')}-'
-    '${date.month.toString().padLeft(2, '0')}-'
-    '${date.day.toString().padLeft(2, '0')}';
 
 String _formatDate(DateTime date) {
   const months = [

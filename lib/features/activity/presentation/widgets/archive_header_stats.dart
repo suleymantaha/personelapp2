@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 
 class ArchiveHeaderStats extends StatelessWidget {
@@ -69,7 +70,9 @@ class ArchiveHeaderStats extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isAdmin ? 'KONTROL MERKEZİ' : 'TİM ARŞİVİ',
+                      isAdmin
+                          ? context.l10n.archiveHeaderControlCenter
+                          : context.l10n.archiveHeaderSquadArchive,
                       style: TextStyle(
                         color: context.textPrimary,
                         fontWeight: FontWeight.w800,
@@ -81,10 +84,16 @@ class ArchiveHeaderStats extends StatelessWidget {
                     Wrap(
                       spacing: 6,
                       children: [
-                        _MetricBadge(label: '$totalActivitiesCount Kayıt'),
+                        _MetricBadge(
+                          label: context.l10n.archiveHeaderRecordCount(
+                            totalActivitiesCount,
+                          ),
+                        ),
                         if (isAdmin && pendingCount > 0)
                           _MetricBadge(
-                            label: '$pendingCount Bekliyor',
+                            label: context.l10n.archiveHeaderPendingCount(
+                              pendingCount,
+                            ),
                             color: context.pendingColor,
                           ),
                       ],
@@ -105,9 +114,9 @@ class ArchiveHeaderStats extends StatelessWidget {
               elevation: 2,
             ),
             icon: const Icon(Icons.file_download_outlined, size: 20),
-            label: const Text(
-              'Dışa Aktar / Yazdır',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+            label: Text(
+              context.l10n.archiveHeaderExportPrint,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
             ),
             onPressed: onExportRequested,
           );

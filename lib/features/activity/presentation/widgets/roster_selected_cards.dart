@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 
 class RosterSelectedCards extends StatelessWidget {
   const RosterSelectedCards({
@@ -27,9 +28,9 @@ class RosterSelectedCards extends StatelessWidget {
         child: Text(title, style: Theme.of(context).textTheme.titleSmall),
       ),
       if (cards.isEmpty)
-        const Padding(
-          padding: EdgeInsets.only(bottom: 8),
-          child: Text('Henüz kart eklenmedi.'),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(context.l10n.rosterSelectedCardsEmpty),
         ),
       ReorderableListView.builder(
         key: ValueKey('selected-$title'),
@@ -53,7 +54,7 @@ class RosterSelectedCards extends StatelessWidget {
                 children: [
                   IconButton(
                     key: Key('remove-card-${card.id}'),
-                    tooltip: 'Çıktıdan çıkar',
+                    tooltip: context.l10n.rosterSelectedCardsRemoveTooltip,
                     icon: const Icon(Icons.close),
                     onPressed: enabled ? () => onRemove(card.id) : null,
                   ),

@@ -189,9 +189,9 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                     ...kAskeriRutbeler.map(
                       (r) => DropdownMenuItem(value: r, child: Text(r)),
                     ),
-                    const DropdownMenuItem(
+                    DropdownMenuItem(
                       value: 'DİĞER / ÖZEL RÜTBE',
-                      child: Text('DİĞER / ÖZEL RÜTBE (Elle Gir)'),
+                      child: Text(context.l10n.personnelCustomRankDropdownOption),
                     ),
                   ],
                   onChanged: (val) {
@@ -237,7 +237,9 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                     },
                   ),
                   loading: () => const CircularProgressIndicator(),
-                  error: (err, st) => Text('Timler yüklenemedi: $err'),
+                  error: (err, st) => Text(
+                    context.l10n.personnelSquadsLoadError(err.toString()),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Row(

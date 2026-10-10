@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' hide Column;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
@@ -11,7 +12,6 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
-import 'package:personelapp2/features/activity/presentation/roster_output_screen.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/edit_assignment_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_personnel_dialog.dart';
@@ -151,13 +151,10 @@ class ActivityAssignmentDetails extends ConsumerWidget {
     }
 
     Future<void> shareSeparateCombinedExcel() async {
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute(
-          builder: (_) => RosterOutputScreen(
-            initialDate: activity.tarih,
-            selectedSquadId: selectedSquadId,
-          ),
-        ),
+      await AppNavigator.toRosterOutput(
+        context,
+        initialDate: activity.tarih,
+        selectedSquadId: selectedSquadId,
       );
     }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
@@ -32,21 +32,21 @@ class DashboardScreen extends ConsumerWidget {
         title: context.l10n.dashboardActivitySchedule,
         subtitle: context.l10n.dashboardDailyDutyEntry,
         tone: DashboardActionTone.primary,
-        onTap: () => context.push('/activity-form'),
+        onTap: () => AppNavigator.toActivityForm(context),
       ),
       DashboardActionItem(
         icon: Icons.grid_on,
         title: context.l10n.dashboardMonthlyMatrix,
         subtitle: context.l10n.dashboardExcelDistribution,
         tone: DashboardActionTone.neutral,
-        onTap: () => context.push('/monthly-matrix'),
+        onTap: () => AppNavigator.toMonthlyMatrix(context),
       ),
       DashboardActionItem(
         icon: Icons.table_chart_outlined,
         title: 'TEMGÜNDRAP',
         subtitle: context.l10n.dashboardTemgundrapSubtitle,
         tone: DashboardActionTone.neutral,
-        onTap: () => context.push('/temgundrap'),
+        onTap: () => AppNavigator.toTemgundrap(context),
       ),
       DashboardActionItem(
         icon: Icons.people_alt,
@@ -55,7 +55,7 @@ class DashboardScreen extends ConsumerWidget {
             ? context.l10n.dashboardRegisterAndAuth
             : context.l10n.dashboardRosterStatus,
         tone: DashboardActionTone.personnel,
-        onTap: () => context.push('/personnel-management'),
+        onTap: () => AppNavigator.toPersonnelManagement(context),
       ),
       if (isAdmin) ...[
         DashboardActionItem(
@@ -193,7 +193,7 @@ class DashboardScreen extends ConsumerWidget {
                                   size: 14,
                                   color: context.rejectedColor,
                                 ),
-                                onTap: () => context.push('/pending-approvals'),
+                                onTap: () => AppNavigator.toPendingApprovals(context),
                               ),
                             ),
                           );
@@ -248,7 +248,7 @@ class DashboardScreen extends ConsumerWidget {
                        subtitle: context.l10n.dashboardSearchAndReview,
                        height: gridLayout.archiveHeight,
                        animationIndex: gridActions.length,
-                       onTap: () => context.push('/activity-archive'),
+                       onTap: () => AppNavigator.toActivityArchive(context),
                      ),
                    ),
                 ],

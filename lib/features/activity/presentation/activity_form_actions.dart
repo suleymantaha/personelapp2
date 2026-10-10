@@ -41,25 +41,24 @@ extension _ActivityFormActions on _ActivityFormScreenState {
         actor: userSession,
       );
       if (!mounted) return;
-      final saved = await Navigator.of(context).push<bool>(
-        MaterialPageRoute(
-          builder: (_) => ActivityAssignmentPreviewScreen(
-            activityName: name,
-            date: _draft.selectedDate,
-            preview: preview,
-            requiresAdminApproval: !userSession.isAdmin,
-            onConfirm: () => _persistActivity(
-              name: name,
-              dateStr: dateStr,
-              payload: payload,
-              userSession: userSession,
-            ),
+      final saved = await AppNavigator.toActivityAssignmentPreview(
+        context,
+        args: ActivityAssignmentPreviewArgs(
+          activityName: name,
+          date: _draft.selectedDate,
+          preview: preview,
+          requiresAdminApproval: !userSession.isAdmin,
+          onConfirm: () => _persistActivity(
+            name: name,
+            dateStr: dateStr,
+            payload: payload,
+            userSession: userSession,
           ),
         ),
       );
       if (saved == true && mounted) {
         _updateState(() => _allowPop = true);
-        Navigator.of(context).pop();
+        AppNavigator.popOrDashboard<void>(context);
       }
     } catch (error) {
       if (!mounted) return;

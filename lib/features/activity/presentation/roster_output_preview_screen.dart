@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
@@ -108,7 +109,10 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
   Widget build(BuildContext context) => PopScope(
     canPop: !_busy,
     child: Scaffold(
-      appBar: AppBar(title: const Text('Birleşik Çıktı Önizlemesi')),
+      appBar: AppBar(
+        leading: const AppBackButton(),
+        title: const Text('Birleşik Çıktı Önizlemesi'),
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 900),

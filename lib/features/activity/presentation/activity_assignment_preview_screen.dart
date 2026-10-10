@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
@@ -42,7 +43,7 @@ class _ActivityAssignmentPreviewScreenState
     setState(() => _saving = true);
     try {
       final saved = await widget.onConfirm();
-      if (saved && mounted) Navigator.of(context).pop(true);
+      if (saved && mounted) AppNavigator.popOrDashboard(context, true);
     } catch (error) {
       if (!mounted) return;
       AppNotifications.error('Görevlendirme kaydedilemedi: $error');
@@ -82,7 +83,7 @@ class _ActivityAssignmentPreviewScreenState
           leading: IconButton(
             key: const Key('preview-back-button'),
             tooltip: 'Geri dön ve düzelt',
-            onPressed: _saving ? null : () => Navigator.of(context).pop(false),
+            onPressed: _saving ? null : () => AppNavigator.popOrDashboard(context, false),
             icon: const Icon(Icons.arrow_back_rounded),
           ),
         ),

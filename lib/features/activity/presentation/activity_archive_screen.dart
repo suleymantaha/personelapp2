@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
@@ -132,7 +133,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
     try {
       await _orderPreferences.saveOrder(date, ids);
     } on Object {
-      AppNotifications.warning('Sıralama kaydedilemedi.');
+      if (!mounted) return;
+      AppNotifications.warning(context.l10n.activityArchiveOrderSaveFailed);
     }
   }
 
@@ -140,7 +142,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
     try {
       await _orderPreferences.clearOrder(date);
     } on Object {
-      AppNotifications.warning('Sıralama sıfırlanamadı.');
+      if (!mounted) return;
+      AppNotifications.warning(context.l10n.activityArchiveOrderResetFailed);
       return;
     }
     if (!mounted) return;
@@ -148,7 +151,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
       _loadedOrderDate = date;
       _manualOrder = const [];
     });
-    AppNotifications.info('Kart sıralaması varsayılana döndürüldü.');
+    AppNotifications.info(context.l10n.activityArchiveOrderResetSuccess);
   }
 
   Widget _buildActivityCard(GunlukFaaliyetTableData act) {
@@ -216,9 +219,11 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
       final squadText = selectedSquadName == null
           ? ''
           : ' • $selectedSquadName';
-      final subtitle =
-          '${DateFormat('dd.MM.yyyy').format(_selectedDateFilter)} • '
-          '${filteredForDate.length} Faaliyet$squadText';
+      final subtitle = context.l10n.activityArchiveExportSubtitle(
+        DateFormat('dd.MM.yyyy').format(_selectedDateFilter),
+        filteredForDate.length,
+        squadText,
+      );
       _exportWithSheet(filteredForDate, personnelList, subtitle: subtitle);
     }
 
@@ -237,7 +242,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                 tooltip: context.l10n.activityArchiveCloseSelection,
                 onPressed: _clearSelection,
               )
-            : null,
+            : const AppBackButton(),
         title: Text(
           _selectionMode
               ? context.l10n.activityArchiveSelectedCount(_selectedActivityIds.length)
@@ -510,8 +515,10 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  '${_formatTurkishDay(dateFilterStr)}'
-                                  ' • ${ordered.length} faaliyet',
+                                  context.l10n.activityArchiveDayActivityCount(
+                                    _formatTurkishDay(dateFilterStr),
+                                    ordered.length,
+                                  ),
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -584,7 +591,11 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                   },
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
-                  error: (err, _) => Center(child: Text('Hata: $err')),
+                  error: (err, _) => Center(
+                    child: Text(
+                      context.l10n.commonErrorWithDetails(err.toString()),
+                    ),
+                  ),
                 ),
               ),
             ],

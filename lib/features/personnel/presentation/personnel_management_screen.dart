@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
@@ -62,7 +63,7 @@ class _PersonnelManagementScreenState
           ? FloatingActionButton.extended(
               onPressed: _showAddPersonnelDialog,
               icon: const Icon(Icons.person_add_alt_1_rounded),
-              label: const Text('Personel Ekle'),
+              label: Text(context.l10n.personnelAddButton),
             )
           : null,
       body: TurkishFlagWatermarkBackground(
@@ -163,7 +164,7 @@ class _PersonnelManagementScreenState
                         children: [
                           Expanded(
                             child: Text(
-                              'Personel Listesi (${personnelList.length} Kişi)',
+                              context.l10n.personnelListCount(personnelList.length),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -174,7 +175,7 @@ class _PersonnelManagementScreenState
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Resmi Tim & Kıdem Sıralı',
+                            context.l10n.personnelOfficialOrderSubtitle,
                             style: TextStyle(
                               fontSize: 12,
                               color: context.textSecondary,
@@ -192,8 +193,8 @@ class _PersonnelManagementScreenState
                           );
 
                         final squadName = timId == null
-                            ? 'Boşta / Kadro Dışı Personeller'
-                            : (squadMap[timId] ?? 'Bilinmeyen Tim');
+                            ? context.l10n.personnelUnassignedSquad
+                            : (squadMap[timId] ?? context.l10n.personnelUnknownSquad);
 
                         return ExpansionTile(
                           initiallyExpanded: false,
@@ -224,13 +225,13 @@ class _PersonnelManagementScreenState
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                   vertical: 6,
-                                ),
+                                  ),
                                 decoration: BoxDecoration(
                                   color: context.accentOrOlive,
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: Text(
-                                  '${members.length} personel',
+                                  context.l10n.personnelCountSubtitle(members.length),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: context.onAccentOrOlive,
@@ -274,13 +275,16 @@ class _PersonnelManagementScreenState
                                     subtitle: Padding(
                                       padding: const EdgeInsets.only(top: 2),
                                       child: Text(
-                                        'Birlik: ${p.birlik} | Kayıt: ${p.kayitTarihi}',
+                                        context.l10n.personnelUnitAndRegistration(
+                                          p.birlik,
+                                          p.kayitTarihi.toString(),
+                                        ),
                                       ),
                                     ),
                                     trailing: isAdmin
                                         ? PopupMenuButton<String>(
                                             icon: const Icon(Icons.more_vert),
-                                            tooltip: 'İşlemler',
+                                            tooltip: context.l10n.commonActions,
                                             elevation: 5,
                                             shadowColor: context.shadowColor,
                                             surfaceTintColor:
@@ -305,11 +309,14 @@ class _PersonnelManagementScreenState
                                                     await showDialog<bool>(
                                                   context: context,
                                                   builder: (ctx) => AlertDialog(
-                                                    title: const Text(
-                                                      'Personeli Pasifleştir',
+                                                    title: Text(
+                                                      context.l10n.personnelDeactivateTitle,
                                                     ),
                                                     content: Text(
-                                                      '${p.rutbe} ${p.adSoyad} isimli personel pasifleştirilecektir. Geçmiş görev ve raporları korunur. Emin misiniz?',
+                                                      context.l10n.personnelDeactivateConfirm(
+                                                        p.rutbe,
+                                                        p.adSoyad,
+                                                      ),
                                                     ),
                                                     actions: [
                                                       TextButton(
@@ -317,8 +324,8 @@ class _PersonnelManagementScreenState
                                                             Navigator.of(
                                                           ctx,
                                                         ).pop(false),
-                                                        child: const Text(
-                                                          'İPTAL',
+                                                        child: Text(
+                                                          context.l10n.commonCancel,
                                                         ),
                                                       ),
                                                       ElevatedButton(
@@ -332,8 +339,8 @@ class _PersonnelManagementScreenState
                                                             Navigator.of(
                                                           ctx,
                                                         ).pop(true),
-                                                        child: const Text(
-                                                          'PASİFLEŞTİR',
+                                                        child: Text(
+                                                          context.l10n.personnelDeactivateAction,
                                                         ),
                                                       ),
                                                     ],
@@ -351,7 +358,7 @@ class _PersonnelManagementScreenState
                                             },
                                             itemBuilder: (context) => [
                                               ModernMenuHeader<String>(
-                                                title: 'Personel İşlemleri',
+                                                title: context.l10n.personnelActionsMenuTitle,
                                                 subtitle:
                                                     '${p.rutbe} ${p.adSoyad}',
                                                 icon: Icons.person_outline,
@@ -359,33 +366,33 @@ class _PersonnelManagementScreenState
                                               const PopupMenuDivider(),
                                               ModernPopupMenuItem(
                                                 option:
-                                                    const ModernActionOption(
+                                                    ModernActionOption(
                                                   value: 'edit',
                                                   title:
-                                                      'Düzenle / Tim değiştir',
+                                                      context.l10n.personnelEditOptionTitle,
                                                   subtitle:
-                                                      'Personel bilgilerini güncelle',
+                                                      context.l10n.personnelEditOptionSubtitle,
                                                   icon: Icons.edit_outlined,
                                                 ),
                                               ),
                                               ModernPopupMenuItem(
                                                 option:
-                                                    const ModernActionOption(
+                                                    ModernActionOption(
                                                   value: 'commander',
-                                                  title: 'Komutan yetkileri',
+                                                  title: context.l10n.personnelCommanderOptionTitle,
                                                   subtitle:
-                                                      'Tim komutanı yap veya yetki ver',
+                                                      context.l10n.personnelCommanderOptionSubtitle,
                                                   icon: Icons.star_outline,
                                                 ),
                                               ),
                                               const PopupMenuDivider(),
                                               ModernPopupMenuItem(
                                                 option:
-                                                    const ModernActionOption(
+                                                    ModernActionOption(
                                                   value: 'delete',
-                                                  title: 'Personeli sil',
+                                                  title: context.l10n.personnelDeleteOptionTitle,
                                                   subtitle:
-                                                      'Bu işlem geri alınamaz',
+                                                      context.l10n.personnelDeleteOptionSubtitle,
                                                   icon: Icons
                                                       .delete_outline_rounded,
                                                   isDestructive: true,
@@ -405,7 +412,11 @@ class _PersonnelManagementScreenState
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, st) => Center(child: Text('Hata: $err')),
+                error: (err, st) => Center(
+                  child: Text(
+                    context.l10n.commonErrorWithDetails(err.toString()),
+                  ),
+                ),
               ),
             ],
           ),

@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
@@ -380,7 +380,7 @@ class DashboardSettings {
                             await SessionStorage.clearSession();
                             ref.read(userSessionProvider.notifier).state = null;
                             if (context.mounted) {
-                              context.go('/login');
+                              AppNavigator.toLogin(context);
                             }
                           },
                         ),

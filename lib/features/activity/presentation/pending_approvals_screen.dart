@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
@@ -19,7 +20,10 @@ class PendingApprovalsScreen extends ConsumerWidget {
     final session = ref.watch(userSessionProvider);
     if (session?.isAdmin != true) {
       return Scaffold(
-        appBar: AppBar(title: Text(context.l10n.pendingApprovalsTitle)),
+        appBar: AppBar(
+          leading: const AppBackButton(),
+          title: Text(context.l10n.pendingApprovalsTitle),
+        ),
         body: Center(
           child: Text(context.l10n.commonUnauthorized),
         ),
@@ -34,6 +38,7 @@ class PendingApprovalsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: Text(context.l10n.pendingApprovalsTitle),
       ),
       body: TurkishFlagWatermarkBackground(

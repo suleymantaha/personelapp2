@@ -6,19 +6,20 @@ extension _PersonnelManagementAppBar on _PersonnelManagementScreenState {
     required bool isAdmin,
   }) {
     return AppBar(
+      leading: const AppBackButton(),
       centerTitle: false,
       titleSpacing: 0,
-      title: const Text(
-        'Personel ve Timler',
+      title: Text(
+        context.l10n.personnelPageTitle,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
       ),
       actions: [
         if (isAdmin && !context.isMobile)
           IconButton(
             icon: const Icon(Icons.import_export_rounded),
-            tooltip: 'Yedekle ve geri yükle',
+            tooltip: context.l10n.personnelBackupRestoreTooltip,
             onPressed: () async {
               final db = ref.read(databaseProvider);
               final res = await showBackupRestoreSurface(
@@ -35,18 +36,18 @@ extension _PersonnelManagementAppBar on _PersonnelManagementScreenState {
         if (isAdmin && !context.isMobile)
           IconButton(
             icon: const Icon(Icons.manage_accounts),
-            tooltip: 'Komutan yetkileri',
+            tooltip: context.l10n.personnelCommanderDelegationTooltip,
             onPressed: _showCommanderDelegationDialog,
           ),
         if (isAdmin && !context.isMobile)
           IconButton(
             icon: const Icon(Icons.group_add_rounded),
-            tooltip: 'Yeni tim',
+            tooltip: context.l10n.personnelNewSquadTooltip,
             onPressed: _showAddSquadDialog,
           ),
         if (isAdmin && context.isMobile)
           PopupMenuButton<String>(
-            tooltip: 'Yönetim işlemleri',
+            tooltip: context.l10n.personnelManagementActionsTooltip,
             icon: const Icon(Icons.more_vert_rounded),
             elevation: 5,
             shadowColor: context.shadowColor,
@@ -72,33 +73,33 @@ extension _PersonnelManagementAppBar on _PersonnelManagementScreenState {
               }
             },
             itemBuilder: (context) => [
-              const ModernMenuHeader<String>(
-                title: 'Yönetim İşlemleri',
-                subtitle: 'Personel ve uygulama yönetimi',
+              ModernMenuHeader<String>(
+                title: context.l10n.personnelManagementActionsTitle,
+                subtitle: context.l10n.personnelManagementActionsSubtitle,
                 icon: Icons.admin_panel_settings_outlined,
               ),
               const PopupMenuDivider(),
               ModernPopupMenuItem(
-                option: const ModernActionOption(
+                option: ModernActionOption(
                   value: 'squad',
-                  title: 'Yeni tim',
-                  subtitle: 'Yeni bir tim oluştur',
+                  title: context.l10n.personnelCreateSquadOptionTitle,
+                  subtitle: context.l10n.personnelCreateSquadOptionSubtitle,
                   icon: Icons.group_add_rounded,
                 ),
               ),
               ModernPopupMenuItem(
-                option: const ModernActionOption(
+                option: ModernActionOption(
                   value: 'commander',
-                  title: 'Komutan yetkileri',
-                  subtitle: 'Tim komutanlarını ve yetkileri yönet',
+                  title: context.l10n.personnelCommanderOptionTitle,
+                  subtitle: context.l10n.personnelCommanderOptionSubtitle,
                   icon: Icons.manage_accounts_outlined,
                 ),
               ),
               ModernPopupMenuItem(
-                option: const ModernActionOption(
+                option: ModernActionOption(
                   value: 'backup',
-                  title: 'Yedekle ve geri yükle',
-                  subtitle: 'Uygulama verilerini güvenli şekilde yönet',
+                  title: context.l10n.personnelBackupOptionTitle,
+                  subtitle: context.l10n.personnelBackupOptionSubtitle,
                   icon: Icons.import_export_rounded,
                 ),
               ),

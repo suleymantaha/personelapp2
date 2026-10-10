@@ -23,9 +23,9 @@ extension _SquadManagementActions on _PersonnelManagementScreenState {
                 color: context.accentOrOlive,
               ),
             ),
-            title: const Text(
-              'Yeni Tim Oluştur',
-              style: TextStyle(fontWeight: FontWeight.w700),
+            title: Text(
+              context.l10n.squadCreateTitle,
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             content: SingleChildScrollView(
               child: Column(
@@ -33,8 +33,7 @@ extension _SquadManagementActions on _PersonnelManagementScreenState {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Tim bilgilerini girin. Komutan hesabını şimdi veya daha '
-                    'sonra atayabilirsiniz.',
+                    context.l10n.squadCreateDescription,
                     style: context.textStyleSecondary,
                   ),
                   const SizedBox(height: 20),
@@ -47,20 +46,20 @@ extension _SquadManagementActions on _PersonnelManagementScreenState {
                       }
                     },
                     decoration: InputDecoration(
-                      labelText: 'Tim adı',
-                      hintText: 'Örn. 1-B Timi',
+                      labelText: context.l10n.squadNameLabel,
+                      hintText: context.l10n.squadNameHint,
                       prefixIcon: const Icon(Icons.shield_outlined),
-                      errorText: showNameError ? 'Tim adı zorunludur' : null,
+                      errorText: showNameError ? context.l10n.squadNameRequired : null,
                       filled: true,
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: commanderUserController,
-                    decoration: const InputDecoration(
-                      labelText: 'Komutan kullanıcı adı',
-                      hintText: 'İsteğe bağlı',
-                      prefixIcon: Icon(Icons.person_outline_rounded),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.squadCommanderUserLabel,
+                      hintText: context.l10n.squadCommanderOptionalHint,
+                      prefixIcon: const Icon(Icons.person_outline_rounded),
                       filled: true,
                     ),
                   ),
@@ -79,10 +78,10 @@ extension _SquadManagementActions on _PersonnelManagementScreenState {
                           size: 20,
                         ),
                         const SizedBox(width: 10),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Komutan ilk girişinde kendi parolasını belirler.',
-                            style: TextStyle(fontSize: 12),
+                            context.l10n.squadCommanderPasswordHint,
+                            style: const TextStyle(fontSize: 12),
                           ),
                         ),
                       ],
@@ -94,7 +93,7 @@ extension _SquadManagementActions on _PersonnelManagementScreenState {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('İPTAL'),
+                child: Text(context.l10n.commonCancel),
               ),
               FilledButton.icon(
                 key: const Key('create-squad-button'),
@@ -126,7 +125,7 @@ extension _SquadManagementActions on _PersonnelManagementScreenState {
 
                   if (ctx.mounted) Navigator.of(ctx).pop();
                 },
-                label: const Text('Tim Oluştur'),
+                label: Text(context.l10n.squadCreateAction),
               ),
             ],
           ),

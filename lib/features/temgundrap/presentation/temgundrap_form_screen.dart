@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/widgets/confirm_discard_changes.dart';
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
@@ -83,7 +84,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
     if (!mounted) return;
     setState(() => _allowExit = true);
     await WidgetsBinding.instance.endOfFrame;
-    if (mounted) Navigator.pop(context, saved);
+    if (mounted) AppNavigator.popOrDashboard(context, saved);
   }
 
   Future<void> _back() async {

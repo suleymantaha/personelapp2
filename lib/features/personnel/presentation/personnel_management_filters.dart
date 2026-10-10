@@ -154,7 +154,9 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
             );
           },
           loading: () => const LinearProgressIndicator(),
-          error: (err, st) => Text('Hata: $err'),
+          error: (err, st) => Text(
+            context.l10n.commonErrorWithDetails(err.toString()),
+          ),
         ),
       ] else ...[
         squadsAsync.when(
