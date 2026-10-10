@@ -29,6 +29,9 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
         if (status == AssignmentStatus.beklemede) {
           throw AssignmentConflictException(
             '${activity.tarih} tarihinde personelin başka bir kaydı bulunuyor.',
+            code: 'has_record',
+            date: activity.tarih,
+            personnelId: assignment.personelId,
           );
         }
       }
@@ -80,6 +83,9 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
       if (status == AssignmentStatus.beklemede) {
         throw AssignmentConflictException(
           '$tarih tarihinde personelin başka bir görevi veya kaydı bulunuyor.',
+          code: 'has_duty_or_record',
+          date: tarih,
+          personnelId: personelId,
         );
       }
       if (!actor.isAdmin) status = AssignmentStatus.beklemede;

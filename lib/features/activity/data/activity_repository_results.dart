@@ -1,4 +1,5 @@
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/l10n/generated/app_localizations.dart';
 
 enum ActivityDateChangeStatus {
   success,
@@ -140,8 +141,33 @@ class ActivityAssignmentBatchResult {
 }
 
 class AssignmentConflictException implements Exception {
-  const AssignmentConflictException(this.message);
+  const AssignmentConflictException(
+    this.message, {
+    this.code,
+    this.date,
+    this.personnelId,
+  });
+
   final String message;
+  final String? code;
+  final String? date;
+  final int? personnelId;
+
+  String localizedMessage(AppLocalizations l10n) {
+    switch (code) {
+      case 'has_record':
+        return l10n.assignmentConflictHasRecord(date ?? '');
+      case 'has_duty_or_record':
+        return l10n.assignmentConflictHasDutyOrRecord(date ?? '');
+      case 'date_change_conflict':
+        return l10n.assignmentConflictDateChange(date ?? '');
+      case 'report_conflict':
+        return l10n.assignmentConflictReport(date ?? '');
+      default:
+        return message;
+    }
+  }
+
   @override
   String toString() => message;
 }
@@ -159,7 +185,20 @@ class SquadTransferResult {
 }
 
 class PersonnelTransferResult {
-  const PersonnelTransferResult({required this.moved, this.reason});
+  const PersonnelTransferResult({
+    required this.moved,
+    this.reason,
+    this.reasonCode,
+  });
+
   final bool moved;
   final String? reason;
+  final String? reasonCode;
+
+  String? localizedReason(AppLocalizations l10n) {
+    if (reasonCode == 'already_in_target') {
+      return l10n.transferPersonnelAlreadyInTarget;
+    }
+    return reason;
+  }
 }

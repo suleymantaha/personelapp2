@@ -95,6 +95,9 @@ extension ActivityRepositoryDateOperations on ActivityRepository {
           throw AssignmentConflictException(
             '$newDate tarihinde personelin başka bir kaydı bulunuyor. '
             'Faaliyet tarihi değiştirilmedi.',
+            code: 'date_change_conflict',
+            date: newDate,
+            personnelId: assignment.personelId,
           );
         }
       }

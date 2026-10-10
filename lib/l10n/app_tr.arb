@@ -2648,5 +2648,39 @@
   "bulkParseInvalidPersonnel": "Personel satırı çözümlenemedi.",
   "bulkParseUnknownRank": "Rütbe tanınamadı; ham personel adı korundu.",
   "bulkParseNoBlocks": "Metinde aktarılabilecek personel bloğu bulunamadı.",
-  "commonFix": "Düzelt"
+  "commonFix": "Düzelt",
+  "assignmentConflictHasRecord": "{date} tarihinde personelin başka bir kaydı bulunuyor.",
+  "@assignmentConflictHasRecord": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "assignmentConflictHasDutyOrRecord": "{date} tarihinde personelin başka bir görevi veya kaydı bulunuyor.",
+  "@assignmentConflictHasDutyOrRecord": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "assignmentConflictDateChange": "{date} tarihinde personelin başka bir kaydı bulunuyor. Faaliyet tarihi değiştirilmedi.",
+  "@assignmentConflictDateChange": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "assignmentConflictReport": "{date} tarihinde personelin başka bir görevi, izni veya raporu bulunuyor. Rapor kaydedilmedi.",
+  "@assignmentConflictReport": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "transferPersonnelAlreadyInTarget": "Bu personel zaten hedef faaliyette mevcut.",
+  "bulkImportDuplicateWarningContent": "{dates} tarihli bu içerik {recordDate} tarihinde {user} tarafından kaydedilmiş.\n\nVeritabanında bu listeye ait {count} personel kaydı aktif duruyor. Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?",
+  "@bulkImportDuplicateWarningContent": {
+    "placeholders": {
+      "dates": { "type": "String" },
+      "recordDate": { "type": "String" },
+      "user": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  }
 }

@@ -3662,4 +3662,34 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get commonFix => 'Düzelt';
+
+  @override
+  String assignmentConflictHasRecord(String date) {
+    return '$date tarihinde personelin başka bir kaydı bulunuyor.';
+  }
+
+  @override
+  String assignmentConflictHasDutyOrRecord(String date) {
+    return '$date tarihinde personelin başka bir görevi veya kaydı bulunuyor.';
+  }
+
+  @override
+  String assignmentConflictDateChange(String date) {
+    return '$date tarihinde personelin başka bir kaydı bulunuyor. Faaliyet tarihi değiştirilmedi.';
+  }
+
+  @override
+  String assignmentConflictReport(String date) {
+    return '$date tarihinde personelin başka bir görevi, izni veya raporu bulunuyor. Rapor kaydedilmedi.';
+  }
+
+  @override
+  String get transferPersonnelAlreadyInTarget =>
+      'Bu personel zaten hedef faaliyette mevcut.';
+
+  @override
+  String bulkImportDuplicateWarningContent(
+      String dates, String recordDate, String user, int count) {
+    return '$dates tarihli bu içerik $recordDate tarihinde $user tarafından kaydedilmiş.\n\nVeritabanında bu listeye ait $count personel kaydı aktif duruyor. Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?';
+  }
 }

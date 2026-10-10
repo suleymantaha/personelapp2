@@ -192,6 +192,7 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
       if (alreadyInTarget != null) {
         return const PersonnelTransferResult(
           moved: false,
+          reasonCode: 'already_in_target',
           reason: 'Bu personel zaten hedef faaliyette mevcut.',
         );
       }
@@ -303,6 +304,9 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
           throw AssignmentConflictException(
             '$date tarihinde personelin başka bir görevi, izni veya raporu '
             'bulunuyor. Rapor kaydedilmedi.',
+            code: 'report_conflict',
+            date: date,
+            personnelId: personelId,
           );
         }
         day = day.add(const Duration(days: 1));

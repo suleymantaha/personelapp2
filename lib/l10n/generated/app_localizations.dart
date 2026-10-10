@@ -6240,6 +6240,43 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Düzelt'**
   String get commonFix;
+
+  /// No description provided for @assignmentConflictHasRecord.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} tarihinde personelin başka bir kaydı bulunuyor.'**
+  String assignmentConflictHasRecord(String date);
+
+  /// No description provided for @assignmentConflictHasDutyOrRecord.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} tarihinde personelin başka bir görevi veya kaydı bulunuyor.'**
+  String assignmentConflictHasDutyOrRecord(String date);
+
+  /// No description provided for @assignmentConflictDateChange.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} tarihinde personelin başka bir kaydı bulunuyor. Faaliyet tarihi değiştirilmedi.'**
+  String assignmentConflictDateChange(String date);
+
+  /// No description provided for @assignmentConflictReport.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} tarihinde personelin başka bir görevi, izni veya raporu bulunuyor. Rapor kaydedilmedi.'**
+  String assignmentConflictReport(String date);
+
+  /// No description provided for @transferPersonnelAlreadyInTarget.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu personel zaten hedef faaliyette mevcut.'**
+  String get transferPersonnelAlreadyInTarget;
+
+  /// No description provided for @bulkImportDuplicateWarningContent.
+  ///
+  /// In tr, this message translates to:
+  /// **'{dates} tarihli bu içerik {recordDate} tarihinde {user} tarafından kaydedilmiş.\n\nVeritabanında bu listeye ait {count} personel kaydı aktif duruyor. Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?'**
+  String bulkImportDuplicateWarningContent(
+      String dates, String recordDate, String user, int count);
 }
 
 class _AppLocalizationsDelegate

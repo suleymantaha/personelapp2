@@ -356,7 +356,8 @@ class _TransferPersonnelDialogState
                           );
                         } else {
                           AppNotifications.warning(
-                            result.reason ?? l10n.transferPersonnelFailed,
+                            result.localizedReason(l10n) ??
+                                l10n.transferPersonnelFailed,
                           );
                         }
                       } catch (e) {
