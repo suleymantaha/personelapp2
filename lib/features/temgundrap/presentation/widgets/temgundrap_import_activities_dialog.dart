@@ -5,14 +5,17 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/temgundrap/domain/services/temgundrap_activity_converter.dart';
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 
 class TemgundrapImportActivitiesDialog extends ConsumerStatefulWidget {
   const TemgundrapImportActivitiesDialog({
     super.key,
     required this.initialDate,
+    this.existingOperations = const [],
   });
 
   final DateTime initialDate;
+  final List<TemgundrapOperation> existingOperations;
 
   @override
   ConsumerState<TemgundrapImportActivitiesDialog> createState() =>
@@ -27,6 +30,13 @@ class _TemgundrapImportActivitiesDialogState
   List<FaaliyetPersonelAtamaTableData> _assignments = [];
   Map<int, PersonelTableData> _personnelMap = {};
   final Set<int> _selectedActivityIds = {};
+
+  bool _isActivityAlreadyAdded(GunlukFaaliyetTableData act) =>
+      TemgundrapActivityConverter.isAlreadyImported(
+          act, widget.existingOperations);
+
+  List<GunlukFaaliyetTableData> get _availableActivities =>
+      _activities.where((act) => !_isActivityAlreadyAdded(act)).toList();
 
   @override
   void initState() {
@@ -53,7 +63,12 @@ class _TemgundrapImportActivitiesDialogState
             .get();
       }
 
-      final personnel = await db.select(db.personelTable).get();
+      final personnelIds = assignments.map((a) => a.personelId).toSet();
+      final personnel = personnelIds.isEmpty
+          ? <PersonelTableData>[]
+          : await (db.select(db.personelTable)
+                ..where((tbl) => tbl.id.isIn(personnelIds)))
+              .get();
       final pMap = {for (final p in personnel) p.id: p};
 
       if (!mounted) return;
@@ -62,8 +77,12 @@ class _TemgundrapImportActivitiesDialogState
         _assignments = assignments;
         _personnelMap = pMap;
         _selectedActivityIds.clear();
-        // Default: select all activities
-        _selectedActivityIds.addAll(actIds);
+        // Default: only select activities that have NOT been imported yet
+        for (final act in activities) {
+          if (!_isActivityAlreadyAdded(act)) {
+            _selectedActivityIds.add(act.id);
+          }
+        }
         _loading = false;
       });
     } catch (_) {
@@ -86,17 +105,18 @@ class _TemgundrapImportActivitiesDialogState
 
   void _toggleAll() {
     setState(() {
-      if (_selectedActivityIds.length == _activities.length) {
+      if (_selectedActivityIds.length == _availableActivities.length) {
         _selectedActivityIds.clear();
       } else {
-        _selectedActivityIds.addAll(_activities.map((a) => a.id));
+        _selectedActivityIds.addAll(_availableActivities.map((a) => a.id));
       }
     });
   }
 
   void _submit() {
-    final selectedActivities =
-        _activities.where((a) => _selectedActivityIds.contains(a.id)).toList();
+    final selectedActivities = _availableActivities
+        .where((a) => _selectedActivityIds.contains(a.id))
+        .toList();
     if (selectedActivities.isEmpty) return;
 
     final selectedAssignments = _assignments
@@ -118,11 +138,15 @@ class _TemgundrapImportActivitiesDialogState
     final dateDisplay = DateFormat('dd.MM.yyyy').format(_selectedDate);
 
     return AlertDialog(
-      title: Row(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.playlist_add_check_rounded),
-          const SizedBox(width: 8),
-          Expanded(child: Text(l10n.temgundrapImportDialogTitle)),
+          Row(children: [
+            const Icon(Icons.playlist_add_check_rounded),
+            const SizedBox(width: 8),
+            Expanded(child: Text(l10n.temgundrapImportDialogTitle)),
+          ]),
           TextButton.icon(
             icon: const Icon(Icons.calendar_month, size: 18),
             label: Text(dateDisplay),
@@ -156,22 +180,21 @@ class _TemgundrapImportActivitiesDialogState
                   )
                 : Column(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              l10n.temgundrapImportDialogSubtitle,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
+                          Text(
+                            l10n.temgundrapImportDialogSubtitle,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
                             ),
                           ),
                           TextButton(
                             onPressed: _toggleAll,
                             child: Text(
-                              _selectedActivityIds.length == _activities.length
+                              _selectedActivityIds.length ==
+                                      _availableActivities.length
                                   ? 'Seçimi Kaldır'
                                   : 'Tümünü Seç',
                             ),
@@ -189,28 +212,37 @@ class _TemgundrapImportActivitiesDialogState
                             final personCount = _assignments
                                 .where((a) => a.faaliyetId == act.id)
                                 .length;
+                            final isAdded = _isActivityAlreadyAdded(act);
 
                             return CheckboxListTile(
                               key: Key('activity-import-${act.id}'),
                               value: isSelected,
                               title: Text(
                                 act.faaliyetAdi,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w600,
+                                  color: isAdded && !isSelected
+                                      ? Colors.grey
+                                      : null,
                                 ),
                               ),
                               subtitle: Text(
-                                '$personCount Personel Görevli',
+                                '$personCount Personel Görevli${isAdded ? ' • (Zaten Eklendi)' : ''}',
+                                style: TextStyle(
+                                  color: isAdded ? Colors.teal : null,
+                                ),
                               ),
-                              onChanged: (val) {
-                                setState(() {
-                                  if (val == true) {
-                                    _selectedActivityIds.add(act.id);
-                                  } else {
-                                    _selectedActivityIds.remove(act.id);
-                                  }
-                                });
-                              },
+                              onChanged: isAdded
+                                  ? null
+                                  : (val) {
+                                      setState(() {
+                                        if (val == true) {
+                                          _selectedActivityIds.add(act.id);
+                                        } else {
+                                          _selectedActivityIds.remove(act.id);
+                                        }
+                                      });
+                                    },
                             );
                           },
                         ),

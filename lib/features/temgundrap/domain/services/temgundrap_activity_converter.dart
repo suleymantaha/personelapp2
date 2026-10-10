@@ -6,6 +6,18 @@ import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 class TemgundrapActivityConverter {
   const TemgundrapActivityConverter._();
 
+  static String sourceId(GunlukFaaliyetTableData activity) =>
+      'activity-${activity.tarih}-${activity.id}';
+
+  static bool isAlreadyImported(
+    GunlukFaaliyetTableData activity,
+    Iterable<TemgundrapOperation> operations,
+  ) =>
+      operations.any((operation) =>
+          operation.id == sourceId(activity) ||
+          // Earlier imports used <activity id>_<timestamp>; edits retain that id.
+          RegExp('^${activity.id}_[0-9]+\$').hasMatch(operation.id));
+
   static final RegExp _timeRangePattern = RegExp(
     r'(?<!\d)(\d{1,2})[.:](\d{2})(?:\s*[-/]\s*|\s+to\s+|\s+)(\d{1,2})[.:](\d{2})(?!\d)',
     caseSensitive: false,
@@ -144,8 +156,10 @@ class TemgundrapActivityConverter {
     // 5. Start and End Times
     final dateParts = activity.tarih.split('-');
     final baseYear = int.tryParse(dateParts[0]) ?? DateTime.now().year;
-    final baseMonth = int.tryParse(dateParts.length > 1 ? dateParts[1] : '1') ?? 1;
-    final baseDay = int.tryParse(dateParts.length > 2 ? dateParts[2] : '1') ?? 1;
+    final baseMonth =
+        int.tryParse(dateParts.length > 1 ? dateParts[1] : '1') ?? 1;
+    final baseDay =
+        int.tryParse(dateParts.length > 2 ? dateParts[2] : '1') ?? 1;
 
     DateTime startAt = DateTime(baseYear, baseMonth, baseDay, 8, 0);
     DateTime endAt = DateTime(baseYear, baseMonth, baseDay, 17, 0);
@@ -187,7 +201,7 @@ class TemgundrapActivityConverter {
     }
 
     return TemgundrapOperation(
-      id: '${activity.id}_${DateTime.now().microsecondsSinceEpoch}',
+      id: sourceId(activity),
       issuingUnit: issuingUnit ?? defaultTemgundrapIssuingUnit,
       operationArea: operationArea,
       commander: commander,
