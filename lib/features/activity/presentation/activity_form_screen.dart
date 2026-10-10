@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
@@ -91,16 +92,16 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
           leading: const AppBackButton(),
           centerTitle: false,
           titleSpacing: 0,
-          title: const Text(
-            'Faaliyet Çizelgesi',
+          title: Text(
+            context.l10n.activityFormTitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
           ),
           actions: [
             if (isAdmin && _draft.step == ActivityFormStep.personnelSelection)
               IconButton(
-                tooltip: 'Toplu metin yapıştır',
+                tooltip: context.l10n.activityFormBulkPasteTooltip,
                 icon: const Icon(Icons.content_paste_go_rounded),
                 onPressed: _showBulkImportSheet,
               ),
@@ -116,7 +117,7 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
             builder: (context, constraints) {
               final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 0.0;
               return Center(
-                child: ConstrainedBox(
+                 child: ConstrainedBox(
                   constraints: const BoxConstraints(
                     maxWidth: AppSpacing.readableContentWidth,
                   ),
@@ -138,13 +139,13 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                             child: CircularProgressIndicator(),
                           ),
                           error: (error, _) => _ErrorState(
-                            message: 'Tim verileri alınamadı: $error',
+                            message: context.l10n.activityFormSquadError(error.toString()),
                           ),
                         ),
                         loading: () =>
                             const Center(child: CircularProgressIndicator()),
                         error: (error, _) => _ErrorState(
-                          message: 'Personel yüklenemedi: $error',
+                          message: context.l10n.activityFormPersonnelLoadError(error.toString()),
                         ),
                       ),
                     ),
@@ -165,9 +166,8 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
     required List<TimTableData> squads,
   }) {
     if (!isAdmin && session?.timId == null) {
-      return const _ErrorState(
-        message:
-            'Henüz bir time atanmadınız. Lütfen yöneticinizle iletişime geçin.',
+      return _ErrorState(
+        message: context.l10n.activityFormNoSquadWarning,
       );
     }
 
@@ -177,8 +177,8 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
             .where((person) => person.timId == session?.timId)
             .toList();
     if (personnel.isEmpty) {
-      return const _ErrorState(
-        message: 'Görevlendirilecek kayıtlı personel bulunamadı.',
+      return _ErrorState(
+        message: context.l10n.activityFormNoPersonnelWarning,
       );
     }
 
@@ -249,10 +249,10 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
     final isPersonnelStep = _draft.step == ActivityFormStep.personnelSelection;
     final enabled = isPersonnelStep ? _draft.canContinue : _draft.canPreview;
     final buttonLabel = isPersonnelStep
-        ? 'Devam (${_draft.selectedCount})'
+        ? context.l10n.activityFormContinueButton(_draft.selectedCount)
         : isAdmin
-            ? 'Önizle ve Kaydet (${_draft.selectedCount})'
-            : 'Önizle ve Onaya Gönder (${_draft.selectedCount})';
+            ? context.l10n.activityFormPreviewAndSave(_draft.selectedCount)
+            : context.l10n.activityFormPreviewAndSend(_draft.selectedCount);
 
     return Material(
       elevation: 12,
@@ -335,18 +335,18 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
     return await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Değişiklikler silinsin mi?'),
-            content: const Text(
-              'Seçtiğiniz personel ve faaliyet bilgileri kaydedilmedi.',
+            title: Text(dialogContext.l10n.activityFormDiscardChangesTitle),
+            content: Text(
+              dialogContext.l10n.activityFormDiscardChangesMessage,
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Devam et'),
+                child: Text(dialogContext.l10n.commonContinueRunning),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Çık'),
+                child: Text(dialogContext.l10n.commonExit),
               ),
             ],
           ),
@@ -383,13 +383,13 @@ class _SelectionSummary extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '$count personel seçildi',
+                context.l10n.activitySelectedPersonnelCount(count),
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
               Text(
                 isPersonnelStep
-                    ? 'Personel seçimini tamamlayın'
-                    : 'Faaliyet bilgilerini tamamlayın',
+                    ? context.l10n.activityFormCompletePersonnelSelection
+                    : context.l10n.activityFormCompleteActivityInfo,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: context.textStyleSecondary.copyWith(fontSize: 12),

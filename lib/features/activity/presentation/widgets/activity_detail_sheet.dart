@@ -7,6 +7,7 @@ import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
@@ -91,7 +92,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
           () {
             final atama = operationalAssignments[i];
             final p = rosterPersonnel[atama.personelId];
-            final timName = atama.gorevTimAdi ?? 'Tim geçmişi bilinmiyor';
+            final timName =
+                atama.gorevTimAdi ??
+                context.l10n.activityDetailUnknownSquadHistory;
             return MilitaryRosterRow(
               sNu: i + 1,
               personelId: atama.personelId,
@@ -119,14 +122,17 @@ class ActivityAssignmentDetails extends ConsumerWidget {
       bool allCurrentAssignments = false,
     }) async {
       final currentSession = ref.read(userSessionProvider);
-      if (currentSession == null) throw StateError('Oturum doğrulanamadı.');
+      if (currentSession == null) {
+        throw StateError(context.l10n.authSessionFailed);
+      }
+      final expiredMsg = context.l10n.authTeamPermissionExpired;
       final team = currentSession.isAdmin
           ? null
           : await ref
                 .read(personnelRepositoryProvider)
                 .currentCommanderTeam(currentSession.username);
       if (!currentSession.isAdmin && team == null) {
-        throw StateError('Tim yetkiniz sona erdi.');
+        throw StateError(expiredMsg);
       }
       final ids = selected.map((a) => a.id).toSet();
       final db = ref.read(databaseProvider);
@@ -180,9 +186,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   icon: const Icon(Icons.person_add_alt_1, size: 16),
-                  label: const Text(
-                    '+ Personel Ekle',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  label: Text(
+                    context.l10n.activityDetailAddPersonnelButton,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                   ),
                   onPressed: () async {
                     final action = await showModalBottomSheet<String>(
@@ -199,9 +205,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                               leading: const Icon(
                                 Icons.person_add_alt_1_rounded,
                               ),
-                              title: const Text('Personel Seçerek Ekle'),
-                              subtitle: const Text(
-                                'Bir veya birden fazla personel seçin',
+                              title: Text(context.l10n.activityDetailAddSingleOption),
+                              subtitle: Text(
+                                context.l10n.activityDetailAddSingleOptionSubtitle,
                               ),
                               onTap: () =>
                                   Navigator.of(sheetContext).pop('single'),
@@ -213,9 +219,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                               leading: const Icon(
                                 Icons.content_paste_go_rounded,
                               ),
-                              title: const Text('Metinden Toplu Ekle'),
-                              subtitle: const Text(
-                                'Listeyi tam önizleme ve hata kontrolüyle aktar',
+                              title: Text(context.l10n.activityDetailAddBulkOption),
+                              subtitle: Text(
+                                context.l10n.activityDetailAddBulkOptionSubtitle,
                               ),
                               onTap: () =>
                                   Navigator.of(sheetContext).pop('bulk'),
@@ -225,9 +231,9 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                                 'activity-add-image-personnel-option',
                               ),
                               leading: const Icon(Icons.image_search_rounded),
-                              title: const Text('Görselden Toplu Ekle'),
-                              subtitle: const Text(
-                                'Personel listesini görselden okuyup bu karta ekle',
+                              title: Text(context.l10n.activityDetailAddImageOption),
+                              subtitle: Text(
+                                context.l10n.activityDetailAddImageOptionSubtitle,
                               ),
                               onTap: () =>
                                   Navigator.of(sheetContext).pop('image'),
@@ -241,7 +247,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       final service = RosterImageImportService();
                       if (!service.isSupportedPlatform) {
                         AppNotifications.warning(
-                          'Görselden aktarım Android ve iOS cihazlarda kullanılabilir.',
+                          context.l10n.activityDetailImagePlatformWarning,
                         );
                         return;
                       }
@@ -272,7 +278,13 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       } on RosterImageImportNoNamesException catch (error) {
                         AppNotifications.warning(error.toString());
                       } on Object catch (error) {
-                        AppNotifications.error('Görsel okunamadı: $error');
+                        if (context.mounted) {
+                          AppNotifications.error(
+                            context.l10n.activityDetailImageReadError(
+                              error.toString(),
+                            ),
+                          );
+                        }
                       }
                       return;
                     }
@@ -312,8 +324,8 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                     if (added == true && context.mounted) {
                       AppNotifications.approvalResult(
                         isAdmin
-                            ? 'Personel faaliyete eklendi.'
-                            : 'Personel eklendi, Admin onayına gönderildi.',
+                            ? context.l10n.activityDetailPersonnelAdded
+                            : context.l10n.activityDetailPersonnelAddedAdminPending,
                         pendingApproval: !isAdmin,
                       );
                     }
@@ -327,7 +339,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                   color: context.textSecondary,
                   size: 20,
                 ),
-                tooltip: 'Bu Faaliyeti Dışa Aktar',
+                tooltip: context.l10n.activityDetailExportTooltip,
                 elevation: 5,
                 shadowColor: context.shadowColor,
                 surfaceTintColor: context.colorScheme.surface,
@@ -364,46 +376,48 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                     }
                   } catch (error) {
                     if (context.mounted) {
-                      AppNotifications.error('Dışa aktarılamadı: $error');
+                      AppNotifications.error(
+                        context.l10n.rosterOutputExportError(error.toString()),
+                      );
                     }
                   }
                 },
                 itemBuilder: (ctx) => [
-                  const ModernMenuHeader<String>(
-                    title: 'Dışa Aktar',
-                    subtitle: 'Faaliyet listesini paylaş veya yazdır',
+                  ModernMenuHeader<String>(
+                    title: context.l10n.activityDetailExportTitle,
+                    subtitle: context.l10n.activityDetailExportSubtitle,
                     icon: Icons.ios_share_rounded,
                   ),
                   const PopupMenuDivider(),
                   ModernPopupMenuItem(
-                    option: const ModernActionOption(
+                    option: ModernActionOption(
                       value: 'combinedExcel',
-                      title: 'Kartları Birleştir ve Çıktı Al',
-                      subtitle: 'Aynı gün ve önceki gün kartlarını imzalı çıktıda birleştir',
+                      title: context.l10n.activityDetailCombineOutputTitle,
+                      subtitle: context.l10n.activityDetailCombineOutputSubtitle,
                       icon: Icons.table_chart_outlined,
                     ),
                   ),
                   ModernPopupMenuItem(
-                    option: const ModernActionOption(
+                    option: ModernActionOption(
                       value: 'excel',
-                      title: 'Excel’e aktar',
-                      subtitle: 'Hesap tablosu olarak paylaş',
+                      title: context.l10n.activityDetailExportExcel,
+                      subtitle: context.l10n.activityDetailExportExcelSubtitle,
                       icon: Icons.table_chart_outlined,
                     ),
                   ),
                   ModernPopupMenuItem(
-                    option: const ModernActionOption(
+                    option: ModernActionOption(
                       value: 'pdf',
-                      title: 'PDF / Yazdır',
-                      subtitle: 'PDF oluştur veya doğrudan yazdır',
+                      title: context.l10n.activityDetailExportPdf,
+                      subtitle: context.l10n.activityDetailExportPdfSubtitle,
                       icon: Icons.picture_as_pdf_outlined,
                     ),
                   ),
                   ModernPopupMenuItem(
-                    option: const ModernActionOption(
+                    option: ModernActionOption(
                       value: 'text',
-                      title: 'Metin olarak paylaş',
-                      subtitle: 'Mesajlaşma uygulamaları için hazırla',
+                      title: context.l10n.activityDetailExportText,
+                      subtitle: context.l10n.activityDetailExportTextSubtitle,
                       icon: Icons.share_outlined,
                     ),
                   ),

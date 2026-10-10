@@ -74,7 +74,10 @@ class DashboardSettings {
                                   final newPass = passCtrl.text.trim();
                                   if (!PasswordPolicy.isValid(newPass)) {
                                     updateDialog(
-                                      () => errorText = PasswordPolicy.message,
+                                      () => errorText = context.l10n
+                                          .authPasswordPolicyMinLength(
+                                        PasswordPolicy.minimumLength,
+                                      ),
                                     );
                                     return;
                                   }

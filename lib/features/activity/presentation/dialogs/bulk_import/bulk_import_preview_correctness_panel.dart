@@ -65,8 +65,11 @@ class _CorrectnessPanel extends StatelessWidget {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              '$cardCount kart • $personnelCount personel'
-              '${isAllOk ? " • Hazır" : " • ${criticalCount > 0 ? "$criticalCount hata" : "$reviewCount inceleme"}"}',
+              isAllOk
+                  ? context.l10n.bulkImportMobileSummaryReady(cardCount, personnelCount)
+                  : criticalCount > 0
+                      ? context.l10n.bulkImportMobileSummaryErrors(cardCount, personnelCount, criticalCount)
+                      : context.l10n.bulkImportMobileSummaryReviews(cardCount, personnelCount, reviewCount),
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -86,9 +89,9 @@ class _CorrectnessPanel extends StatelessWidget {
               key: const Key('bulk-confirm-all-suggestions'),
               onPressed: onConfirmAllSuggestions,
               icon: const Icon(Icons.done_all_rounded, size: 12),
-              label: const Text(
-                'Onayla',
-                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
+              label: Text(
+                context.l10n.bulkImportConfirmAction,
+                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
               ),
               style: FilledButton.styleFrom(
                 backgroundColor: context.approvedColor,
@@ -121,10 +124,10 @@ class _CorrectnessPanel extends StatelessWidget {
 
   Widget _buildPanel(BuildContext context, bool compact) {
     final actionText = actionCount == 0
-        ? 'Tüm kontroller tamam'
+        ? context.l10n.bulkImportAllChecksPassed
         : hasBlocking
-            ? 'Kaydetmeden önce $actionCount işlem tamamlanmalı'
-            : '$actionCount isteğe bağlı inceleme';
+            ? context.l10n.bulkImportActionsRequiredBeforeSave(actionCount)
+            : context.l10n.bulkImportOptionalReviewsCount(actionCount);
     if (compact) {
       return Container(
         padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
@@ -135,9 +138,9 @@ class _CorrectnessPanel extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Text(
-              'Doğruluk Paneli',
-              style: TextStyle(
+            Text(
+              context.l10n.bulkImportCorrectnessPanelTitle,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),
@@ -243,9 +246,9 @@ class _CorrectnessPanel extends StatelessWidget {
                 key: const Key('bulk-confirm-all-suggestions'),
                 onPressed: onConfirmAllSuggestions,
                 icon: const Icon(Icons.done_all_rounded, size: 14),
-                label: const Text(
-                  'Tümünü Onayla',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                label: Text(
+                  context.l10n.bulkImportConfirmAllAction,
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                 ),
                 style: FilledButton.styleFrom(
                   backgroundColor: context.approvedColor,
@@ -291,9 +294,9 @@ class _CorrectnessPanel extends StatelessWidget {
                   runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    const Text(
-                      'Doğruluk Paneli',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.bulkImportCorrectnessPanelTitle,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
@@ -313,9 +316,9 @@ class _CorrectnessPanel extends StatelessWidget {
                         key: const Key('bulk-confirm-all-suggestions'),
                         onPressed: onConfirmAllSuggestions,
                         icon: const Icon(Icons.done_all_rounded, size: 14),
-                        label: const Text(
-                          'Tümünü Onayla',
-                          style: TextStyle(
+                        label: Text(
+                          context.l10n.bulkImportConfirmAllAction,
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),

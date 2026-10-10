@@ -22,7 +22,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Text(
-            'Bu faaliyette görevlendirilmiş personel bulunmuyor.',
+            context.l10n.activityDetailNoPersonnelAssigned,
             style: TextStyle(
               fontStyle: FontStyle.italic,
               color: context.textSecondary,
@@ -52,7 +52,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
             final selectedRows = buildRosterRows(selectedAssignments);
             if (selectedRows.isEmpty) {
               AppNotifications.info(
-                'Seçilen timlerde yazdırılabilir personel bulunamadı.',
+                context.l10n.activityDetailNoPrintablePersonnel,
               );
               return;
             }
@@ -63,8 +63,8 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                 .map(
                   (id) =>
                       id == null
-                          ? 'Tim Dışı'
-                          : squadMap[id] ?? 'Bilinmeyen Tim',
+                          ? context.l10n.activityDetailOutSquad
+                          : squadMap[id] ?? context.l10n.activityDetailUnknownSquad,
                 )
                 .join(', ');
 
@@ -116,7 +116,11 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                 return;
             }
             } catch (error) {
-              if (context.mounted) AppNotifications.error('Dışa aktarılamadı: $error');
+              if (context.mounted) {
+                AppNotifications.error(
+                  context.l10n.rosterOutputExportError(error.toString()),
+                );
+              }
             }
           },
           onDeleteSelected:
@@ -129,25 +133,29 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                         .map(
                           (id) =>
                               id == null
-                                  ? 'Tim Dışı'
-                                  : squadMap[id] ?? 'Bilinmeyen Tim',
+                                  ? context.l10n.activityDetailOutSquad
+                                  : squadMap[id] ??
+                                      context.l10n.activityDetailUnknownSquad,
                         )
                         .join(', ');
                     final confirmed = await showDialog<bool>(
                       context: context,
                       builder:
                           (dialogContext) => AlertDialog(
-                            title: const Text('Timleri Faaliyetten Sil'),
+                            title: Text(
+                              context.l10n.activityDetailDeleteSquadsTitle,
+                            ),
                             content: Text(
-                              '$teamNames timlerindeki '
-                              '${selectedAssignments.length} personel bu '
-                              'faaliyetten çıkarılacaktır. Emin misiniz?',
+                              context.l10n.activityDetailDeleteSquadsConfirm(
+                                teamNames,
+                                selectedAssignments.length,
+                              ),
                             ),
                             actions: [
                               TextButton(
                                 onPressed:
                                     () => Navigator.pop(dialogContext, false),
-                                child: const Text('İPTAL'),
+                                child: Text(context.l10n.commonCancel),
                               ),
                               FilledButton(
                                 style: FilledButton.styleFrom(
@@ -155,7 +163,9 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                 ),
                                 onPressed:
                                     () => Navigator.pop(dialogContext, true),
-                                child: const Text('TİMLERİ SİL'),
+                                child: Text(
+                                  context.l10n.activityDetailDeleteSquadsAction,
+                                ),
                               ),
                             ],
                           ),
@@ -169,7 +179,9 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                         );
                     if (context.mounted) {
                       AppNotifications.info(
-                        '$deleted personel faaliyetten çıkarıldı.',
+                        context.l10n.activityDetailPersonnelRemovedCount(
+                          deleted,
+                        ),
                       );
                     }
                   },
@@ -240,7 +252,9 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                           ),
                           child: Text(
                             isPending
-                                ? '${atama.gorevVeyaIzin} • BEKLİYOR'
+                                ? context.l10n.activityDetailDutyPending(
+                                  atama.gorevVeyaIzin,
+                                )
                                 : atama.gorevVeyaIzin,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -274,7 +288,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                   if (digerNote.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
-                      'Not: $digerNote',
+                      context.l10n.activityDetailNoteLabel(digerNote),
                       style: TextStyle(
                         fontSize: 11,
                         fontStyle: FontStyle.italic,
@@ -301,7 +315,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                               ),
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
-                              tooltip: 'Onayla',
+                              tooltip: context.l10n.commonApproveTooltip,
                               onPressed: () async {
                                 final repo = ref.read(
                                   activityRepositoryProvider,
@@ -313,8 +327,9 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                 if (context.mounted &&
                                     result.blockedCount > 0) {
                                   AppNotifications.error(
-                                    'Onaylanamadı: '
-                                    '${result.conflictDescriptions.join(', ')}',
+                                    context.l10n.activityDetailApproveBlocked(
+                                      result.conflictDescriptions.join(', '),
+                                    ),
                                   );
                                 }
                               },
@@ -332,7 +347,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                               ),
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
-                              tooltip: 'Reddet',
+                              tooltip: context.l10n.commonRejectTooltip,
                               onPressed: () async {
                                 final repo = ref.read(
                                   activityRepositoryProvider,
@@ -353,7 +368,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                             color: context.textSecondary,
                             size: 18,
                           ),
-                          tooltip: 'İşlemler',
+                          tooltip: context.l10n.commonActionsTooltip,
                           padding: EdgeInsets.zero,
                           elevation: 5,
                           shadowColor: context.shadowColor,
@@ -375,8 +390,8 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                 if (updated == true && context.mounted) {
                                   AppNotifications.approvalResult(
                                     isAdmin
-                                        ? 'Görev güncellendi.'
-                                        : 'Görev değişikliği kaydedildi, Admin onayına gönderildi.',
+                                        ? context.l10n.activityDetailDutyUpdated
+                                        : context.l10n.activityDetailDutyUpdatePending,
                                     pendingApproval: !isAdmin,
                                   );
                                 }
@@ -392,14 +407,14 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                   context: context,
                                   builder:
                                       (ctx) => AlertDialog(
-                                        title: const Text(
-                                          'Personeli Görevden Çıkar',
+                                        title: Text(
+                                          context.l10n.activityDetailRemovePersonnelTitle,
                                         ),
                                         content: Text(
-                                          '$displayName adlı personel '
-                                          '${activity.faaliyetAdi} '
-                                          'faaliyetinden çıkarılacaktır. '
-                                          'Emin misiniz?',
+                                          context.l10n.activityDetailRemovePersonnelConfirm(
+                                            displayName,
+                                            activity.faaliyetAdi,
+                                          ),
                                         ),
                                         actions: [
                                           TextButton(
@@ -407,7 +422,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                                 () => Navigator.of(
                                                   ctx,
                                                 ).pop(false),
-                                            child: const Text('İPTAL'),
+                                            child: Text(context.l10n.commonCancel),
                                           ),
                                           ElevatedButton(
                                             style: ElevatedButton.styleFrom(
@@ -417,7 +432,9 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                             onPressed:
                                                 () =>
                                                     Navigator.of(ctx).pop(true),
-                                            child: const Text('ÇIKAR'),
+                                            child: Text(
+                                              context.l10n.activityDetailRemoveAction,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -432,7 +449,9 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                   );
                                   if (context.mounted) {
                                     AppNotifications.info(
-                                      '$displayName faaliyetten çıkarıldı.',
+                                      context.l10n.activityDetailPersonnelRemoved(
+                                        displayName,
+                                      ),
                                     );
                                   }
                                 }
@@ -441,35 +460,35 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                           itemBuilder:
                               (ctx) => [
                                 ModernMenuHeader<_AssignmentAction>(
-                                  title: 'Atama İşlemleri',
+                                  title: context.l10n.activityDetailAssignmentActions,
                                   subtitle: displayName,
                                   icon: Icons.assignment_ind_outlined,
                                 ),
                                 const PopupMenuDivider(),
                                 ModernPopupMenuItem(
-                                  option: const ModernActionOption(
+                                  option: ModernActionOption(
                                     value: _AssignmentAction.edit,
-                                    title: 'Düzenle',
+                                    title: context.l10n.commonEdit,
                                     subtitle:
-                                        'Görev veya izin bilgisini değiştir',
+                                        context.l10n.activityDetailEditDutySubtitle,
                                     icon: Icons.edit_outlined,
                                   ),
                                 ),
                                 ModernPopupMenuItem(
-                                  option: const ModernActionOption(
+                                  option: ModernActionOption(
                                     value: _AssignmentAction.transfer,
-                                    title: 'Başka karta taşı',
+                                    title: context.l10n.activityDetailTransferCard,
                                     subtitle:
-                                        'Personeli farklı faaliyete aktar',
+                                        context.l10n.activityDetailTransferCardSubtitle,
                                     icon: Icons.swap_horiz_rounded,
                                   ),
                                 ),
                                 const PopupMenuDivider(),
                                 ModernPopupMenuItem(
-                                  option: const ModernActionOption(
+                                  option: ModernActionOption(
                                     value: _AssignmentAction.delete,
-                                    title: 'Faaliyetten çıkar',
-                                    subtitle: 'Personelin bu atamasını kaldır',
+                                    title: context.l10n.activityDetailRemoveFromActivity,
+                                    subtitle: context.l10n.activityDetailRemoveFromActivitySubtitle,
                                     icon: Icons.person_remove_outlined,
                                     isDestructive: true,
                                   ),

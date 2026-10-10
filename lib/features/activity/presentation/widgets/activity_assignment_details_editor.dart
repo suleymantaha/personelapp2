@@ -132,7 +132,9 @@ class _AssignmentCardState extends State<_AssignmentCard> {
                     onTap: () async {
                       final newDuty = await showActivityDutyPicker(
                         context,
-                        title: '${widget.person.adSoyad} için görev',
+                        title: context.l10n.activityDutyPickerTitleForPerson(
+                          widget.person.adSoyad,
+                        ),
                         duties: widget.duties,
                         keyPrefix: 'assignment-duty-$id',
                         selectedDuty: duty,

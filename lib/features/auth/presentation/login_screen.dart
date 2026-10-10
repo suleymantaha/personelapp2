@@ -77,6 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _loginUserSession(KullaniciTableData user) async {
+    final l10n = context.l10n;
     final db = ref.read(databaseProvider);
     var timId = user.timId;
     if (user.rol == 'tim_komutani' && timId == null) {
@@ -89,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     final role = UserRole.fromStorageValue(user.rol);
     if (role == null) {
-      throw StateError('Desteklenmeyen kullanıcı rolü: ${user.rol}');
+      throw StateError(l10n.authUnsupportedRole(user.rol));
     }
     final session = UserSessionState(
       username: user.kullaniciAdi,

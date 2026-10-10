@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 
@@ -52,7 +53,7 @@ class _TemgundrapVehicleEditorState extends State<TemgundrapVehicleEditor> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Araçlar',
+                Text(context.l10n.temgundrapVehicles,
                     style:
                         TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
@@ -64,7 +65,7 @@ class _TemgundrapVehicleEditorState extends State<TemgundrapVehicleEditor> {
                       initialValue: _model,
                       isExpanded: true,
                       decoration:
-                          const InputDecoration(labelText: 'Araç modeli'),
+                          InputDecoration(labelText: context.l10n.temgundrapVehicleModel),
                       items: widget.catalog.keys
                           .map((item) =>
                               DropdownMenuItem(value: item, child: Text(item)))
@@ -121,7 +122,7 @@ class _TemgundrapVehicleEditorState extends State<TemgundrapVehicleEditor> {
                       runSpacing: 8,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        const Text('Kayıtlı plakalar:'),
+                        Text(context.l10n.temgundrapRegisteredPlates),
                         ...plates.map((plate) => ActionChip(
                               key: Key('saved-plate-$plate'),
                               label: Text(plate),

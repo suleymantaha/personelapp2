@@ -34,8 +34,8 @@ class BulkImportEmptyState extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               hasBlockingParseIssue
-                  ? 'Kartlara bağlı sorun kalmadı'
-                  : 'Tüm kart sorunları çözüldü',
+                  ? context.l10n.bulkImportEmptyNoCardIssues
+                  : context.l10n.bulkImportEmptyAllIssuesResolved,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 16,
@@ -45,8 +45,8 @@ class BulkImportEmptyState extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               hasBlockingParseIssue
-                  ? 'Kalan kritik ayrıştırma sorunlarını yukarıdaki uyarı panelinden inceleyin.'
-                  : 'İsterseniz tüm faaliyet kartlarına geri dönebilirsiniz.',
+                  ? context.l10n.bulkImportEmptyCheckNoticePanel
+                  : context.l10n.bulkImportEmptyReturnToAllCards,
               textAlign: TextAlign.center,
               style: TextStyle(color: context.textMuted),
             ),

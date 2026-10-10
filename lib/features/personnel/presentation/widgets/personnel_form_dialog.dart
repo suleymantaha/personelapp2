@@ -249,7 +249,7 @@ class _PersonnelFormDialogState extends ConsumerState<PersonnelFormDialog> {
                         controller: _unitController,
                         decoration: InputDecoration(
                           labelText: context.l10n.personnelUnitLabel,
-                          hintText: "Örn: 1'inci Bl.",
+                          hintText: context.l10n.personnelUnitHint,
                         ),
                       ),
                     ),

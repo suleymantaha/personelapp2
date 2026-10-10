@@ -25,8 +25,10 @@ class MatchStatusIndicator extends StatelessWidget {
         ),
       ParsedPersonnelItem(matchConfidence: < 0.9, isMatched: true) => (
           item.matchConfidence > 0
-              ? 'Eşleşmeyi kontrol edin (%${(item.matchConfidence * 100).toInt()})'
-              : 'Eşleşmeyi kontrol edin',
+              ? context.l10n.bulkImportCheckMatchWithPercent(
+                  (item.matchConfidence * 100).toInt(),
+                )
+              : context.l10n.bulkImportCheckMatch,
           context.warningColor,
           context.warningBgColor,
           Icons.help_rounded,

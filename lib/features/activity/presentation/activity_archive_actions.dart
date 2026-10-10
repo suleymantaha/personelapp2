@@ -102,10 +102,10 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     final l10n = context.l10n;
     final db = ref.read(databaseProvider);
     final session = ref.read(userSessionProvider);
-    if (session == null) throw StateError('Oturum doğrulanamadı.');
+    if (session == null) throw StateError(l10n.authSessionUnverified);
     final authorizedTeam = session.isAdmin ? null :
       await ref.read(personnelRepositoryProvider).currentCommanderTeam(session.username);
-    if (!session.isAdmin && authorizedTeam == null) throw StateError('Tim yetkiniz sona erdi.');
+    if (!session.isAdmin && authorizedTeam == null) throw StateError(l10n.rosterOutputCommanderTeamRevoked);
     final pMap = {for (final p in personnelList) p.id: p};
     final squadsList = ref.read(allSquadsProvider).value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};

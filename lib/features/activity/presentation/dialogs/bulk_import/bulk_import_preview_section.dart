@@ -145,7 +145,9 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           child: Text(
-                            '${widget.ignoredLineCount} başlık, toplam veya not satırı personel kaydı olarak alınmadı.',
+                            context.l10n.bulkImportIgnoredLinesNotice(
+                              widget.ignoredLineCount,
+                            ),
                           ),
                         ),
                       if (widget.blocks.isNotEmpty ||
@@ -222,16 +224,16 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            const Text(
-                              'Henüz Kart Oluşturulmadı',
-                              style: TextStyle(
+                            Text(
+                              context.l10n.bulkImportNoCardsYet,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Yapıştır adımına dönüp mesajı yapıştırın.',
+                              context.l10n.bulkImportNoCardsHint,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: context.textSecondary,
@@ -303,7 +305,7 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
           ),
           const SizedBox(height: 10),
           SmartSaveBar(
-            actionLabel: 'Kaydetme Adımına Geç',
+            actionLabel: context.l10n.bulkImportProceedToSaveStep,
             problemCount: metrics.actionCount,
             problemLocs: widget.problemLocations,
             activeIssueFocusIndex: widget.activeIssueFocusIndex,

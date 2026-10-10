@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
@@ -83,7 +84,7 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
 
   Future<void> _pickFromContacts() async {
     if (_selected == null) {
-      AppNotifications.warning('Önce operasyon komutanını seçin.');
+      AppNotifications.warning(context.l10n.temgundrapSelectCommanderFirst);
       return;
     }
     setState(() => _pickingContact = true);
@@ -99,9 +100,9 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const ListTile(
+                    ListTile(
                       title: Text(
-                        'Kullanılacak numarayı seçin',
+                        context.l10n.temgundrapSelectNumberToUse,
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -120,7 +121,7 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
       final phone = TemgundrapFormatters.phone(rawPhone);
       if (!TemgundrapFormatters.isValidTurkishMobile(phone)) {
         AppNotifications.warning(
-          'Seçilen kişide geçerli cep telefonu bulunamadı.',
+          context.l10n.temgundrapNoValidPhoneFound,
         );
         return;
       }
@@ -128,7 +129,7 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
       _emit();
       await _rememberPhone(phone);
       if (mounted) {
-        AppNotifications.success('Telefon personelle eşleştirildi.');
+        AppNotifications.success(context.l10n.temgundrapPhoneMatchedWithPersonnel);
       }
     } finally {
       if (mounted) setState(() => _pickingContact = false);
@@ -142,8 +143,8 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Operasyon Komutanı',
+              Text(
+                context.l10n.temgundrapOperationCommander,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
@@ -151,8 +152,8 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
                 key: const Key('commander-picker'),
                 initialValue: _selected?.id,
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Personel listesinden seçin',
+                decoration: InputDecoration(
+                  labelText: context.l10n.temgundrapSelectFromPersonnelList,
                 ),
                 items: widget.options
                     .map((item) => DropdownMenuItem(
@@ -177,13 +178,12 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
-                  labelText: 'Kullanılacak telefon',
+                  labelText: context.l10n.temgundrapPhoneToUse,
                   hintText: '533 158 35 97',
-                  helperText:
-                      'Bir kez eşleştirilince sonraki seçimlerde otomatik gelir.',
+                  helperText: context.l10n.temgundrapPhoneAutoMatchesNextTime,
                   suffixIcon: IconButton(
                     key: const Key('pick-commander-contact'),
-                    tooltip: 'Telefon rehberinden seç',
+                    tooltip: context.l10n.temgundrapSelectFromContacts,
                     onPressed: _pickingContact ? null : _pickFromContacts,
                     icon: _pickingContact
                         ? const Padding(
@@ -196,7 +196,7 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
                 validator: (value) =>
                     TemgundrapFormatters.isValidTurkishMobile(value ?? '')
                         ? null
-                        : 'Geçerli bir cep telefonu girin.',
+                        : context.l10n.temgundrapEnterValidPhone,
                 onChanged: (value) {
                   _emit();
                   _rememberPhone(value);

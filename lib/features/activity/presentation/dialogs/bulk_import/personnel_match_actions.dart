@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 
@@ -33,9 +34,9 @@ class PersonnelMatchActions extends StatelessWidget {
                     key: const Key('bulk-person-confirm-suggestion'),
                     onPressed: onConfirmSuggestion,
                     icon: const Icon(Icons.done_rounded, size: 14),
-                    label: const Text(
-                      'Onayla',
-                      style: TextStyle(
+                    label: Text(
+                      context.l10n.commonConfirm,
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
@@ -84,7 +85,9 @@ class PersonnelMatchActions extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Kayitli tim: ${registeredTeamName!.trim()}',
+                                    context.l10n.bulkImportRegisteredTeamLabel(
+                                      registeredTeamName!.trim(),
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -94,7 +97,7 @@ class PersonnelMatchActions extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    'Liste timi: $teamName',
+                                    context.l10n.bulkImportListTeamLabel(teamName),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -108,8 +111,12 @@ class PersonnelMatchActions extends StatelessWidget {
                             }
 
                             final singleTeam = hasRegistered
-                                ? 'Kayitli tim: ${registeredTeamName!.trim()}'
-                                : (hasList ? 'Liste timi: $teamName' : 'Tim belirtilmedi');
+                                ? context.l10n.bulkImportRegisteredTeamLabel(
+                                    registeredTeamName!.trim(),
+                                  )
+                                : (hasList
+                                    ? context.l10n.bulkImportListTeamLabel(teamName)
+                                    : context.l10n.bulkImportNoTeamSpecified);
 
                             return Text(
                               singleTeam,
@@ -144,7 +151,7 @@ class PersonnelMatchActions extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Değiştir',
+                            context.l10n.commonChange,
                             style: TextStyle(
                               color: context.accentOrOlive,
                               fontSize: 12,
@@ -172,9 +179,9 @@ class PersonnelMatchActions extends StatelessWidget {
                   key: const Key('bulk-person-select-btn'),
                   onPressed: onSelect,
                   icon: const Icon(Icons.search, size: 14),
-                  label: const Text(
-                    'Personel Seç',
-                    style: TextStyle(
+                  label: Text(
+                    context.l10n.bulkImportSelectPersonnelButton,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -202,7 +209,11 @@ class PersonnelMatchActions extends StatelessWidget {
                       size: 14,
                     ),
                     label: Text(
-                      '+ ${teamName.toLowerCase().contains('tim') ? teamName : '$teamName Timine'} Ekle',
+                      context.l10n.bulkImportAddToTeamAction(
+                        teamName.toLowerCase().contains('tim')
+                            ? teamName
+                            : '$teamName Timine',
+                      ),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,

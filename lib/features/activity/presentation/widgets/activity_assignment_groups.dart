@@ -4,6 +4,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/collapsible_squad_card.dart';
 
 class ActivityAssignmentGroups extends StatefulWidget {
@@ -98,8 +99,8 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
         grouped.keys.toList()..sort((a, b) {
           if (a == null) return 1;
           if (b == null) return -1;
-          final nameA = widget.squadNames[a] ?? 'Bilinmeyen Tim';
-          final nameB = widget.squadNames[b] ?? 'Bilinmeyen Tim';
+          final nameA = widget.squadNames[a] ?? context.l10n.activityDetailUnknownSquad;
+          final nameB = widget.squadNames[b] ?? context.l10n.activityDetailUnknownSquad;
           final weightA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
           final weightB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
           if (weightA != weightB) return weightA.compareTo(weightB);
@@ -117,7 +118,7 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.close, size: 20),
-                  tooltip: 'Seçimi İptal Et',
+                  tooltip: context.l10n.cancelSelectionTooltip,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                   onPressed: () => setState(_selectedSquadIds.clear),
@@ -125,7 +126,7 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
-                    '${_selectedSquadIds.length} tim seçildi',
+                    context.l10n.activitySelectedSquadCount(_selectedSquadIds.length),
                     style: TextStyle(
                       color: context.accentOrOlive,
                       fontWeight: FontWeight.bold,
@@ -140,13 +141,13 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
                           for (final id in _selectedSquadIds) ...?grouped[id],
                         ]),
                     icon: const Icon(Icons.print_outlined, size: 18),
-                    label: const Text('Yazdır'),
+                    label: Text(context.l10n.commonPrint),
                   ),
                 if (widget.onDeleteSelected != null) ...[
                   const SizedBox(width: 6),
                   IconButton.filledTonal(
                     key: const Key('delete-selected-teams'),
-                    tooltip: 'Seçilen timleri faaliyetten sil',
+                    tooltip: context.l10n.activityDeleteSelectedSquadsTooltip,
                     onPressed: () async {
                       final selectedAssignments = [
                         for (final id in _selectedSquadIds) ...?grouped[id],
@@ -170,8 +171,9 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
           final teamName =
               squadId == null
                   ? grouped[squadId]!.first.gorevTimAdi ??
-                      'Tim geçmişi bilinmiyor'
-                  : (widget.squadNames[squadId] ?? 'Bilinmeyen Tim');
+                      context.l10n.activityDetailUnknownSquadHistory
+                  : (widget.squadNames[squadId] ??
+                      context.l10n.activityDetailUnknownSquad);
           final expanded =
               squadId == null
                   ? _hasExpandedTimDisi
@@ -181,7 +183,10 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
           return CollapsibleSquadCard(
             cardKey: Key('activity-team-card-$squadId'),
             headerKey: Key('activity-team-header-$squadId'),
-            title: '$teamName — ${assignments.length} kişi',
+            title: context.l10n.activitySquadCardTitle(
+              teamName,
+              assignments.length,
+            ),
             expanded: expanded,
             isSelected: isSelected,
             selectionMode: isSelectionMode,
@@ -192,7 +197,7 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
                 IconButton(
                   key: Key('activity-team-transfer-$squadId'),
                   icon: const Icon(Icons.swap_horiz_rounded, size: 18),
-                  tooltip: '$teamName timini başka karta taşı',
+                  tooltip: context.l10n.activityTransferSquadTooltip(teamName),
                   padding: const EdgeInsets.all(4),
                   constraints: const BoxConstraints(),
                   onPressed: () => widget.onTransferSquad!(squadId, teamName),

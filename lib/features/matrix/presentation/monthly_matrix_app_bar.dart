@@ -132,7 +132,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
                   children: [
                     Expanded(
                       child: Text(
-                        '“$_searchQuery” · $visiblePersonnelCount/$totalPersonnelCount kişi',
+                        context.l10n.matrixSearchPersonnelResult(_searchQuery, visiblePersonnelCount, totalPersonnelCount),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -297,12 +297,13 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
     required List<PersonelTableData> personnel,
     required Map<int, Map<int, MatrixDayCell>> matrixData,
   }) async {
+    final l10n = context.l10n;
     try {
       final session = ref.read(userSessionProvider);
-      if (session == null) throw StateError('Oturum doğrulanamadı.');
+      if (session == null) throw StateError(l10n.commonSessionNotVerified);
       final team = session.isAdmin ? null :
         await ref.read(personnelRepositoryProvider).currentCommanderTeam(session.username);
-      if (!session.isAdmin && team == null) throw StateError('Tim yetkiniz sona erdi.');
+      if (!session.isAdmin && team == null) throw StateError(l10n.rosterOutputCommanderTeamRevoked);
       final month = DateFormat('yyyy-MM').format(_selectedMonth);
       final currentMatrix = await ref.read(matrixRepositoryProvider)
         .watchMonthlyMatrix(month, commanderUsername: session.isAdmin ? null : session.username).first;
@@ -313,7 +314,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
       final selectedIds = personnel.map((person) => person.id).toSet();
       final currentPeople = _personnelAvailableToSession(latestPeople, currentSession, currentMatrix)
         .where((person) => selectedIds.contains(person.id)).toList();
-      if (currentPeople.isEmpty) throw StateError('Dışa aktarılacak yetkili kayıt bulunamadı.');
+      if (currentPeople.isEmpty) throw StateError(l10n.matrixNoAuthorizedRecordsForExport);
       await ExcelXmlGenerator.exportAndShareXml(
         personnel: orderMatrixPersonnel(currentPeople, ref.read(allSquadsProvider).valueOrNull ?? []),
         matrixData: currentMatrix, year: _selectedMonth.year, month: _selectedMonth.month);

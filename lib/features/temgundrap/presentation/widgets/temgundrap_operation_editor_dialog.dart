@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
@@ -80,8 +81,8 @@ class _TemgundrapOperationEditorDialogState
         child: Scaffold(
       appBar: AppBar(
         title: Text(widget.initialOperation == null
-            ? 'Operasyon Ekle'
-            : 'Operasyonu Düzenle'),
+            ? context.l10n.temgundrapAddOperationTitle
+            : context.l10n.temgundrapEditOperationTitle),
         leading: IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.close)),
@@ -91,7 +92,9 @@ class _TemgundrapOperationEditorDialogState
               onPressed: _submit,
               icon: const Icon(Icons.check),
               label:
-                  Text(widget.initialOperation == null ? 'EKLE' : 'GÜNCELLE'))
+                  Text(widget.initialOperation == null
+                      ? context.l10n.commonAdd.toUpperCase()
+                      : context.l10n.commonUpdate.toUpperCase()))
         ],
       ),
       body: Form(
@@ -108,8 +111,8 @@ class _TemgundrapOperationEditorDialogState
                           key: const Key('issuing-unit'),
                           initialValue: _draft.issuingUnit,
                           isExpanded: true,
-                          decoration: const InputDecoration(
-                              labelText: 'Çıkaran birlik'),
+                          decoration: InputDecoration(
+                              labelText: context.l10n.temgundrapIssuingUnit),
                           items: const [
                             DropdownMenuItem(
                                 value: defaultTemgundrapIssuingUnit,
@@ -127,8 +130,8 @@ class _TemgundrapOperationEditorDialogState
                           key: const Key('operation-purpose'),
                           initialValue: _draft.purpose,
                           isExpanded: true,
-                          decoration: const InputDecoration(
-                              labelText: 'Operasyon maksadı'),
+                          decoration: InputDecoration(
+                              labelText: context.l10n.temgundrapOperationPurpose),
                           items: defaultTemgundrapPurposes
                               .map((item) => DropdownMenuItem(
                                   value: item, child: Text(item)))
@@ -194,7 +197,7 @@ class _TemgundrapOperationEditorDialogState
                         controller: _descriptionController,
                         maxLines: 4,
                         decoration:
-                            const InputDecoration(labelText: 'Açıklama'),
+                            InputDecoration(labelText: context.l10n.temgundrapDescription),
                       ))),
               const SizedBox(height: 24),
               FilledButton.icon(
@@ -203,8 +206,8 @@ class _TemgundrapOperationEditorDialogState
                   label: Padding(
                       padding: const EdgeInsets.all(14),
                       child: Text(widget.initialOperation == null
-                          ? 'OPERASYONU EKLE'
-                          : 'OPERASYONU GÜNCELLE'))),
+                          ? context.l10n.temgundrapAddOperationAction
+                          : context.l10n.temgundrapUpdateOperationAction))),
             ]),
           ))),
     ));

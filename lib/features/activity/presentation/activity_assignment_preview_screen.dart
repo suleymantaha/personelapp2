@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
@@ -46,7 +47,9 @@ class _ActivityAssignmentPreviewScreenState
       if (saved && mounted) AppNavigator.popOrDashboard(context, true);
     } catch (error) {
       if (!mounted) return;
-      AppNotifications.error('Görevlendirme kaydedilemedi: $error');
+      AppNotifications.error(
+        context.l10n.activityAssignmentPreviewError(error.toString()),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -79,10 +82,10 @@ class _ActivityAssignmentPreviewScreenState
       canPop: !_saving,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Görevlendirme Önizlemesi'),
+          title: Text(context.l10n.activityAssignmentPreviewTitle),
           leading: IconButton(
             key: const Key('preview-back-button'),
-            tooltip: 'Geri dön ve düzelt',
+            tooltip: context.l10n.activityAssignmentBackAndEdit,
             onPressed: _saving ? null : () => AppNavigator.popOrDashboard(context, false),
             icon: const Icon(Icons.arrow_back_rounded),
           ),
@@ -102,7 +105,7 @@ class _ActivityAssignmentPreviewScreenState
                         ? null
                         : () => Navigator.of(context).pop(false),
                     icon: const Icon(Icons.edit_outlined),
-                    label: const Text('Geri Dön ve Düzelt'),
+                    label: Text(context.l10n.activityAssignmentBackAndEdit),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -149,8 +152,9 @@ class _ActivityAssignmentPreviewScreenState
                       ),
                     ),
                     child: Text(
-                      '${widget.preview.warningCount} personel mevcut görev, izin '
-                      'veya rapor çakışması nedeniyle kaydedilmeyecek.',
+                      context.l10n.activityAssignmentConflictWarning(
+                        widget.preview.warningCount,
+                      ),
                       style: TextStyle(
                         color: context.pendingColor,
                         fontWeight: FontWeight.w600,
@@ -160,9 +164,9 @@ class _ActivityAssignmentPreviewScreenState
                 ...squadIds.map((squadId) {
                   final items = grouped[squadId]!;
                   final teamName = squadId == null
-                      ? 'Tim Dışı'
+                      ? context.l10n.personnelPickerUnassignedTeam
                       : (widget.preview.squadNames[squadId] ??
-                            'Bilinmeyen Tim');
+                            context.l10n.personnelPickerUnknownTeam);
                   final summary = _dutySummary(items);
                   final warnings = items
                       .where((item) => item.hasConflict)
@@ -173,7 +177,11 @@ class _ActivityAssignmentPreviewScreenState
                   return CollapsibleSquadCard(
                     cardKey: Key('preview-team-card-$squadId'),
                     headerKey: Key('preview-team-header-$squadId'),
-                    title: '$teamName • ${items.length} kişi • $summary',
+                    title: context.l10n.activityAssignmentTeamSummary(
+                      teamName,
+                      items.length,
+                      summary,
+                    ),
                     expanded: expanded,
                     warningCount: warnings,
                     onToggle: () => setState(() {
@@ -254,17 +262,17 @@ class _PreviewHeader extends StatelessWidget {
               children: [
                 _StatChip(
                   icon: Icons.people_outline,
-                  label: '$personnelCount personel',
+                  label: context.l10n.activityPersonnelCountBadge(personnelCount),
                 ),
                 _StatChip(
                   icon: Icons.shield_outlined,
-                  label: '$squadCount tim',
+                  label: context.l10n.activitySquadCountBadge(squadCount),
                 ),
                 _StatChip(
                   icon: warningCount > 0
                       ? Icons.warning_amber_rounded
                       : Icons.check_circle_outline,
-                  label: '$warningCount uyarı',
+                  label: context.l10n.collapsibleSquadCardWarningCount(warningCount),
                   color: warningCount > 0
                       ? context.pendingColor
                       : context.approvedColor,
@@ -307,10 +315,10 @@ class _PreviewPersonnelRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = item.hasConflict
-        ? 'Kaydedilmeyecek'
+        ? context.l10n.activityAssignmentWillNotBeSaved
         : requiresAdminApproval
-        ? 'Admin onayı bekleyecek'
-        : 'Kaydedilecek';
+        ? context.l10n.activityAssignmentPendingApproval
+        : context.l10n.activityAssignmentWillBeSaved;
     final color = item.hasConflict
         ? context.rejectedColor
         : requiresAdminApproval

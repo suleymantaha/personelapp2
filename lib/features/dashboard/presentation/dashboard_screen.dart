@@ -82,10 +82,11 @@ class DashboardScreen extends ConsumerWidget {
           subtitle: context.l10n.dashboardOcrNameMatch,
           tone: DashboardActionTone.pending,
           onTap: () async {
+            final l10n = context.l10n;
             final service = RosterImageImportService();
             if (!service.isSupportedPlatform) {
               AppNotifications.warning(
-                context.l10n.dashboardOcrPlatformWarning,
+                l10n.dashboardOcrPlatformWarning,
               );
               return;
             }
@@ -109,7 +110,9 @@ class DashboardScreen extends ConsumerWidget {
             } on RosterImageImportNoNamesException catch (e) {
               AppNotifications.warning(e.toString());
             } on Object catch (e) {
-              AppNotifications.error('Görsel okunamadı: $e');
+              AppNotifications.error(
+                l10n.dashboardImageReadError(e.toString()),
+              );
             }
           },
         ),
@@ -122,11 +125,11 @@ class DashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            tooltip: 'Ayarlar',
+            tooltip: context.l10n.settingsTitle,
             onPressed: () => DashboardSettings.showSettingsBottomSheet(
               context,
               ref,
-              session?.username ?? 'Kullanıcı',
+              session?.username ?? context.l10n.commonUser,
               isAdmin,
             ),
           ),

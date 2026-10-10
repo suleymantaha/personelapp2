@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
+import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/presentation/view_models/activity_form_draft.dart';
 
 class ActivityCompactPersonnelRow extends StatelessWidget {
@@ -21,11 +22,11 @@ class ActivityCompactPersonnelRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final duty = draft.dutyOverrides[person.id];
     final note = draft.notes[person.id];
-    final detail = duty ?? (note != null ? 'Not eklendi' : null);
+    final detail = duty ?? (note != null ? context.l10n.activityNoteAdded : null);
 
     return Semantics(
       button: true,
-      label: '${person.adSoyad} görevini düzenle',
+      label: context.l10n.activityFormEditDutyLabel(person.adSoyad),
       child: InkWell(
         key: ValueKey('selected-personnel-${person.id}'),
         borderRadius: BorderRadius.circular(10),
@@ -72,7 +73,7 @@ class ActivityCompactPersonnelRow extends StatelessWidget {
                 ),
                 IconButton.filledTonal(
                   key: ValueKey('edit-personnel-${person.id}'),
-                  tooltip: '${person.adSoyad} görevini düzenle',
+                  tooltip: context.l10n.activityFormEditDutyLabel(person.adSoyad),
                   constraints: const BoxConstraints.tightFor(
                     width: 40,
                     height: 40,
@@ -83,7 +84,7 @@ class ActivityCompactPersonnelRow extends StatelessWidget {
                   icon: const Icon(Icons.edit_outlined, size: 18),
                 ),
                 IconButton(
-                  tooltip: '${person.adSoyad} seçimini kaldır',
+                  tooltip: context.l10n.activityFormRemoveSelectionTooltip(person.adSoyad),
                   visualDensity: VisualDensity.compact,
                   onPressed: onRemove,
                   icon: const Icon(Icons.close_rounded, size: 19),

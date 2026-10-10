@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/matrix/domain/team_duty_analytics_dto.dart';
@@ -100,7 +101,7 @@ class TeamDutyDayDetails extends StatelessWidget {
                     day.gorevliPersonelAdlari.isEmpty
                         ? Center(
                           child: Text(
-                            'Bu tarihte görevli personel kaydı bulunmuyor.',
+                            context.l10n.matrixNoDutyPersonnelOnDate,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.hintColor,
                             ),
@@ -113,9 +114,9 @@ class TeamDutyDayDetails extends StatelessWidget {
                               for (final group in groups) ...[
                                 Text(
                                   '${group.personelAdlari.length} ${group.gorev} • ${switch (group.durum) {
-                                    'onaylandi' => 'Onaylı',
-                                    'beklemede' => 'Bekleyen',
-                                    'reddedildi' => 'Reddedilen',
+                                    'onaylandi' => context.l10n.statusApproved,
+                                    'beklemede' => context.l10n.statusPending,
+                                    'reddedildi' => context.l10n.statusRejected,
                                     _ => group.durum,
                                   }}',
                                   style: theme.textTheme.bodySmall?.copyWith(
@@ -128,7 +129,7 @@ class TeamDutyDayDetails extends StatelessWidget {
                                 ),
                                 if (group.devamEdenPersonelIds.isNotEmpty)
                                   Text(
-                                    'Önceki günden devam eden ${group.devamEdenPersonelIds.length} kişi',
+                                    context.l10n.matrixContinuingFromPreviousDay(group.devamEdenPersonelIds.length),
                                     style: theme.textTheme.bodySmall,
                                   ),
                                 const SizedBox(height: 6),

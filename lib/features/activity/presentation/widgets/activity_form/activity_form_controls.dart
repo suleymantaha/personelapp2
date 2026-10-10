@@ -35,12 +35,12 @@ class ActivityFormControls extends StatelessWidget {
           onChanged: onSearchChanged,
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
-            hintText: 'Personel veya birlik ara...',
+            hintText: context.l10n.activityFormSearchHint,
             prefixIcon: const Icon(Icons.search_rounded),
             suffixIcon: searchController.text.isEmpty
                 ? null
                 : IconButton(
-                    tooltip: 'Aramayı temizle',
+                    tooltip: context.l10n.commonClear,
                     onPressed: onSearchCleared,
                     icon: const Icon(Icons.close_rounded),
                   ),
@@ -67,21 +67,21 @@ class ActivityFormControls extends StatelessWidget {
           child: Row(
             children: [
               _FilterChip(
-                label: 'Hepsi',
+                label: context.l10n.activityFormFilterAll,
                 icon: Icons.grid_view_rounded,
                 selected: currentFilter == PersonnelFilter.all,
                 onTap: () => onFilterChanged(PersonnelFilter.all),
               ),
               const SizedBox(width: 8),
               _FilterChip(
-                label: 'Seçilenler ($selectedCount)',
+                label: context.l10n.activityFormSelectedBadge(selectedCount),
                 icon: Icons.check_circle_outline_rounded,
                 selected: currentFilter == PersonnelFilter.selected,
                 onTap: () => onFilterChanged(PersonnelFilter.selected),
               ),
               const SizedBox(width: 8),
               _FilterChip(
-                label: 'Atanmayanlar',
+                label: context.l10n.activityFormFilterUnassigned,
                 icon: Icons.radio_button_unchecked_rounded,
                 selected: currentFilter == PersonnelFilter.unassigned,
                 onTap: () => onFilterChanged(PersonnelFilter.unassigned),
@@ -89,7 +89,7 @@ class ActivityFormControls extends StatelessWidget {
               if (showUnsquaddedFilter) ...[
                 const SizedBox(width: 8),
                 _FilterChip(
-                  label: 'Timsiz',
+                  label: context.l10n.commonNoTeam,
                   icon: Icons.person_off_outlined,
                   selected: currentFilter == PersonnelFilter.unsquadded,
                   onTap: () => onFilterChanged(PersonnelFilter.unsquadded),

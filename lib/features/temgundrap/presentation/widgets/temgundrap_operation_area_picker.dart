@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
 
@@ -37,17 +38,17 @@ class _TemgundrapOperationAreaPickerState
           key: const Key('operation-area-picker'),
           initialValue: _selectedArea,
           isExpanded: true,
-          decoration: const InputDecoration(
-            labelText: 'Operasyon bölgesi',
+          decoration: InputDecoration(
+            labelText: context.l10n.temgundrapOperationArea,
             prefixIcon: Icon(Icons.location_on_outlined),
           ),
           items: widget.areas
               .map((area) => DropdownMenuItem(value: area, child: Text(area)))
               .toList(),
           validator: (_) {
-            if (_selectedArea == null) return 'Operasyon bölgesi zorunludur.';
+            if (_selectedArea == null) return context.l10n.temgundrapOperationAreaRequired;
             if (_isCustom && _customAreaController.text.trim().isEmpty) {
-              return 'Özel operasyon bölgesini girin.';
+              return context.l10n.temgundrapEnterCustomOperationArea;
             }
             return null;
           },
@@ -69,12 +70,12 @@ class _TemgundrapOperationAreaPickerState
             key: const Key('operation-area-custom'),
             controller: _customAreaController,
             textCapitalization: TextCapitalization.characters,
-            decoration: const InputDecoration(
-              labelText: 'Operasyon bölgesini yazın',
+            decoration: InputDecoration(
+              labelText: context.l10n.temgundrapTypeOperationArea,
               hintText: 'Örn: ELAZIĞ ...',
             ),
             validator: (value) => value == null || value.trim().isEmpty
-                ? 'Özel operasyon bölgesini girin.'
+                ? context.l10n.temgundrapEnterCustomOperationArea
                 : null,
             onChanged: (value) => widget.onChanged(value.trim()),
           ),

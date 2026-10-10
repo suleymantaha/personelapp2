@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'team_duty_day_details.dart';
 import 'team_duty_calendar_summary.dart';
@@ -95,13 +96,13 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${widget.calendarData.timAdi} Görev Takvimi',
+                        context.l10n.matrixTeamDutyCalendarTitle(widget.calendarData.timAdi),
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        '${widget.calendarData.yil} / $ayAdi Ayı Operasyonel Görünüm',
+                        context.l10n.matrixMonthlyOperationalView(widget.calendarData.yil, ayAdi),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.hintColor,
                         ),
@@ -132,13 +133,13 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Aylık Günlük Dağılım',
+                        context.l10n.matrixMonthlyDailyDistribution,
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        'Detaylar için güne tıklayın',
+                        context.l10n.matrixClickDayForDetails,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.hintColor,
                           fontSize: 11,

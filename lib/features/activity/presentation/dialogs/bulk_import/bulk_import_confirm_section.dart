@@ -55,8 +55,12 @@ class BulkImportConfirmSection extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             hasBlocking
-                ? 'Lütfen önizleme adımına dönüp sorunları çözün.'
-                : '${blocks.length} kart, $totalPersonnel personel, $totalDays gün',
+                ? context.l10n.bulkImportConfirmResolveIssues
+                : context.l10n.bulkImportConfirmSummary(
+                    blocks.length,
+                    totalPersonnel,
+                    totalDays,
+                  ),
             style: TextStyle(fontSize: 16, color: context.textMuted),
           ),
           const SizedBox(height: 24),
@@ -77,9 +81,9 @@ class BulkImportConfirmSection extends StatelessWidget {
                         ),
                       )
                     : const Icon(Icons.check_circle_rounded),
-                label: const Text(
-                  'Faaliyetleri Kaydet',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                label: Text(
+                  context.l10n.bulkImportSaveActivitiesButton,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 style: FilledButton.styleFrom(
                   backgroundColor: context.approvedColor,

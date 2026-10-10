@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
 
@@ -20,7 +21,7 @@ class TemgundrapTimeSection extends StatelessWidget {
             ListTile(
               key: const Key('operation-start-time'),
               leading: const Icon(Icons.play_circle_outline),
-              title: const Text('Başlama zamanı'),
+              title: Text(context.l10n.temgundrapStartTime),
               subtitle: Text(TemgundrapFormatters.militaryDateTime(startAt)),
               trailing: const Icon(Icons.edit_calendar),
               onTap: onStartTap,
@@ -28,7 +29,7 @@ class TemgundrapTimeSection extends StatelessWidget {
             ListTile(
               key: const Key('operation-end-time'),
               leading: const Icon(Icons.stop_circle_outlined),
-              title: const Text('Bitiş zamanı'),
+              title: Text(context.l10n.temgundrapEndTime),
               subtitle: Text(TemgundrapFormatters.militaryDateTime(endAt)),
               trailing: const Icon(Icons.edit_calendar),
               onTap: onEndTap,

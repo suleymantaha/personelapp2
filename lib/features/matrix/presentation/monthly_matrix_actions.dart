@@ -114,8 +114,8 @@ extension _MonthlyMatrixActions on _MonthlyMatrixScreenState {
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Tarih Seçin',
+                  Text(
+                    context.l10n.matrixSelectDate,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Container(
@@ -230,7 +230,7 @@ extension _MonthlyMatrixActions on _MonthlyMatrixScreenState {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('İptal'),
+                  child: Text(context.l10n.commonCancel),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -319,7 +319,7 @@ extension _MonthlyMatrixActions on _MonthlyMatrixScreenState {
 
                 return Semantics(
                   button: hasStatus,
-                  label: '$day. gün${hasStatus ? ', $label' : ', boş'}',
+                  label: context.l10n.matrixDayNumber(day, hasStatus ? ', $label' : context.l10n.matrixEmpty),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(10),
                     onTap: cell == null

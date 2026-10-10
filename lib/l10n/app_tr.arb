@@ -164,7 +164,7 @@
   "personnelAllUnit": "Tüm Birlik",
   "personnelNoSubscription": "Abonelik Yok",
   "personnelNoCriteriaMatches": "Kriterlere uygun personel bulunamadı.",
-  "commonSaving": "KAYDEDİLİYOR…",
+  "commonSaving": "Kaydediliyor...",
   "commonRetry": "TEKRAR DENE",
   "authLoginTitle": "Giriş Yap",
   "authUsername": "Kullanıcı Adı",
@@ -978,7 +978,7 @@
   "bulkImportUndo": "GERİ AL",
   "bulkImportDuplicateTitle": "Yinelenen Personel",
   "bulkImportDuplicateDesc": "Aynı personel aynı gün birden fazla karta atanmış.",
-  "bulkImportEditBlockTitle": "Faaliyet Kartını Düzenle",
+  "bulkImportEditBlockTitle": "Faaliyet kartını düzenle",
   "bulkImportBlockDate": "Tarih",
   "bulkImportBlockSquad": "Bağlı Tim",
   "bulkImportBlockActivity": "Faaliyet / Görev Türü",
@@ -1660,32 +1660,9 @@
       }
     }
   },
-  "transferSquadSuccess": "{squadName}: {count} personel başarıyla taşındı.{skippedNote}",
-  "@transferSquadSuccess": {
-    "placeholders": {
-      "squadName": {
-        "type": "String"
-      },
-      "count": {
-        "type": "int"
-      },
-      "skippedNote": {
-        "type": "String"
-      }
-    }
-  },
-  "transferSquadSkippedNote": " ({count} personel zaten hedef faaliyette olduğu için atlandı)",
-  "@transferSquadSkippedNote": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "transferSquadAllAlreadyPresent": "Tüm personel zaten hedef faaliyette mevcut, taşıma yapılmadı.",
   "activityArchiveOrderSaveFailed": "Sıralama kaydedilemedi.",
   "activityArchiveOrderResetFailed": "Sıralama sıfırlanamadı.",
-  "activityArchiveOrderResetSuccess": "Kart sıralaması varsayılana döndürüldü.",
   "activityArchiveDayActivityCount": "{day} • {count} faaliyet",
   "@activityArchiveDayActivityCount": {
     "placeholders": {
@@ -2060,5 +2037,563 @@
   "activityFormSearchHint": "Personel veya birlik ara...",
   "activityFormFilterAll": "Hepsi",
   "activityFormFilterUnassigned": "Atanmayanlar",
-  "activityNoteAdded": "Not eklendi"
+  "activityNoteAdded": "Not eklendi",
+  "activitySquadCountBadge": "{count} tim",
+  "@activitySquadCountBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityAssignmentWillNotBeSaved": "Kaydedilmeyecek",
+  "activityAssignmentWillBeSaved": "Kaydedilecek",
+  "activityFormContinueButton": "Devam ({count})",
+  "@activityFormContinueButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonExit": "Çık",
+  "commonContinueRunning": "Devam et",
+  "activityFormMergeDetailedSummary": "{added} personel eklendi, {updated} güncellendi, {skipped} kayıt korundu.",
+  "@activityFormMergeDetailedSummary": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "authSessionFailed": "Oturum doğrulanamadı.",
+  "authTeamPermissionExpired": "Tim yetkiniz sona erdi.",
+  "activityDetailUnknownSquadHistory": "Tim geçmişi bilinmiyor",
+  "activityDetailAddPersonnelButton": "+ Personel Ekle",
+  "activityDetailAddSingleOption": "Personel Seçerek Ekle",
+  "activityDetailAddSingleOptionSubtitle": "Bir veya birden fazla personel seçin",
+  "activityDetailAddBulkOption": "Metinden Toplu Ekle",
+  "activityDetailAddBulkOptionSubtitle": "Listeyi tam önizleme ve hata kontrolüyle aktar",
+  "activityDetailAddImageOption": "Görselden Toplu Ekle",
+  "activityDetailAddImageOptionSubtitle": "Personel listesini görselden okuyup bu karta ekle",
+  "activityDetailImagePlatformWarning": "Görselden aktarım Android ve iOS cihazlarda kullanılabilir.",
+  "activityDetailImageReadError": "Görsel okunamadı: {error}",
+  "@activityDetailImageReadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "activityDetailPersonnelAdded": "Personel faaliyete eklendi.",
+  "activityDetailPersonnelAddedAdminPending": "Personel eklendi, Admin onayına gönderildi.",
+  "activityDetailExportTooltip": "Bu Faaliyeti Dışa Aktar",
+  "activityDetailExportTitle": "Dışa Aktar",
+  "activityDetailExportSubtitle": "Faaliyet listesini paylaş veya yazdır",
+  "activityDetailCombineOutputTitle": "Kartları Birleştir ve Çıktı Al",
+  "activityDetailCombineOutputSubtitle": "Aynı gün ve önceki gün kartlarını imzalı çıktıda birleştir",
+  "activityDetailExportExcel": "Excel’e aktar",
+  "activityDetailExportExcelSubtitle": "Hesap tablosu olarak paylaş",
+  "activityDetailExportPdf": "PDF / Yazdır",
+  "activityDetailExportPdfSubtitle": "PDF oluştur veya doğrudan yazdır",
+  "activityDetailExportText": "Metin olarak paylaş",
+  "activityDetailExportTextSubtitle": "Mesajlaşma uygulamaları için hazırla",
+  "activityDetailNoPersonnelAssigned": "Bu faaliyette görevlendirilmiş personel bulunmuyor.",
+  "activityDetailNoPrintablePersonnel": "Seçilen timlerde yazdırılabilir personel bulunamadı.",
+  "activityDetailOutSquad": "Tim Dışı",
+  "activityDetailUnknownSquad": "Bilinmeyen Tim",
+  "activityDetailDeleteSquadsTitle": "Timleri Faaliyetten Sil",
+  "activityDetailDeleteSquadsConfirm": "{teamNames} timlerindeki {count} personel bu faaliyetten çıkarılacaktır. Emin misiniz?",
+  "@activityDetailDeleteSquadsConfirm": {
+    "placeholders": {
+      "teamNames": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityDetailDeleteSquadsAction": "TİMLERİ SİL",
+  "activityDetailPersonnelRemovedCount": "{count} personel faaliyetten çıkarıldı.",
+  "@activityDetailPersonnelRemovedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityDetailDutyPending": "{duty} • BEKLİYOR",
+  "@activityDetailDutyPending": {
+    "placeholders": {
+      "duty": {
+        "type": "String"
+      }
+    }
+  },
+  "activityDetailNoteLabel": "Not: {note}",
+  "@activityDetailNoteLabel": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "commonApproveTooltip": "Onayla",
+  "commonRejectTooltip": "Reddet",
+  "activityDetailApproveBlocked": "Onaylanamadı: {reason}",
+  "@activityDetailApproveBlocked": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "commonActionsTooltip": "İşlemler",
+  "activityDetailDutyUpdated": "Görev güncellendi.",
+  "activityDetailDutyUpdatePending": "Görev değişikliği kaydedildi, Admin onayına gönderildi.",
+  "activityDetailRemovePersonnelTitle": "Personeli Görevden Çıkar",
+  "activityDetailRemovePersonnelConfirm": "{name} adlı personel {activity} faaliyetinden çıkarılacaktır. Emin misiniz?",
+  "@activityDetailRemovePersonnelConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "activity": {
+        "type": "String"
+      }
+    }
+  },
+  "activityDetailRemoveAction": "ÇIKAR",
+  "activityDetailPersonnelRemoved": "{name} faaliyetten çıkarıldı.",
+  "@activityDetailPersonnelRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityDetailAssignmentActions": "Atama İşlemleri",
+  "activityDetailEditDutySubtitle": "Görev veya izin bilgisini değiştir",
+  "activityDetailTransferCard": "Başka karta taşı",
+  "activityDetailTransferCardSubtitle": "Personeli farklı faaliyete aktar",
+  "activityDetailRemoveFromActivity": "Faaliyetten çıkar",
+  "activityDetailRemoveFromActivitySubtitle": "Personelin bu atamasını kaldır",
+  "activitySelectedSquadCount": "{count} tim seçildi",
+  "@activitySelectedSquadCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonPrint": "Yazdır",
+  "activityDeleteSelectedSquadsTooltip": "Seçilen timleri faaliyetten sil",
+  "activitySquadCardTitle": "{teamName} — {count} kişi",
+  "@activitySquadCardTitle": {
+    "placeholders": {
+      "teamName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityTransferSquadTooltip": "{teamName} timini başka karta taşı",
+  "@activityTransferSquadTooltip": {
+    "placeholders": {
+      "teamName": {
+        "type": "String"
+      }
+    }
+  },
+  "activityDutyPickerTitleForPerson": "{name} için görev",
+  "@activityDutyPickerTitleForPerson": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportKeepAuditTextTitle": "Ham metni yerel denetim kaydında sakla",
+  "bulkImportSaveActivitiesButton": "Faaliyetleri Kaydet",
+  "bulkImportOptionalReviewsCount": "{count} isteğe bağlı inceleme",
+  "@bulkImportOptionalReviewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportConfirmAllAction": "Tümünü Onayla",
+  "bulkImportConfirmAction": "Onayla",
+  "bulkImportNoCardsHint": "Yapıştır adımına dönüp mesajı yapıştırın.",
+  "bulkImportProceedToSaveStep": "Kaydetme Adımına Geç",
+  "bulkImportSaveSummarySub": "{blockCount} blok -> {dayCount} günlük faaliyet",
+  "@bulkImportSaveSummarySub": {
+    "placeholders": {
+      "blockCount": {
+        "type": "int"
+      },
+      "dayCount": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportSaveWithCardCount": "Faaliyetleri Kaydet ({count} Kart)",
+  "@bulkImportSaveWithCardCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportActionsRemainingToSave": "Kaydetmek için {count} işlem kaldı",
+  "@bulkImportActionsRemainingToSave": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportUnresolvedIssuesError": "Lütfen önce çözülmemiş kart sorunlarını (tarih, tim veya görev türü) tamamlayın.",
+  "bulkImportClearPreviewConfirmDesc": "Oluşturulan tüm kartlar ve ayrıştırma uyarıları kaldırılacak.",
+  "bulkImportPersonnelAddedAndMatched": "{rank} {name} veritabanına ({timName}) eklendi ve eşleştirildi.",
+  "@bulkImportPersonnelAddedAndMatched": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "timName": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportIssueEmptyBlock": "Kart #{number}: Personel bulunamadı.",
+  "@bulkImportIssueEmptyBlock": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportIssueMissingDate": "Kart #{number}: Bu personel grubu için geçerli bir tarih bulunamadı.",
+  "@bulkImportIssueMissingDate": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportIssueUnknownTeam": "Kart #{number}: Takım/tim adı belirtilmedi.",
+  "@bulkImportIssueUnknownTeam": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportIssueUnknownActivity": "Kart #{number}: Görev türü tanınamadı.",
+  "@bulkImportIssueUnknownActivity": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportIssueUnmatchedPersonnel": "{rank} {name} için personel seçimi yapılmadı.",
+  "@bulkImportIssueUnmatchedPersonnel": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportMobileSummaryReady": "{cardCount} kart • {personnelCount} personel • Hazır",
+  "@bulkImportMobileSummaryReady": {
+    "placeholders": {
+      "cardCount": {
+        "type": "int"
+      },
+      "personnelCount": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportMobileSummaryErrors": "{cardCount} kart • {personnelCount} personel • {count} hata",
+  "@bulkImportMobileSummaryErrors": {
+    "placeholders": {
+      "cardCount": {
+        "type": "int"
+      },
+      "personnelCount": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportMobileSummaryReviews": "{cardCount} kart • {personnelCount} personel • {count} inceleme",
+  "@bulkImportMobileSummaryReviews": {
+    "placeholders": {
+      "cardCount": {
+        "type": "int"
+      },
+      "personnelCount": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cancelSelectionTooltip": "Seçimi İptal Et",
+  "bulkImportRegisteredTeamLabel": "Kayitli tim: {team}",
+  "@bulkImportRegisteredTeamLabel": {
+    "placeholders": {
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportListTeamLabel": "Liste timi: {team}",
+  "@bulkImportListTeamLabel": {
+    "placeholders": {
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportNoTeamSpecified": "Tim belirtilmedi",
+  "commonChange": "Değiştir",
+  "bulkImportSelectPersonnelButton": "Personel Seç",
+  "bulkImportAddToTeamAction": "+ {team} Ekle",
+  "@bulkImportAddToTeamAction": {
+    "placeholders": {
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportAliasDeleteConfirm": "'{alias}' ➔ '{target}' öğrenilmiş takma ad eşleşmesi silinsin mi?",
+  "@bulkImportAliasDeleteConfirm": {
+    "placeholders": {
+      "alias": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportAliasDeletedMessage": "'{alias}' hafızadan silindi.",
+  "@bulkImportAliasDeletedMessage": {
+    "placeholders": {
+      "alias": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkImportLearnedAliasCount": "{count} Öğrenilmiş İsim Takma Adı",
+  "@bulkImportLearnedAliasCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkImportSearchAliasShortHint": "Yazım veya personel adı ara",
+  "bulkImportSearchAliasHint": "Metindeki yazım veya personel adıyla ara...",
+  "bulkImportNoMatchingAliasFound": "Aramanıza uygun takma ad bulunamadı.",
+  "bulkImportNoLearnedAliasesDesc": "Henüz öğrenilmiş bir takma ad bulunmuyor.\nToplu aktarımlarda onayladığınız eşleşmeler otomatik hafızaya alınır.",
+  "bulkImportMatchedPersonnelLabel": "Eşleştiği personel",
+  "bulkImportUnassignedPersonnelTitle": "Timsiz / Diğer Personeller",
+  "bulkImportCustomTeamOption": "DİĞER (Elle Yaz...)",
+  "authPasswordPolicyMinLength": "Parola en az {count} karakter olmalıdır.",
+  "@authPasswordPolicyMinLength": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardImageReadError": "Görsel okunamadı: {error}",
+  "@dashboardImageReadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsTitle": "Ayarlar",
+  "commonUser": "Kullanıcı",
+  "authUnsupportedRole": "Desteklenmeyen kullanıcı rolü: {role}",
+  "@authUnsupportedRole": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSessionNotVerified": "Oturum doğrulanamadı.",
+  "conflictConflictingRecord": "Çakışan kayıt",
+  "conflictAnotherActivityExists": "Bu tarihte başka bir faaliyet kaydı bulunuyor.",
+  "matrixSelectDate": "Tarih Seçin",
+  "matrixEmpty": ", boş",
+  "matrixDayNumber": "{day}. gün{status}",
+  "@matrixDayNumber": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "matrixSearchPersonnelResult": "“{query}” · {visible}/{total} kişi",
+  "@matrixSearchPersonnelResult": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      },
+      "visible": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "matrixNoAuthorizedRecordsForExport": "Dışa aktarılacak yetkili kayıt bulunamadı.",
+  "matrixTeamDutyCalendarTitle": "{team} Görev Takvimi",
+  "@matrixTeamDutyCalendarTitle": {
+    "placeholders": {
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "matrixMonthlyOperationalView": "{year} / {month} Ayı Operasyonel Görünüm",
+  "@matrixMonthlyOperationalView": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "matrixMonthlyDailyDistribution": "Aylık Günlük Dağılım",
+  "matrixClickDayForDetails": "Detaylar için güne tıklayın",
+  "matrixDutyDay": "Görevli Gün",
+  "matrixDutyDayCount": "{count} Gün",
+  "@matrixDutyDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "matrixActivePersonnelCount": "{count} Kişi",
+  "@matrixActivePersonnelCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "matrixPersonnelDayRatio": "Personel-gün oranı",
+  "matrixUnknownSquadAssignmentsNotice": "Bu ay tim geçmişi bilinmeyen {count} eski atama var; tim hesabına katılmadı.",
+  "@matrixUnknownSquadAssignmentsNotice": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "matrixNoDutyPersonnelOnDate": "Bu tarihte görevli personel kaydı bulunmuyor.",
+  "matrixApprovedStatus": "Onaylı",
+  "matrixContinuingFromPreviousDay": "Önceki günden devam eden {count} kişi",
+  "@matrixContinuingFromPreviousDay": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "temgundrapOutputPrepareError": "Çıktı hazırlanamadı: {error}",
+  "@temgundrapOutputPrepareError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapPreviewTitle": "TEMGÜNDRAP Önizleme",
+  "temgundrapSharePdfAction": "PDF Paylaş",
+  "temgundrapIssuingUnit": "Çıkaran birlik",
+  "temgundrapDescription": "Açıklama",
+  "temgundrapSelectCommanderFirst": "Önce operasyon komutanını seçin.",
+  "temgundrapSelectNumberToUse": "Kullanılacak numarayı seçin",
+  "temgundrapNoValidPhoneFound": "Seçilen kişide geçerli cep telefonu bulunamadı.",
+  "temgundrapPhoneMatchedWithPersonnel": "Telefon personelle eşleştirildi.",
+  "temgundrapOperationCommander": "Operasyon Komutanı",
+  "temgundrapSelectFromPersonnelList": "Personel listesinden seçin",
+  "temgundrapPhoneToUse": "Kullanılacak telefon",
+  "temgundrapPhoneAutoMatchesNextTime": "Bir kez eşleştirilince sonraki seçimlerde otomatik gelir.",
+  "temgundrapSelectFromContacts": "Telefon rehberinden seç",
+  "temgundrapEnterValidPhone": "Geçerli bir cep telefonu girin.",
+  "temgundrapOperationArea": "Operasyon bölgesi",
+  "temgundrapOperationAreaRequired": "Operasyon bölgesi zorunludur.",
+  "temgundrapEnterCustomOperationArea": "Özel operasyon bölgesini girin.",
+  "temgundrapTypeOperationArea": "Operasyon bölgesini yazın",
+  "temgundrapEditOperationTitle": "Operasyonu Düzenle",
+  "temgundrapOperationPurpose": "Operasyon maksadı",
+  "temgundrapPersonnelListLoadError": "Personel listesi yüklenemedi: {error}",
+  "@temgundrapPersonnelListLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "temgundrapUpdateOperationAction": "OPERASYONU GÜNCELLE",
+  "temgundrapStartTime": "Başlama zamanı",
+  "temgundrapEndTime": "Bitiş zamanı",
+  "temgundrapVehicles": "Araçlar",
+  "temgundrapVehicleModel": "Araç modeli",
+  "temgundrapRegisteredPlates": "Kayıtlı plakalar:",
+  "rosterOutputCommanderTeamRevoked": "Tim yetkiniz sona erdi.",
+  "statusApproved": "Onaylı",
+  "statusPending": "Bekleyen",
+  "statusRejected": "Reddedilen",
+  "personnelUnitHint": "Örn: 1'inci Bl.",
+  "temgundrapAddOperationTitle": "Operasyon Ekle",
+  "temgundrapAddOperationAction": "OPERASYONU EKLE",
+  "commonUpdate": "GÜNCELLE",
+  "confirmDiscardTitle": "Değişikliklerden vazgeçilsin mi?",
+  "confirmDiscardContent": "Kaydedilmeyen bilgiler kaybolacak.",
+  "confirmDiscardContinue": "DÜZENLEMEYE DEVAM ET",
+  "confirmDiscardExit": "VAZGEÇ VE ÇIK",
+  "authSessionUnverified": "Oturum doğrulanamadı.",
+  "temgundrapUnitHint": "Örn: KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI",
+  "temgundrapApproverNameHint": "Örn: İhsan DAĞLI",
+  "temgundrapApproverRankHint": "Örn: J.Ütğm.",
+  "temgundrapApproverDutyHint": "Örn: Tb. K. V."
 }

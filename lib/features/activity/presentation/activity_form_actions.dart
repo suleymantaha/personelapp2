@@ -6,7 +6,7 @@ extension _ActivityFormActions on _ActivityFormScreenState {
     final name = _draft.activityName.trim();
     final userSession = ref.read(userSessionProvider);
     if (userSession == null) {
-      AppNotifications.error('Oturum doğrulanamadı.');
+      AppNotifications.error(context.l10n.authSessionFailed);
       return;
     }
 
@@ -28,7 +28,7 @@ extension _ActivityFormActions on _ActivityFormScreenState {
 
     if (payload.isEmpty) {
       AppNotifications.warning(
-        'Lütfen en az bir personel için görev seçiniz.',
+        context.l10n.activityFormSelectAtLeastOneDuty,
       );
       return;
     }
@@ -62,7 +62,9 @@ extension _ActivityFormActions on _ActivityFormScreenState {
       }
     } catch (error) {
       if (!mounted) return;
-      AppNotifications.error('Önizleme hazırlanamadı: $error');
+      AppNotifications.error(
+        context.l10n.activityFormPreviewPrepareError(error.toString()),
+      );
     }
   }
 
@@ -113,12 +115,14 @@ extension _ActivityFormActions on _ActivityFormScreenState {
 
     if (mounted) {
       final msg = mergeResult != null
-          ? '${mergeResult.addedCount} personel eklendi, '
-              '${mergeResult.updatedCount} güncellendi, '
-              '${mergeResult.skippedCount} kayıt korundu.'
+          ? context.l10n.activityFormMergeDetailedSummary(
+              mergeResult.addedCount,
+              mergeResult.updatedCount,
+              mergeResult.skippedCount,
+            )
           : isCommander
-              ? 'Faaliyet Kaydedildi! Admin onayına gönderildi.'
-              : 'Faaliyet Çizelgesi Kaydedildi & Çakışma Denetimi Yapıldı!';
+              ? context.l10n.activityFormSavedAdminPending
+              : context.l10n.activityFormSavedConflictChecked;
       AppNotifications.approvalResult(
         msg,
         pendingApproval: isCommander,
@@ -151,14 +155,13 @@ extension _ActivityFormActions on _ActivityFormScreenState {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Toplu metin içe aktar',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              Text(
+                context.l10n.activityFormBulkImportTitle,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               Text(
-                'Birden fazla faaliyet ve personel kaydını panodaki '
-                'metinden hızlıca oluşturun.',
+                context.l10n.activityFormBulkImportSubtitle,
                 style: context.textStyleSecondary,
               ),
               const SizedBox(height: 20),
@@ -167,7 +170,7 @@ extension _ActivityFormActions on _ActivityFormScreenState {
                 height: 48,
                 child: FilledButton.icon(
                   icon: const Icon(Icons.content_paste_go_rounded),
-                  label: const Text('Metni yapıştır'),
+                  label: Text(context.l10n.activityFormBulkImportPasteAction),
                   onPressed: () async {
                     Navigator.pop(sheetContext);
                     final db = ref.read(databaseProvider);

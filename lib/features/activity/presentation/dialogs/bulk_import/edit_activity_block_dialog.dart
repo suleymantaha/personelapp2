@@ -70,8 +70,8 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
 
   late final List<String> _dropdownOptions;
 
-  static const String _defaultTeamOption = 'Varsayılan / Personel Timi';
-  static const String _customTeamOption = 'DİĞER (Elle Yaz...)';
+  static const String _defaultTeamOption = '__DEFAULT_TEAM__';
+  static const String _customTeamOption = '__CUSTOM_TEAM__';
 
   late String _selectedTeamOption;
   late final List<String> _teamDropdownOptions;
@@ -175,9 +175,9 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
               Icon(Icons.edit_note_rounded,
                   color: context.accentOrOlive, size: 24),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Faaliyet kartını düzenle',
+                  context.l10n.bulkImportEditBlockTitle,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -187,7 +187,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
 
           // Hızlı Seçim Çipleri (Quick Select Chips)
           Text(
-            'Hızlı Görev Seçimi',
+            context.l10n.bulkImportQuickDutySelection,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -247,7 +247,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
             ),
             items: _dropdownOptions.map((d) {
               final label =
-                  d == DutyOrLeaveType.diger ? 'DİĞER (Elle Yaz...)' : d;
+                  d == DutyOrLeaveType.diger ? context.l10n.bulkImportCustomTeamOption : d;
               return DropdownMenuItem(
                 value: d,
                 child: Text(label),

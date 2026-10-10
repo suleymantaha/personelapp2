@@ -80,19 +80,21 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     }
     if (_unresolvedPersonnelCount > 0) {
       AppNotifications.error(
-        '$_unresolvedPersonnelCount personel eşleşmedi. Lütfen tüm personelleri seçin veya listeden kaldırın.',
+        context.l10n.bulkImportUnresolvedPersonnelError(
+          _unresolvedPersonnelCount,
+        ),
       );
       return;
     }
     if (_parsedBlocks.any((block) => block.personnelList.isEmpty)) {
       AppNotifications.error(
-        'Personeli bulunmayan boş kartlar var. Lütfen kartları düzenleyin veya silin.',
+        context.l10n.bulkImportEmptyCardsError,
       );
       return;
     }
     if (_parseIssues.any((issue) => issue.isBlocking)) {
       AppNotifications.error(
-        'Lütfen önce çözülmemiş kart sorunlarını (tarih, tim veya görev türü) tamamlayın.',
+        context.l10n.bulkImportUnresolvedIssuesError,
       );
       return;
     }
@@ -145,7 +147,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     final target = widget.targetActivity;
     if (target == null) return;
     if (actor == null) {
-      throw StateError('Oturum doğrulanamadı.');
+      throw StateError(context.l10n.authSessionFailed);
     }
 
     final assignments = <PersonnelAssignmentInput>[];
@@ -314,8 +316,8 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       builder:
           (dialogContext) => AlertDialog(
             title: Text(context.l10n.bulkImportClearPreviewTitle),
-            content: const Text(
-              'Oluşturulan tüm kartlar ve ayrıştırma uyarıları kaldırılacak.',
+            content: Text(
+              context.l10n.bulkImportClearPreviewConfirmDesc,
             ),
             actions: [
               TextButton(
@@ -399,7 +401,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
     if (mounted) {
       AppNotifications.success(
-        'Tüm önerilen personel eşleşmeleri onaylandı.',
+        context.l10n.bulkImportAllSuggestionsConfirmed,
         duration: const Duration(seconds: 2),
       );
     }
@@ -480,7 +482,11 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
     if (mounted) {
       AppNotifications.success(
-        '${item.rawRank} ${item.rawName} veritabanına ($timName) eklendi ve eşleştirildi.',
+        context.l10n.bulkImportPersonnelAddedAndMatched(
+          item.rawRank,
+          item.rawName,
+          timName,
+        ),
         duration: const Duration(seconds: 3),
       );
     }

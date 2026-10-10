@@ -99,7 +99,7 @@ class PersonnelMatchHeader extends StatelessWidget {
                             ),
                             const SizedBox(width: 3),
                             Text(
-                              'Hafızadan',
+                              context.l10n.bulkImportFromMemory,
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,

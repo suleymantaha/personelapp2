@@ -46,13 +46,15 @@ class BulkImportSaveButton extends StatelessWidget {
       label: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Faaliyetleri Kaydet',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          Text(
+            context.l10n.bulkImportSaveActivitiesButton,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
           Text(
-            '${blocks.length} blok -> '
-            '${blocks.map((block) => block.parsedDate).toSet().length} günlük faaliyet',
+            context.l10n.bulkImportSaveSummarySub(
+              blocks.length,
+              blocks.map((block) => block.parsedDate).toSet().length,
+            ),
             style: const TextStyle(fontSize: 11),
           ),
         ],
@@ -144,9 +146,9 @@ class SmartSaveBar extends StatelessWidget {
                     : const Icon(Icons.check_circle_rounded, size: 20),
                 label: Text(
                   isSaving
-                      ? 'Kaydediliyor...'
+                      ? context.l10n.commonSaving
                       : actionLabel ??
-                            'Faaliyetleri Kaydet (${blocks.length} Kart)',
+                            context.l10n.bulkImportSaveWithCardCount(blocks.length),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -172,9 +174,9 @@ class SmartSaveBar extends StatelessWidget {
                   size: 16,
                   color: wizardButtonColor,
                 ),
-                label: const Text(
-                  'Sonraki inceleme',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                label: Text(
+                  context.l10n.bulkImportNextReview,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: wizardButtonColor,
@@ -266,7 +268,7 @@ class SmartSaveBar extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Kaydetmek için $displayTotal işlem kaldı',
+                context.l10n.bulkImportActionsRemainingToSave(displayTotal),
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,

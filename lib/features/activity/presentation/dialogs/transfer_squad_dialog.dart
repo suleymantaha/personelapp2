@@ -329,7 +329,7 @@ class _TransferSquadDialogState extends ConsumerState<TransferSquadDialog> {
                       final l10n = context.l10n;
                       try {
                         if (session == null) {
-                          throw StateError('Oturum bilgisi bulunamadı.');
+                          throw StateError(l10n.authSessionFailed);
                         }
                         final repository = ref.read(activityRepositoryProvider);
                         final result = _createNewActivity

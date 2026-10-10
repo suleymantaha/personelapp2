@@ -268,7 +268,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
             lineNumber: i + 1,
             rawLine: block.rawTitle,
             code: 'empty_block',
-            message: 'Kart #$blockNum: Personel bulunamadı.',
+            message: context.l10n.bulkImportIssueEmptyBlock(blockNum),
             severity: BulkParseIssueSeverity.error,
           ),
         );
@@ -280,8 +280,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
             lineNumber: i + 1,
             rawLine: block.rawTitle,
             code: 'missing_date',
-            message:
-                'Kart #$blockNum: Bu personel grubu için geçerli bir tarih bulunamadı.',
+            message: context.l10n.bulkImportIssueMissingDate(blockNum),
             severity: BulkParseIssueSeverity.error,
           ),
         );
@@ -293,7 +292,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
             lineNumber: i + 1,
             rawLine: block.rawTitle,
             code: 'unknown_team',
-            message: 'Kart #$blockNum: Takım/tim adı belirtilmedi.',
+            message: context.l10n.bulkImportIssueUnknownTeam(blockNum),
             severity: BulkParseIssueSeverity.warning,
           ),
         );
@@ -305,7 +304,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
             lineNumber: i + 1,
             rawLine: block.rawTitle,
             code: 'unknown_activity',
-            message: 'Kart #$blockNum: Görev türü tanınamadı.',
+            message: context.l10n.bulkImportIssueUnknownActivity(blockNum),
             severity: BulkParseIssueSeverity.warning,
           ),
         );
@@ -319,8 +318,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
               lineNumber: p.sourceLineNumber ?? (i + 1),
               rawLine: '${p.rawRank} ${p.rawName}',
               code: 'unmatched_personnel',
-              message:
-                  '${p.rawRank} ${p.rawName} için personel seçimi yapılmadı.',
+              message: context.l10n.bulkImportIssueUnmatchedPersonnel(
+                p.rawRank,
+                p.rawName,
+              ),
               severity: BulkParseIssueSeverity.error,
             ),
           );

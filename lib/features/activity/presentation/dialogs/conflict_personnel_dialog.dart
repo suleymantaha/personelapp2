@@ -12,7 +12,7 @@ class ConflictPersonnelDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final conflicts = descriptions.map(_ConflictInfo.parse).toList();
+    final conflicts = descriptions.map((d) => _ConflictInfo.parse(context, d)).toList();
     final colors = Theme.of(context).colorScheme;
 
     return Dialog(
@@ -224,14 +224,14 @@ class _ConflictInfo {
     r'(.+) faaliyetine eklenmedi\.$',
   );
 
-  factory _ConflictInfo.parse(String description) {
+  factory _ConflictInfo.parse(BuildContext context, String description) {
     final match = _descriptionPattern.firstMatch(description);
     if (match == null) {
       final separator = description.indexOf(':');
       return _ConflictInfo(
         name: separator > 0
             ? description.substring(0, separator).trim()
-            : 'Çakışan kayıt',
+            : context.l10n.conflictConflictingRecord,
         detail: separator > 0
             ? description.substring(separator + 1).trim()
             : description,
@@ -242,7 +242,7 @@ class _ConflictInfo {
       name: match.group(1)!,
       date: '${match.group(4)}.${match.group(3)}.${match.group(2)}',
       activity: match.group(5)!,
-      detail: 'Bu tarihte başka bir faaliyet kaydı bulunuyor.',
+      detail: context.l10n.conflictAnotherActivityExists,
     );
   }
 }

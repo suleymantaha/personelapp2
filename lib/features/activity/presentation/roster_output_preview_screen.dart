@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
@@ -28,6 +29,7 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
   bool _busy = false;
   String? _error;
   Future<List<MilitaryRosterRow>> _validatedRows() async {
+    final recordChangedMsg = context.l10n.rosterOutputRecordsChangedError;
     final refreshed = await widget.loadRows();
     String fingerprint(List<MilitaryRosterRow> rows) => rows
         .map(
@@ -36,7 +38,7 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
         )
         .join('\n');
     if (fingerprint(refreshed) != fingerprint(widget.rows)) {
-      throw StateError('Kayıtlar değişti. Önizlemeyi yeniden açın.');
+      throw StateError(recordChangedMsg);
     }
     return refreshed;
   }
@@ -50,11 +52,13 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
     try {
       final action = await showArchiveExportSheet(
         context,
-        subtitle:
-            '${widget.date} • ${widget.rows.length} personel • İmzalı çıktı',
+        subtitle: context.l10n.rosterOutputSignedOutput(
+          widget.date,
+          widget.rows.length,
+        ),
       );
       if (!mounted || action == null) return;
-      const title = 'Seçilen Kartlar';
+      final title = context.l10n.rosterOutputSelectedCardsTitle;
       switch (action.type) {
         case ArchiveExportType.excel:
           final rows = await _validatedRows();
@@ -98,7 +102,9 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
     } catch (error) {
       if (mounted) {
         setState(() => _error = '$error');
-        AppNotifications.error('Dışa aktarılamadı: $error');
+        AppNotifications.error(
+          context.l10n.rosterOutputExportError(error.toString()),
+        );
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -111,7 +117,7 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
     child: Scaffold(
       appBar: AppBar(
         leading: const AppBackButton(),
-        title: const Text('Birleşik Çıktı Önizlemesi'),
+        title: Text(context.l10n.rosterOutputPreviewTitle),
       ),
       body: Center(
         child: ConstrainedBox(
@@ -120,7 +126,9 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               Text(
-                '${widget.rows.length} personel • Her kişi bir kez • Toplam baskıda gösterilmez',
+                context.l10n.rosterOutputPreviewDeduplicationNote(
+                  widget.rows.length,
+                ),
               ),
               for (var i = 0; i < widget.sources.length; i++)
                 Padding(
@@ -177,7 +185,11 @@ class _RosterOutputPreviewScreenState extends State<RosterOutputPreviewScreen> {
             key: const Key('roster-export'),
             onPressed: _busy ? null : _export,
             icon: const Icon(Icons.ios_share_outlined),
-            label: Text(_busy ? 'Çıktı hazırlanıyor…' : 'Çıktı Al'),
+            label: Text(
+              _busy
+                  ? context.l10n.rosterOutputPreparing
+                  : context.l10n.rosterOutputGetOutput,
+            ),
           ),
         ),
       ),

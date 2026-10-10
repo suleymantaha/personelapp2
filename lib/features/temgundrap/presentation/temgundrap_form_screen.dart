@@ -222,7 +222,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                       controller: _unitTitle,
                       decoration: InputDecoration(
                         labelText: context.l10n.temgundrapUnitTitle,
-                        hintText: 'Örn: KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI',
+                        hintText: context.l10n.temgundrapUnitHint,
                         prefixIcon: const Icon(Icons.account_balance),
                       ),
                       validator: (value) => _required(value, context),
@@ -321,7 +321,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                       controller: _approverName,
                       decoration: InputDecoration(
                         labelText: context.l10n.temgundrapApproverName,
-                        hintText: 'Örn: İhsan DAĞLI',
+                        hintText: context.l10n.temgundrapApproverNameHint,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -329,7 +329,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                       controller: _approverRank,
                       decoration: InputDecoration(
                         labelText: context.l10n.personnelRank,
-                        hintText: 'Örn: J.Ütğm.',
+                        hintText: context.l10n.temgundrapApproverRankHint,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -337,7 +337,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                       controller: _approverDuty,
                       decoration: InputDecoration(
                         labelText: context.l10n.temgundrapApproverDuty,
-                        hintText: 'Örn: Tb. K. V.',
+                        hintText: context.l10n.temgundrapApproverDutyHint,
                       ),
                     ),
                     SwitchListTile(

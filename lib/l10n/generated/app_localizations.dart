@@ -769,7 +769,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonSaving.
   ///
   /// In tr, this message translates to:
-  /// **'KAYDEDİLİYOR…'**
+  /// **'Kaydediliyor...'**
   String get commonSaving;
 
   /// No description provided for @commonRetry.
@@ -2894,7 +2894,7 @@ abstract class AppLocalizations {
   /// No description provided for @bulkImportEditBlockTitle.
   ///
   /// In tr, this message translates to:
-  /// **'Faaliyet Kartını Düzenle'**
+  /// **'Faaliyet kartını düzenle'**
   String get bulkImportEditBlockTitle;
 
   /// No description provided for @bulkImportBlockDate.
@@ -5030,6 +5030,1041 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Not eklendi'**
   String get activityNoteAdded;
+
+  /// No description provided for @activitySquadCountBadge.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} tim'**
+  String activitySquadCountBadge(int count);
+
+  /// No description provided for @activityAssignmentWillNotBeSaved.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydedilmeyecek'**
+  String get activityAssignmentWillNotBeSaved;
+
+  /// No description provided for @activityAssignmentWillBeSaved.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydedilecek'**
+  String get activityAssignmentWillBeSaved;
+
+  /// No description provided for @activityFormContinueButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'Devam ({count})'**
+  String activityFormContinueButton(int count);
+
+  /// No description provided for @commonExit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çık'**
+  String get commonExit;
+
+  /// No description provided for @commonContinueRunning.
+  ///
+  /// In tr, this message translates to:
+  /// **'Devam et'**
+  String get commonContinueRunning;
+
+  /// No description provided for @activityFormMergeDetailedSummary.
+  ///
+  /// In tr, this message translates to:
+  /// **'{added} personel eklendi, {updated} güncellendi, {skipped} kayıt korundu.'**
+  String activityFormMergeDetailedSummary(int added, int updated, int skipped);
+
+  /// No description provided for @authSessionFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Oturum doğrulanamadı.'**
+  String get authSessionFailed;
+
+  /// No description provided for @authTeamPermissionExpired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tim yetkiniz sona erdi.'**
+  String get authTeamPermissionExpired;
+
+  /// No description provided for @activityDetailUnknownSquadHistory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tim geçmişi bilinmiyor'**
+  String get activityDetailUnknownSquadHistory;
+
+  /// No description provided for @activityDetailAddPersonnelButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'+ Personel Ekle'**
+  String get activityDetailAddPersonnelButton;
+
+  /// No description provided for @activityDetailAddSingleOption.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel Seçerek Ekle'**
+  String get activityDetailAddSingleOption;
+
+  /// No description provided for @activityDetailAddSingleOptionSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir veya birden fazla personel seçin'**
+  String get activityDetailAddSingleOptionSubtitle;
+
+  /// No description provided for @activityDetailAddBulkOption.
+  ///
+  /// In tr, this message translates to:
+  /// **'Metinden Toplu Ekle'**
+  String get activityDetailAddBulkOption;
+
+  /// No description provided for @activityDetailAddBulkOptionSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Listeyi tam önizleme ve hata kontrolüyle aktar'**
+  String get activityDetailAddBulkOptionSubtitle;
+
+  /// No description provided for @activityDetailAddImageOption.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görselden Toplu Ekle'**
+  String get activityDetailAddImageOption;
+
+  /// No description provided for @activityDetailAddImageOptionSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel listesini görselden okuyup bu karta ekle'**
+  String get activityDetailAddImageOptionSubtitle;
+
+  /// No description provided for @activityDetailImagePlatformWarning.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görselden aktarım Android ve iOS cihazlarda kullanılabilir.'**
+  String get activityDetailImagePlatformWarning;
+
+  /// No description provided for @activityDetailImageReadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görsel okunamadı: {error}'**
+  String activityDetailImageReadError(String error);
+
+  /// No description provided for @activityDetailPersonnelAdded.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel faaliyete eklendi.'**
+  String get activityDetailPersonnelAdded;
+
+  /// No description provided for @activityDetailPersonnelAddedAdminPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel eklendi, Admin onayına gönderildi.'**
+  String get activityDetailPersonnelAddedAdminPending;
+
+  /// No description provided for @activityDetailExportTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu Faaliyeti Dışa Aktar'**
+  String get activityDetailExportTooltip;
+
+  /// No description provided for @activityDetailExportTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Dışa Aktar'**
+  String get activityDetailExportTitle;
+
+  /// No description provided for @activityDetailExportSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet listesini paylaş veya yazdır'**
+  String get activityDetailExportSubtitle;
+
+  /// No description provided for @activityDetailCombineOutputTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kartları Birleştir ve Çıktı Al'**
+  String get activityDetailCombineOutputTitle;
+
+  /// No description provided for @activityDetailCombineOutputSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aynı gün ve önceki gün kartlarını imzalı çıktıda birleştir'**
+  String get activityDetailCombineOutputSubtitle;
+
+  /// No description provided for @activityDetailExportExcel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Excel’e aktar'**
+  String get activityDetailExportExcel;
+
+  /// No description provided for @activityDetailExportExcelSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hesap tablosu olarak paylaş'**
+  String get activityDetailExportExcelSubtitle;
+
+  /// No description provided for @activityDetailExportPdf.
+  ///
+  /// In tr, this message translates to:
+  /// **'PDF / Yazdır'**
+  String get activityDetailExportPdf;
+
+  /// No description provided for @activityDetailExportPdfSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'PDF oluştur veya doğrudan yazdır'**
+  String get activityDetailExportPdfSubtitle;
+
+  /// No description provided for @activityDetailExportText.
+  ///
+  /// In tr, this message translates to:
+  /// **'Metin olarak paylaş'**
+  String get activityDetailExportText;
+
+  /// No description provided for @activityDetailExportTextSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mesajlaşma uygulamaları için hazırla'**
+  String get activityDetailExportTextSubtitle;
+
+  /// No description provided for @activityDetailNoPersonnelAssigned.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu faaliyette görevlendirilmiş personel bulunmuyor.'**
+  String get activityDetailNoPersonnelAssigned;
+
+  /// No description provided for @activityDetailNoPrintablePersonnel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçilen timlerde yazdırılabilir personel bulunamadı.'**
+  String get activityDetailNoPrintablePersonnel;
+
+  /// No description provided for @activityDetailOutSquad.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tim Dışı'**
+  String get activityDetailOutSquad;
+
+  /// No description provided for @activityDetailUnknownSquad.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bilinmeyen Tim'**
+  String get activityDetailUnknownSquad;
+
+  /// No description provided for @activityDetailDeleteSquadsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Timleri Faaliyetten Sil'**
+  String get activityDetailDeleteSquadsTitle;
+
+  /// No description provided for @activityDetailDeleteSquadsConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'{teamNames} timlerindeki {count} personel bu faaliyetten çıkarılacaktır. Emin misiniz?'**
+  String activityDetailDeleteSquadsConfirm(String teamNames, int count);
+
+  /// No description provided for @activityDetailDeleteSquadsAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'TİMLERİ SİL'**
+  String get activityDetailDeleteSquadsAction;
+
+  /// No description provided for @activityDetailPersonnelRemovedCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} personel faaliyetten çıkarıldı.'**
+  String activityDetailPersonnelRemovedCount(int count);
+
+  /// No description provided for @activityDetailDutyPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'{duty} • BEKLİYOR'**
+  String activityDetailDutyPending(String duty);
+
+  /// No description provided for @activityDetailNoteLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Not: {note}'**
+  String activityDetailNoteLabel(String note);
+
+  /// No description provided for @commonApproveTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onayla'**
+  String get commonApproveTooltip;
+
+  /// No description provided for @commonRejectTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reddet'**
+  String get commonRejectTooltip;
+
+  /// No description provided for @activityDetailApproveBlocked.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onaylanamadı: {reason}'**
+  String activityDetailApproveBlocked(String reason);
+
+  /// No description provided for @commonActionsTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'İşlemler'**
+  String get commonActionsTooltip;
+
+  /// No description provided for @activityDetailDutyUpdated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görev güncellendi.'**
+  String get activityDetailDutyUpdated;
+
+  /// No description provided for @activityDetailDutyUpdatePending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görev değişikliği kaydedildi, Admin onayına gönderildi.'**
+  String get activityDetailDutyUpdatePending;
+
+  /// No description provided for @activityDetailRemovePersonnelTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personeli Görevden Çıkar'**
+  String get activityDetailRemovePersonnelTitle;
+
+  /// No description provided for @activityDetailRemovePersonnelConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'{name} adlı personel {activity} faaliyetinden çıkarılacaktır. Emin misiniz?'**
+  String activityDetailRemovePersonnelConfirm(String name, String activity);
+
+  /// No description provided for @activityDetailRemoveAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'ÇIKAR'**
+  String get activityDetailRemoveAction;
+
+  /// No description provided for @activityDetailPersonnelRemoved.
+  ///
+  /// In tr, this message translates to:
+  /// **'{name} faaliyetten çıkarıldı.'**
+  String activityDetailPersonnelRemoved(String name);
+
+  /// No description provided for @activityDetailAssignmentActions.
+  ///
+  /// In tr, this message translates to:
+  /// **'Atama İşlemleri'**
+  String get activityDetailAssignmentActions;
+
+  /// No description provided for @activityDetailEditDutySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görev veya izin bilgisini değiştir'**
+  String get activityDetailEditDutySubtitle;
+
+  /// No description provided for @activityDetailTransferCard.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başka karta taşı'**
+  String get activityDetailTransferCard;
+
+  /// No description provided for @activityDetailTransferCardSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personeli farklı faaliyete aktar'**
+  String get activityDetailTransferCardSubtitle;
+
+  /// No description provided for @activityDetailRemoveFromActivity.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyetten çıkar'**
+  String get activityDetailRemoveFromActivity;
+
+  /// No description provided for @activityDetailRemoveFromActivitySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personelin bu atamasını kaldır'**
+  String get activityDetailRemoveFromActivitySubtitle;
+
+  /// No description provided for @activitySelectedSquadCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} tim seçildi'**
+  String activitySelectedSquadCount(int count);
+
+  /// No description provided for @commonPrint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yazdır'**
+  String get commonPrint;
+
+  /// No description provided for @activityDeleteSelectedSquadsTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçilen timleri faaliyetten sil'**
+  String get activityDeleteSelectedSquadsTooltip;
+
+  /// No description provided for @activitySquadCardTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'{teamName} — {count} kişi'**
+  String activitySquadCardTitle(String teamName, int count);
+
+  /// No description provided for @activityTransferSquadTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'{teamName} timini başka karta taşı'**
+  String activityTransferSquadTooltip(String teamName);
+
+  /// No description provided for @activityDutyPickerTitleForPerson.
+  ///
+  /// In tr, this message translates to:
+  /// **'{name} için görev'**
+  String activityDutyPickerTitleForPerson(String name);
+
+  /// No description provided for @bulkImportKeepAuditTextTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ham metni yerel denetim kaydında sakla'**
+  String get bulkImportKeepAuditTextTitle;
+
+  /// No description provided for @bulkImportSaveActivitiesButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyetleri Kaydet'**
+  String get bulkImportSaveActivitiesButton;
+
+  /// No description provided for @bulkImportOptionalReviewsCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} isteğe bağlı inceleme'**
+  String bulkImportOptionalReviewsCount(int count);
+
+  /// No description provided for @bulkImportConfirmAllAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümünü Onayla'**
+  String get bulkImportConfirmAllAction;
+
+  /// No description provided for @bulkImportConfirmAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onayla'**
+  String get bulkImportConfirmAction;
+
+  /// No description provided for @bulkImportNoCardsHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yapıştır adımına dönüp mesajı yapıştırın.'**
+  String get bulkImportNoCardsHint;
+
+  /// No description provided for @bulkImportProceedToSaveStep.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydetme Adımına Geç'**
+  String get bulkImportProceedToSaveStep;
+
+  /// No description provided for @bulkImportSaveSummarySub.
+  ///
+  /// In tr, this message translates to:
+  /// **'{blockCount} blok -> {dayCount} günlük faaliyet'**
+  String bulkImportSaveSummarySub(int blockCount, int dayCount);
+
+  /// No description provided for @bulkImportSaveWithCardCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyetleri Kaydet ({count} Kart)'**
+  String bulkImportSaveWithCardCount(int count);
+
+  /// No description provided for @bulkImportActionsRemainingToSave.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydetmek için {count} işlem kaldı'**
+  String bulkImportActionsRemainingToSave(int count);
+
+  /// No description provided for @bulkImportUnresolvedIssuesError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen önce çözülmemiş kart sorunlarını (tarih, tim veya görev türü) tamamlayın.'**
+  String get bulkImportUnresolvedIssuesError;
+
+  /// No description provided for @bulkImportClearPreviewConfirmDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Oluşturulan tüm kartlar ve ayrıştırma uyarıları kaldırılacak.'**
+  String get bulkImportClearPreviewConfirmDesc;
+
+  /// No description provided for @bulkImportPersonnelAddedAndMatched.
+  ///
+  /// In tr, this message translates to:
+  /// **'{rank} {name} veritabanına ({timName}) eklendi ve eşleştirildi.'**
+  String bulkImportPersonnelAddedAndMatched(
+      String rank, String name, String timName);
+
+  /// No description provided for @bulkImportIssueEmptyBlock.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart #{number}: Personel bulunamadı.'**
+  String bulkImportIssueEmptyBlock(int number);
+
+  /// No description provided for @bulkImportIssueMissingDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart #{number}: Bu personel grubu için geçerli bir tarih bulunamadı.'**
+  String bulkImportIssueMissingDate(int number);
+
+  /// No description provided for @bulkImportIssueUnknownTeam.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart #{number}: Takım/tim adı belirtilmedi.'**
+  String bulkImportIssueUnknownTeam(int number);
+
+  /// No description provided for @bulkImportIssueUnknownActivity.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart #{number}: Görev türü tanınamadı.'**
+  String bulkImportIssueUnknownActivity(int number);
+
+  /// No description provided for @bulkImportIssueUnmatchedPersonnel.
+  ///
+  /// In tr, this message translates to:
+  /// **'{rank} {name} için personel seçimi yapılmadı.'**
+  String bulkImportIssueUnmatchedPersonnel(String rank, String name);
+
+  /// No description provided for @bulkImportMobileSummaryReady.
+  ///
+  /// In tr, this message translates to:
+  /// **'{cardCount} kart • {personnelCount} personel • Hazır'**
+  String bulkImportMobileSummaryReady(int cardCount, int personnelCount);
+
+  /// No description provided for @bulkImportMobileSummaryErrors.
+  ///
+  /// In tr, this message translates to:
+  /// **'{cardCount} kart • {personnelCount} personel • {count} hata'**
+  String bulkImportMobileSummaryErrors(
+      int cardCount, int personnelCount, int count);
+
+  /// No description provided for @bulkImportMobileSummaryReviews.
+  ///
+  /// In tr, this message translates to:
+  /// **'{cardCount} kart • {personnelCount} personel • {count} inceleme'**
+  String bulkImportMobileSummaryReviews(
+      int cardCount, int personnelCount, int count);
+
+  /// No description provided for @cancelSelectionTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçimi İptal Et'**
+  String get cancelSelectionTooltip;
+
+  /// No description provided for @bulkImportRegisteredTeamLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayitli tim: {team}'**
+  String bulkImportRegisteredTeamLabel(String team);
+
+  /// No description provided for @bulkImportListTeamLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Liste timi: {team}'**
+  String bulkImportListTeamLabel(String team);
+
+  /// No description provided for @bulkImportNoTeamSpecified.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tim belirtilmedi'**
+  String get bulkImportNoTeamSpecified;
+
+  /// No description provided for @commonChange.
+  ///
+  /// In tr, this message translates to:
+  /// **'Değiştir'**
+  String get commonChange;
+
+  /// No description provided for @bulkImportSelectPersonnelButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel Seç'**
+  String get bulkImportSelectPersonnelButton;
+
+  /// No description provided for @bulkImportAddToTeamAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'+ {team} Ekle'**
+  String bulkImportAddToTeamAction(String team);
+
+  /// No description provided for @bulkImportAliasDeleteConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'\'{alias}\' ➔ \'{target}\' öğrenilmiş takma ad eşleşmesi silinsin mi?'**
+  String bulkImportAliasDeleteConfirm(String alias, String target);
+
+  /// No description provided for @bulkImportAliasDeletedMessage.
+  ///
+  /// In tr, this message translates to:
+  /// **'\'{alias}\' hafızadan silindi.'**
+  String bulkImportAliasDeletedMessage(String alias);
+
+  /// No description provided for @bulkImportLearnedAliasCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} Öğrenilmiş İsim Takma Adı'**
+  String bulkImportLearnedAliasCount(int count);
+
+  /// No description provided for @bulkImportSearchAliasShortHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yazım veya personel adı ara'**
+  String get bulkImportSearchAliasShortHint;
+
+  /// No description provided for @bulkImportSearchAliasHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Metindeki yazım veya personel adıyla ara...'**
+  String get bulkImportSearchAliasHint;
+
+  /// No description provided for @bulkImportNoMatchingAliasFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aramanıza uygun takma ad bulunamadı.'**
+  String get bulkImportNoMatchingAliasFound;
+
+  /// No description provided for @bulkImportNoLearnedAliasesDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz öğrenilmiş bir takma ad bulunmuyor.\nToplu aktarımlarda onayladığınız eşleşmeler otomatik hafızaya alınır.'**
+  String get bulkImportNoLearnedAliasesDesc;
+
+  /// No description provided for @bulkImportMatchedPersonnelLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleştiği personel'**
+  String get bulkImportMatchedPersonnelLabel;
+
+  /// No description provided for @bulkImportUnassignedPersonnelTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Timsiz / Diğer Personeller'**
+  String get bulkImportUnassignedPersonnelTitle;
+
+  /// No description provided for @bulkImportCustomTeamOption.
+  ///
+  /// In tr, this message translates to:
+  /// **'DİĞER (Elle Yaz...)'**
+  String get bulkImportCustomTeamOption;
+
+  /// No description provided for @authPasswordPolicyMinLength.
+  ///
+  /// In tr, this message translates to:
+  /// **'Parola en az {count} karakter olmalıdır.'**
+  String authPasswordPolicyMinLength(int count);
+
+  /// No description provided for @dashboardImageReadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görsel okunamadı: {error}'**
+  String dashboardImageReadError(String error);
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ayarlar'**
+  String get settingsTitle;
+
+  /// No description provided for @commonUser.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kullanıcı'**
+  String get commonUser;
+
+  /// No description provided for @authUnsupportedRole.
+  ///
+  /// In tr, this message translates to:
+  /// **'Desteklenmeyen kullanıcı rolü: {role}'**
+  String authUnsupportedRole(String role);
+
+  /// No description provided for @commonSessionNotVerified.
+  ///
+  /// In tr, this message translates to:
+  /// **'Oturum doğrulanamadı.'**
+  String get commonSessionNotVerified;
+
+  /// No description provided for @conflictConflictingRecord.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çakışan kayıt'**
+  String get conflictConflictingRecord;
+
+  /// No description provided for @conflictAnotherActivityExists.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu tarihte başka bir faaliyet kaydı bulunuyor.'**
+  String get conflictAnotherActivityExists;
+
+  /// No description provided for @matrixSelectDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih Seçin'**
+  String get matrixSelectDate;
+
+  /// No description provided for @matrixEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **', boş'**
+  String get matrixEmpty;
+
+  /// No description provided for @matrixDayNumber.
+  ///
+  /// In tr, this message translates to:
+  /// **'{day}. gün{status}'**
+  String matrixDayNumber(int day, String status);
+
+  /// No description provided for @matrixSearchPersonnelResult.
+  ///
+  /// In tr, this message translates to:
+  /// **'“{query}” · {visible}/{total} kişi'**
+  String matrixSearchPersonnelResult(String query, int visible, int total);
+
+  /// No description provided for @matrixNoAuthorizedRecordsForExport.
+  ///
+  /// In tr, this message translates to:
+  /// **'Dışa aktarılacak yetkili kayıt bulunamadı.'**
+  String get matrixNoAuthorizedRecordsForExport;
+
+  /// No description provided for @matrixTeamDutyCalendarTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'{team} Görev Takvimi'**
+  String matrixTeamDutyCalendarTitle(String team);
+
+  /// No description provided for @matrixMonthlyOperationalView.
+  ///
+  /// In tr, this message translates to:
+  /// **'{year} / {month} Ayı Operasyonel Görünüm'**
+  String matrixMonthlyOperationalView(int year, String month);
+
+  /// No description provided for @matrixMonthlyDailyDistribution.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aylık Günlük Dağılım'**
+  String get matrixMonthlyDailyDistribution;
+
+  /// No description provided for @matrixClickDayForDetails.
+  ///
+  /// In tr, this message translates to:
+  /// **'Detaylar için güne tıklayın'**
+  String get matrixClickDayForDetails;
+
+  /// No description provided for @matrixDutyDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görevli Gün'**
+  String get matrixDutyDay;
+
+  /// No description provided for @matrixDutyDayCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} Gün'**
+  String matrixDutyDayCount(int count);
+
+  /// No description provided for @matrixActivePersonnelCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} Kişi'**
+  String matrixActivePersonnelCount(int count);
+
+  /// No description provided for @matrixPersonnelDayRatio.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel-gün oranı'**
+  String get matrixPersonnelDayRatio;
+
+  /// No description provided for @matrixUnknownSquadAssignmentsNotice.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu ay tim geçmişi bilinmeyen {count} eski atama var; tim hesabına katılmadı.'**
+  String matrixUnknownSquadAssignmentsNotice(int count);
+
+  /// No description provided for @matrixNoDutyPersonnelOnDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu tarihte görevli personel kaydı bulunmuyor.'**
+  String get matrixNoDutyPersonnelOnDate;
+
+  /// No description provided for @matrixApprovedStatus.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onaylı'**
+  String get matrixApprovedStatus;
+
+  /// No description provided for @matrixContinuingFromPreviousDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Önceki günden devam eden {count} kişi'**
+  String matrixContinuingFromPreviousDay(int count);
+
+  /// No description provided for @temgundrapOutputPrepareError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıktı hazırlanamadı: {error}'**
+  String temgundrapOutputPrepareError(String error);
+
+  /// No description provided for @temgundrapPreviewTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'TEMGÜNDRAP Önizleme'**
+  String get temgundrapPreviewTitle;
+
+  /// No description provided for @temgundrapSharePdfAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'PDF Paylaş'**
+  String get temgundrapSharePdfAction;
+
+  /// No description provided for @temgundrapIssuingUnit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıkaran birlik'**
+  String get temgundrapIssuingUnit;
+
+  /// No description provided for @temgundrapDescription.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama'**
+  String get temgundrapDescription;
+
+  /// No description provided for @temgundrapSelectCommanderFirst.
+  ///
+  /// In tr, this message translates to:
+  /// **'Önce operasyon komutanını seçin.'**
+  String get temgundrapSelectCommanderFirst;
+
+  /// No description provided for @temgundrapSelectNumberToUse.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kullanılacak numarayı seçin'**
+  String get temgundrapSelectNumberToUse;
+
+  /// No description provided for @temgundrapNoValidPhoneFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçilen kişide geçerli cep telefonu bulunamadı.'**
+  String get temgundrapNoValidPhoneFound;
+
+  /// No description provided for @temgundrapPhoneMatchedWithPersonnel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Telefon personelle eşleştirildi.'**
+  String get temgundrapPhoneMatchedWithPersonnel;
+
+  /// No description provided for @temgundrapOperationCommander.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyon Komutanı'**
+  String get temgundrapOperationCommander;
+
+  /// No description provided for @temgundrapSelectFromPersonnelList.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel listesinden seçin'**
+  String get temgundrapSelectFromPersonnelList;
+
+  /// No description provided for @temgundrapPhoneToUse.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kullanılacak telefon'**
+  String get temgundrapPhoneToUse;
+
+  /// No description provided for @temgundrapPhoneAutoMatchesNextTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir kez eşleştirilince sonraki seçimlerde otomatik gelir.'**
+  String get temgundrapPhoneAutoMatchesNextTime;
+
+  /// No description provided for @temgundrapSelectFromContacts.
+  ///
+  /// In tr, this message translates to:
+  /// **'Telefon rehberinden seç'**
+  String get temgundrapSelectFromContacts;
+
+  /// No description provided for @temgundrapEnterValidPhone.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçerli bir cep telefonu girin.'**
+  String get temgundrapEnterValidPhone;
+
+  /// No description provided for @temgundrapOperationArea.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyon bölgesi'**
+  String get temgundrapOperationArea;
+
+  /// No description provided for @temgundrapOperationAreaRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyon bölgesi zorunludur.'**
+  String get temgundrapOperationAreaRequired;
+
+  /// No description provided for @temgundrapEnterCustomOperationArea.
+  ///
+  /// In tr, this message translates to:
+  /// **'Özel operasyon bölgesini girin.'**
+  String get temgundrapEnterCustomOperationArea;
+
+  /// No description provided for @temgundrapTypeOperationArea.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyon bölgesini yazın'**
+  String get temgundrapTypeOperationArea;
+
+  /// No description provided for @temgundrapEditOperationTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyonu Düzenle'**
+  String get temgundrapEditOperationTitle;
+
+  /// No description provided for @temgundrapOperationPurpose.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyon maksadı'**
+  String get temgundrapOperationPurpose;
+
+  /// No description provided for @temgundrapPersonnelListLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel listesi yüklenemedi: {error}'**
+  String temgundrapPersonnelListLoadError(String error);
+
+  /// No description provided for @temgundrapUpdateOperationAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'OPERASYONU GÜNCELLE'**
+  String get temgundrapUpdateOperationAction;
+
+  /// No description provided for @temgundrapStartTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başlama zamanı'**
+  String get temgundrapStartTime;
+
+  /// No description provided for @temgundrapEndTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bitiş zamanı'**
+  String get temgundrapEndTime;
+
+  /// No description provided for @temgundrapVehicles.
+  ///
+  /// In tr, this message translates to:
+  /// **'Araçlar'**
+  String get temgundrapVehicles;
+
+  /// No description provided for @temgundrapVehicleModel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Araç modeli'**
+  String get temgundrapVehicleModel;
+
+  /// No description provided for @temgundrapRegisteredPlates.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıtlı plakalar:'**
+  String get temgundrapRegisteredPlates;
+
+  /// No description provided for @rosterOutputCommanderTeamRevoked.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tim yetkiniz sona erdi.'**
+  String get rosterOutputCommanderTeamRevoked;
+
+  /// No description provided for @statusApproved.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onaylı'**
+  String get statusApproved;
+
+  /// No description provided for @statusPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bekleyen'**
+  String get statusPending;
+
+  /// No description provided for @statusRejected.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reddedilen'**
+  String get statusRejected;
+
+  /// No description provided for @personnelUnitHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: 1\'inci Bl.'**
+  String get personnelUnitHint;
+
+  /// No description provided for @temgundrapAddOperationTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyon Ekle'**
+  String get temgundrapAddOperationTitle;
+
+  /// No description provided for @temgundrapAddOperationAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'OPERASYONU EKLE'**
+  String get temgundrapAddOperationAction;
+
+  /// No description provided for @commonUpdate.
+  ///
+  /// In tr, this message translates to:
+  /// **'GÜNCELLE'**
+  String get commonUpdate;
+
+  /// No description provided for @confirmDiscardTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Değişikliklerden vazgeçilsin mi?'**
+  String get confirmDiscardTitle;
+
+  /// No description provided for @confirmDiscardContent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydedilmeyen bilgiler kaybolacak.'**
+  String get confirmDiscardContent;
+
+  /// No description provided for @confirmDiscardContinue.
+  ///
+  /// In tr, this message translates to:
+  /// **'DÜZENLEMEYE DEVAM ET'**
+  String get confirmDiscardContinue;
+
+  /// No description provided for @confirmDiscardExit.
+  ///
+  /// In tr, this message translates to:
+  /// **'VAZGEÇ VE ÇIK'**
+  String get confirmDiscardExit;
+
+  /// No description provided for @authSessionUnverified.
+  ///
+  /// In tr, this message translates to:
+  /// **'Oturum doğrulanamadı.'**
+  String get authSessionUnverified;
+
+  /// No description provided for @temgundrapUnitHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI'**
+  String get temgundrapUnitHint;
+
+  /// No description provided for @temgundrapApproverNameHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: İhsan DAĞLI'**
+  String get temgundrapApproverNameHint;
+
+  /// No description provided for @temgundrapApproverRankHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: J.Ütğm.'**
+  String get temgundrapApproverRankHint;
+
+  /// No description provided for @temgundrapApproverDutyHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: Tb. K. V.'**
+  String get temgundrapApproverDutyHint;
 }
 
 class _AppLocalizationsDelegate

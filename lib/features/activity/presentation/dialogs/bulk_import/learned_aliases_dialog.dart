@@ -68,8 +68,10 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
       builder: (dialogContext) => AlertDialog(
         title: Text(context.l10n.bulkImportDeleteAliasTitle),
         content: Text(
-          '\'${item.gorunenTakmaAd}\' ➔ \'${item.personelRutbe ?? ''} ${item.personelAdSoyad}\' '
-          'öğrenilmiş takma ad eşleşmesi silinsin mi?',
+          context.l10n.bulkImportAliasDeleteConfirm(
+            item.gorunenTakmaAd,
+            '${item.personelRutbe ?? ''} ${item.personelAdSoyad}'.trim(),
+          ),
         ),
         actions: [
           TextButton(
@@ -93,7 +95,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
       await _loadData();
       if (mounted) {
         AppNotifications.info(
-          '\'${item.gorunenTakmaAd}\' hafızadan silindi.',
+          context.l10n.bulkImportAliasDeletedMessage(item.gorunenTakmaAd),
           duration: const Duration(seconds: 2),
         );
       }
@@ -120,6 +122,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
     final isSearching = _searchQuery.trim().isNotEmpty;
     final rows = _buildRowsGroupedBySquad(
       filtered,
+      unassignedTitle: context.l10n.bulkImportUnassignedPersonnelTitle,
       isExpanded: (squad) => isSearching || _expandedSquads.contains(squad),
     );
     final size = MediaQuery.sizeOf(context);
@@ -171,7 +174,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Sistem Hafızası',
+                              context.l10n.bulkImportSystemMemoryTitle,
                               style: TextStyle(
                                 color: context.onAccentOrOlive,
                                 fontSize: 18,
@@ -179,7 +182,9 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                               ),
                             ),
                             Text(
-                              '${_allAliases.length} Öğrenilmiş İsim Takma Adı',
+                              context.l10n.bulkImportLearnedAliasCount(
+                                _allAliases.length,
+                              ),
                               style: TextStyle(
                                 color: context.onAccentOrOlive,
                                 fontSize: 12,
@@ -204,8 +209,8 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                     onChanged: (val) => setState(() => _searchQuery = val),
                     decoration: InputDecoration(
                       hintText: isMobile
-                          ? 'Yazım veya personel adı ara'
-                          : 'Metindeki yazım veya personel adıyla ara...',
+                          ? context.l10n.bulkImportSearchAliasShortHint
+                          : context.l10n.bulkImportSearchAliasHint,
                       prefixIcon: const Icon(Icons.search, size: 20),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
@@ -245,9 +250,8 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                     const SizedBox(height: 12),
                                     Text(
                                       _searchQuery.isNotEmpty
-                                          ? 'Aramanıza uygun takma ad bulunamadı.'
-                                          : 'Henüz öğrenilmiş bir takma ad bulunmuyor.\n'
-                                              'Toplu aktarımlarda onayladığınız eşleşmeler otomatik hafızaya alınır.',
+                                          ? context.l10n.bulkImportNoMatchingAliasFound
+                                          : context.l10n.bulkImportNoLearnedAliasesDesc,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         color: context.textMuted,
@@ -324,7 +328,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Metindeki ad',
+                                              context.l10n.bulkImportTextName,
                                               style: TextStyle(
                                                 color: context.textMuted,
                                                 fontSize: 11,
@@ -342,7 +346,7 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                             ),
                                             const SizedBox(height: 8),
                                             Text(
-                                              'Eşleştiği personel',
+                                              context.l10n.bulkImportMatchedPersonnelLabel,
                                               style: TextStyle(
                                                 color: context.textMuted,
                                                 fontSize: 11,
@@ -404,9 +408,9 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
 /// personnel without a team are collected at the end.
 List<Object> _buildRowsGroupedBySquad(
   List<LearnedAliasItem> items, {
+  required String unassignedTitle,
   required bool Function(String squad) isExpanded,
 }) {
-  const unassignedTitle = 'Timsiz / Diğer Personeller';
   final grouped = <String, List<LearnedAliasItem>>{};
   for (final item in items) {
     final squad = (item.personelTimAdi ?? '').trim();

@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/matrix/domain/team_duty_analytics_dto.dart';
@@ -24,17 +25,17 @@ class TeamDutyCalendarSummary extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _CalendarStatItem(
-                  label: 'Görevli Gün',
-                  value: '${summary.toplamGorevGunSayisi} Gün',
+                  label: context.l10n.matrixDutyDay,
+                  value: context.l10n.matrixDutyDayCount(summary.toplamGorevGunSayisi),
                   icon: Icons.assignment_outlined,
                 ),
                 _CalendarStatItem(
                   label: 'Aktif Personel',
-                  value: '${summary.aktifPersonelSayisi} Kişi',
+                  value: context.l10n.matrixActivePersonnelCount(summary.aktifPersonelSayisi),
                   icon: Icons.groups_outlined,
                 ),
                 _CalendarStatItem(
-                  label: 'Personel-gün oranı',
+                  label: context.l10n.matrixPersonnelDayRatio,
                   value:
                       summary.yukHesabiTam
                           ? '%${summary.ortalamaYukYuzdesi.toStringAsFixed(0)}'
@@ -53,7 +54,7 @@ class TeamDutyCalendarSummary extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
-                  'Bu ay tim geçmişi bilinmeyen ${summary.bilinmeyenTimAtamaSayisi} eski atama var; tim hesabına katılmadı.',
+                  context.l10n.matrixUnknownSquadAssignmentsNotice(summary.bilinmeyenTimAtamaSayisi),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),

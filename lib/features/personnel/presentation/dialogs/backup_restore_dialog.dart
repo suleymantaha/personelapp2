@@ -96,8 +96,8 @@ class _BackupRestoreDialogState extends ConsumerState<BackupRestoreDialog> {
         _notice = _BackupNotice(
           type: saved ? _BackupNoticeType.success : _BackupNoticeType.warning,
           message: saved
-              ? 'Tam uygulama yedeği dışa aktarıldı.'
-              : 'Kaydetme işlemi iptal edildi.',
+              ? context.l10n.backupExportSuccess
+              : context.l10n.backupSaveCancelled,
         );
       });
     } on Object catch (error, stackTrace) {

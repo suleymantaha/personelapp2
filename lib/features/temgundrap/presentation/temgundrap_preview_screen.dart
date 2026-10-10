@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:intl/intl.dart';
@@ -40,7 +41,7 @@ class TemgundrapPreviewScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Çıktı hazırlanamadı: $error')));
+        ).showSnackBar(SnackBar(content: Text(context.l10n.temgundrapOutputPrepareError('$error'))));
       }
     }
   }
@@ -51,17 +52,17 @@ class TemgundrapPreviewScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: const AppBackButton(),
-        title: const Text('TEMGÜNDRAP Önizleme'),
+        title: Text(context.l10n.temgundrapPreviewTitle),
         actions: [
           IconButton(
             key: const Key('preview-print-icon'),
-            tooltip: 'Yazdır',
+            tooltip: context.l10n.commonPrint,
             onPressed: () => _output(context, _print),
             icon: const Icon(Icons.print_outlined),
           ),
           IconButton(
             key: const Key('preview-share-icon'),
-            tooltip: 'PDF paylaş',
+            tooltip: context.l10n.temgundrapSharePdfAction,
             onPressed: () => _output(context, _share),
             icon: const Icon(Icons.ios_share_outlined),
           ),
@@ -294,7 +295,7 @@ class _OperationCard extends StatelessWidget {
           const Divider(height: 24),
           _InfoRow(
             icon: Icons.account_balance_outlined,
-            label: 'Çıkaran birlik',
+            label: context.l10n.temgundrapIssuingUnit,
             value: operation.issuingUnit,
           ),
           _InfoRow(
@@ -321,7 +322,7 @@ class _OperationCard extends StatelessWidget {
           if (operation.description.isNotEmpty)
             _InfoRow(
               icon: Icons.notes_outlined,
-              label: 'Açıklama',
+              label: context.l10n.temgundrapDescription,
               value: operation.description,
             ),
         ],
@@ -429,14 +430,14 @@ class _OutputBar extends StatelessWidget {
               key: const Key('preview-share'),
               onPressed: onShare,
               icon: Icons.picture_as_pdf_outlined,
-              label: 'PDF Paylaş',
+              label: context.l10n.temgundrapSharePdfAction,
             ),
             const SizedBox(width: 8),
             action(
               key: const Key('preview-print'),
               onPressed: onPrint,
               icon: Icons.print_outlined,
-              label: 'Yazdır',
+              label: context.l10n.commonPrint,
             ),
           ],
         ),

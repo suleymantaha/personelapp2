@@ -37,11 +37,11 @@ class BulkImportInputSection extends StatelessWidget {
                 size: 20,
               ),
               const SizedBox(width: 8),
-              const Flexible(
+              Flexible(
                 child: Text(
-                  'Ham Metni Yapıştırın:',
+                  context.l10n.bulkImportInputRawTitle,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
               ),
             ],
@@ -56,8 +56,7 @@ class BulkImportInputSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                'Tarih, görev türü ve personel listesini içeren mesajı '
-                'olduğu gibi yapıştırabilirsiniz.',
+                context.l10n.bulkImportInputRawSubtitle,
                 style: TextStyle(
                   color: context.accentOrOlive,
                   fontSize: 12,
@@ -73,14 +72,14 @@ class BulkImportInputSection extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Ham metni yerel denetim kaydında sakla',
+                    Text(
+                      context.l10n.bulkImportKeepAuditTextTitle,
                       style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                          const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                     ),
-                    const Text(
-                      'Varsayılan kapalıdır; veri yalnızca bu cihazda tutulur.',
-                      style: TextStyle(fontSize: 10),
+                    Text(
+                      context.l10n.bulkImportKeepAuditTextDesc,
+                      style: const TextStyle(fontSize: 10),
                     ),
                   ],
                 ),
@@ -141,9 +140,9 @@ class BulkImportInputSection extends StatelessWidget {
                       ),
                     )
                   : const Icon(Icons.auto_awesome_rounded),
-              label: const Text(
-                'Metni Ayrıştır ve Kartları Oluştur',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              label: Text(
+                context.l10n.bulkImportParseAndCreateCards,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.accentOrOlive,
