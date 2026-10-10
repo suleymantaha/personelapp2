@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:excel/excel.dart';
 import 'package:personelapp2/features/activity/services/roster_share_file.dart';
 import 'package:personelapp2/core/utils/export_file_name_helper.dart';
@@ -11,6 +12,7 @@ class TemgundrapExcelExporter {
   const TemgundrapExcelExporter._();
 
   static List<int> build(TemgundrapDocument document, [AppLocalizations? l10n]) {
+    final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
     final excel = Excel.createExcel();
     const sheetName = 'TEMGÜNDRAP';
     final sheet = excel[sheetName];
@@ -60,27 +62,27 @@ class TemgundrapExcelExporter {
     }
 
     // Keep the official document heading identical in both export formats.
-    set(0, 0, TemgundrapPdfExporter.documentTitle(document, l10n), titleStyle);
+    set(0, 0, TemgundrapPdfExporter.documentTitle(document, localizations), titleStyle);
     merge(0, 0, 10, 0);
     final mainHeaders = <int, String>{
-      0: l10n?.temgundrapExportColSequence ?? 'S.NU',
-      1: l10n?.temgundrapExportColIssuingUnit ?? 'ÇIKARAN BİRLİK',
-      2: l10n?.temgundrapExportColOperationArea ?? 'OPERASYON BÖLGESİ',
-      7: l10n?.temgundrapExportColStartTime ?? 'BAŞLAMA ZAMANI',
-      8: l10n?.temgundrapExportColEndTime ?? 'BİTİŞ ZAMANI',
-      9: l10n?.temgundrapExportColPurpose ?? 'OPERASYON MAKSADI',
-      10: l10n?.temgundrapExportColDescription ?? 'AÇIKLAMA',
+      0: localizations.temgundrapExportColSequence,
+      1: localizations.temgundrapExportColIssuingUnit,
+      2: localizations.temgundrapExportColOperationArea,
+      7: localizations.temgundrapExportColStartTime,
+      8: localizations.temgundrapExportColEndTime,
+      9: localizations.temgundrapExportColPurpose,
+      10: localizations.temgundrapExportColDescription,
     };
     for (final entry in mainHeaders.entries) {
       set(entry.key, 1, entry.value, headerStyle);
       merge(entry.key, 1, entry.key, 2);
     }
-    set(3, 1, l10n?.temgundrapExportColForceHeader ?? 'OPERASYON KUVVETİ', headerStyle);
+    set(3, 1, localizations.temgundrapExportColForceHeader, headerStyle);
     merge(3, 1, 6, 1);
     final subHeaders = [
-      l10n?.temgundrapExportColForce ?? 'KUVVETİ',
-      l10n?.temgundrapExportColCommander ?? 'OPERASYON KOMUTANI',
-      l10n?.temgundrapExportColPresent ?? 'MEVCUT',
+      localizations.temgundrapExportColForce,
+      localizations.temgundrapExportColCommander,
+      localizations.temgundrapExportColPresent,
       '',
     ];
     for (var index = 0; index < subHeaders.length; index++) {
@@ -92,7 +94,7 @@ class TemgundrapExcelExporter {
       final operation = entry.value;
       final strengthLabels = [
         ...operation.strength.byLabel.keys,
-        l10n?.temgundrapExportTotal ?? 'TOPLAM',
+        localizations.temgundrapExportTotal,
       ].join('\n');
       final strengthValues = [
         ...operation.strength.byLabel.values,
@@ -145,7 +147,7 @@ class TemgundrapExcelExporter {
         sigRow++;
       }
 
-      setSigLine(l10n?.temgundrapSigned ?? '(İMZALI)', sigStyleBold);
+      setSigLine(localizations.temgundrapSigned, sigStyleBold);
       if (document.approverName.isNotEmpty) {
         setSigLine(document.approverName, sigStyleNormal);
       }
@@ -184,6 +186,7 @@ class TemgundrapExcelExporter {
     TemgundrapDocument document, [
     AppLocalizations? l10n,
   ]) async {
+    final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
     final dateStr =
         '${document.date.year}-${document.date.month.toString().padLeft(2, '0')}-${document.date.day.toString().padLeft(2, '0')}';
     final fileName = formatExportFileName(
@@ -191,11 +194,11 @@ class TemgundrapExcelExporter {
       date: dateStr,
       extension: 'xlsx',
     );
-    final file = await createRosterShareFile(fileName, build(document, l10n));
+    final file = await createRosterShareFile(fileName, build(document, localizations));
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
-        text: l10n?.temgundrapExportShareTextExcel ?? 'TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı',
+        text: localizations.temgundrapExportShareTextExcel,
       ),
     );
   }
