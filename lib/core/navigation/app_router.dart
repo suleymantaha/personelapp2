@@ -62,8 +62,14 @@ GoRouter createAppRouter({UserSessionState? session}) {
           ),
           GoRoute(
             path: AppRoutes.activityAssignmentPreview,
+            redirect: (context, state) {
+              if (state.extra is! ActivityAssignmentPreviewArgs) {
+                return AppRoutes.dashboard;
+              }
+              return null;
+            },
             builder: (context, state) {
-              final args = state.extra! as ActivityAssignmentPreviewArgs;
+              final args = state.extra as ActivityAssignmentPreviewArgs;
               return ActivityAssignmentPreviewScreen(
                 activityName: args.activityName,
                 date: args.date,
@@ -104,8 +110,14 @@ GoRouter createAppRouter({UserSessionState? session}) {
           ),
           GoRoute(
             path: AppRoutes.rosterOutputPreview,
+            redirect: (context, state) {
+              if (state.extra is! RosterOutputPreviewArgs) {
+                return AppRoutes.rosterOutput;
+              }
+              return null;
+            },
             builder: (context, state) {
-              final args = state.extra! as RosterOutputPreviewArgs;
+              final args = state.extra as RosterOutputPreviewArgs;
               return RosterOutputPreviewScreen(
                 date: args.date,
                 sources: args.sources,
@@ -129,8 +141,14 @@ GoRouter createAppRouter({UserSessionState? session}) {
           ),
           GoRoute(
             path: AppRoutes.temgundrapPreview,
+            redirect: (context, state) {
+              if (state.extra is! TemgundrapDocument) {
+                return AppRoutes.temgundrap;
+              }
+              return null;
+            },
             builder: (context, state) => TemgundrapPreviewScreen(
-              document: state.extra! as TemgundrapDocument,
+              document: state.extra as TemgundrapDocument,
             ),
           ),
         ],

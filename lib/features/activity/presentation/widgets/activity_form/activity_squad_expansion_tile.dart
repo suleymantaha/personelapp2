@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_personnel_duty_row.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/batch_duty_picker.dart';
@@ -64,7 +65,7 @@ class ActivitySquadExpansionTile extends StatelessWidget {
             IconButton(
               key: ValueKey('batch-duty-button-$squadName'),
               icon: const Icon(Icons.more_vert_rounded, size: 22),
-              tooltip: 'Time Toplu Görev Ata',
+              tooltip: context.l10n.activityBatchDutyAssignSquadTooltip(squadName),
               onPressed: () async {
                 final duty = await showBatchDutyPicker(
                   context,

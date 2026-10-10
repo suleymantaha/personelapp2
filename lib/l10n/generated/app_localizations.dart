@@ -118,6 +118,12 @@ abstract class AppLocalizations {
   /// **'Vazgeç'**
   String get commonDismiss;
 
+  /// No description provided for @commonReset.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sıfırla'**
+  String get commonReset;
+
   /// No description provided for @commonClose.
   ///
   /// In tr, this message translates to:
@@ -243,6 +249,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Kayıt bulunamadı'**
   String get commonNoData;
+
+  /// No description provided for @commonActivity.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet'**
+  String get commonActivity;
 
   /// No description provided for @commonApprove.
   ///
@@ -4724,6 +4736,12 @@ abstract class AppLocalizations {
   /// **'{squadName} timine toplu görev ata'**
   String activityBatchDutyAssignSquadTooltip(String squadName);
 
+  /// No description provided for @activityPersonnelCountBadge.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} personel'**
+  String activityPersonnelCountBadge(int count);
+
   /// No description provided for @activitySelectedPersonnelEditHint.
   ///
   /// In tr, this message translates to:
@@ -4988,6 +5006,30 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Dışa aktarılamadı: {error}'**
   String rosterOutputExportError(String error);
+
+  /// No description provided for @activityFormSearchHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel veya birlik ara...'**
+  String get activityFormSearchHint;
+
+  /// No description provided for @activityFormFilterAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hepsi'**
+  String get activityFormFilterAll;
+
+  /// No description provided for @activityFormFilterUnassigned.
+  ///
+  /// In tr, this message translates to:
+  /// **'Atanmayanlar'**
+  String get activityFormFilterUnassigned;
+
+  /// No description provided for @activityNoteAdded.
+  ///
+  /// In tr, this message translates to:
+  /// **'Not eklendi'**
+  String get activityNoteAdded;
 }
 
 class _AppLocalizationsDelegate

@@ -7,6 +7,7 @@
   "commonSave": "Kaydet",
   "commonCancel": "İptal",
   "commonDismiss": "Vazgeç",
+  "commonReset": "Sıfırla",
   "commonClose": "Kapat",
   "commonBack": "Geri",
   "commonDelete": "Sil",
@@ -28,6 +29,7 @@
   "commonRequired": "Zorunlu alan",
   "commonLoading": "Yükleniyor...",
   "commonNoData": "Kayıt bulunamadı",
+  "commonActivity": "Faaliyet",
   "commonApprove": "Onayla",
   "commonReject": "Reddet",
   "commonUnauthorized": "Bu sayfaya erişim yetkiniz bulunmuyor.",
@@ -1886,8 +1888,8 @@
       }
     }
   },
-  "activitySelectedPersonnelCount": "{count} personel seçildi",
-  "@activitySelectedPersonnelCount": {
+  "activityPersonnelCountBadge": "{count} personel",
+  "@activityPersonnelCountBadge": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -2054,5 +2056,9 @@
         "type": "String"
       }
     }
-  }
+  },
+  "activityFormSearchHint": "Personel veya birlik ara...",
+  "activityFormFilterAll": "Hepsi",
+  "activityFormFilterUnassigned": "Atanmayanlar",
+  "activityNoteAdded": "Not eklendi"
 }

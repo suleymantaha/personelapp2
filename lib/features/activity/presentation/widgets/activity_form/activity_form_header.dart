@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 
 class ActivityFormHeader extends StatelessWidget {
@@ -54,9 +55,10 @@ class ActivityFormHeader extends StatelessWidget {
           _ActionRow(
             key: const Key('activity-name-field'),
             icon: Icons.shield_outlined,
-            label: 'Faaliyet',
-            value:
-                selectedActivity.isEmpty ? 'Faaliyet seçin' : selectedActivity,
+            label: context.l10n.commonActivity,
+            value: selectedActivity.isEmpty
+                ? context.l10n.activityFormSelectActivityPrompt
+                : selectedActivity,
             showError: showNameError,
             onTap: () => _showActivityPicker(context),
           ),
@@ -84,9 +86,9 @@ class ActivityFormHeader extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Faaliyet Seç',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                Text(
+                  sheetContext.l10n.activityFormSelectActivityTitle,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 12),
                 Flexible(
@@ -152,27 +154,27 @@ class ActivityFormHeader extends StatelessWidget {
     var customValue = activityNameController.text;
     final value = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Faaliyet adı'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(dialogContext.l10n.activityFormActivityNameTitle),
         content: TextFormField(
           key: const Key('custom-activity-name-field'),
           initialValue: customValue,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            hintText: 'Faaliyet adını yazın',
+          decoration: InputDecoration(
+            hintText: dialogContext.l10n.activityFormActivityNameHint,
           ),
           onChanged: (value) => customValue = value,
-          onFieldSubmitted: (value) => Navigator.pop(context, value.trim()),
+          onFieldSubmitted: (value) => Navigator.pop(dialogContext, value.trim()),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Vazgeç'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(dialogContext.l10n.commonDismiss),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, customValue.trim()),
-            child: const Text('Tamam'),
+            onPressed: () => Navigator.pop(dialogContext, customValue.trim()),
+            child: Text(dialogContext.l10n.commonOk),
           ),
         ],
       ),
@@ -240,7 +242,7 @@ class _ActionRow extends StatelessWidget {
                   ),
                   if (showError)
                     Text(
-                      'Faaliyet adı zorunludur',
+                      context.l10n.activityFormActivityNameRequired,
                       style:
                           TextStyle(fontSize: 12, color: context.rejectedColor),
                     ),

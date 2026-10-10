@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
@@ -56,15 +57,15 @@ class BatchDutyPicker extends StatelessWidget {
           Icons.restart_alt_rounded,
           color: confirmationContext.rejectedColor,
         ),
-        title: const Text('Görevler sıfırlansın mı?'),
+        title: Text(confirmationContext.l10n.activityBatchDutyResetDialogTitle),
         content: Text(
-          '$squadName timindeki tüm görev seçimleri kaldırılacak.',
+          confirmationContext.l10n.activityBatchDutyResetDialogDesc(squadName),
           textAlign: TextAlign.center,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(confirmationContext, false),
-            child: const Text('Vazgeç'),
+            child: Text(confirmationContext.l10n.commonDismiss),
           ),
           FilledButton(
             key: const Key('confirm-clear-batch-duty'),
@@ -72,7 +73,7 @@ class BatchDutyPicker extends StatelessWidget {
               backgroundColor: confirmationContext.rejectedColor,
             ),
             onPressed: () => Navigator.pop(confirmationContext, true),
-            child: const Text('Sıfırla'),
+            child: Text(confirmationContext.l10n.commonReset),
           ),
         ],
       ),
@@ -119,14 +120,14 @@ class BatchDutyPicker extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Toplu görev ata',
-                        style: TextStyle(
+                      Text(
+                        context.l10n.activityBatchDutyAssignTitle,
+                        style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '$squadName timindeki tüm personele uygulanır',
+                        context.l10n.activityBatchDutyAssignSquadDesc(squadName),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -138,7 +139,7 @@ class BatchDutyPicker extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Kapat',
+                  tooltip: context.l10n.commonClose,
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.close_rounded),
                 ),
@@ -169,10 +170,10 @@ class BatchDutyPicker extends StatelessWidget {
             const SizedBox(height: 8),
             ModernActionTile(
               key: const Key('clear-batch-duty'),
-              option: const ModernActionOption(
+              option: ModernActionOption(
                 value: 'CLEAR',
-                title: 'Görevleri sıfırla',
-                subtitle: 'Timdeki tüm görev seçimlerini kaldır',
+                title: context.l10n.activityBatchDutyResetActionTitle,
+                subtitle: context.l10n.activityBatchDutyResetActionSubtitle,
                 icon: Icons.restart_alt_rounded,
                 isDestructive: true,
               ),

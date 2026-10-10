@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
+import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/presentation/view_models/activity_form_draft.dart';
 import 'activity_compact_personnel_row.dart';
 
@@ -64,7 +65,7 @@ class ActivitySelectedSquadGroup extends StatelessWidget {
                   child: Text(
                     compact
                         ? '${personnel.length}'
-                        : '${personnel.length} personel',
+                        : context.l10n.activityPersonnelCountBadge(personnel.length),
                     style: TextStyle(
                       color: context.accentOrOlive,
                       fontSize: 11,
@@ -74,7 +75,7 @@ class ActivitySelectedSquadGroup extends StatelessWidget {
                 ),
                 IconButton(
                   key: ValueKey('assign-squad-duty-$squadName'),
-                  tooltip: '$squadName timine toplu görev ata',
+                  tooltip: context.l10n.activityBatchDutyAssignSquadTooltip(squadName),
                   visualDensity: VisualDensity.compact,
                   onPressed: onAssignDuty,
                   icon: const Icon(Icons.assignment_ind_outlined, size: 20),

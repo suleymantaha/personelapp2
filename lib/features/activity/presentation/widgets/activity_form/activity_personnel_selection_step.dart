@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
@@ -93,8 +94,8 @@ class ActivityPersonnelSelectionStep extends StatelessWidget {
     final tiles = <Widget>[];
     for (final timId in timIds) {
       final squadName = timId == null
-          ? 'Timsiz / Diğer Personeller'
-          : (squadNames[timId] ?? 'Bilinmeyen Tim');
+          ? context.l10n.bulkImportUnassignedOrOtherPersonnel
+          : (squadNames[timId] ?? context.l10n.personnelPickerUnknownTeam);
       final allMembers = grouped[timId]!
         ..sort(
             (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)));
@@ -154,9 +155,11 @@ class _SelectionScrollView extends StatelessWidget {
           sliver: SliverToBoxAdapter(child: controls),
         ),
         if (children.isEmpty)
-          const SliverFillRemaining(
+          SliverFillRemaining(
             hasScrollBody: false,
-            child: Center(child: Text('Aramaya uygun personel bulunamadı.')),
+            child: Center(
+              child: Text(context.l10n.activityPersonnelSelectionEmpty),
+            ),
           )
         else
           SliverPadding(
@@ -215,8 +218,9 @@ class _SquadSelectionTile extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        subtitle:
-            selectedCount == 0 ? null : Text('$selectedCount personel seçildi'),
+        subtitle: selectedCount == 0
+            ? null
+            : Text(context.l10n.activitySelectedPersonnelCount(selectedCount)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -227,7 +231,7 @@ class _SquadSelectionTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                '${allMembers.length} personel',
+                context.l10n.activityPersonnelCountBadge(allMembers.length),
                 style: TextStyle(
                   color: context.accentOrOlive,
                   fontSize: 12,

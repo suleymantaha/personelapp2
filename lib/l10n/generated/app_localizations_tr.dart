@@ -21,6 +21,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get commonDismiss => 'Vazgeç';
 
   @override
+  String get commonReset => 'Sıfırla';
+
+  @override
   String get commonClose => 'Kapat';
 
   @override
@@ -82,6 +85,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get commonNoData => 'Kayıt bulunamadı';
+
+  @override
+  String get commonActivity => 'Faaliyet';
 
   @override
   String get commonApprove => 'Onayla';
@@ -2716,6 +2722,11 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String activityPersonnelCountBadge(int count) {
+    return '$count personel';
+  }
+
+  @override
   String get activitySelectedPersonnelEditHint =>
       'Bir personele farklı görev veya not vermek için adına dokunun.';
 
@@ -2889,4 +2900,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String rosterOutputExportError(String error) {
     return 'Dışa aktarılamadı: $error';
   }
+
+  @override
+  String get activityFormSearchHint => 'Personel veya birlik ara...';
+
+  @override
+  String get activityFormFilterAll => 'Hepsi';
+
+  @override
+  String get activityFormFilterUnassigned => 'Atanmayanlar';
+
+  @override
+  String get activityNoteAdded => 'Not eklendi';
 }

@@ -13,7 +13,6 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_summary_card.dart';
-import 'package:personelapp2/features/activity/presentation/roster_output_screen.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_date_navigator.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
@@ -281,13 +280,10 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
               onSelected: (action) async {
                 switch (action) {
                   case 'prepare-output':
-                    await Navigator.of(context).push<void>(
-                      MaterialPageRoute(
-                        builder: (_) => RosterOutputScreen(
-                          initialDate: dateFilterStr,
-                          selectedSquadId: _selectedSquadFilter,
-                        ),
-                      ),
+                    await AppNavigator.toRosterOutput(
+                      context,
+                      initialDate: dateFilterStr,
+                      selectedSquadId: _selectedSquadFilter,
                     );
                   case 'export':
                     exportCurrentArchive();
@@ -398,13 +394,10 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
               key: const Key('activity-prepare-output'),
               tooltip: context.l10n.activityArchivePrepareOutputTitle,
               icon: const Icon(Icons.playlist_add_check_rounded),
-              onPressed: () => Navigator.of(context).push<void>(
-                MaterialPageRoute(
-                  builder: (_) => RosterOutputScreen(
-                    initialDate: dateFilterStr,
-                    selectedSquadId: _selectedSquadFilter,
-                  ),
-                ),
+              onPressed: () => AppNavigator.toRosterOutput(
+                context,
+                initialDate: dateFilterStr,
+                selectedSquadId: _selectedSquadFilter,
               ),
             ),
           if (!_selectionMode && !context.isMobile)
