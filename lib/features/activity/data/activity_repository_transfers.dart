@@ -302,8 +302,7 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
         );
         if (status == AssignmentStatus.beklemede) {
           throw AssignmentConflictException(
-            '$date tarihinde personelin başka bir görevi, izni veya raporu '
-            'bulunuyor. Rapor kaydedilmedi.',
+            'Assignment conflict: personnel has an existing duty, leave, or report on $date. Report was not saved.',
             code: 'report_conflict',
             date: date,
             personnelId: personelId,

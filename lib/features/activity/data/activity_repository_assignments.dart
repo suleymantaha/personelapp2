@@ -28,7 +28,7 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
         );
         if (status == AssignmentStatus.beklemede) {
           throw AssignmentConflictException(
-            '${activity.tarih} tarihinde personelin başka bir kaydı bulunuyor.',
+            'Assignment conflict: personnel has an existing record on ${activity.tarih}.',
             code: 'has_record',
             date: activity.tarih,
             personnelId: assignment.personelId,
@@ -82,7 +82,7 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
       );
       if (status == AssignmentStatus.beklemede) {
         throw AssignmentConflictException(
-          '$tarih tarihinde personelin başka bir görevi veya kaydı bulunuyor.',
+          'Assignment conflict: personnel has an existing duty or record on $tarih.',
           code: 'has_duty_or_record',
           date: tarih,
           personnelId: personelId,
@@ -121,7 +121,7 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
         throw ArgumentError.value(
           activityId,
           'activityId',
-          'Faaliyet bulunamadı',
+          'Activity not found',
         );
       }
 
