@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -8,7 +9,7 @@ class TemgundrapApproverDefaults {
     this.name = '',
     this.rank = '',
     this.duty = '',
-    this.unitTitle = 'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI',
+    this.unitTitle = defaultTemgundrapUnitTitle,
   });
 
   final String name;
@@ -28,9 +29,7 @@ class TemgundrapApproverDefaults {
         name: json['name'] as String? ?? '',
         rank: json['rank'] as String? ?? '',
         duty: json['duty'] as String? ?? '',
-        unitTitle:
-            json['unitTitle'] as String? ??
-            'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI',
+        unitTitle: json['unitTitle'] as String? ?? defaultTemgundrapUnitTitle,
       );
 }
 
@@ -59,7 +58,7 @@ class TemgundrapRepository {
       );
     } catch (_) {
       throw const FormatException(
-        'TEMGÜNDRAP onay bilgileri okunamadı. Kayıt korunuyor; yedeği kontrol edin.',
+        'Failed to decode TEMGÜNDRAP approver defaults JSON',
       );
     }
   }
@@ -67,7 +66,7 @@ class TemgundrapRepository {
   Future<void> saveApproverDefaults(TemgundrapApproverDefaults defaults) async {
     final prefs = await SharedPreferences.getInstance();
     if (!await prefs.setString(_defaultsKey, jsonEncode(defaults.toJson()))) {
-      throw StateError('TEMGÜNDRAP onay bilgileri kaydedilemedi.');
+      throw StateError('Failed to save TEMGÜNDRAP approver defaults');
     }
   }
 
@@ -90,7 +89,7 @@ class TemgundrapRepository {
       return documents;
     } catch (_) {
       throw const FormatException(
-        'TEMGÜNDRAP kayıtları okunamadı. Mevcut veri korunuyor; yedeği kontrol edin.',
+        'Failed to decode TEMGÜNDRAP documents JSON',
       );
     }
   }
@@ -135,7 +134,7 @@ class TemgundrapRepository {
               : await prefs.setString(_defaultsKey, previousDefaults);
       if (!documentsRestored || !defaultsRestored) {
         throw StateError(
-          'TEMGÜNDRAP kaydı ve geri alma tamamlanamadı. Yeniden denemeden önce kayıtları kontrol edin.',
+          'Failed to rollback TEMGÜNDRAP storage after write failure',
         );
       }
       rethrow;
@@ -154,6 +153,6 @@ class TemgundrapRepository {
       _storageKey,
       jsonEncode(documents.map((item) => item.toJson()).toList()),
     );
-    if (!saved) throw StateError('TEMGÜNDRAP kaydedilemedi. Yeniden deneyin.');
+    if (!saved) throw StateError('Failed to save TEMGÜNDRAP documents to storage');
   }
 }
