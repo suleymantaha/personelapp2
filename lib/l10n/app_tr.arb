@@ -2595,5 +2595,67 @@
   "temgundrapUnitHint": "Örn: KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI",
   "temgundrapApproverNameHint": "Örn: İhsan DAĞLI",
   "temgundrapApproverRankHint": "Örn: J.Ütğm.",
-  "temgundrapApproverDutyHint": "Örn: Tb. K. V."
+  "temgundrapApproverDutyHint": "Örn: Tb. K. V.",
+  "backupDialogTitle": "Tam yedekleme ve geri yükleme",
+  "backupDialogSubtitle": "Bulut gerekmez; dosya sizin seçtiğiniz yerde kalır.",
+  "backupTabExport": "Yedekle",
+  "backupTabImport": "Geri yükle",
+  "backupWhatsIncludedTitle": "Yedekte neler var?",
+  "backupWhatsIncludedText": "İsimler, timler, kullanıcılar, telefonlar, görevler, aylık matris, faaliyet arşivi, raporlar, takma adlar, toplu aktarım geçmişi ve TEMGÜNDRAP belgeleri.",
+  "backupKeepSafeTitle": "Uygulama silinse de koruyun",
+  "backupKeepSafeText": "Açılan kaydet ekranından İndirilenler gibi cihazın yerel bir klasörünü seçin. Uygulamanın kendi klasörüne bırakmayın.",
+  "backupSecurityTitle": "Dosyayı güvenli tutun",
+  "backupSecurityText": "Yedek kişisel bilgiler içerir. Yalnızca güvenilir bir yerel klasörde saklayın ve başkalarıyla paylaşmayın.",
+  "backupLegacyDateText": "Eski yedek",
+  "backupLegacyTitle": "Eski personel yedeği",
+  "backupVerifiedFullTitle": "Doğrulanmış tam yedek",
+  "backupPreviewStats": "{date} • {personnel} personel • {activity} faaliyet • {assignment} görev kaydı • {temgundrap} TEMGÜNDRAP",
+  "@backupPreviewStats": {
+    "placeholders": {
+      "date": { "type": "String" },
+      "personnel": { "type": "int" },
+      "activity": { "type": "int" },
+      "assignment": { "type": "int" },
+      "temgundrap": { "type": "int" }
+    }
+  },
+  "backupLegacyRestoreSuccess": "{count} yeni personel eski yedekten aktarıldı.",
+  "@backupLegacyRestoreSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "backupFullRestoreSuccess": "Geri yükleme tamamlandı: {personnel} personel, {activity} faaliyet ve {temgundrap} TEMGÜNDRAP belgesi.",
+  "@backupFullRestoreSuccess": {
+    "placeholders": {
+      "personnel": { "type": "int" },
+      "activity": { "type": "int" },
+      "temgundrap": { "type": "int" }
+    }
+  },
+  "backupConfirmOverwriteContent": "Tam geri yükleme mevcut personel, görev, matris ve TEMGÜNDRAP kayıtlarının yerine yedekteki verileri koyar. Bu işlem geri alınamaz.",
+  "bulkImportCriticalErrorsCount": "{count} kritik hata",
+  "@bulkImportCriticalErrorsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "bulkImportLinePrefix": "Satır {line}: ",
+  "@bulkImportLinePrefix": {
+    "placeholders": {
+      "line": { "type": "int" }
+    }
+  },
+  "bulkImportConfirmAllAction": "Tümünü Onayla",
+  "bulkImportEmptySummaryHint": "Lütfen aşağıda vurgulanan kartlardaki eksik personelleri eşleştirin, tekrarları düzeltin veya boş kartları silin.",
+  "bulkParseEmptyInput": "Ayrıştırılacak metin boş.",
+  "bulkParseMissingDate": "Bu personel grubu için geçerli bir tarih bulunamadı.",
+  "bulkParseUnknownTeam": "Takım/tim bilgisi tanınamadı.",
+  "bulkParseUnknownActivity": "Görev türü tanınamadı.",
+  "bulkParseInvalidTime": "Saat aralığı geçerli değil.",
+  "bulkParseInvalidDate": "Tarih geçerli değil.",
+  "bulkParseInvalidPersonnel": "Personel satırı çözümlenemedi.",
+  "bulkParseUnknownRank": "Rütbe tanınamadı; ham personel adı korundu.",
+  "bulkParseNoBlocks": "Metinde aktarılabilecek personel bloğu bulunamadı.",
+  "commonFix": "Düzelt"
 }

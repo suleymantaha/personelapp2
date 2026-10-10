@@ -3129,9 +3129,8 @@ abstract class AppLocalizations {
   /// No description provided for @backupFullRestoreSuccess.
   ///
   /// In tr, this message translates to:
-  /// **'Geri yükleme tamamlandı: {personnelCount} personel, {activityCount} faaliyet ve {temgundrapCount} TEMGÜNDRAP belgesi.'**
-  String backupFullRestoreSuccess(
-      int personnelCount, int activityCount, int temgundrapCount);
+  /// **'Geri yükleme tamamlandı: {personnel} personel, {activity} faaliyet ve {temgundrap} TEMGÜNDRAP belgesi.'**
+  String backupFullRestoreSuccess(int personnel, int activity, int temgundrap);
 
   /// No description provided for @activityDutyForPersonnel.
   ///
@@ -6065,6 +6064,181 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Örn: Tb. K. V.'**
   String get temgundrapApproverDutyHint;
+
+  /// No description provided for @backupDialogTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tam yedekleme ve geri yükleme'**
+  String get backupDialogTitle;
+
+  /// No description provided for @backupDialogSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bulut gerekmez; dosya sizin seçtiğiniz yerde kalır.'**
+  String get backupDialogSubtitle;
+
+  /// No description provided for @backupTabExport.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yedekle'**
+  String get backupTabExport;
+
+  /// No description provided for @backupTabImport.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geri yükle'**
+  String get backupTabImport;
+
+  /// No description provided for @backupWhatsIncludedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yedekte neler var?'**
+  String get backupWhatsIncludedTitle;
+
+  /// No description provided for @backupWhatsIncludedText.
+  ///
+  /// In tr, this message translates to:
+  /// **'İsimler, timler, kullanıcılar, telefonlar, görevler, aylık matris, faaliyet arşivi, raporlar, takma adlar, toplu aktarım geçmişi ve TEMGÜNDRAP belgeleri.'**
+  String get backupWhatsIncludedText;
+
+  /// No description provided for @backupKeepSafeTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uygulama silinse de koruyun'**
+  String get backupKeepSafeTitle;
+
+  /// No description provided for @backupKeepSafeText.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açılan kaydet ekranından İndirilenler gibi cihazın yerel bir klasörünü seçin. Uygulamanın kendi klasörüne bırakmayın.'**
+  String get backupKeepSafeText;
+
+  /// No description provided for @backupSecurityTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Dosyayı güvenli tutun'**
+  String get backupSecurityTitle;
+
+  /// No description provided for @backupSecurityText.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yedek kişisel bilgiler içerir. Yalnızca güvenilir bir yerel klasörde saklayın ve başkalarıyla paylaşmayın.'**
+  String get backupSecurityText;
+
+  /// No description provided for @backupLegacyDateText.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eski yedek'**
+  String get backupLegacyDateText;
+
+  /// No description provided for @backupLegacyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eski personel yedeği'**
+  String get backupLegacyTitle;
+
+  /// No description provided for @backupVerifiedFullTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Doğrulanmış tam yedek'**
+  String get backupVerifiedFullTitle;
+
+  /// No description provided for @backupPreviewStats.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} • {personnel} personel • {activity} faaliyet • {assignment} görev kaydı • {temgundrap} TEMGÜNDRAP'**
+  String backupPreviewStats(
+      String date, int personnel, int activity, int assignment, int temgundrap);
+
+  /// No description provided for @backupLegacyRestoreSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} yeni personel eski yedekten aktarıldı.'**
+  String backupLegacyRestoreSuccess(int count);
+
+  /// No description provided for @backupConfirmOverwriteContent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tam geri yükleme mevcut personel, görev, matris ve TEMGÜNDRAP kayıtlarının yerine yedekteki verileri koyar. Bu işlem geri alınamaz.'**
+  String get backupConfirmOverwriteContent;
+
+  /// No description provided for @bulkImportCriticalErrorsCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} kritik hata'**
+  String bulkImportCriticalErrorsCount(int count);
+
+  /// No description provided for @bulkImportLinePrefix.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satır {line}: '**
+  String bulkImportLinePrefix(int line);
+
+  /// No description provided for @bulkImportEmptySummaryHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen aşağıda vurgulanan kartlardaki eksik personelleri eşleştirin, tekrarları düzeltin veya boş kartları silin.'**
+  String get bulkImportEmptySummaryHint;
+
+  /// No description provided for @bulkParseEmptyInput.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ayrıştırılacak metin boş.'**
+  String get bulkParseEmptyInput;
+
+  /// No description provided for @bulkParseMissingDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu personel grubu için geçerli bir tarih bulunamadı.'**
+  String get bulkParseMissingDate;
+
+  /// No description provided for @bulkParseUnknownTeam.
+  ///
+  /// In tr, this message translates to:
+  /// **'Takım/tim bilgisi tanınamadı.'**
+  String get bulkParseUnknownTeam;
+
+  /// No description provided for @bulkParseUnknownActivity.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görev türü tanınamadı.'**
+  String get bulkParseUnknownActivity;
+
+  /// No description provided for @bulkParseInvalidTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'Saat aralığı geçerli değil.'**
+  String get bulkParseInvalidTime;
+
+  /// No description provided for @bulkParseInvalidDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih geçerli değil.'**
+  String get bulkParseInvalidDate;
+
+  /// No description provided for @bulkParseInvalidPersonnel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel satırı çözümlenemedi.'**
+  String get bulkParseInvalidPersonnel;
+
+  /// No description provided for @bulkParseUnknownRank.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rütbe tanınamadı; ham personel adı korundu.'**
+  String get bulkParseUnknownRank;
+
+  /// No description provided for @bulkParseNoBlocks.
+  ///
+  /// In tr, this message translates to:
+  /// **'Metinde aktarılabilecek personel bloğu bulunamadı.'**
+  String get bulkParseNoBlocks;
+
+  /// No description provided for @commonFix.
+  ///
+  /// In tr, this message translates to:
+  /// **'Düzelt'**
+  String get commonFix;
 }
 
 class _AppLocalizationsDelegate

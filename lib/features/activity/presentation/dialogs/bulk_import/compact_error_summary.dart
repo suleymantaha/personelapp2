@@ -61,8 +61,8 @@ class CompactErrorSummary extends StatelessWidget {
       icon = Icons.error_rounded;
       title = context.l10n.bulkImportConfirmCannotSave;
       subtitle = hasReviewWarnings
-          ? '$criticalCount kritik hata • $reviewWarningCount inceleme'
-          : '$criticalCount kritik hata';
+          ? '${context.l10n.bulkImportCriticalErrorsCount(criticalCount)} • ${context.l10n.bulkImportReviewItemsSubtitle(reviewWarningCount)}'
+          : context.l10n.bulkImportCriticalErrorsCount(criticalCount);
     } else if (hasReviewWarnings) {
       bgColor = context.pendingColor.withValues(alpha: 0.12);
       borderColor = context.pendingColor.withValues(alpha: 0.4);
@@ -88,10 +88,10 @@ class CompactErrorSummary extends StatelessWidget {
     final allDisplayItems = <_SummaryItem>[];
     for (final issue in parseIssues) {
       final lineText =
-          issue.lineNumber > 0 ? 'Satır ${issue.lineNumber}: ' : '';
+          issue.lineNumber > 0 ? context.l10n.bulkImportLinePrefix(issue.lineNumber) : '';
       allDisplayItems.add(
         _SummaryItem(
-          text: '$lineText${issue.message}',
+          text: '$lineText${issue.localizedMessage(context.l10n)}',
           isCritical: issue.isBlocking,
         ),
       );
@@ -175,9 +175,9 @@ class CompactErrorSummary extends StatelessWidget {
                       key: const Key('bulk-confirm-all-suggestions'),
                       onPressed: onConfirmAllSuggestions,
                       icon: const Icon(Icons.done_all_rounded, size: 14),
-                      label: const Text(
-                        'Tümünü Onayla',
-                        style: TextStyle(
+                      label: Text(
+                        context.l10n.bulkImportConfirmAllAction,
+                        style: const TextStyle(
                             fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                       style: FilledButton.styleFrom(
@@ -259,7 +259,7 @@ class CompactErrorSummary extends StatelessWidget {
                       },
                     )
                   : Text(
-                      'Lütfen aşağıda vurgulanan kartlardaki eksik personelleri eşleştirin, tekrarları düzeltin veya boş kartları silin.',
+                      context.l10n.bulkImportEmptySummaryHint,
                       style: TextStyle(color: textColor, fontSize: 12),
                     ),
             ),

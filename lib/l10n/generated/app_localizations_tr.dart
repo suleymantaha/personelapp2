@@ -1731,9 +1731,8 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String backupFullRestoreSuccess(
-      int personnelCount, int activityCount, int temgundrapCount) {
-    return 'Geri yükleme tamamlandı: $personnelCount personel, $activityCount faaliyet ve $temgundrapCount TEMGÜNDRAP belgesi.';
+  String backupFullRestoreSuccess(int personnel, int activity, int temgundrap) {
+    return 'Geri yükleme tamamlandı: $personnel personel, $activity faaliyet ve $temgundrap TEMGÜNDRAP belgesi.';
   }
 
   @override
@@ -3557,4 +3556,109 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get temgundrapApproverDutyHint => 'Örn: Tb. K. V.';
+
+  @override
+  String get backupDialogTitle => 'Tam yedekleme ve geri yükleme';
+
+  @override
+  String get backupDialogSubtitle =>
+      'Bulut gerekmez; dosya sizin seçtiğiniz yerde kalır.';
+
+  @override
+  String get backupTabExport => 'Yedekle';
+
+  @override
+  String get backupTabImport => 'Geri yükle';
+
+  @override
+  String get backupWhatsIncludedTitle => 'Yedekte neler var?';
+
+  @override
+  String get backupWhatsIncludedText =>
+      'İsimler, timler, kullanıcılar, telefonlar, görevler, aylık matris, faaliyet arşivi, raporlar, takma adlar, toplu aktarım geçmişi ve TEMGÜNDRAP belgeleri.';
+
+  @override
+  String get backupKeepSafeTitle => 'Uygulama silinse de koruyun';
+
+  @override
+  String get backupKeepSafeText =>
+      'Açılan kaydet ekranından İndirilenler gibi cihazın yerel bir klasörünü seçin. Uygulamanın kendi klasörüne bırakmayın.';
+
+  @override
+  String get backupSecurityTitle => 'Dosyayı güvenli tutun';
+
+  @override
+  String get backupSecurityText =>
+      'Yedek kişisel bilgiler içerir. Yalnızca güvenilir bir yerel klasörde saklayın ve başkalarıyla paylaşmayın.';
+
+  @override
+  String get backupLegacyDateText => 'Eski yedek';
+
+  @override
+  String get backupLegacyTitle => 'Eski personel yedeği';
+
+  @override
+  String get backupVerifiedFullTitle => 'Doğrulanmış tam yedek';
+
+  @override
+  String backupPreviewStats(String date, int personnel, int activity,
+      int assignment, int temgundrap) {
+    return '$date • $personnel personel • $activity faaliyet • $assignment görev kaydı • $temgundrap TEMGÜNDRAP';
+  }
+
+  @override
+  String backupLegacyRestoreSuccess(int count) {
+    return '$count yeni personel eski yedekten aktarıldı.';
+  }
+
+  @override
+  String get backupConfirmOverwriteContent =>
+      'Tam geri yükleme mevcut personel, görev, matris ve TEMGÜNDRAP kayıtlarının yerine yedekteki verileri koyar. Bu işlem geri alınamaz.';
+
+  @override
+  String bulkImportCriticalErrorsCount(int count) {
+    return '$count kritik hata';
+  }
+
+  @override
+  String bulkImportLinePrefix(int line) {
+    return 'Satır $line: ';
+  }
+
+  @override
+  String get bulkImportEmptySummaryHint =>
+      'Lütfen aşağıda vurgulanan kartlardaki eksik personelleri eşleştirin, tekrarları düzeltin veya boş kartları silin.';
+
+  @override
+  String get bulkParseEmptyInput => 'Ayrıştırılacak metin boş.';
+
+  @override
+  String get bulkParseMissingDate =>
+      'Bu personel grubu için geçerli bir tarih bulunamadı.';
+
+  @override
+  String get bulkParseUnknownTeam => 'Takım/tim bilgisi tanınamadı.';
+
+  @override
+  String get bulkParseUnknownActivity => 'Görev türü tanınamadı.';
+
+  @override
+  String get bulkParseInvalidTime => 'Saat aralığı geçerli değil.';
+
+  @override
+  String get bulkParseInvalidDate => 'Tarih geçerli değil.';
+
+  @override
+  String get bulkParseInvalidPersonnel => 'Personel satırı çözümlenemedi.';
+
+  @override
+  String get bulkParseUnknownRank =>
+      'Rütbe tanınamadı; ham personel adı korundu.';
+
+  @override
+  String get bulkParseNoBlocks =>
+      'Metinde aktarılabilecek personel bloğu bulunamadı.';
+
+  @override
+  String get commonFix => 'Düzelt';
 }
