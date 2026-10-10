@@ -6640,6 +6640,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı'**
   String get temgundrapExportShareTextExcel;
+
+  /// No description provided for @bulkImportParsedActivityFallback.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ayrıştırılan Faaliyet'**
+  String get bulkImportParsedActivityFallback;
 }
 
 class _AppLocalizationsDelegate

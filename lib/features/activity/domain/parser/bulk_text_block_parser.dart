@@ -10,12 +10,14 @@ BulkParseResult _parseBulkText(
   final declaredTotals = <BulkDeclaredTotal>[];
   var ignoredLineCount = 0;
 
+  final l10n = lookupAppLocalizations(const Locale('tr'));
+
   if (rawText.trim().isEmpty) {
-    issues.add(const BulkParseIssue(
+    issues.add(BulkParseIssue(
       lineNumber: 0,
       rawLine: '',
       code: 'empty_input',
-      message: 'Ayrıştırılacak metin boş.',
+      message: l10n.bulkParseEmptyInput,
       severity: BulkParseIssueSeverity.error,
     ));
     return BulkParseResult(blocks: blocks, issues: issues);
@@ -56,7 +58,7 @@ BulkParseResult _parseBulkText(
         line: line,
         raw: raw,
         code: 'missing_date',
-        message: 'Bu personel grubu için geçerli bir tarih bulunamadı.',
+        message: l10n.bulkParseMissingDate,
         severity: BulkParseIssueSeverity.error,
       );
     }
@@ -65,7 +67,7 @@ BulkParseResult _parseBulkText(
         line: line,
         raw: raw,
         code: 'unknown_team',
-        message: 'Takım/tim bilgisi tanınamadı.',
+        message: l10n.bulkParseUnknownTeam,
         severity: BulkParseIssueSeverity.warning,
       );
     }
@@ -74,12 +76,14 @@ BulkParseResult _parseBulkText(
         line: line,
         raw: raw,
         code: 'unknown_activity',
-        message: 'Görev türü tanınamadı.',
+        message: l10n.bulkParseUnknownActivity,
         severity: BulkParseIssueSeverity.warning,
       );
     }
     blocks.add(ParsedActivityBlock(
-      rawTitle: currentTitle.isEmpty ? 'Ayrıştırılan Faaliyet' : currentTitle,
+      rawTitle: currentTitle.isEmpty
+          ? l10n.bulkImportParsedActivityFallback
+          : currentTitle,
       parsedTimName: currentTeam ?? '',
       parsedActivityType: currentActivity ?? '',
       parsedDate: currentDate ?? '',
@@ -118,7 +122,7 @@ BulkParseResult _parseBulkText(
             line: lineNumber,
             raw: rawSubLine,
             code: 'invalid_time',
-            message: 'Saat aralığı geçerli değil.',
+            message: l10n.bulkParseInvalidTime,
             severity: BulkParseIssueSeverity.error,
           );
         }
@@ -190,7 +194,7 @@ BulkParseResult _parseBulkText(
             line: lineNumber,
             raw: rawSubLine,
             code: 'invalid_date',
-            message: 'Tarih geçerli değil.',
+            message: l10n.bulkParseInvalidDate,
             severity: BulkParseIssueSeverity.error,
           );
         } else {
@@ -247,7 +251,7 @@ BulkParseResult _parseBulkText(
             line: lineNumber,
             raw: rawSubLine,
             code: 'invalid_time',
-            message: 'Saat aralığı geçerli değil.',
+            message: l10n.bulkParseInvalidTime,
             severity: BulkParseIssueSeverity.error,
           );
         } else {
@@ -308,7 +312,7 @@ BulkParseResult _parseBulkText(
             line: lineNumber,
             raw: rawSubLine,
             code: 'invalid_personnel',
-            message: 'Personel satırı çözümlenemedi.',
+            message: l10n.bulkParseInvalidPersonnel,
             severity: BulkParseIssueSeverity.error,
           );
         } else {
@@ -319,7 +323,7 @@ BulkParseResult _parseBulkText(
               line: lineNumber,
               raw: rawSubLine,
               code: 'unknown_rank',
-              message: 'Rütbe tanınamadı; ham personel adı korundu.',
+              message: l10n.bulkParseUnknownRank,
               severity: BulkParseIssueSeverity.warning,
             );
           }
@@ -332,7 +336,7 @@ BulkParseResult _parseBulkText(
           line: lineNumber,
           raw: rawSubLine,
           code: 'invalid_personnel',
-          message: 'Personel satırı çözümlenemedi.',
+          message: l10n.bulkParseInvalidPersonnel,
           severity: BulkParseIssueSeverity.error,
         );
       }
@@ -346,7 +350,7 @@ BulkParseResult _parseBulkText(
       line: 0,
       raw: '',
       code: 'no_blocks',
-      message: 'Metinde aktarılabilecek personel bloğu bulunamadı.',
+      message: l10n.bulkParseNoBlocks,
       severity: BulkParseIssueSeverity.error,
     );
   }

@@ -2821,5 +2821,6 @@
   "temgundrapExportColDescription": "AÇIKLAMA",
   "temgundrapExportTotal": "TOPLAM",
   "temgundrapExportShareText": "TEMGÜNDRAP operasyon takip çizelgesi",
-  "temgundrapExportShareTextExcel": "TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı"
+  "temgundrapExportShareTextExcel": "TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı",
+  "bulkImportParsedActivityFallback": "Ayrıştırılan Faaliyet"
 }

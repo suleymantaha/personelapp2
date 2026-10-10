@@ -3910,4 +3910,7 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get temgundrapExportShareTextExcel =>
       'TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı';
+
+  @override
+  String get bulkImportParsedActivityFallback => 'Ayrıştırılan Faaliyet';
 }
