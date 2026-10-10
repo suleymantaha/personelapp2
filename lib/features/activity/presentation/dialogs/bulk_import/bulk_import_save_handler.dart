@@ -202,9 +202,11 @@ class BulkImportSaveHandler {
       if (!context.mounted) return null;
       Navigator.pop(context, true);
       AppNotifications.success(
-        '${blocks.length} blok → ${preparation.requests.length} '
-        'günlük faaliyet, ${result.addedAssignmentCount} personel '
-        'başarıyla eklendi.',
+        context.l10n.bulkImportSuccessMessage(
+          blocks.length,
+          preparation.requests.length,
+          result.addedAssignmentCount,
+        ),
       );
       return true;
     }

@@ -104,7 +104,8 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                 duty: atama.gorevVeyaIzin,
               ),
               rutbe: p?.rutbe ?? '',
-              adSoyad: p?.adSoyad ?? 'Personel #${atama.personelId}',
+              adSoyad: p?.adSoyad ??
+                  context.l10n.activityDetailPersonnelFallback(atama.personelId),
               diger: MilitaryStructureHelper.getDigerCellText(
                 atama.gorevVeyaIzin,
                 aciklama: atama.aciklama,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
@@ -573,20 +574,5 @@ class _EmptySection extends StatelessWidget {
 }
 
 String _formatDate(DateTime date) {
-  const months = [
-    'Ocak',
-    'Şubat',
-    'Mart',
-    'Nisan',
-    'Mayıs',
-    'Haziran',
-    'Temmuz',
-    'Ağustos',
-    'Eylül',
-    'Ekim',
-    'Kasım',
-    'Aralık',
-  ];
-  return '${date.day.toString().padLeft(2, '0')} '
-      '${months[date.month - 1]} ${date.year}';
+  return DateFormat('dd MMMM yyyy', 'tr_TR').format(date);
 }

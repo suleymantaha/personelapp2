@@ -187,7 +187,8 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                   },
           assignmentBuilder: (atama) {
             final p = pMap[atama.personelId];
-            final nameText = p?.adSoyad ?? 'Personel #${atama.personelId}';
+            final nameText = p?.adSoyad ??
+                context.l10n.activityDetailPersonnelFallback(atama.personelId);
             final rutbeText = p?.rutbe ?? '';
             final birlikInfo = p?.birlik ?? '';
             final subInfo = [

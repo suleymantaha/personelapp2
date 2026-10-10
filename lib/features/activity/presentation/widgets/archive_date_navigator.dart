@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 
@@ -13,21 +14,6 @@ class ArchiveDateNavigator extends StatelessWidget {
   final DateTime selectedDate;
   final int activityCount;
   final ValueChanged<DateTime> onDateSelected;
-
-  static const _months = <String>[
-    'Ocak',
-    'Şubat',
-    'Mart',
-    'Nisan',
-    'Mayıs',
-    'Haziran',
-    'Temmuz',
-    'Ağustos',
-    'Eylül',
-    'Ekim',
-    'Kasım',
-    'Aralık',
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +38,7 @@ class ArchiveDateNavigator extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '${selectedDate.day} ${_months[selectedDate.month - 1]}',
+                  DateFormat('d MMMM', 'tr_TR').format(selectedDate),
                   style: TextStyle(
                     color: context.textPrimary,
                     fontSize: 18,

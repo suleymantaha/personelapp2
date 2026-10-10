@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
+import 'package:personelapp2/l10n/generated/app_localizations.dart';
 
 class TemgundrapOperationDraft extends ChangeNotifier {
   TemgundrapOperationDraft({DateTime? now, TemgundrapOperation? initial})
@@ -63,15 +64,37 @@ class TemgundrapOperationDraft extends ChangeNotifier {
     notifyListeners();
   }
 
-  String? validate() {
-    if (issuingUnit.trim().isEmpty) return 'Çıkaran birlik zorunludur.';
-    if (operationArea.trim().isEmpty) return 'Operasyon bölgesi zorunludur.';
-    if (commander == null) return 'Operasyon komutanı seçilmelidir.';
-    if (commander!.phone.trim().isEmpty) return 'Komutan telefonu zorunludur.';
-    if (!endAt.isAfter(startAt)) {
-      return 'Bitiş zamanı başlangıçtan sonra olmalıdır.';
+  String? validate([AppLocalizations? l10n]) {
+    if (issuingUnit.trim().isEmpty) {
+      return l10n != null
+          ? l10n.temgundrapIssuingUnitRequired
+          : 'Çıkaran birlik zorunludur.';
     }
-    if (purpose.trim().isEmpty) return 'Operasyon maksadı zorunludur.';
+    if (operationArea.trim().isEmpty) {
+      return l10n != null
+          ? l10n.temgundrapOperationAreaRequired
+          : 'Operasyon bölgesi zorunludur.';
+    }
+    if (commander == null) {
+      return l10n != null
+          ? l10n.temgundrapCommanderRequired
+          : 'Operasyon komutanı seçilmelidir.';
+    }
+    if (commander!.phone.trim().isEmpty) {
+      return l10n != null
+          ? l10n.temgundrapCommanderPhoneRequired
+          : 'Komutan telefonu zorunludur.';
+    }
+    if (!endAt.isAfter(startAt)) {
+      return l10n != null
+          ? l10n.temgundrapEndTimeMustBeAfterStart
+          : 'Bitiş zamanı başlangıçtan sonra olmalıdır.';
+    }
+    if (purpose.trim().isEmpty) {
+      return l10n != null
+          ? l10n.temgundrapPurposeRequired
+          : 'Operasyon maksadı zorunludur.';
+    }
     return null;
   }
 

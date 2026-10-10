@@ -87,7 +87,7 @@ class ActivitySquadExpansionTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  '${members.length} personel',
+                  context.l10n.bulkImportBlockPersonnelCount(members.length),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,

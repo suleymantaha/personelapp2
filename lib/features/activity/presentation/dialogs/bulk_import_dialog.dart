@@ -78,6 +78,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     return BulkImportProblemWizard.getProblemLocations(
       blocks: _parsedBlocks,
       duplicates: _duplicateAssignments(),
+      l10n: mounted ? context.l10n : null,
     );
   }
 

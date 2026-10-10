@@ -112,7 +112,7 @@ class PersonnelMatchBadges extends StatelessWidget {
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
-                      'Tim disi gorev (Kabul et)',
+                      context.l10n.bulkImportTeamMismatchAccept,
                       key: const Key('bulk-team-mismatch-warning'),
                       style: TextStyle(
                         color: context.warningColor,

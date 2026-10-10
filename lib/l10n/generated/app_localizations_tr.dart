@@ -364,7 +364,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Kriterlere uygun personel bulunamadı.';
 
   @override
-  String get commonSaving => 'Kaydediliyor...';
+  String get commonSaving => 'Kaydediliyor…';
 
   @override
   String get commonRetry => 'TEKRAR DENE';
@@ -3692,4 +3692,173 @@ class AppLocalizationsTr extends AppLocalizations {
       String dates, String recordDate, String user, int count) {
     return '$dates tarihli bu içerik $recordDate tarihinde $user tarafından kaydedilmiş.\n\nVeritabanında bu listeye ait $count personel kaydı aktif duruyor. Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?';
   }
+
+  @override
+  String get bulkImportDefaultSquad => 'Varsayılan Tim';
+
+  @override
+  String bulkImportBlockPersonnelCount(int count) {
+    return '$count personel';
+  }
+
+  @override
+  String get bulkImportFocusedError => 'ODAKLANILAN HATA';
+
+  @override
+  String get bulkImportInspectedCard => 'İNCELENEN KART';
+
+  @override
+  String get bulkImportEmptyCard => 'Boş Kart';
+
+  @override
+  String bulkImportUnmatchedCount(int count) {
+    return '$count Eşleşmedi';
+  }
+
+  @override
+  String bulkImportWarningCount(int count) {
+    return '$count Uyarı';
+  }
+
+  @override
+  String get bulkImportCardActionsTooltip => 'Kart işlemleri';
+
+  @override
+  String get bulkImportCardActionsTitle => 'Kart İşlemleri';
+
+  @override
+  String get bulkImportCardActionsSubtitle => 'İçe aktarma kartını yönet';
+
+  @override
+  String get bulkImportEditCardTitle => 'Kartı düzenle';
+
+  @override
+  String get bulkImportEditCardSubtitle =>
+      'Faaliyet ve personel bilgilerini güncelle';
+
+  @override
+  String get bulkImportDeleteCardTitle => 'Kartı sil';
+
+  @override
+  String get bulkImportDeleteCardSubtitle =>
+      'Kartı içe aktarma listesinden kaldır';
+
+  @override
+  String bulkImportProblemNoPersonnelInCard(String title) {
+    return '$title kartında personel bulunamadı.';
+  }
+
+  @override
+  String bulkImportProblemInvalidDate(int cardNumber) {
+    return 'Kart #$cardNumber: Geçerli bir tarih bulunamadı.';
+  }
+
+  @override
+  String bulkImportProblemMissingTeam(int cardNumber) {
+    return 'Kart #$cardNumber: Takım adı belirtilmedi (Personelin kayıtlı timi kullanılacak).';
+  }
+
+  @override
+  String bulkImportProblemUnknownActivity(int cardNumber) {
+    return 'Kart #$cardNumber: Görev türü tanınamadı.';
+  }
+
+  @override
+  String bulkImportProblemPersonnelNotSelected(
+      String prefix, String rank, String name) {
+    return '$prefix$rank $name - Personel seçilmedi.';
+  }
+
+  @override
+  String bulkImportProblemConflictingDuty(
+      String prefix, String rank, String name) {
+    return '$prefix$rank $name - Çakışan görev ekli.';
+  }
+
+  @override
+  String get bulkImportProblemCheckTeam => 'Tim kontrolü gerektiriyor.';
+
+  @override
+  String get bulkImportProblemCheckMatch => 'Eşleşme kontrolü gerektiriyor.';
+
+  @override
+  String bulkImportProblemLinePrefix(int lineNumber) {
+    return 'Satır $lineNumber: ';
+  }
+
+  @override
+  String get temgundrapIssuingUnitRequired => 'Çıkaran birlik zorunludur.';
+
+  @override
+  String get temgundrapCommanderRequired => 'Operasyon komutanı seçilmelidir.';
+
+  @override
+  String get temgundrapCommanderPhoneRequired => 'Komutan telefonu zorunludur.';
+
+  @override
+  String get temgundrapEndTimeMustBeAfterStart =>
+      'Bitiş zamanı başlangıçtan sonra olmalıdır.';
+
+  @override
+  String get temgundrapPurposeRequired => 'Operasyon maksadı zorunludur.';
+
+  @override
+  String get temgundrapVehiclePlateAlreadyExists => 'Bu plaka zaten eklendi.';
+
+  @override
+  String get temgundrapPlateHint => 'Örn. 23 ABC 123';
+
+  @override
+  String get temgundrapAreaHint => 'Örn: ELAZIĞ ...';
+
+  @override
+  String get temgundrapPlateLabel => 'Plaka';
+
+  @override
+  String get commonConfirmAndSave => 'Onayla ve Kaydet';
+
+  @override
+  String monthlyMatrixOriginalDate(String duty, String date) {
+    return '$duty • Asıl tarih: $date';
+  }
+
+  @override
+  String get monthlyMatrixContinuedFromPreviousDay => 'Önceki günden devam';
+
+  @override
+  String get monthlyMatrixActivePersonnelLabel => 'Aktif Personel';
+
+  @override
+  String get monthlyMatrixMissingData => 'Veri eksik';
+
+  @override
+  String activityDetailPersonnelFallback(int id) {
+    return 'Personel #$id';
+  }
+
+  @override
+  String bulkImportSuccessMessage(
+      int blockCount, int requestCount, int personnelCount) {
+    return '$blockCount blok → $requestCount günlük faaliyet, $personnelCount personel başarıyla eklendi.';
+  }
+
+  @override
+  String get bulkImportDuplicateDatePersonnelWarning =>
+      'Aynı personel aynı tarihte birden fazla görevde bulunuyor. Aktarmadan önce önizlemedeki tekrarları düzeltin.';
+
+  @override
+  String get bulkImportNoPersonnelLeftInCard =>
+      'Bu kartta personel kalmadı. Kartı silin veya metni yeniden ayrıştırın.';
+
+  @override
+  String get temgundrapSigned => '(İMZALI)';
+
+  @override
+  String get temgundrapCommanderLabel => 'Komutan';
+
+  @override
+  String get temgundrapForceLabel => 'Kuvvet';
+
+  @override
+  String get temgundrapTimeLabel => 'Zaman';
 }

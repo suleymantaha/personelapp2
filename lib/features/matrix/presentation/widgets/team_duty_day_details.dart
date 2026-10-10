@@ -86,7 +86,9 @@ class TeamDutyDayDetails extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${day.gorevliPersonelAdlari.length} Personel',
+                    context.l10n.bulkImportBlockPersonnelCount(
+                      day.gorevliPersonelAdlari.length,
+                    ),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: context.accentOrOlive,
                     ),

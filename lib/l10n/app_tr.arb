@@ -2682,5 +2682,123 @@
       "user": { "type": "String" },
       "count": { "type": "int" }
     }
-  }
+  },
+  "bulkImportDefaultSquad": "Varsayılan Tim",
+  "bulkImportBlockPersonnelCount": "{count} personel",
+  "@bulkImportBlockPersonnelCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "bulkImportFocusedError": "ODAKLANILAN HATA",
+  "bulkImportInspectedCard": "İNCELENEN KART",
+  "bulkImportEmptyCard": "Boş Kart",
+  "bulkImportUnmatchedCount": "{count} Eşleşmedi",
+  "@bulkImportUnmatchedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "bulkImportWarningCount": "{count} Uyarı",
+  "@bulkImportWarningCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "bulkImportCardActionsTooltip": "Kart işlemleri",
+  "bulkImportCardActionsTitle": "Kart İşlemleri",
+  "bulkImportCardActionsSubtitle": "İçe aktarma kartını yönet",
+  "bulkImportEditCardTitle": "Kartı düzenle",
+  "bulkImportEditCardSubtitle": "Faaliyet ve personel bilgilerini güncelle",
+  "bulkImportDeleteCardTitle": "Kartı sil",
+  "bulkImportDeleteCardSubtitle": "Kartı içe aktarma listesinden kaldır",
+  "bulkImportProblemNoPersonnelInCard": "{title} kartında personel bulunamadı.",
+  "@bulkImportProblemNoPersonnelInCard": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "bulkImportProblemInvalidDate": "Kart #{cardNumber}: Geçerli bir tarih bulunamadı.",
+  "@bulkImportProblemInvalidDate": {
+    "placeholders": {
+      "cardNumber": { "type": "int" }
+    }
+  },
+  "bulkImportProblemMissingTeam": "Kart #{cardNumber}: Takım adı belirtilmedi (Personelin kayıtlı timi kullanılacak).",
+  "@bulkImportProblemMissingTeam": {
+    "placeholders": {
+      "cardNumber": { "type": "int" }
+    }
+  },
+  "bulkImportProblemUnknownActivity": "Kart #{cardNumber}: Görev türü tanınamadı.",
+  "@bulkImportProblemUnknownActivity": {
+    "placeholders": {
+      "cardNumber": { "type": "int" }
+    }
+  },
+  "bulkImportProblemPersonnelNotSelected": "{prefix}{rank} {name} - Personel seçilmedi.",
+  "@bulkImportProblemPersonnelNotSelected": {
+    "placeholders": {
+      "prefix": { "type": "String" },
+      "rank": { "type": "String" },
+      "name": { "type": "String" }
+    }
+  },
+  "bulkImportProblemConflictingDuty": "{prefix}{rank} {name} - Çakışan görev ekli.",
+  "@bulkImportProblemConflictingDuty": {
+    "placeholders": {
+      "prefix": { "type": "String" },
+      "rank": { "type": "String" },
+      "name": { "type": "String" }
+    }
+  },
+  "bulkImportProblemCheckTeam": "Tim kontrolü gerektiriyor.",
+  "bulkImportProblemCheckMatch": "Eşleşme kontrolü gerektiriyor.",
+  "bulkImportProblemLinePrefix": "Satır {lineNumber}: ",
+  "@bulkImportProblemLinePrefix": {
+    "placeholders": {
+      "lineNumber": { "type": "int" }
+    }
+  },
+  "temgundrapIssuingUnitRequired": "Çıkaran birlik zorunludur.",
+  "temgundrapCommanderRequired": "Operasyon komutanı seçilmelidir.",
+  "temgundrapCommanderPhoneRequired": "Komutan telefonu zorunludur.",
+  "temgundrapEndTimeMustBeAfterStart": "Bitiş zamanı başlangıçtan sonra olmalıdır.",
+  "temgundrapPurposeRequired": "Operasyon maksadı zorunludur.",
+  "temgundrapVehiclePlateAlreadyExists": "Bu plaka zaten eklendi.",
+  "temgundrapPlateHint": "Örn. 23 ABC 123",
+  "temgundrapAreaHint": "Örn: ELAZIĞ ...",
+  "temgundrapPlateLabel": "Plaka",
+  "commonSaving": "Kaydediliyor…",
+  "commonConfirmAndSave": "Onayla ve Kaydet",
+  "monthlyMatrixOriginalDate": "{duty} • Asıl tarih: {date}",
+  "@monthlyMatrixOriginalDate": {
+    "placeholders": {
+      "duty": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+  "monthlyMatrixContinuedFromPreviousDay": "Önceki günden devam",
+  "monthlyMatrixActivePersonnelLabel": "Aktif Personel",
+  "monthlyMatrixMissingData": "Veri eksik",
+  "activityDetailPersonnelFallback": "Personel #{id}",
+  "@activityDetailPersonnelFallback": {
+    "placeholders": {
+      "id": { "type": "int" }
+    }
+  },
+  "bulkImportSuccessMessage": "{blockCount} blok → {requestCount} günlük faaliyet, {personnelCount} personel başarıyla eklendi.",
+  "@bulkImportSuccessMessage": {
+    "placeholders": {
+      "blockCount": { "type": "int" },
+      "requestCount": { "type": "int" },
+      "personnelCount": { "type": "int" }
+    }
+  },
+  "bulkImportDuplicateDatePersonnelWarning": "Aynı personel aynı tarihte birden fazla görevde bulunuyor. Aktarmadan önce önizlemedeki tekrarları düzeltin.",
+  "bulkImportNoPersonnelLeftInCard": "Bu kartta personel kalmadı. Kartı silin veya metni yeniden ayrıştırın.",
+  "temgundrapSigned": "(İMZALI)",
+  "temgundrapCommanderLabel": "Komutan",
+  "temgundrapForceLabel": "Kuvvet",
+  "temgundrapTimeLabel": "Zaman"
 }

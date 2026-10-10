@@ -769,7 +769,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonSaving.
   ///
   /// In tr, this message translates to:
-  /// **'Kaydediliyor...'**
+  /// **'Kaydediliyor…'**
   String get commonSaving;
 
   /// No description provided for @commonRetry.
@@ -6277,6 +6277,279 @@ abstract class AppLocalizations {
   /// **'{dates} tarihli bu içerik {recordDate} tarihinde {user} tarafından kaydedilmiş.\n\nVeritabanında bu listeye ait {count} personel kaydı aktif duruyor. Eksik olanları tamamlamak veya yeniden aktarmak istiyor musunuz?'**
   String bulkImportDuplicateWarningContent(
       String dates, String recordDate, String user, int count);
+
+  /// No description provided for @bulkImportDefaultSquad.
+  ///
+  /// In tr, this message translates to:
+  /// **'Varsayılan Tim'**
+  String get bulkImportDefaultSquad;
+
+  /// No description provided for @bulkImportBlockPersonnelCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} personel'**
+  String bulkImportBlockPersonnelCount(int count);
+
+  /// No description provided for @bulkImportFocusedError.
+  ///
+  /// In tr, this message translates to:
+  /// **'ODAKLANILAN HATA'**
+  String get bulkImportFocusedError;
+
+  /// No description provided for @bulkImportInspectedCard.
+  ///
+  /// In tr, this message translates to:
+  /// **'İNCELENEN KART'**
+  String get bulkImportInspectedCard;
+
+  /// No description provided for @bulkImportEmptyCard.
+  ///
+  /// In tr, this message translates to:
+  /// **'Boş Kart'**
+  String get bulkImportEmptyCard;
+
+  /// No description provided for @bulkImportUnmatchedCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} Eşleşmedi'**
+  String bulkImportUnmatchedCount(int count);
+
+  /// No description provided for @bulkImportWarningCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} Uyarı'**
+  String bulkImportWarningCount(int count);
+
+  /// No description provided for @bulkImportCardActionsTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart işlemleri'**
+  String get bulkImportCardActionsTooltip;
+
+  /// No description provided for @bulkImportCardActionsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart İşlemleri'**
+  String get bulkImportCardActionsTitle;
+
+  /// No description provided for @bulkImportCardActionsSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İçe aktarma kartını yönet'**
+  String get bulkImportCardActionsSubtitle;
+
+  /// No description provided for @bulkImportEditCardTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kartı düzenle'**
+  String get bulkImportEditCardTitle;
+
+  /// No description provided for @bulkImportEditCardSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Faaliyet ve personel bilgilerini güncelle'**
+  String get bulkImportEditCardSubtitle;
+
+  /// No description provided for @bulkImportDeleteCardTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kartı sil'**
+  String get bulkImportDeleteCardTitle;
+
+  /// No description provided for @bulkImportDeleteCardSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kartı içe aktarma listesinden kaldır'**
+  String get bulkImportDeleteCardSubtitle;
+
+  /// No description provided for @bulkImportProblemNoPersonnelInCard.
+  ///
+  /// In tr, this message translates to:
+  /// **'{title} kartında personel bulunamadı.'**
+  String bulkImportProblemNoPersonnelInCard(String title);
+
+  /// No description provided for @bulkImportProblemInvalidDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart #{cardNumber}: Geçerli bir tarih bulunamadı.'**
+  String bulkImportProblemInvalidDate(int cardNumber);
+
+  /// No description provided for @bulkImportProblemMissingTeam.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart #{cardNumber}: Takım adı belirtilmedi (Personelin kayıtlı timi kullanılacak).'**
+  String bulkImportProblemMissingTeam(int cardNumber);
+
+  /// No description provided for @bulkImportProblemUnknownActivity.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart #{cardNumber}: Görev türü tanınamadı.'**
+  String bulkImportProblemUnknownActivity(int cardNumber);
+
+  /// No description provided for @bulkImportProblemPersonnelNotSelected.
+  ///
+  /// In tr, this message translates to:
+  /// **'{prefix}{rank} {name} - Personel seçilmedi.'**
+  String bulkImportProblemPersonnelNotSelected(
+      String prefix, String rank, String name);
+
+  /// No description provided for @bulkImportProblemConflictingDuty.
+  ///
+  /// In tr, this message translates to:
+  /// **'{prefix}{rank} {name} - Çakışan görev ekli.'**
+  String bulkImportProblemConflictingDuty(
+      String prefix, String rank, String name);
+
+  /// No description provided for @bulkImportProblemCheckTeam.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tim kontrolü gerektiriyor.'**
+  String get bulkImportProblemCheckTeam;
+
+  /// No description provided for @bulkImportProblemCheckMatch.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleşme kontrolü gerektiriyor.'**
+  String get bulkImportProblemCheckMatch;
+
+  /// No description provided for @bulkImportProblemLinePrefix.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satır {lineNumber}: '**
+  String bulkImportProblemLinePrefix(int lineNumber);
+
+  /// No description provided for @temgundrapIssuingUnitRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıkaran birlik zorunludur.'**
+  String get temgundrapIssuingUnitRequired;
+
+  /// No description provided for @temgundrapCommanderRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyon komutanı seçilmelidir.'**
+  String get temgundrapCommanderRequired;
+
+  /// No description provided for @temgundrapCommanderPhoneRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Komutan telefonu zorunludur.'**
+  String get temgundrapCommanderPhoneRequired;
+
+  /// No description provided for @temgundrapEndTimeMustBeAfterStart.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bitiş zamanı başlangıçtan sonra olmalıdır.'**
+  String get temgundrapEndTimeMustBeAfterStart;
+
+  /// No description provided for @temgundrapPurposeRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Operasyon maksadı zorunludur.'**
+  String get temgundrapPurposeRequired;
+
+  /// No description provided for @temgundrapVehiclePlateAlreadyExists.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu plaka zaten eklendi.'**
+  String get temgundrapVehiclePlateAlreadyExists;
+
+  /// No description provided for @temgundrapPlateHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn. 23 ABC 123'**
+  String get temgundrapPlateHint;
+
+  /// No description provided for @temgundrapAreaHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: ELAZIĞ ...'**
+  String get temgundrapAreaHint;
+
+  /// No description provided for @temgundrapPlateLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Plaka'**
+  String get temgundrapPlateLabel;
+
+  /// No description provided for @commonConfirmAndSave.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onayla ve Kaydet'**
+  String get commonConfirmAndSave;
+
+  /// No description provided for @monthlyMatrixOriginalDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'{duty} • Asıl tarih: {date}'**
+  String monthlyMatrixOriginalDate(String duty, String date);
+
+  /// No description provided for @monthlyMatrixContinuedFromPreviousDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Önceki günden devam'**
+  String get monthlyMatrixContinuedFromPreviousDay;
+
+  /// No description provided for @monthlyMatrixActivePersonnelLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aktif Personel'**
+  String get monthlyMatrixActivePersonnelLabel;
+
+  /// No description provided for @monthlyMatrixMissingData.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veri eksik'**
+  String get monthlyMatrixMissingData;
+
+  /// No description provided for @activityDetailPersonnelFallback.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel #{id}'**
+  String activityDetailPersonnelFallback(int id);
+
+  /// No description provided for @bulkImportSuccessMessage.
+  ///
+  /// In tr, this message translates to:
+  /// **'{blockCount} blok → {requestCount} günlük faaliyet, {personnelCount} personel başarıyla eklendi.'**
+  String bulkImportSuccessMessage(
+      int blockCount, int requestCount, int personnelCount);
+
+  /// No description provided for @bulkImportDuplicateDatePersonnelWarning.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aynı personel aynı tarihte birden fazla görevde bulunuyor. Aktarmadan önce önizlemedeki tekrarları düzeltin.'**
+  String get bulkImportDuplicateDatePersonnelWarning;
+
+  /// No description provided for @bulkImportNoPersonnelLeftInCard.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu kartta personel kalmadı. Kartı silin veya metni yeniden ayrıştırın.'**
+  String get bulkImportNoPersonnelLeftInCard;
+
+  /// No description provided for @temgundrapSigned.
+  ///
+  /// In tr, this message translates to:
+  /// **'(İMZALI)'**
+  String get temgundrapSigned;
+
+  /// No description provided for @temgundrapCommanderLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Komutan'**
+  String get temgundrapCommanderLabel;
+
+  /// No description provided for @temgundrapForceLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kuvvet'**
+  String get temgundrapForceLabel;
+
+  /// No description provided for @temgundrapTimeLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Zaman'**
+  String get temgundrapTimeLabel;
 }
 
 class _AppLocalizationsDelegate

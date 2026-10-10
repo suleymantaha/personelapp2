@@ -173,10 +173,10 @@ class _ApproverCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text(
-            '(İMZALI)',
+          Text(
+            context.l10n.temgundrapSigned,
             textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
           ),
           const SizedBox(height: 4),
           if (document.approverName.isNotEmpty)
@@ -300,17 +300,17 @@ class _OperationCard extends StatelessWidget {
           ),
           _InfoRow(
             icon: Icons.shield_outlined,
-            label: 'Komutan',
+            label: context.l10n.temgundrapCommanderLabel,
             value: operation.commander.displayText,
           ),
           _InfoRow(
             icon: Icons.route_outlined,
-            label: 'Kuvvet',
+            label: context.l10n.temgundrapForceLabel,
             value: operation.forceDescription,
           ),
           _InfoRow(
             icon: Icons.schedule_outlined,
-            label: 'Zaman',
+            label: context.l10n.temgundrapTimeLabel,
             value:
                 '${TemgundrapFormatters.militaryDateTime(operation.startAt)}\n${TemgundrapFormatters.militaryDateTime(operation.endAt)}',
           ),

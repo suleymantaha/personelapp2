@@ -281,7 +281,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
                               ),
                             ),
                             subtitle: Text(
-                              '${entry.value.commander.name} • ${entry.value.totalStrength} personel\n${entry.value.purpose}',
+                              '${entry.value.commander.name} • ${context.l10n.bulkImportBlockPersonnelCount(entry.value.totalStrength)}\n${entry.value.purpose}',
                             ),
                             isThreeLine: true,
                             onTap: () => _editOperation(entry.key),

@@ -119,7 +119,11 @@ class _ActivityAssignmentPreviewScreenState
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.check_rounded),
-                    label: Text(_saving ? 'Kaydediliyor…' : 'Onayla ve Kaydet'),
+                    label: Text(
+                      _saving
+                          ? context.l10n.commonSaving
+                          : context.l10n.commonConfirmAndSave,
+                    ),
                   ),
                 ),
               ],

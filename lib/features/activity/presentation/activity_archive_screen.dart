@@ -600,20 +600,6 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
 }
 
 String _formatTurkishDay(String isoDate) {
-  const months = <String>[
-    'Ocak',
-    'Şubat',
-    'Mart',
-    'Nisan',
-    'Mayıs',
-    'Haziran',
-    'Temmuz',
-    'Ağustos',
-    'Eylül',
-    'Ekim',
-    'Kasım',
-    'Aralık',
-  ];
   final date = DateTime.parse(isoDate);
-  return '${date.day} ${months[date.month - 1]}';
+  return DateFormat('d MMMM', 'tr_TR').format(date);
 }
