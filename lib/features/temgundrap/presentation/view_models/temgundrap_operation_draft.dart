@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
@@ -65,35 +66,24 @@ class TemgundrapOperationDraft extends ChangeNotifier {
   }
 
   String? validate([AppLocalizations? l10n]) {
+    final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
     if (issuingUnit.trim().isEmpty) {
-      return l10n != null
-          ? l10n.temgundrapIssuingUnitRequired
-          : 'Çıkaran birlik zorunludur.';
+      return localizations.temgundrapIssuingUnitRequired;
     }
     if (operationArea.trim().isEmpty) {
-      return l10n != null
-          ? l10n.temgundrapOperationAreaRequired
-          : 'Operasyon bölgesi zorunludur.';
+      return localizations.temgundrapOperationAreaRequired;
     }
     if (commander == null) {
-      return l10n != null
-          ? l10n.temgundrapCommanderRequired
-          : 'Operasyon komutanı seçilmelidir.';
+      return localizations.temgundrapCommanderRequired;
     }
     if (commander!.phone.trim().isEmpty) {
-      return l10n != null
-          ? l10n.temgundrapCommanderPhoneRequired
-          : 'Komutan telefonu zorunludur.';
+      return localizations.temgundrapCommanderPhoneRequired;
     }
     if (!endAt.isAfter(startAt)) {
-      return l10n != null
-          ? l10n.temgundrapEndTimeMustBeAfterStart
-          : 'Bitiş zamanı başlangıçtan sonra olmalıdır.';
+      return localizations.temgundrapEndTimeMustBeAfterStart;
     }
     if (purpose.trim().isEmpty) {
-      return l10n != null
-          ? l10n.temgundrapPurposeRequired
-          : 'Operasyon maksadı zorunludur.';
+      return localizations.temgundrapPurposeRequired;
     }
     return null;
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../extensions/l10n_extension.dart';
 import '../theme/app_theme.dart';
 import 'app_notification.dart';
 
@@ -89,22 +90,22 @@ class AppNotificationCard extends StatelessWidget {
       AppNotificationType.success => (
           icon: Icons.check_circle_rounded,
           accent: context.approvedColor,
-          semanticLabel: 'Başarılı',
+          semanticLabel: context.l10n.commonSuccess,
         ),
       AppNotificationType.error => (
           icon: Icons.error_rounded,
           accent: scheme.error,
-          semanticLabel: 'Hata',
+          semanticLabel: context.l10n.commonError,
         ),
       AppNotificationType.warning => (
           icon: Icons.warning_amber_rounded,
           accent: context.pendingColor,
-          semanticLabel: 'Uyarı',
+          semanticLabel: context.l10n.commonWarning,
         ),
       AppNotificationType.info => (
           icon: Icons.info_rounded,
           accent: scheme.primary,
-          semanticLabel: 'Bilgi',
+          semanticLabel: context.l10n.commonInfo,
         ),
     };
   }

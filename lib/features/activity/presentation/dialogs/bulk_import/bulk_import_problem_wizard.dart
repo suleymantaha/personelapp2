@@ -82,6 +82,7 @@ class BulkImportProblemWizard {
     required Map<String, List<String>> duplicates,
     AppLocalizations? l10n,
   }) {
+    final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
     final locs = <ProblemLocation>[];
     final addedKeys = <String>{};
 
@@ -91,9 +92,7 @@ class BulkImportProblemWizard {
         final title = blockEntry.value.parsedActivityType.trim().isEmpty
             ? 'Kart #${blockEntry.key + 1}'
             : blockEntry.value.parsedActivityType;
-        final description = l10n != null
-            ? l10n.bulkImportProblemNoPersonnelInCard(title)
-            : '$title kartında personel bulunamadı.';
+        final description = localizations.bulkImportProblemNoPersonnelInCard(title);
         locs.add(
           ProblemLocation(
             blockIndex: blockEntry.key,
@@ -114,9 +113,7 @@ class BulkImportProblemWizard {
       if (addedKeys.contains(key)) continue;
 
       if (block.parsedDate.trim().isEmpty) {
-        final description = l10n != null
-            ? l10n.bulkImportProblemInvalidDate(blockEntry.key + 1)
-            : 'Kart #${blockEntry.key + 1}: Geçerli bir tarih bulunamadı.';
+        final description = localizations.bulkImportProblemInvalidDate(blockEntry.key + 1);
         locs.add(
           ProblemLocation(
             blockIndex: blockEntry.key,
@@ -128,9 +125,7 @@ class BulkImportProblemWizard {
         );
         addedKeys.add(key);
       } else if (block.parsedTimName.trim().isEmpty) {
-        final description = l10n != null
-            ? l10n.bulkImportProblemMissingTeam(blockEntry.key + 1)
-            : 'Kart #${blockEntry.key + 1}: Takım adı belirtilmedi (Personelin kayıtlı timi kullanılacak).';
+        final description = localizations.bulkImportProblemMissingTeam(blockEntry.key + 1);
         locs.add(
           ProblemLocation(
             blockIndex: blockEntry.key,
@@ -142,9 +137,7 @@ class BulkImportProblemWizard {
         );
         addedKeys.add(key);
       } else if (block.parsedActivityType.trim().isEmpty) {
-        final description = l10n != null
-            ? l10n.bulkImportProblemUnknownActivity(blockEntry.key + 1)
-            : 'Kart #${blockEntry.key + 1}: Görev türü tanınamadı.';
+        final description = localizations.bulkImportProblemUnknownActivity(blockEntry.key + 1);
         locs.add(
           ProblemLocation(
             blockIndex: blockEntry.key,
@@ -166,17 +159,13 @@ class BulkImportProblemWizard {
         final person = personEntry.value;
         if (!person.isMatched && !addedKeys.contains(key)) {
           final linePrefix = person.sourceLineNumber != null
-              ? (l10n != null
-                  ? l10n.bulkImportProblemLinePrefix(person.sourceLineNumber!)
-                  : 'Satır ${person.sourceLineNumber}: ')
+              ? localizations.bulkImportProblemLinePrefix(person.sourceLineNumber!)
               : '';
-          final description = l10n != null
-              ? l10n.bulkImportProblemPersonnelNotSelected(
-                  linePrefix,
-                  person.rawRank,
-                  person.rawName,
-                )
-              : '$linePrefix${person.rawRank} ${person.rawName} - Personel seçilmedi.';
+          final description = localizations.bulkImportProblemPersonnelNotSelected(
+            linePrefix,
+            person.rawRank,
+            person.rawName,
+          );
           locs.add(
             ProblemLocation(
               blockIndex: blockEntry.key,
@@ -199,17 +188,13 @@ class BulkImportProblemWizard {
         final person = personEntry.value;
         if (duplicates.containsKey(key) && !addedKeys.contains(key)) {
           final linePrefix = person.sourceLineNumber != null
-              ? (l10n != null
-                  ? l10n.bulkImportProblemLinePrefix(person.sourceLineNumber!)
-                  : 'Satır ${person.sourceLineNumber}: ')
+              ? localizations.bulkImportProblemLinePrefix(person.sourceLineNumber!)
               : '';
-          final description = l10n != null
-              ? l10n.bulkImportProblemConflictingDuty(
-                  linePrefix,
-                  person.rawRank,
-                  person.rawName,
-                )
-              : '$linePrefix${person.rawRank} ${person.rawName} - Çakışan görev ekli.';
+          final description = localizations.bulkImportProblemConflictingDuty(
+            linePrefix,
+            person.rawRank,
+            person.rawName,
+          );
           locs.add(
             ProblemLocation(
               blockIndex: blockEntry.key,
@@ -232,17 +217,11 @@ class BulkImportProblemWizard {
         final person = personEntry.value;
         if (person.isMatched && person.hasWarning && !addedKeys.contains(key)) {
           final linePrefix = person.sourceLineNumber != null
-              ? (l10n != null
-                  ? l10n.bulkImportProblemLinePrefix(person.sourceLineNumber!)
-                  : 'Satır ${person.sourceLineNumber}: ')
+              ? localizations.bulkImportProblemLinePrefix(person.sourceLineNumber!)
               : '';
           final reason = person.teamMismatch
-              ? (l10n != null
-                  ? l10n.bulkImportProblemCheckTeam
-                  : 'Tim kontrolü gerektiriyor.')
-              : (l10n != null
-                  ? l10n.bulkImportProblemCheckMatch
-                  : 'Eşleşme kontrolü gerektiriyor.');
+              ? localizations.bulkImportProblemCheckTeam
+              : localizations.bulkImportProblemCheckMatch;
           locs.add(
             ProblemLocation(
               blockIndex: blockEntry.key,
