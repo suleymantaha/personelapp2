@@ -75,4 +75,45 @@ void main() {
     expect(bytes, isNotEmpty);
     expect(String.fromCharCodes(bytes.take(4)), '%PDF');
   });
+
+  test('Çok sayıda operasyon (sayfayı aşan) olduğunda PDF hatasız ve kararlı üretilir', () async {
+    final ops = List.generate(
+      15,
+      (i) => TemgundrapOperation(
+        id: 'op-$i',
+        issuingUnit: 'ELAZIĞ İL J.K.LIĞI\nJ.KOMD.ÖZ.K.LIĞI',
+        operationArea: 'PALU VE KOVANCILAR İLÇE J.K.LIĞI SORUMLULUK ALANI',
+        commander: CommanderSnapshot(
+          personnelId: i + 1,
+          name: 'Personel $i',
+          rank: 'J.Uzm.Çvş.',
+          phone: '0533 000 00 $i',
+        ),
+        strength: const TemgundrapStrength(officer: 1, nco: 2, specialistSergeant: 4),
+        vehicles: const [
+          TemgundrapVehicleAssignment(model: 'KİRPİ', plate: '23 JAA 101'),
+        ],
+        startAt: DateTime(2026, 8, 8, 8),
+        endAt: DateTime(2026, 8, 8, 18),
+        purpose: 'ÖNLEYİCİ KOLLUK HİZMETİ VE EMNİYET ASAYİŞ DEVRİYESİ',
+        description: 'Bölge emniyeti sağlandı. Herhangi bir olumsuzluk yaşanmadı.',
+      ),
+    );
+
+    final document = TemgundrapDocument(
+      id: 'multi-ops',
+      date: DateTime(2026, 8, 8),
+      unitTitle: 'KOVANCILAR J.KOMD.ÖZ.HRK.TB.K.LIĞI',
+      approverName: 'İhsan DAĞLI',
+      approverRank: 'J.Ütğm.',
+      approverDuty: 'Tb. K. V.',
+      isDraft: false,
+      updatedAt: DateTime(2026, 8, 8),
+      operations: ops,
+    );
+
+    final bytes = await (await TemgundrapPdfExporter.build(document)).save();
+    expect(bytes, isNotEmpty);
+    expect(String.fromCharCodes(bytes.take(4)), '%PDF');
+  });
 }

@@ -5,6 +5,7 @@ Tek yazıcı: koordinatör. Henüz bu paketle başlatılmış proje görevi yokt
 | Görev ID | Hedef | Durum | Aktif kayıt / kanıt |
 |---|---|---|---|
 | task-temgundrap-auto-generate | Faaliyetlerden Otomatik TEMGÜNDRAP Üretimi ve Düzenleme | COMPLETED | tasks/active/task-temgundrap-auto-generate.md |
+| task-temgundrap-import-export-stability | Import kimliği, overflow ve Excel/PDF çıktı düzeltmeleri | DONE | tasks/active/task-temgundrap-import-export-stability.md |
 
 Tier 2/3 görevde [şablonu](../.agents/templates/task.md)
 `tasks/active/<task-id>.md` olarak doldur ve bu indekse gerçek kayıt ekle.

@@ -67,14 +67,15 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
   }
 
   String _snapshot() => jsonEncode({
-    'date': _date.toIso8601String(),
-    'unit': _unitTitle.text,
-    'name': _approverName.text,
-    'rank': _approverRank.text,
-    'duty': _approverDuty.text,
-    'draft': _isDraft,
-    'operations': _operations.map((operation) => operation.toJson()).toList(),
-  });
+        'date': _date.toIso8601String(),
+        'unit': _unitTitle.text,
+        'name': _approverName.text,
+        'rank': _approverRank.text,
+        'duty': _approverDuty.text,
+        'draft': _isDraft,
+        'operations':
+            _operations.map((operation) => operation.toJson()).toList(),
+      });
 
   bool get _dirty => _snapshot() != _baseline;
   void _changed() {
@@ -110,7 +111,10 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
         _baseline = _snapshot();
       });
     } catch (error) {
-      if (mounted) AppNotifications.error(context.l10n.temgundrapApproverDefaultsLoadFailed('$error'));
+      if (mounted) {
+        AppNotifications.error(
+            context.l10n.temgundrapApproverDefaultsLoadFailed('$error'));
+      }
     }
   }
 
@@ -146,12 +150,25 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
     final imported = await showDialog<List<TemgundrapOperation>>(
       context: context,
       barrierDismissible: true,
-      builder: (_) => TemgundrapImportActivitiesDialog(initialDate: _date),
+      builder: (_) => TemgundrapImportActivitiesDialog(
+        initialDate: _date,
+        existingOperations: _operations,
+      ),
     );
     if (imported != null && imported.isNotEmpty && mounted) {
-      setState(() => _operations.addAll(imported));
+      final existingIds = _operations.map((op) => op.id).toSet();
+      final toAdd = imported.where((op) {
+        return existingIds.add(op.id);
+      }).toList();
+
+      if (toAdd.isEmpty) {
+        AppNotifications.info('Seçilen tüm faaliyetler zaten formda ekli.');
+        return;
+      }
+
+      setState(() => _operations.addAll(toAdd));
       AppNotifications.success(
-        context.l10n.temgundrapImportSuccess(imported.length),
+        context.l10n.temgundrapImportSuccess(toAdd.length),
       );
     }
   }
@@ -160,10 +177,9 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
     final operation = await showDialog<TemgundrapOperation>(
       context: context,
       barrierDismissible: false,
-      builder:
-          (_) => TemgundrapOperationEditorDialog(
-            initialOperation: _operations[index],
-          ),
+      builder: (_) => TemgundrapOperationEditorDialog(
+        initialOperation: _operations[index],
+      ),
     );
     if (operation != null) {
       setState(() => _operations[index] = operation);
@@ -173,7 +189,8 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
   Future<void> _save() async {
     if (_saving || !_formKey.currentState!.validate()) return;
     if (_operations.isEmpty) {
-      AppNotifications.warning(context.l10n.temgundrapAtLeastOneOperationRequired);
+      AppNotifications.warning(
+          context.l10n.temgundrapAtLeastOneOperationRequired);
       return;
     }
     setState(() => _saving = true);
@@ -181,8 +198,7 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
     try {
       await _repository.save(
         TemgundrapDocument(
-          id:
-              widget.initialDocument?.id ??
+          id: widget.initialDocument?.id ??
               now.microsecondsSinceEpoch.toString(),
           date: _date,
           unitTitle: _unitTitle.text.trim(),
@@ -208,194 +224,222 @@ class _TemgundrapFormScreenState extends State<TemgundrapFormScreen> {
 
   @override
   Widget build(BuildContext context) => PopScope<bool>(
-    canPop: _allowExit || (!_saving && !_dirty),
-    onPopInvokedWithResult: (didPop, result) {
-      if (!didPop) _back();
-    },
-    child: Scaffold(
-      appBar: AppBar(
-        leading: BackButton(onPressed: _saving ? null : _back),
-        title: Text(
-          widget.initialDocument == null
-              ? context.l10n.temgundrapNewDocument
-              : context.l10n.temgundrapEditDocument,
-        ),
-      ),
-      body: TurkishFlagWatermarkBackground(
-        child: AbsorbPointer(
-          absorbing: _saving,
-          child: Form(
-            key: _formKey,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 900),
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    TextFormField(
-                      key: const Key('document-unit-title'),
-                      controller: _unitTitle,
-                      decoration: InputDecoration(
-                        labelText: context.l10n.temgundrapUnitTitle,
-                        hintText: context.l10n.temgundrapUnitHint,
-                        prefixIcon: const Icon(Icons.account_balance),
-                      ),
-                      validator: (value) => _required(value, context),
-                    ),
-                    const SizedBox(height: 12),
-                    ListTile(
-                      key: const Key('document-date'),
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.calendar_month),
-                      title: Text(context.l10n.temgundrapDocumentDate),
-                      subtitle: Text(
-                        '${_date.day.toString().padLeft(2, '0')}.${_date.month.toString().padLeft(2, '0')}.${_date.year}',
-                      ),
-                      trailing: const Icon(Icons.edit_calendar),
-                      onTap: _pickDate,
-                    ),
-                    const Divider(height: 32),
-                    Row(
+        canPop: _allowExit || (!_saving && !_dirty),
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop) _back();
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            leading: BackButton(onPressed: _saving ? null : _back),
+            title: Text(
+              widget.initialDocument == null
+                  ? context.l10n.temgundrapNewDocument
+                  : context.l10n.temgundrapEditDocument,
+            ),
+          ),
+          body: TurkishFlagWatermarkBackground(
+            child: AbsorbPointer(
+              absorbing: _saving,
+              child: Form(
+                key: _formKey,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 900),
+                    child: ListView(
+                      padding: const EdgeInsets.all(16),
                       children: [
-                        Expanded(
-                          child: Text(
-                            context.l10n.temgundrapOperations,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        TextFormField(
+                          key: const Key('document-unit-title'),
+                          controller: _unitTitle,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.temgundrapUnitTitle,
+                            hintText: context.l10n.temgundrapUnitHint,
+                            prefixIcon: const Icon(Icons.account_balance),
                           ),
+                          validator: (value) => _required(value, context),
                         ),
-                        OutlinedButton.icon(
-                          key: const Key('import-from-activities'),
-                          onPressed: _importFromActivities,
-                          icon: const Icon(Icons.playlist_add_rounded),
-                          label: Text(context.l10n.temgundrapImportFromActivities),
+                        const SizedBox(height: 12),
+                        ListTile(
+                          key: const Key('document-date'),
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.calendar_month),
+                          title: Text(context.l10n.temgundrapDocumentDate),
+                          subtitle: Text(
+                            '${_date.day.toString().padLeft(2, '0')}.${_date.month.toString().padLeft(2, '0')}.${_date.year}',
+                          ),
+                          trailing: const Icon(Icons.edit_calendar),
+                          onTap: _pickDate,
                         ),
-                        const SizedBox(width: 8),
-                        FilledButton.icon(
-                          key: const Key('add-operation'),
-                          onPressed: _addOperation,
-                          icon: const Icon(Icons.add),
-                          label: Text(context.l10n.temgundrapAddOperation),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (_operations.isEmpty)
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Text(context.l10n.temgundrapNoOperationsAddedYet),
-                        ),
-                      )
-                    else
-                      ..._operations.asMap().entries.map(
-                        (entry) => Card(
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              child: Text('${entry.key + 1}'),
-                            ),
-                            title: Text(
-                              entry.value.operationArea,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '${entry.value.commander.name} • ${context.l10n.bulkImportBlockPersonnelCount(entry.value.totalStrength)}\n${entry.value.purpose}',
-                            ),
-                            isThreeLine: true,
-                            onTap: () => _editOperation(entry.key),
-                            trailing: Wrap(
-                              spacing: 2,
+                        const Divider(height: 32),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
-                                IconButton(
-                                  key: Key('edit-operation-${entry.key}'),
-                                  tooltip: context.l10n.temgundrapEditOperationTooltip,
-                                  icon: const Icon(Icons.edit_outlined),
-                                  onPressed: () => _editOperation(entry.key),
+                                Expanded(
+                                  child: Text(
+                                    context.l10n.temgundrapOperations,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                                IconButton(
-                                  key: Key('delete-operation-${entry.key}'),
-                                  tooltip: context.l10n.temgundrapDeleteOperationTooltip,
-                                  icon: const Icon(Icons.delete_outline),
-                                  onPressed:
-                                      () => setState(
-                                        () => _operations.removeAt(entry.key),
-                                      ),
+                                if (_operations.isNotEmpty)
+                                  Chip(
+                                    label: Text('${_operations.length}'),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                OutlinedButton.icon(
+                                  key: const Key('import-from-activities'),
+                                  onPressed: _importFromActivities,
+                                  icon: const Icon(Icons.playlist_add_rounded),
+                                  label: Text(context
+                                      .l10n.temgundrapImportFromActivities),
+                                ),
+                                FilledButton.icon(
+                                  key: const Key('add-operation'),
+                                  onPressed: _addOperation,
+                                  icon: const Icon(Icons.add),
+                                  label:
+                                      Text(context.l10n.temgundrapAddOperation),
                                 ),
                               ],
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        if (_operations.isEmpty)
+                          Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Text(
+                                  context.l10n.temgundrapNoOperationsAddedYet),
+                            ),
+                          )
+                        else
+                          ..._operations.asMap().entries.map(
+                                (entry) => Card(
+                                  child: ListTile(
+                                    leading: CircleAvatar(
+                                      child: Text('${entry.key + 1}'),
+                                    ),
+                                    title: Text(
+                                      entry.value.operationArea,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      '${entry.value.commander.name} • ${context.l10n.bulkImportBlockPersonnelCount(entry.value.totalStrength)}\n${entry.value.purpose}',
+                                    ),
+                                    isThreeLine: true,
+                                    onTap: () => _editOperation(entry.key),
+                                    trailing: Wrap(
+                                      spacing: 2,
+                                      children: [
+                                        IconButton(
+                                          key: Key(
+                                              'edit-operation-${entry.key}'),
+                                          tooltip: context.l10n
+                                              .temgundrapEditOperationTooltip,
+                                          icon: const Icon(Icons.edit_outlined),
+                                          onPressed: () =>
+                                              _editOperation(entry.key),
+                                        ),
+                                        IconButton(
+                                          key: Key(
+                                              'delete-operation-${entry.key}'),
+                                          tooltip: context.l10n
+                                              .temgundrapDeleteOperationTooltip,
+                                          icon:
+                                              const Icon(Icons.delete_outline),
+                                          onPressed: () => setState(
+                                            () =>
+                                                _operations.removeAt(entry.key),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                        const Divider(height: 32),
+                        Text(
+                          context.l10n.temgundrapApprovalInfo,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                    const Divider(height: 32),
-                    Text(
-                      context.l10n.temgundrapApprovalInfo,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _approverName,
-                      decoration: InputDecoration(
-                        labelText: context.l10n.temgundrapApproverName,
-                        hintText: context.l10n.temgundrapApproverNameHint,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _approverRank,
-                      decoration: InputDecoration(
-                        labelText: context.l10n.personnelRank,
-                        hintText: context.l10n.temgundrapApproverRankHint,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _approverDuty,
-                      decoration: InputDecoration(
-                        labelText: context.l10n.temgundrapApproverDuty,
-                        hintText: context.l10n.temgundrapApproverDutyHint,
-                      ),
-                    ),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(context.l10n.temgundrapSaveAsDraft),
-                      value: _isDraft,
-                      onChanged: (value) => setState(() => _isDraft = value),
-                    ),
-                    const SizedBox(height: 20),
-                    FilledButton.icon(
-                      key: const Key('save-document'),
-                      onPressed: _saving ? null : _save,
-                      icon:
-                          _saving
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _approverName,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.temgundrapApproverName,
+                            hintText: context.l10n.temgundrapApproverNameHint,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _approverRank,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.personnelRank,
+                            hintText: context.l10n.temgundrapApproverRankHint,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _approverDuty,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.temgundrapApproverDuty,
+                            hintText: context.l10n.temgundrapApproverDutyHint,
+                          ),
+                        ),
+                        SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(context.l10n.temgundrapSaveAsDraft),
+                          value: _isDraft,
+                          onChanged: (value) =>
+                              setState(() => _isDraft = value),
+                        ),
+                        const SizedBox(height: 20),
+                        FilledButton.icon(
+                          key: const Key('save-document'),
+                          onPressed: _saving ? null : _save,
+                          icon: _saving
                               ? const SizedBox.square(
-                                dimension: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
                               : const Icon(Icons.save),
-                      label: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        child: Text(context.l10n.temgundrapSaveDocumentButton),
-                      ),
+                          label: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            child:
+                                Text(context.l10n.temgundrapSaveDocumentButton),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 
   String? _required(String? value, BuildContext context) =>
-      value == null || value.trim().isEmpty ? context.l10n.temgundrapRequiredField : null;
+      value == null || value.trim().isEmpty
+          ? context.l10n.temgundrapRequiredField
+          : null;
 }

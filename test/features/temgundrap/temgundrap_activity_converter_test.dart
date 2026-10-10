@@ -4,6 +4,27 @@ import 'package:personelapp2/features/temgundrap/domain/services/temgundrap_acti
 
 void main() {
   group('TemgundrapActivityConverter', () {
+    test('reimport preserves source identity', () async {
+      const source = GunlukFaaliyetTableData(
+        id: 71,
+        faaliyetAdi: 'DEVRİYE',
+        tarih: '2026-10-10',
+        olusturanKullanici: 'test',
+        olusturmaTarihi: '2026-10-10',
+      );
+      final first = TemgundrapActivityConverter.convert(
+        activity: source,
+        assignments: [],
+        personnelMap: {},
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 2));
+      final second = TemgundrapActivityConverter.convert(
+        activity: source,
+        assignments: [],
+        personnelMap: {},
+      );
+      expect(second.id, first.id);
+    });
     final activity = GunlukFaaliyetTableData(
       id: 101,
       faaliyetAdi: 'PALU İLÇE J.K.LIĞI 09:00 - 17:00 YOL ARAMA VE EMNİYETİ',
@@ -93,7 +114,8 @@ void main() {
 
     final personnelMap = {1: p1, 2: p2, 3: p3, 4: p4};
 
-    test('faaliyeti doğru kuvvet, en kıdemli komutan ve saatlerle dönüştürür', () {
+    test('faaliyeti doğru kuvvet, en kıdemli komutan ve saatlerle dönüştürür',
+        () {
       final operation = TemgundrapActivityConverter.convert(
         activity: activity,
         assignments: assignments,
@@ -155,7 +177,8 @@ void main() {
       expect(operation.vehicles, isEmpty);
     });
 
-    test('gece görevi (21:00 - 05:00) bitiş tarihini bir sonraki güne taşır', () {
+    test('gece görevi (21:00 - 05:00) bitiş tarihini bir sonraki güne taşır',
+        () {
       final nightActivity = GunlukFaaliyetTableData(
         id: 103,
         faaliyetAdi: 'KOVANCILAR İLÇE J.K.LIĞI 21:00 - 05:00 DEVRİYE HİZMETİ',

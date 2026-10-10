@@ -256,17 +256,30 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
         ),
         actions: [
           if (_selectionMode) ...[
-            TextButton.icon(
-              key: const Key('activity-selection-temgundrap'),
-              icon: const Icon(Icons.assignment_outlined, size: 18),
-              label: Text(context.l10n.activityArchiveExportToTemgundrap),
-              onPressed: () {
-                final selected = (activitiesAsync.value ?? [])
-                    .where((act) => _selectedActivityIds.contains(act.id))
-                    .toList();
-                _exportToTemgundrap(selected, personnelList);
-              },
-            ),
+            if (context.isMobile)
+              IconButton(
+                key: const Key('activity-selection-temgundrap'),
+                icon: const Icon(Icons.assignment_outlined),
+                tooltip: context.l10n.activityArchiveExportToTemgundrap,
+                onPressed: () {
+                  final selected = (activitiesAsync.value ?? [])
+                      .where((act) => _selectedActivityIds.contains(act.id))
+                      .toList();
+                  _exportToTemgundrap(selected, personnelList);
+                },
+              )
+            else
+              TextButton.icon(
+                key: const Key('activity-selection-temgundrap'),
+                icon: const Icon(Icons.assignment_outlined, size: 18),
+                label: Text(context.l10n.activityArchiveExportToTemgundrap),
+                onPressed: () {
+                  final selected = (activitiesAsync.value ?? [])
+                      .where((act) => _selectedActivityIds.contains(act.id))
+                      .toList();
+                  _exportToTemgundrap(selected, personnelList);
+                },
+              ),
             IconButton(
               key: const Key('activity-selection-export'),
               icon: const Icon(Icons.ios_share),

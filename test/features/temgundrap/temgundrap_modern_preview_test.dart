@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -35,6 +36,43 @@ void main() {
       ),
     ],
   );
+
+  testWidgets('wide preview grows to fit long operation content',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final json = document.operations.first.toJson();
+    json['description'] = List.filled(40, 'Uzun faaliyet açıklaması').join(' ');
+    await tester.pumpWidget(MaterialApp(
+        home: TemgundrapPreviewScreen(
+      document:
+          document.copyWith(operations: [TemgundrapOperation.fromJson(json)]),
+    )));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('output cannot be started twice while preparing', (tester) async {
+    final pending = Completer<void>();
+    var count = 0;
+    await tester.pumpWidget(MaterialApp(
+        home: TemgundrapPreviewScreen(
+      document: document,
+      onExcel: () {
+        count++;
+        return pending.future;
+      },
+    )));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('preview-excel')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('preview-excel')));
+    expect(count, 1);
+    pending.complete();
+    await tester.pumpAndSettle();
+  });
 
   testWidgets('modern önizleme kartı ve ortak çıktı eylemlerini gösterir', (
     tester,

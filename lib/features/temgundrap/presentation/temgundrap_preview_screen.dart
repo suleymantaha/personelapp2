@@ -10,7 +10,7 @@ import 'package:personelapp2/features/temgundrap/services/temgundrap_excel_expor
 import 'package:personelapp2/features/temgundrap/services/temgundrap_pdf_exporter.dart';
 import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
-class TemgundrapPreviewScreen extends StatelessWidget {
+class TemgundrapPreviewScreen extends StatefulWidget {
   const TemgundrapPreviewScreen({
     required this.document,
     this.onPrint,
@@ -24,28 +24,73 @@ class TemgundrapPreviewScreen extends StatelessWidget {
   final Future<void> Function()? onShare;
   final Future<void> Function()? onExcel;
 
+  @override
+  State<TemgundrapPreviewScreen> createState() =>
+      _TemgundrapPreviewScreenState();
+}
+
+class _TemgundrapPreviewScreenState extends State<TemgundrapPreviewScreen> {
+  bool _outputPending = false;
+  TemgundrapDocument get document => widget.document;
+
+  Rect? _shareOrigin(BuildContext context) {
+    final box = context.findRenderObject();
+    return box is RenderBox ? box.localToGlobal(Offset.zero) & box.size : null;
+  }
+
   Future<void> _print(BuildContext context) =>
-      onPrint?.call() ??
+      widget.onPrint?.call() ??
       TemgundrapPdfExporter.printDocument(document, context.l10n);
   Future<void> _share(BuildContext context) =>
-      onShare?.call() ??
-      TemgundrapPdfExporter.shareDocument(document, context.l10n);
+      widget.onShare?.call() ??
+      TemgundrapPdfExporter.shareDocument(
+          document, context.l10n, _shareOrigin(context));
   Future<void> _shareExcel(BuildContext context) =>
-      onExcel?.call() ??
-      TemgundrapExcelExporter.share(document, context.l10n);
+      widget.onExcel?.call() ??
+      TemgundrapExcelExporter.share(
+          document, context.l10n, _shareOrigin(context));
 
   Future<void> _output(
     BuildContext context,
     Future<void> Function() action,
   ) async {
+    if (_outputPending) return;
+    setState(() => _outputPending = true);
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(child: Text('Belge hazırlanıyor...')),
+          ],
+        ),
+        duration: Duration(seconds: 4),
+      ),
+    );
     try {
       await action();
+      if (mounted) messenger.hideCurrentSnackBar();
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(context.l10n.temgundrapOutputPrepareError('$error'))));
+        messenger.hideCurrentSnackBar();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.temgundrapOutputPrepareError('$error')),
+            backgroundColor: Colors.red.shade800,
+          ),
+        );
       }
+    } finally {
+      if (mounted) setState(() => _outputPending = false);
     }
   }
 
@@ -105,34 +150,37 @@ class TemgundrapPreviewScreen extends StatelessWidget {
                     wide ? 32 : 16,
                     28,
                   ),
-                  sliver:
-                      wide
-                          ? SliverGrid(
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 16,
-                                  mainAxisSpacing: 16,
-                                  childAspectRatio: 1.18,
-                                ),
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) => _OperationCard(
-                                index: index,
-                                operation: document.operations[index],
-                              ),
-                              childCount: document.operations.length,
-                            ),
-                          )
-                          : SliverList.separated(
-                            itemCount: document.operations.length,
-                            itemBuilder:
-                                (context, index) => _OperationCard(
-                                  index: index,
-                                  operation: document.operations[index],
-                                ),
-                            separatorBuilder:
-                                (_, __) => const SizedBox(height: 16),
+                  sliver: wide
+                      ? SliverList.separated(
+                          itemCount: (document.operations.length + 1) ~/ 2,
+                          itemBuilder: (context, row) => Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (var column = 0; column < 2; column++) ...[
+                                if (column == 1) const SizedBox(width: 16),
+                                Expanded(
+                                    child: row * 2 + column <
+                                            document.operations.length
+                                        ? _OperationCard(
+                                            index: row * 2 + column,
+                                            operation: document
+                                                .operations[row * 2 + column])
+                                        : const SizedBox.shrink()),
+                              ],
+                            ],
                           ),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 16),
+                        )
+                      : SliverList.separated(
+                          itemCount: document.operations.length,
+                          itemBuilder: (context, index) => _OperationCard(
+                            index: index,
+                            operation: document.operations[index],
+                          ),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 16),
+                        ),
                 ),
                 if (document.approverName.isNotEmpty ||
                     document.approverRank.isNotEmpty ||
@@ -163,47 +211,49 @@ class _ApproverCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Align(
-    alignment: Alignment.centerRight,
-    child: Container(
-      width: 220,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: context.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.cardBorderColor),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            context.l10n.temgundrapSigned,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+        alignment: Alignment.centerRight,
+        child: Container(
+          width: 220,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: context.colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: context.cardBorderColor),
           ),
-          const SizedBox(height: 4),
-          if (document.approverName.isNotEmpty)
-            Text(
-              document.approverName,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-            ),
-          if (document.approverRank.isNotEmpty)
-            Text(
-              document.approverRank,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: context.textSecondary, fontSize: 13),
-            ),
-          if (document.approverDuty.isNotEmpty)
-            Text(
-              document.approverDuty,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: context.textSecondary, fontSize: 13),
-            ),
-        ],
-      ),
-    ),
-  );
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                context.l10n.temgundrapSigned,
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+              ),
+              const SizedBox(height: 4),
+              if (document.approverName.isNotEmpty)
+                Text(
+                  document.approverName,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w800, fontSize: 14),
+                ),
+              if (document.approverRank.isNotEmpty)
+                Text(
+                  document.approverRank,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: context.textSecondary, fontSize: 13),
+                ),
+              if (document.approverDuty.isNotEmpty)
+                Text(
+                  document.approverDuty,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: context.textSecondary, fontSize: 13),
+                ),
+            ],
+          ),
+        ),
+      );
 }
 
 class _DocumentHeader extends StatelessWidget {
@@ -212,48 +262,50 @@ class _DocumentHeader extends StatelessWidget {
   final String date;
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: [
-          context.accentOrOlive.withValues(alpha: .16),
-          context.colorScheme.surfaceContainerLow,
-        ],
-      ),
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: context.accentOrOlive.withValues(alpha: .25)),
-    ),
-    child: Row(
-      children: [
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: context.accentOrOlive,
-          child: const Icon(Icons.description_outlined, color: Colors.white),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                document.unitTitle,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 17,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '$date • ${document.operations.length} operasyon',
-                style: TextStyle(color: context.textSecondary),
-              ),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              context.accentOrOlive.withValues(alpha: .16),
+              context.colorScheme.surfaceContainerLow,
             ],
           ),
+          borderRadius: BorderRadius.circular(22),
+          border:
+              Border.all(color: context.accentOrOlive.withValues(alpha: .25)),
         ),
-        Chip(label: Text(document.isDraft ? 'TASLAK' : 'TAMAMLANDI')),
-      ],
-    ),
-  );
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 28,
+              backgroundColor: context.accentOrOlive,
+              child:
+                  const Icon(Icons.description_outlined, color: Colors.white),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    document.unitTitle,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 17,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '$date • ${document.operations.length} operasyon',
+                    style: TextStyle(color: context.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            Chip(label: Text(document.isDraft ? 'TASLAK' : 'TAMAMLANDI')),
+          ],
+        ),
+      );
 }
 
 class _OperationCard extends StatelessWidget {
@@ -262,75 +314,75 @@ class _OperationCard extends StatelessWidget {
   final TemgundrapOperation operation;
   @override
   Widget build(BuildContext context) => AppCard(
-    key: Key('preview-operation-$index'),
-    padding: const EdgeInsets.all(18),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: context.accentOrOlive.withValues(alpha: .12),
-                child: Text(
-                  '${index + 1}',
-                  style: TextStyle(
-                    color: context.accentOrOlive,
-                    fontWeight: FontWeight.bold,
+        key: Key('preview-operation-$index'),
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: context.accentOrOlive.withValues(alpha: .12),
+                  child: Text(
+                    '${index + 1}',
+                    style: TextStyle(
+                      color: context.accentOrOlive,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  operation.operationArea,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    operation.operationArea,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
-              ),
-              Chip(
-                avatar: const Icon(Icons.groups_2_outlined, size: 17),
-                label: Text('${operation.totalStrength}'),
-              ),
-            ],
-          ),
-          const Divider(height: 24),
-          _InfoRow(
-            icon: Icons.account_balance_outlined,
-            label: context.l10n.temgundrapIssuingUnit,
-            value: operation.issuingUnit,
-          ),
-          _InfoRow(
-            icon: Icons.shield_outlined,
-            label: context.l10n.temgundrapCommanderLabel,
-            value: operation.commander.displayText,
-          ),
-          _InfoRow(
-            icon: Icons.route_outlined,
-            label: context.l10n.temgundrapForceLabel,
-            value: operation.forceDescription,
-          ),
-          _InfoRow(
-            icon: Icons.schedule_outlined,
-            label: context.l10n.temgundrapTimeLabel,
-            value:
-                '${TemgundrapFormatters.militaryDateTime(operation.startAt)}\n${TemgundrapFormatters.militaryDateTime(operation.endAt)}',
-          ),
-          _InfoRow(
-            icon: Icons.flag_outlined,
-            label: 'Maksat',
-            value: operation.purpose,
-          ),
-          if (operation.description.isNotEmpty)
-            _InfoRow(
-              icon: Icons.notes_outlined,
-              label: context.l10n.temgundrapDescription,
-              value: operation.description,
+                Chip(
+                  avatar: const Icon(Icons.groups_2_outlined, size: 17),
+                  label: Text('${operation.totalStrength}'),
+                ),
+              ],
             ),
-        ],
-      ),
-  );
+            const Divider(height: 24),
+            _InfoRow(
+              icon: Icons.account_balance_outlined,
+              label: context.l10n.temgundrapIssuingUnit,
+              value: operation.issuingUnit,
+            ),
+            _InfoRow(
+              icon: Icons.shield_outlined,
+              label: context.l10n.temgundrapCommanderLabel,
+              value: operation.commander.displayText,
+            ),
+            _InfoRow(
+              icon: Icons.route_outlined,
+              label: context.l10n.temgundrapForceLabel,
+              value: operation.forceDescription,
+            ),
+            _InfoRow(
+              icon: Icons.schedule_outlined,
+              label: context.l10n.temgundrapTimeLabel,
+              value:
+                  '${TemgundrapFormatters.militaryDateTime(operation.startAt)}\n${TemgundrapFormatters.militaryDateTime(operation.endAt)}',
+            ),
+            _InfoRow(
+              icon: Icons.flag_outlined,
+              label: 'Maksat',
+              value: operation.purpose,
+            ),
+            if (operation.description.isNotEmpty)
+              _InfoRow(
+                icon: Icons.notes_outlined,
+                label: context.l10n.temgundrapDescription,
+                value: operation.description,
+              ),
+          ],
+        ),
+      );
 }
 
 class _InfoRow extends StatelessWidget {
@@ -344,31 +396,31 @@ class _InfoRow extends StatelessWidget {
   final String value;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 19, color: context.accentOrOlive),
-        const SizedBox(width: 10),
-        SizedBox(
-          width: 92,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: context.textSecondary,
-              fontWeight: FontWeight.w600,
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 19, color: context.accentOrOlive),
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 92,
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-          ),
+            Expanded(
+              child: Text(
+                value.isEmpty ? '-' : value,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
         ),
-        Expanded(
-          child: Text(
-            value.isEmpty ? '-' : value,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-      ],
-    ),
-  );
+      );
 }
 
 class _OutputBar extends StatelessWidget {
@@ -387,35 +439,36 @@ class _OutputBar extends StatelessWidget {
       required IconData icon,
       required String label,
       required VoidCallback onPressed,
-    }) => Expanded(
-      child: SizedBox(
-        height: 68,
-        child: FilledButton(
-          key: key,
-          onPressed: onPressed,
-          style: FilledButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+    }) =>
+        Expanded(
+          child: SizedBox(
+            height: 68,
+            child: FilledButton(
+              key: key,
+              onPressed: onPressed,
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 20),
+                  const SizedBox(height: 3),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
             ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 20),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+        );
 
     return SafeArea(
       child: Padding(

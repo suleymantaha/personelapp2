@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:personelapp2/features/activity/services/roster_share_file.dart';
 import 'package:pdf/pdf.dart';
@@ -14,13 +15,28 @@ import 'package:share_plus/share_plus.dart';
 class TemgundrapPdfExporter {
   const TemgundrapPdfExporter._();
 
-  static String documentTitle(TemgundrapDocument document, [AppLocalizations? l10n]) {
+  static pw.Font? _cachedRegular;
+  static pw.Font? _cachedBold;
+
+  static String documentTitle(TemgundrapDocument document,
+      [AppLocalizations? l10n]) {
     final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
     final dateStr = TurkishDateHelper.formatOfficialDate(
       document.date,
       uppercase: true,
     );
-    return localizations.temgundrapExportDocumentTitle(document.unitTitle, dateStr);
+    return localizations.temgundrapExportDocumentTitle(
+        document.unitTitle, dateStr);
+  }
+
+  static Future<pw.ThemeData> _loadTheme() async {
+    if (_cachedRegular == null || _cachedBold == null) {
+      final regData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+      final boldData = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
+      _cachedRegular = pw.Font.ttf(regData);
+      _cachedBold = pw.Font.ttf(boldData);
+    }
+    return pw.ThemeData.withFont(base: _cachedRegular!, bold: _cachedBold!);
   }
 
   static Future<pw.Document> build(
@@ -28,27 +44,28 @@ class TemgundrapPdfExporter {
     AppLocalizations? l10n,
   ]) async {
     final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
-    final regular = pw.Font.ttf(
-      await rootBundle.load('assets/fonts/Roboto-Regular.ttf'),
-    );
-    final bold = pw.Font.ttf(
-      await rootBundle.load('assets/fonts/Roboto-Bold.ttf'),
-    );
-    final pdf = pw.Document(
-      theme: pw.ThemeData.withFont(base: regular, bold: bold),
-    );
+    final theme = await _loadTheme();
+    return _buildWithTheme(document, localizations, theme);
+  }
+
+  static pw.Document _buildWithTheme(
+    TemgundrapDocument document,
+    AppLocalizations localizations,
+    pw.ThemeData theme,
+  ) {
+    final pdf = pw.Document(theme: theme);
     pw.Widget cell(String text, {bool bold = false}) => pw.Container(
-      alignment: pw.Alignment.center,
-      padding: const pw.EdgeInsets.all(3),
-      child: pw.Text(
-        text,
-        textAlign: pw.TextAlign.center,
-        style: pw.TextStyle(
-          fontSize: 6.5,
-          fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
-        ),
-      ),
-    );
+          alignment: pw.Alignment.center,
+          padding: const pw.EdgeInsets.all(3),
+          child: pw.Text(
+            text,
+            textAlign: pw.TextAlign.center,
+            style: pw.TextStyle(
+              fontSize: 6.5,
+              fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
+            ),
+          ),
+        );
     pw.Widget forceSubtable(List<String> values, {bool bold = false}) =>
         pw.Table(
           border: pw.TableBorder.all(width: .6),
@@ -64,160 +81,162 @@ class TemgundrapPdfExporter {
             ),
           ],
         );
-    pw.Widget forceGroup(List<String> values, {bool header = false}) =>
-        header
-            ? pw.Column(
-              children: [
-                pw.Container(
-                  width: double.infinity,
-                  padding: const pw.EdgeInsets.all(3),
-                  alignment: pw.Alignment.center,
-                  decoration: const pw.BoxDecoration(
-                    border: pw.Border(bottom: pw.BorderSide(width: .6)),
-                  ),
-                  child: pw.Text(
-                    localizations.temgundrapExportColForceHeader,
-                    style: pw.TextStyle(
-                      fontSize: 7,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
+    pw.Widget forceGroup(List<String> values, {bool header = false}) => header
+        ? pw.Column(
+            children: [
+              pw.Container(
+                width: double.infinity,
+                padding: const pw.EdgeInsets.all(3),
+                alignment: pw.Alignment.center,
+                decoration: const pw.BoxDecoration(
+                  border: pw.Border(bottom: pw.BorderSide(width: .6)),
+                ),
+                child: pw.Text(
+                  localizations.temgundrapExportColForceHeader,
+                  style: pw.TextStyle(
+                    fontSize: 7,
+                    fontWeight: pw.FontWeight.bold,
                   ),
                 ),
-                forceSubtable(values, bold: true),
-              ],
-            )
-            : forceSubtable(values);
+              ),
+              forceSubtable(values, bold: true),
+            ],
+          )
+        : forceSubtable(values);
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4.landscape,
         margin: const pw.EdgeInsets.all(22),
-        build:
-            (_) => [
-              pw.Container(
-                width: double.infinity,
-                alignment: pw.Alignment.center,
-                child: pw.Text(
-                  documentTitle(document, l10n),
-                  textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(
-                    fontWeight: pw.FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
+        build: (_) => [
+          pw.Container(
+            width: double.infinity,
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              documentTitle(document, localizations),
+              textAlign: pw.TextAlign.center,
+              style: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 12,
               ),
-              pw.SizedBox(height: 2),
-              pw.Table(
-                border: pw.TableBorder.all(width: .6),
-                columnWidths: const {
-                  0: pw.FlexColumnWidth(.55),
-                  1: pw.FlexColumnWidth(1.7),
-                  2: pw.FlexColumnWidth(2.0),
-                  3: pw.FlexColumnWidth(4.5),
-                  4: pw.FlexColumnWidth(1.65),
-                  5: pw.FlexColumnWidth(1.65),
-                  6: pw.FlexColumnWidth(2.15),
-                  7: pw.FlexColumnWidth(1.7),
-                },
+            ),
+          ),
+          pw.SizedBox(height: 2),
+          pw.Table(
+            border: pw.TableBorder.all(width: .6),
+            columnWidths: const {
+              0: pw.FlexColumnWidth(.55),
+              1: pw.FlexColumnWidth(1.7),
+              2: pw.FlexColumnWidth(2.0),
+              3: pw.FlexColumnWidth(4.5),
+              4: pw.FlexColumnWidth(1.65),
+              5: pw.FlexColumnWidth(1.65),
+              6: pw.FlexColumnWidth(2.15),
+              7: pw.FlexColumnWidth(1.7),
+            },
+            children: [
+              pw.TableRow(
+                repeat: true,
+                decoration: const pw.BoxDecoration(
+                  color: PdfColors.grey200,
+                ),
                 children: [
-                  pw.TableRow(
-                    decoration: const pw.BoxDecoration(
-                      color: PdfColors.grey200,
-                    ),
-                    children: [
-                      cell(localizations.temgundrapExportColSequence, bold: true),
-                      cell(localizations.temgundrapExportColIssuingUnit, bold: true),
-                      cell(localizations.temgundrapExportColOperationArea, bold: true),
-                      forceGroup([
-                        localizations.temgundrapExportColForce,
-                        localizations.temgundrapExportColCommander,
-                        localizations.temgundrapExportColPresent,
-                        '',
-                      ], header: true),
-                      cell(localizations.temgundrapExportColStartTime, bold: true),
-                      cell(localizations.temgundrapExportColEndTime, bold: true),
-                      cell(localizations.temgundrapExportColPurpose, bold: true),
-                      cell(localizations.temgundrapExportColDescription, bold: true),
-                    ],
-                  ),
-                  ...document.operations.asMap().entries.map((entry) {
-                    final item = entry.value;
-                    final labels = [
-                      ...item.strength.byLabel.keys,
-                      localizations.temgundrapExportTotal,
-                    ].join('\n');
-                    final counts = [
-                      ...item.strength.byLabel.values,
-                      item.totalStrength,
-                    ].join('\n');
-                    return pw.TableRow(
-                      children: [
-                        cell('${entry.key + 1}'),
-                        cell(item.issuingUnit),
-                        cell(item.operationArea),
-                        forceGroup([
-                          item.forceDescription,
-                          item.commander.displayText,
-                          labels,
-                          counts,
-                        ]),
-                        cell(
-                          TemgundrapFormatters.militaryDateTime(item.startAt),
-                        ),
-                        cell(TemgundrapFormatters.militaryDateTime(item.endAt)),
-                        cell(item.purpose),
-                        cell(item.description),
-                      ],
-                    );
-                  }),
+                  cell(localizations.temgundrapExportColSequence, bold: true),
+                  cell(localizations.temgundrapExportColIssuingUnit,
+                      bold: true),
+                  cell(localizations.temgundrapExportColOperationArea,
+                      bold: true),
+                  forceGroup([
+                    localizations.temgundrapExportColForce,
+                    localizations.temgundrapExportColCommander,
+                    localizations.temgundrapExportColPresent,
+                    '',
+                  ], header: true),
+                  cell(localizations.temgundrapExportColStartTime, bold: true),
+                  cell(localizations.temgundrapExportColEndTime, bold: true),
+                  cell(localizations.temgundrapExportColPurpose, bold: true),
+                  cell(localizations.temgundrapExportColDescription,
+                      bold: true),
                 ],
               ),
-              if (document.approverName.isNotEmpty ||
-                  document.approverRank.isNotEmpty ||
-                  document.approverDuty.isNotEmpty) ...[
-                pw.SizedBox(height: 16),
-                pw.Align(
-                  alignment: pw.Alignment.topRight,
-                  child: pw.Container(
-                    width: 180,
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.center,
-                      children: [
-                        pw.Text(
-                          localizations.temgundrapSigned,
-                          textAlign: pw.TextAlign.center,
-                          style: pw.TextStyle(
-                            fontSize: 8,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                        pw.SizedBox(height: 3),
-                        if (document.approverName.isNotEmpty)
-                          pw.Text(
-                            document.approverName,
-                            textAlign: pw.TextAlign.center,
-                            style: pw.TextStyle(
-                              fontSize: 9,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
-                          ),
-                        if (document.approverRank.isNotEmpty)
-                          pw.Text(
-                            document.approverRank,
-                            textAlign: pw.TextAlign.center,
-                            style: const pw.TextStyle(fontSize: 8),
-                          ),
-                        if (document.approverDuty.isNotEmpty)
-                          pw.Text(
-                            document.approverDuty,
-                            textAlign: pw.TextAlign.center,
-                            style: const pw.TextStyle(fontSize: 8),
-                          ),
-                      ],
+              ...document.operations.asMap().entries.map((entry) {
+                final item = entry.value;
+                final labels = [
+                  ...item.strength.byLabel.keys,
+                  localizations.temgundrapExportTotal,
+                ].join('\n');
+                final counts = [
+                  ...item.strength.byLabel.values,
+                  item.totalStrength,
+                ].join('\n');
+                return pw.TableRow(
+                  children: [
+                    cell('${entry.key + 1}'),
+                    cell(item.issuingUnit),
+                    cell(item.operationArea),
+                    forceGroup([
+                      item.forceDescription,
+                      item.commander.displayText,
+                      labels,
+                      counts,
+                    ]),
+                    cell(
+                      TemgundrapFormatters.militaryDateTime(item.startAt),
                     ),
-                  ),
-                ),
-              ],
+                    cell(TemgundrapFormatters.militaryDateTime(item.endAt)),
+                    cell(item.purpose),
+                    cell(item.description),
+                  ],
+                );
+              }),
             ],
+          ),
+          if (document.approverName.isNotEmpty ||
+              document.approverRank.isNotEmpty ||
+              document.approverDuty.isNotEmpty) ...[
+            pw.SizedBox(height: 16),
+            pw.Align(
+              alignment: pw.Alignment.topRight,
+              child: pw.Container(
+                width: 180,
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Text(
+                      localizations.temgundrapSigned,
+                      textAlign: pw.TextAlign.center,
+                      style: pw.TextStyle(
+                        fontSize: 8,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 3),
+                    if (document.approverName.isNotEmpty)
+                      pw.Text(
+                        document.approverName,
+                        textAlign: pw.TextAlign.center,
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    if (document.approverRank.isNotEmpty)
+                      pw.Text(
+                        document.approverRank,
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                    if (document.approverDuty.isNotEmpty)
+                      pw.Text(
+                        document.approverDuty,
+                        textAlign: pw.TextAlign.center,
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
     return pdf;
@@ -228,16 +247,17 @@ class TemgundrapPdfExporter {
     AppLocalizations? l10n,
   ]) async {
     final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
-    final bytes = await (await build(document, localizations)).save();
+    final bytes = await buildBytes(document, localizations);
     await Printing.layoutPdf(name: 'TEMGÜNDRAP', onLayout: (_) async => bytes);
   }
 
   static Future<void> shareDocument(
     TemgundrapDocument document, [
     AppLocalizations? l10n,
+    Rect? sharePositionOrigin,
   ]) async {
     final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
-    final bytes = await (await build(document, localizations)).save();
+    final bytes = await buildBytes(document, localizations);
     final dateStr =
         '${document.date.year}-${document.date.month.toString().padLeft(2, '0')}-${document.date.day.toString().padLeft(2, '0')}';
     final fileName = formatExportFileName(
@@ -248,9 +268,33 @@ class TemgundrapPdfExporter {
     final file = await createRosterShareFile(fileName, bytes);
     await SharePlus.instance.share(
       ShareParams(
-        files: [XFile(file.path)],
+        sharePositionOrigin: sharePositionOrigin,
+        files: [XFile(file.path, mimeType: 'application/pdf')],
         text: localizations.temgundrapExportShareText,
       ),
     );
   }
+
+  static Future<Uint8List> buildBytes(TemgundrapDocument document,
+      [AppLocalizations? l10n]) async {
+    // Asset I/O stays on the root isolate; layout and encoding run in compute.
+    final regular = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+    final bold = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
+    return compute(_encodePdf, {
+      'document': document.toJson(),
+      'locale': l10n?.localeName ?? 'tr',
+      'regular': regular,
+      'bold': bold,
+    });
+  }
 }
+
+Future<Uint8List> _encodePdf(Map<String, Object?> request) async =>
+    TemgundrapPdfExporter._buildWithTheme(
+      TemgundrapDocument.fromJson(request['document'] as Map<String, Object?>),
+      lookupAppLocalizations(Locale(request['locale'] as String)),
+      pw.ThemeData.withFont(
+        base: pw.Font.ttf(request['regular'] as ByteData),
+        bold: pw.Font.ttf(request['bold'] as ByteData),
+      ),
+    ).save();

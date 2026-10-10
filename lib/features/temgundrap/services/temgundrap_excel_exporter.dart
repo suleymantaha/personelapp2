@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:excel/excel.dart';
 import 'package:personelapp2/features/activity/services/roster_share_file.dart';
 import 'package:personelapp2/core/utils/export_file_name_helper.dart';
@@ -11,7 +12,8 @@ import 'package:share_plus/share_plus.dart';
 class TemgundrapExcelExporter {
   const TemgundrapExcelExporter._();
 
-  static List<int> build(TemgundrapDocument document, [AppLocalizations? l10n]) {
+  static List<int> build(TemgundrapDocument document,
+      [AppLocalizations? l10n]) {
     final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
     final excel = Excel.createExcel();
     const sheetName = 'TEMGÜNDRAP';
@@ -24,17 +26,17 @@ class TemgundrapExcelExporter {
       borderColorHex: ExcelColor.fromHexString('#000000'),
     );
     CellStyle style({bool bold = false, int size = 10}) => CellStyle(
-      bold: bold,
-      fontFamily: getFontFamily(FontFamily.Arial),
-      fontSize: size,
-      horizontalAlign: HorizontalAlign.Center,
-      verticalAlign: VerticalAlign.Center,
-      textWrapping: TextWrapping.WrapText,
-      leftBorder: thin,
-      rightBorder: thin,
-      topBorder: thin,
-      bottomBorder: thin,
-    );
+          bold: bold,
+          fontFamily: getFontFamily(FontFamily.Arial),
+          fontSize: size,
+          horizontalAlign: HorizontalAlign.Center,
+          verticalAlign: VerticalAlign.Center,
+          textWrapping: TextWrapping.WrapText,
+          leftBorder: thin,
+          rightBorder: thin,
+          topBorder: thin,
+          bottomBorder: thin,
+        );
     final titleStyle = style(bold: true, size: 11);
     final headerStyle = style(bold: true, size: 10);
     final dataStyle = style(size: 10);
@@ -62,7 +64,8 @@ class TemgundrapExcelExporter {
     }
 
     // Keep the official document heading identical in both export formats.
-    set(0, 0, TemgundrapPdfExporter.documentTitle(document, localizations), titleStyle);
+    set(0, 0, TemgundrapPdfExporter.documentTitle(document, localizations),
+        titleStyle);
     merge(0, 0, 10, 0);
     final mainHeaders = <int, String>{
       0: localizations.temgundrapExportColSequence,
@@ -88,18 +91,23 @@ class TemgundrapExcelExporter {
     for (var index = 0; index < subHeaders.length; index++) {
       set(3 + index, 2, subHeaders[index], headerStyle);
     }
+    merge(5, 2, 6, 2);
 
     for (final entry in document.operations.asMap().entries) {
       final row = 3 + entry.key;
       final operation = entry.value;
-      final strengthLabels = [
-        ...operation.strength.byLabel.keys,
-        localizations.temgundrapExportTotal,
-      ].join('\n');
-      final strengthValues = [
-        ...operation.strength.byLabel.values,
-        operation.totalStrength,
-      ].join('\n');
+      final strengthLabels = operation.strength.byLabel.isEmpty
+          ? localizations.temgundrapExportTotal
+          : [
+              ...operation.strength.byLabel.keys,
+              localizations.temgundrapExportTotal,
+            ].join('\n');
+      final strengthValues = operation.strength.byLabel.isEmpty
+          ? '${operation.totalStrength}'
+          : [
+              ...operation.strength.byLabel.values,
+              operation.totalStrength,
+            ].join('\n');
       final values = [
         '${entry.key + 1}',
         operation.issuingUnit,
@@ -179,12 +187,24 @@ class TemgundrapExcelExporter {
       ..setRowHeight(0, 34)
       ..setRowHeight(1, 24)
       ..setRowHeight(2, 24);
-    return excel.encode() ?? <int>[];
+    final bytes = excel.encode();
+    if (bytes == null || bytes.isEmpty) {
+      throw StateError('Failed to encode TEMGÜNDRAP workbook');
+    }
+    return bytes;
   }
+
+  static Future<List<int>> buildBytes(TemgundrapDocument document,
+          [AppLocalizations? l10n]) =>
+      compute(_encodeExcel, {
+        'document': document.toJson(),
+        'locale': l10n?.localeName ?? 'tr',
+      });
 
   static Future<void> share(
     TemgundrapDocument document, [
     AppLocalizations? l10n,
+    Rect? sharePositionOrigin,
   ]) async {
     final localizations = l10n ?? lookupAppLocalizations(const Locale('tr'));
     final dateStr =
@@ -194,12 +214,26 @@ class TemgundrapExcelExporter {
       date: dateStr,
       extension: 'xlsx',
     );
-    final file = await createRosterShareFile(fileName, build(document, localizations));
+    final bytes = await buildBytes(document, localizations);
+    final file = await createRosterShareFile(fileName, bytes);
     await SharePlus.instance.share(
       ShareParams(
-        files: [XFile(file.path)],
+        sharePositionOrigin: sharePositionOrigin,
+        files: [
+          XFile(
+            file.path,
+            mimeType:
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          ),
+        ],
         text: localizations.temgundrapExportShareTextExcel,
       ),
     );
   }
 }
+
+List<int> _encodeExcel(Map<String, Object?> request) =>
+    TemgundrapExcelExporter.build(
+      TemgundrapDocument.fromJson(request['document'] as Map<String, Object?>),
+      lookupAppLocalizations(Locale(request['locale'] as String)),
+    );
