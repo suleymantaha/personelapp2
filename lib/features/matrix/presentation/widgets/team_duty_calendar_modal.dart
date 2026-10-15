@@ -205,7 +205,7 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
                               : context.colorScheme.surfaceContainer;
                           return Semantics(
                             button: day != null,
-                            label: '$dayNumber $monthName${hasDuty ? ', ${day!.gorevTamAdi}' : ''}',
+                            label: '$dayNumber $monthName${hasDuty ? ', ${day.gorevTamAdi}' : ''}',
                             child: InkWell(
                               key: ValueKey('team-calendar-day-$dayNumber'),
                               onTap: day == null
