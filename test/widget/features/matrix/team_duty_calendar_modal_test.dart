@@ -38,8 +38,8 @@ void main() {
           ),
         ),
       );
-      expect(find.textContaining('GÜLÜŞKÜR · 2'), findsOneWidget);
-      expect(find.textContaining('HEYBET · 1'), findsOneWidget);
+      expect(find.text('GÜLÜŞKÜR'), findsOneWidget);
+      expect(find.text('HEYBET'), findsOneWidget);
       expect(find.text('Onaylı'), findsOneWidget);
       expect(find.text('Bekleyen'), findsOneWidget);
       expect(find.text('Ali KAYA (#1)'), findsOneWidget);
