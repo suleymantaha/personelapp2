@@ -7,6 +7,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 class BulkImportInputSection extends StatelessWidget {
   const BulkImportInputSection({
     required this.textController,
+    required this.textFocusNode,
     required this.keepAuditText,
     required this.onKeepAuditTextChanged,
     required this.isMobile,
@@ -17,6 +18,7 @@ class BulkImportInputSection extends StatelessWidget {
   });
 
   final TextEditingController textController;
+  final FocusNode textFocusNode;
   final bool keepAuditText;
   final ValueChanged<bool> onKeepAuditTextChanged;
   final bool isMobile;
@@ -35,19 +37,29 @@ class BulkImportInputSection extends StatelessWidget {
             context.l10n.bulkImportInputRawTitle,
             style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
           ),
-          if (!isKeyboardVisible) ...[
-            const SizedBox(height: 4),
-            Text(
-              context.l10n.bulkImportInputRawSubtitle,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: context.textSecondary, fontSize: 12),
+          // Keep the same children in the Column while the keyboard opens.
+          // Removing siblings used to unmount TextField and dismiss the IME.
+          Visibility(
+            visible: !isKeyboardVisible,
+            maintainState: true,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                context.l10n.bulkImportInputRawSubtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: context.textSecondary, fontSize: 12),
+              ),
             ),
-          ],
+          ),
           const SizedBox(height: 12),
           Expanded(
             child: TextField(
               controller: textController,
+              focusNode: textFocusNode,
+              key: const Key('bulk-import-source-text-field'),
+              keyboardType: TextInputType.multiline,
+              textInputAction: TextInputAction.newline,
               maxLines: null,
               expands: true,
               textAlignVertical: TextAlignVertical.top,
@@ -71,35 +83,46 @@ class BulkImportInputSection extends StatelessWidget {
               ),
             ),
           ),
-          if (!isKeyboardVisible)
-            Material(
+          // Keep the expansion state independent from the persisted audit
+          // preference. The disclosure starts closed even if audit is enabled.
+          // Visibility preserves its subtree and TextField identity during IME
+          // metric changes while freeing vertical space for source text.
+          Visibility(
+            visible: !isKeyboardVisible,
+            maintainState: true,
+            child: Material(
               color: Colors.transparent,
               child: ExpansionTile(
-              tilePadding: EdgeInsets.zero,
-              childrenPadding: EdgeInsets.zero,
-              title: Text(
-                'Gelişmiş seçenekler',
-                style: TextStyle(fontSize: 12, color: context.textSecondary),
-              ),
-              initiallyExpanded: keepAuditText,
-              children: [
-                SwitchListTile.adaptive(
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                  value: keepAuditText,
-                  onChanged: onKeepAuditTextChanged,
-                  title: Text(
-                    context.l10n.bulkImportKeepAuditTextTitle,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  subtitle: Text(
-                    context.l10n.bulkImportKeepAuditTextDesc,
-                    style: TextStyle(fontSize: 11, color: context.textSecondary),
-                  ),
+                key: const PageStorageKey<String>('bulk-import-advanced'),
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: EdgeInsets.zero,
+                initiallyExpanded: false,
+                title: Text(
+                  'Gelişmiş seçenekler',
+                  style: TextStyle(fontSize: 12, color: context.textSecondary),
                 ),
-              ],
+                children: [
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    value: keepAuditText,
+                    onChanged: onKeepAuditTextChanged,
+                    title: Text(
+                      context.l10n.bulkImportKeepAuditTextTitle,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    subtitle: Text(
+                      context.l10n.bulkImportKeepAuditTextDesc,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: context.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            ),
+          ),
           const SizedBox(height: 8),
           SizedBox(
             height: 50,
