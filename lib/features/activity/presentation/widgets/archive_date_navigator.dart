@@ -21,7 +21,7 @@ class ArchiveDateNavigator extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: context.colorScheme.surface.withValues(alpha: 0.96),
+        color: context.colorScheme.surface,
         border: Border(bottom: BorderSide(color: context.cardBorderColor)),
       ),
       child: Row(
@@ -41,7 +41,7 @@ class ArchiveDateNavigator extends StatelessWidget {
                   DateFormat('d MMMM', 'tr_TR').format(selectedDate),
                   style: TextStyle(
                     color: context.textPrimary,
-                    fontSize: 18,
+                    fontSize: 19,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
