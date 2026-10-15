@@ -13,10 +13,12 @@ class ActivitySelectedSquadGroup extends StatelessWidget {
     required this.onRemovePersonnel,
     required this.onEditAssignment,
     required this.onAssignDuty,
+    this.initiallyExpanded = false,
     super.key,
   });
 
   final String squadName;
+  final bool initiallyExpanded;
   final List<PersonelTableData> personnel;
   final ActivityFormDraft draft;
   final ValueChanged<int> onRemovePersonnel;
@@ -33,6 +35,7 @@ class ActivitySelectedSquadGroup extends StatelessWidget {
         border: Border.all(color: context.cardBorderColor),
       ),
       child: ExpansionTile(
+        initiallyExpanded: initiallyExpanded,
         key: ValueKey('selected-squad-group-$squadName'),
         tilePadding: const EdgeInsets.symmetric(horizontal: 12),
         childrenPadding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
