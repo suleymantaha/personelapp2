@@ -466,6 +466,17 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
               onPressed: pickArchiveDate,
             ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(58),
+          child: ArchiveDateNavigator(
+            selectedDate: _selectedDateFilter,
+            activityCount: (activitiesAsync.value ?? [])
+                .where((activity) => activity.tarih == dateFilterStr)
+                .length,
+            onDateSelected: _changeSelectedDate,
+            onCalendarTap: pickArchiveDate,
+          ),
+        ),
       ),
       body: TurkishFlagWatermarkBackground(
         child: ResponsiveCenter(
@@ -473,19 +484,6 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
           padding: EdgeInsets.zero,
           child: Column(
             children: [
-              activitiesAsync.when(
-                data: (activities) => ArchiveDateNavigator(
-                  selectedDate: _selectedDateFilter,
-                  activityCount: activities
-                      .where((activity) => activity.tarih == dateFilterStr)
-                      .length,
-                  onDateSelected: _changeSelectedDate,
-                ),
-                loading: () => const SizedBox(height: 72),
-                error: (_, __) => const SizedBox.shrink(),
-              ),
-              const SizedBox(height: 6),
-
               // Activity List
               Expanded(
                 child: activitiesAsync.when(
@@ -525,38 +523,6 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.calendar_month_outlined,
-                                  color: context.accentOrOlive,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    context.l10n.activityArchiveDayActivityCount(
-                                      _formatTurkishDay(dateFilterStr),
-                                      ordered.length,
-                                    ),
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
                         if (_reorderMode)
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -635,7 +601,3 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
   }
 }
 
-String _formatTurkishDay(String isoDate) {
-  final date = DateTime.parse(isoDate);
-  return DateFormat('d MMMM', 'tr_TR').format(date);
-}

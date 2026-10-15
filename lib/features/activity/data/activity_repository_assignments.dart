@@ -46,6 +46,81 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
     });
   }
 
+  /// Changes the duty for personnel already assigned to [activityId].
+  ///
+  /// Validates the whole selection before writing anything, so a conflict or
+  /// stale selection cannot leave half of a bulk edit applied. Existing notes,
+  /// personnel IDs, historical team names and assignment IDs stay untouched.
+  Future<int> updateExistingAssignmentDuties({
+    required int activityId,
+    required Iterable<int> assignmentIds,
+    required String duty,
+    required UserSessionState actor,
+  }) {
+    _requireAdmin(actor);
+    final ids = assignmentIds.toSet();
+    final normalizedDuty = duty.trim();
+    if (!DutyOrLeaveType.dutiesForRole(isAdmin: true).contains(normalizedDuty)) {
+      throw ArgumentError.value(duty, 'duty', 'Unsupported duty');
+    }
+    if (ids.isEmpty) return Future.value(0);
+
+    return db.transaction(() async {
+      final activity =
+          await (db.select(db.gunlukFaaliyetTable)
+                ..where((t) => t.id.equals(activityId)))
+              .getSingleOrNull();
+      if (activity == null) {
+        throw ArgumentError.value(activityId, 'activityId', 'Activity not found');
+      }
+      final selected =
+          await (db.select(db.faaliyetPersonelAtamaTable)
+                ..where((t) => t.id.isIn(ids)))
+              .get();
+      if (selected.length != ids.length ||
+          selected.any((row) => row.faaliyetId != activityId)) {
+        throw StateError('Selected assignments changed; reload the archive.');
+      }
+
+      final toUpdate =
+          selected.where((row) => row.gorevVeyaIzin != normalizedDuty).toList();
+      if (toUpdate.isEmpty) return 0;
+
+      final reports = await _loadDomainReports();
+      final existing = await _loadExistingAssignments();
+      for (final row in toUpdate) {
+        final status = ConflictChecker.evaluateAssignmentStatus(
+          personelId: row.personelId,
+          targetDate: activity.tarih,
+          targetDuty: normalizedDuty,
+          reports: reports,
+          existingAssignments: existing,
+          excludeAssignmentId: row.id,
+        );
+        if (status == AssignmentStatus.beklemede) {
+          throw AssignmentConflictException(
+            'Assignment conflict: personnel has another record on ${activity.tarih}.',
+            code: 'has_record',
+            date: activity.tarih,
+            personnelId: row.personelId,
+          );
+        }
+      }
+
+      for (final row in toUpdate) {
+        await (db.update(db.faaliyetPersonelAtamaTable)
+              ..where((t) => t.id.equals(row.id)))
+            .write(
+              FaaliyetPersonelAtamaTableCompanion(
+                gorevVeyaIzin: Value(normalizedDuty),
+                durum: const Value(AssignmentStatus.onaylandi),
+              ),
+            );
+      }
+      return toUpdate.length;
+    });
+  }
+
   /// Add a single personnel assignment to an existing activity
   Future<int> addSingleAssignment({
     required int faaliyetId,

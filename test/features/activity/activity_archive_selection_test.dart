@@ -82,7 +82,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('$headerDateStr • 2 faaliyet'), findsOneWidget);
+    expect(find.text(headerDateStr), findsOneWidget);
+    expect(find.text('2 faaliyet'), findsOneWidget);
+    expect(find.byKey(const Key('archive-calendar-date-button')), findsOneWidget);
     expect(find.text('KONTROL MERKEZİ'), findsNothing);
     expect(find.text('Tüm Timler'), findsNothing);
     expect(find.text('K.H'), findsNothing);

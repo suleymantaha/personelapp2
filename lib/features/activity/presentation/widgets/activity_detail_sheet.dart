@@ -13,6 +13,7 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/reassign_existing_personnel_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/edit_assignment_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_personnel_dialog.dart';
@@ -218,6 +219,16 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                               onTap: () =>
                                   Navigator.of(sheetContext).pop('single'),
                             ),
+                            if (isAdmin && filteredAssignments.isNotEmpty)
+                              ListTile(
+                                key: const Key('activity-reassign-existing-option'),
+                                leading: const Icon(Icons.assignment_ind_outlined),
+                                title: const Text('Mevcut personele görev ata'),
+                                subtitle: const Text(
+                                  'Eklenmiş personeli seçerek görevini değiştir',
+                                ),
+                                onTap: () => Navigator.of(sheetContext).pop('reassign'),
+                              ),
                             ListTile(
                               key: const Key(
                                 'activity-add-bulk-personnel-option',
@@ -249,6 +260,27 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                       ),
                     );
                     if (!context.mounted || action == null) return;
+                    if (action == 'reassign') {
+                      if (!isAdmin || filteredAssignments.isEmpty) return;
+                      final updated = await Navigator.of(
+                        context,
+                        rootNavigator: true,
+                      ).push<bool>(
+                        MaterialPageRoute(
+                          fullscreenDialog: true,
+                          builder: (_) => ReassignExistingPersonnelDialog(
+                            activity: activity,
+                            assignments: filteredAssignments,
+                            personnelById: pMap,
+                          ),
+                        ),
+                      );
+                      if (updated == true && context.mounted) {
+                        ref.invalidate(filteredActivitiesProvider);
+                        ref.invalidate(pendingAssignmentsProvider);
+                      }
+                      return;
+                    }
                     if (action == 'image') {
                       final service = RosterImageImportService();
                       if (!service.isSupportedPlatform) {
