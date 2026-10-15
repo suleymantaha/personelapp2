@@ -9,6 +9,8 @@ import 'package:personelapp2/features/activity/presentation/widgets/archive_expo
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/roster_signature.dart';
+import 'package:personelapp2/features/activity/services/roster_signature_store.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/roster_signer_dialog.dart';
 import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/services/temgundrap_activity_converter.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
@@ -35,6 +37,44 @@ class _RosterOutputPreviewScreenState
     extends ConsumerState<RosterOutputPreviewScreen> {
   bool _busy = false;
   String? _error;
+  final _signatureStore = RosterSignatureStore();
+  List<RosterSigner> _signers = List.of(heybetRosterSigners);
+  bool _signaturesReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSigners();
+  }
+
+  Future<void> _loadSigners() async {
+    try {
+      final signers = await _signatureStore.load();
+      if (mounted) {
+        setState(() {
+          _signers = signers;
+          _signaturesReady = true;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = context.l10n.rosterSignaturesLoadError);
+      }
+    }
+  }
+
+  Future<void> _editSigner(int index) => showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => RosterSignerDialog(
+          signer: _signers[index],
+          onSave: (signer) async {
+            final updated = List<RosterSigner>.of(_signers)..[index] = signer;
+            await _signatureStore.save(updated);
+            if (mounted) setState(() => _signers = updated);
+          },
+        ),
+      );
   Future<List<MilitaryRosterRow>> _validatedRows() async {
     final recordChangedMsg = context.l10n.rosterOutputRecordsChangedError;
     final refreshed = await widget.loadRows();
@@ -75,6 +115,7 @@ class _RosterOutputPreviewScreenState
             rows: rows,
             mergeCells: false,
             includeSignatures: true,
+            signers: _signers,
             timeRange: action.timeRange,
           );
         case ArchiveExportType.pdf:
@@ -85,6 +126,7 @@ class _RosterOutputPreviewScreenState
             rows: widget.rows,
             loadRows: _validatedRows,
             includeSignatures: true,
+            signers: _signers,
             timeRange: action.timeRange,
           );
         case ArchiveExportType.print:
@@ -95,6 +137,7 @@ class _RosterOutputPreviewScreenState
             rows: widget.rows,
             loadRows: _validatedRows,
             includeSignatures: true,
+            signers: _signers,
             timeRange: action.timeRange,
           );
         case ArchiveExportType.text:
@@ -156,86 +199,104 @@ class _RosterOutputPreviewScreenState
 
   @override
   Widget build(BuildContext context) => PopScope(
-    canPop: !_busy,
-    child: Scaffold(
-      appBar: AppBar(
-        leading: const AppBackButton(),
-        title: Text(context.l10n.rosterOutputPreviewTitle),
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text(
-                context.l10n.rosterOutputPreviewDeduplicationNote(
-                  widget.rows.length,
-                ),
-              ),
-              for (var i = 0; i < widget.sources.length; i++)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(
-                    '${i + 1}. ${widget.sources[i].tarih} • ${widget.sources[i].faaliyetAdi}',
-                  ),
-                ),
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    _error!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
+        canPop: !_busy,
+        child: Scaffold(
+          appBar: AppBar(
+            leading: const AppBackButton(),
+            title: Text(context.l10n.rosterOutputPreviewTitle),
+          ),
+          body: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 900),
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  Text(
+                    context.l10n.rosterOutputPreviewDeduplicationNote(
+                      widget.rows.length,
                     ),
                   ),
-                ),
-              const Divider(),
-              for (final row in widget.rows)
-                ListTile(
-                  title: Text('${row.sNu}. ${row.adSoyad}'),
-                  subtitle: Text(row.rutbe),
-                ),
-              const Divider(),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (final signer in heybetRosterSigners)
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Column(
-                          children: [
-                            Text(signer.title, textAlign: TextAlign.center),
-                            const SizedBox(height: 24),
-                            Text(signer.name, textAlign: TextAlign.center),
-                            Text(signer.rank, textAlign: TextAlign.center),
-                            Text(signer.role, textAlign: TextAlign.center),
-                          ],
+                  for (var i = 0; i < widget.sources.length; i++)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text(
+                        '${i + 1}. ${widget.sources[i].tarih} • ${widget.sources[i].faaliyetAdi}',
+                      ),
+                    ),
+                  if (_error != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        _error!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
                         ),
                       ),
                     ),
+                  if (_error != null && !_signaturesReady)
+                    TextButton(
+                      onPressed: _loadSigners,
+                      child: Text(context.l10n.commonRetry),
+                    ),
+                  const Divider(),
+                  for (final row in widget.rows)
+                    ListTile(
+                      title: Text('${row.sNu}. ${row.adSoyad}'),
+                      subtitle: Text(row.rutbe),
+                    ),
+                  const Divider(),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final entry in _signers.asMap().entries)
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Column(
+                              children: [
+                                Text(entry.value.title,
+                                    textAlign: TextAlign.center),
+                                TextButton.icon(
+                                  key: Key('edit-roster-signer-${entry.key}'),
+                                  onPressed: _busy || !_signaturesReady
+                                      ? null
+                                      : () => _editSigner(entry.key),
+                                  icon:
+                                      const Icon(Icons.edit_outlined, size: 16),
+                                  label: Text(context.l10n.commonEdit),
+                                ),
+                                const SizedBox(height: 24),
+                                Text(entry.value.name,
+                                    textAlign: TextAlign.center),
+                                Text(entry.value.rank,
+                                    textAlign: TextAlign.center),
+                                Text(entry.value.role,
+                                    textAlign: TextAlign.center),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: FilledButton.icon(
-            key: const Key('roster-export'),
-            onPressed: _busy ? null : _export,
-            icon: const Icon(Icons.ios_share_outlined),
-            label: Text(
-              _busy
-                  ? context.l10n.rosterOutputPreparing
-                  : context.l10n.rosterOutputGetOutput,
+          bottomNavigationBar: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: FilledButton.icon(
+                key: const Key('roster-export'),
+                onPressed: _busy || !_signaturesReady ? null : _export,
+                icon: const Icon(Icons.ios_share_outlined),
+                label: Text(
+                  _busy
+                      ? context.l10n.rosterOutputPreparing
+                      : context.l10n.rosterOutputGetOutput,
+                ),
+              ),
             ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 }

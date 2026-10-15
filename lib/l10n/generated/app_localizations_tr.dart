@@ -3944,4 +3944,12 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get bulkImportParsedActivityFallback => 'Ayrıştırılan Faaliyet';
+
+  @override
+  String get rosterSignaturesSaveError =>
+      'İmza bilgileri kaydedilemedi. Tekrar deneyin.';
+
+  @override
+  String get rosterSignaturesLoadError =>
+      'İmza bilgileri yüklenemedi. Tekrar deneyin.';
 }

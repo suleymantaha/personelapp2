@@ -50,6 +50,7 @@ class PdfRosterExporter {
     required List<MilitaryRosterRow> rows,
     PdfRosterStyle style = PdfRosterStyle.verticalBlock,
     bool includeSignatures = false,
+    List<RosterSigner> signers = heybetRosterSigners,
     String? timeRange,
   }) =>
       pdfGenerateRoster(
@@ -58,6 +59,7 @@ class PdfRosterExporter {
         rows: rows,
         style: style,
         includeSignatures: includeSignatures,
+        signers: signers,
         timeRange: timeRange,
       );
 
@@ -67,6 +69,7 @@ class PdfRosterExporter {
     required List<MilitaryRosterRow> rows,
     PdfRosterStyle style = PdfRosterStyle.verticalBlock,
     bool includeSignatures = false,
+    List<RosterSigner> signers = heybetRosterSigners,
     String? timeRange,
   }) =>
       pdfShareRoster(
@@ -75,6 +78,7 @@ class PdfRosterExporter {
         rows: rows,
         style: style,
         includeSignatures: includeSignatures,
+        signers: signers,
         timeRange: timeRange,
       );
 
@@ -84,6 +88,7 @@ class PdfRosterExporter {
     required List<MilitaryRosterRow> rows,
     PdfRosterStyle style = PdfRosterStyle.verticalBlock,
     bool includeSignatures = false,
+    List<RosterSigner> signers = heybetRosterSigners,
     String? timeRange,
   }) =>
       pdfPrintRoster(
@@ -92,6 +97,7 @@ class PdfRosterExporter {
         rows: rows,
         style: style,
         includeSignatures: includeSignatures,
+        signers: signers,
         timeRange: timeRange,
       );
 
@@ -102,6 +108,7 @@ class PdfRosterExporter {
     required List<MilitaryRosterRow> rows,
     Future<List<MilitaryRosterRow>> Function()? loadRows,
     bool includeSignatures = false,
+    List<RosterSigner> signers = heybetRosterSigners,
     bool printDirectly = false,
     String? timeRange,
   }) =>
@@ -112,6 +119,7 @@ class PdfRosterExporter {
         rows: rows,
         loadRows: loadRows,
         includeSignatures: includeSignatures,
+        signers: signers,
         printDirectly: printDirectly,
         timeRange: timeRange,
       );
@@ -123,6 +131,7 @@ class PdfRosterExporter {
     required List<MilitaryRosterRow> rows,
     Future<List<MilitaryRosterRow>> Function()? loadRows,
     bool includeSignatures = false,
+    List<RosterSigner> signers = heybetRosterSigners,
     String? timeRange,
   }) =>
       pdfShowStylePickerAndPrint(
@@ -132,6 +141,7 @@ class PdfRosterExporter {
         rows: rows,
         loadRows: loadRows,
         includeSignatures: includeSignatures,
+        signers: signers,
         timeRange: timeRange,
       );
 }

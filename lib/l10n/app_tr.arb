@@ -2843,5 +2843,7 @@
   "temgundrapExportTotal": "TOPLAM",
   "temgundrapExportShareText": "TEMGÜNDRAP operasyon takip çizelgesi",
   "temgundrapExportShareTextExcel": "TEMGÜNDRAP operasyon takip çizelgesi Excel çıktısı",
-  "bulkImportParsedActivityFallback": "Ayrıştırılan Faaliyet"
+  "bulkImportParsedActivityFallback": "Ayrıştırılan Faaliyet",
+  "rosterSignaturesSaveError": "İmza bilgileri kaydedilemedi. Tekrar deneyin.",
+  "rosterSignaturesLoadError": "İmza bilgileri yüklenemedi. Tekrar deneyin."
 }

@@ -6,6 +6,7 @@ Future<pw.Document> pdfGenerateRoster({
   required List<MilitaryRosterRow> rows,
   PdfRosterStyle style = PdfRosterStyle.verticalBlock,
   bool includeSignatures = false,
+  List<RosterSigner> signers = heybetRosterSigners,
   String? timeRange,
 }) async {
   pw.Font? font;
@@ -88,7 +89,7 @@ Future<pw.Document> pdfGenerateRoster({
                     mergeCells: false,
                     showHeader: false,
                   ),
-                _buildRosterSignatures(),
+                _buildRosterSignatures(signers),
               ],
             ),
           ),
@@ -133,38 +134,38 @@ Future<pw.Document> pdfGenerateRoster({
   return pdf;
 }
 
-pw.Widget _buildRosterSignatures() => pw.Padding(
-  padding: const pw.EdgeInsets.only(top: 10),
-  child: pw.Row(
-    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-    crossAxisAlignment: pw.CrossAxisAlignment.start,
-    children: [
-      for (final signer in heybetRosterSigners)
-        pw.SizedBox(
-          width: 175,
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.center,
-            children: [
-              pw.Text(
-                signer.title,
-                style: pw.TextStyle(
-                  fontSize: 9,
-                  fontWeight: pw.FontWeight.bold,
-                ),
+pw.Widget _buildRosterSignatures(List<RosterSigner> signers) => pw.Padding(
+      padding: const pw.EdgeInsets.only(top: 10),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          for (final signer in signers)
+            pw.SizedBox(
+              width: 175,
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                children: [
+                  pw.Text(
+                    signer.title,
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.SizedBox(height: 22),
+                  pw.Text(
+                    signer.name,
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.Text(signer.rank, style: const pw.TextStyle(fontSize: 9)),
+                  pw.Text(signer.role, style: const pw.TextStyle(fontSize: 9)),
+                ],
               ),
-              pw.SizedBox(height: 22),
-              pw.Text(
-                signer.name,
-                style: pw.TextStyle(
-                  fontSize: 9,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-              pw.Text(signer.rank, style: const pw.TextStyle(fontSize: 9)),
-              pw.Text(signer.role, style: const pw.TextStyle(fontSize: 9)),
-            ],
-          ),
-        ),
-    ],
-  ),
-);
+            ),
+        ],
+      ),
+    );

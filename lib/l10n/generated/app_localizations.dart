@@ -6694,6 +6694,18 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Ayrıştırılan Faaliyet'**
   String get bulkImportParsedActivityFallback;
+
+  /// No description provided for @rosterSignaturesSaveError.
+  ///
+  /// In tr, this message translates to:
+  /// **'İmza bilgileri kaydedilemedi. Tekrar deneyin.'**
+  String get rosterSignaturesSaveError;
+
+  /// No description provided for @rosterSignaturesLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'İmza bilgileri yüklenemedi. Tekrar deneyin.'**
+  String get rosterSignaturesLoadError;
 }
 
 class _AppLocalizationsDelegate

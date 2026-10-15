@@ -7,21 +7,21 @@ import 'package:flutter/material.dart' hide BorderStyle;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   testWidgets(
     'only separate Excel action adds previous day; normal text stays unchanged',
     (tester) async {
       final db = AppDatabase(NativeDatabase.memory());
       addTearDown(db.close);
       for (final name in ['Bugünün personeli', 'Önceki gün personeli']) {
-        await db
-            .into(db.personelTable)
-            .insert(
+        await db.into(db.personelTable).insert(
               PersonelTableCompanion.insert(
                 adSoyad: name,
                 rutbe: 'J.Uzm.Çvş.',
@@ -31,9 +31,7 @@ void main() {
             );
       }
       for (final date in ['2026-08-01', '2026-08-02']) {
-        await db
-            .into(db.gunlukFaaliyetTable)
-            .insert(
+        await db.into(db.gunlukFaaliyetTable).insert(
               GunlukFaaliyetTableCompanion.insert(
                 faaliyetAdi: 'Heybet',
                 tarih: date,
@@ -42,9 +40,7 @@ void main() {
               ),
             );
       }
-      await db
-          .into(db.faaliyetPersonelAtamaTable)
-          .insert(
+      await db.into(db.faaliyetPersonelAtamaTable).insert(
             FaaliyetPersonelAtamaTableCompanion.insert(
               faaliyetId: 1,
               personelId: 2,
@@ -53,9 +49,7 @@ void main() {
               aciklama: const Value('Eklenmemeli'),
             ),
           );
-      await db
-          .into(db.faaliyetPersonelAtamaTable)
-          .insert(
+      await db.into(db.faaliyetPersonelAtamaTable).insert(
             FaaliyetPersonelAtamaTableCompanion.insert(
               faaliyetId: 2,
               personelId: 1,
@@ -64,9 +58,7 @@ void main() {
               aciklama: const Value('Eklenmemeli'),
             ),
           );
-      await db
-          .into(db.gunlukFaaliyetTable)
-          .insert(
+      await db.into(db.gunlukFaaliyetTable).insert(
             GunlukFaaliyetTableCompanion.insert(
               faaliyetAdi: 'Devriye',
               tarih: '2026-08-01',
@@ -74,9 +66,7 @@ void main() {
               olusturmaTarihi: '2026-08-01',
             ),
           );
-      await db
-          .into(db.gunlukFaaliyetTable)
-          .insert(
+      await db.into(db.gunlukFaaliyetTable).insert(
             GunlukFaaliyetTableCompanion.insert(
               faaliyetAdi: 'Bugünkü Devriye',
               tarih: '2026-08-02',
@@ -85,9 +75,7 @@ void main() {
             ),
           );
       for (final id in [1, 2]) {
-        await db
-            .into(db.faaliyetPersonelAtamaTable)
-            .insert(
+        await db.into(db.faaliyetPersonelAtamaTable).insert(
               FaaliyetPersonelAtamaTableCompanion.insert(
                 faaliyetId: 4,
                 personelId: id,
@@ -160,15 +148,13 @@ void main() {
         await tester.tap(find.text(label));
         await tester.pumpAndSettle();
         if (label == 'Kartları Birleştir ve Çıktı Al') {
-          for (
-            var wait = 0;
-            wait < 100 &&
-                find
-                    .byKey(const ValueKey('current-activity-4'))
-                    .evaluate()
-                    .isEmpty;
-            wait++
-          ) {
+          for (var wait = 0;
+              wait < 100 &&
+                  find
+                      .byKey(const ValueKey('current-activity-4'))
+                      .evaluate()
+                      .isEmpty;
+              wait++) {
             await tester.runAsync(
               () => Future<void>.delayed(const Duration(milliseconds: 10)),
             );
@@ -198,12 +184,10 @@ void main() {
           await tester.tap(find.byKey(const ValueKey('current-activity-4')));
           await tester.pump();
           await tester.tap(find.byKey(const Key('roster-preview')));
-          for (
-            var wait = 0;
-            wait < 100 &&
-                find.text('Birleşik Çıktı Önizlemesi').evaluate().isEmpty;
-            wait++
-          ) {
+          for (var wait = 0;
+              wait < 100 &&
+                  find.text('Birleşik Çıktı Önizlemesi').evaluate().isEmpty;
+              wait++) {
             await tester.runAsync(
               () => Future<void>.delayed(const Duration(milliseconds: 10)),
             );
@@ -222,11 +206,9 @@ void main() {
           await tester.tap(find.text('Excel Olarak Aktar (.xlsx)'));
           await tester.pumpAndSettle();
         }
-        for (
-          var wait = 0;
-          wait < 100 && shares.length < expectedShares;
-          wait++
-        ) {
+        for (var wait = 0;
+            wait < 100 && shares.length < expectedShares;
+            wait++) {
           await tester.runAsync(
             () => Future<void>.delayed(const Duration(milliseconds: 10)),
           );
@@ -328,7 +310,8 @@ void main() {
             '',
           );
         }
-        final values = workbook['İsim Listesi'].rows
+        final values = workbook['İsim Listesi']
+            .rows
             .expand((r) => r)
             .map((cell) => cell?.value?.toString() ?? '')
             .toList();
@@ -355,9 +338,7 @@ void main() {
       await choose(
         'Kartları Birleştir ve Çıktı Al',
         afterPreview: () async {
-          final id = await db
-              .into(db.personelTable)
-              .insert(
+          final id = await db.into(db.personelTable).insert(
                 PersonelTableCompanion.insert(
                   adSoyad: 'Yeni ana kart personeli',
                   rutbe: 'J.Uzm.Çvş.',
@@ -365,9 +346,7 @@ void main() {
                   kayitTarihi: '',
                 ),
               );
-          await db
-              .into(db.faaliyetPersonelAtamaTable)
-              .insert(
+          await db.into(db.faaliyetPersonelAtamaTable).insert(
                 FaaliyetPersonelAtamaTableCompanion.insert(
                   faaliyetId: 2,
                   personelId: id,
@@ -384,10 +363,12 @@ void main() {
           // cannot detect its disappearance after the preview.
           await (db.delete(
             db.faaliyetPersonelAtamaTable,
-          )..where((a) => a.faaliyetId.equals(4))).go();
+          )..where((a) => a.faaliyetId.equals(4)))
+              .go();
           await (db.delete(
             db.gunlukFaaliyetTable,
-          )..where((a) => a.id.equals(4))).go();
+          )..where((a) => a.id.equals(4)))
+              .go();
         },
       );
       await tester.pumpWidget(const SizedBox.shrink());

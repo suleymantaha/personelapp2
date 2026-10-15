@@ -1,3 +1,4 @@
+import 'roster_signature.dart';
 import 'roster_share_file.dart';
 
 import 'dart:io';
@@ -165,6 +166,7 @@ class MilitaryRosterExporter {
     required List<MilitaryRosterRow> rows,
     bool mergeCells = true,
     bool includeSignatures = false,
+    List<RosterSigner> signers = heybetRosterSigners,
     String? timeRange,
   }) =>
       ExcelXlsxGenerator.generateMilitaryExcelBytes(
@@ -173,6 +175,7 @@ class MilitaryRosterExporter {
         rows: rows,
         mergeCells: mergeCells,
         includeSignatures: includeSignatures,
+        signers: signers,
         timeRange: timeRange,
       );
 
@@ -193,6 +196,7 @@ class MilitaryRosterExporter {
     required List<MilitaryRosterRow> rows,
     bool mergeCells = true,
     bool includeSignatures = false,
+    List<RosterSigner> signers = heybetRosterSigners,
     String? timeRange,
   }) async {
     final bytes = generateMilitaryExcelBytes(
@@ -201,6 +205,7 @@ class MilitaryRosterExporter {
       rows: rows,
       mergeCells: mergeCells,
       includeSignatures: includeSignatures,
+      signers: signers,
       timeRange: timeRange,
     );
 

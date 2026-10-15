@@ -21,6 +21,7 @@ class ExcelXlsxGenerator {
     required List<MilitaryRosterRow> rows,
     bool mergeCells = true,
     bool includeSignatures = false,
+    List<RosterSigner> signers = heybetRosterSigners,
     String? timeRange,
   }) =>
       _generateMilitaryExcelBytes(
@@ -29,6 +30,7 @@ class ExcelXlsxGenerator {
         rows: rows,
         mergeCells: mergeCells,
         includeSignatures: includeSignatures,
+        signers: signers,
         timeRange: timeRange,
       );
 

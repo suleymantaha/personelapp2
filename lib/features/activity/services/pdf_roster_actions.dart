@@ -6,6 +6,7 @@ Future<void> pdfShareRoster({
   required List<MilitaryRosterRow> rows,
   PdfRosterStyle style = PdfRosterStyle.verticalBlock,
   bool includeSignatures = false,
+  List<RosterSigner> signers = heybetRosterSigners,
   String? timeRange,
 }) async {
   final pdf = await pdfGenerateRoster(
@@ -14,6 +15,7 @@ Future<void> pdfShareRoster({
     rows: rows,
     style: style,
     includeSignatures: includeSignatures,
+    signers: signers,
     timeRange: timeRange,
   );
 
@@ -38,6 +40,7 @@ Future<void> pdfPrintRoster({
   required List<MilitaryRosterRow> rows,
   PdfRosterStyle style = PdfRosterStyle.verticalBlock,
   bool includeSignatures = false,
+  List<RosterSigner> signers = heybetRosterSigners,
   String? timeRange,
 }) async {
   final pdf = await pdfGenerateRoster(
@@ -46,6 +49,7 @@ Future<void> pdfPrintRoster({
     rows: rows,
     style: style,
     includeSignatures: includeSignatures,
+    signers: signers,
     timeRange: timeRange,
   );
   final bytes = await pdf.save();
@@ -63,6 +67,7 @@ Future<void> pdfShowStylePickerAndShare(
   required List<MilitaryRosterRow> rows,
   Future<List<MilitaryRosterRow>> Function()? loadRows,
   bool includeSignatures = false,
+  List<RosterSigner> signers = heybetRosterSigners,
   bool printDirectly = false,
   String? timeRange,
 }) async {
@@ -160,6 +165,7 @@ Future<void> pdfShowStylePickerAndShare(
         rows: currentRows,
         style: selectedStyle,
         includeSignatures: includeSignatures,
+        signers: signers,
         timeRange: timeRange,
       );
     } else {
@@ -169,6 +175,7 @@ Future<void> pdfShowStylePickerAndShare(
         rows: currentRows,
         style: selectedStyle,
         includeSignatures: includeSignatures,
+        signers: signers,
         timeRange: timeRange,
       );
     }
@@ -182,6 +189,7 @@ Future<void> pdfShowStylePickerAndPrint(
   required List<MilitaryRosterRow> rows,
   Future<List<MilitaryRosterRow>> Function()? loadRows,
   bool includeSignatures = false,
+  List<RosterSigner> signers = heybetRosterSigners,
   String? timeRange,
 }) {
   return pdfShowStylePickerAndShare(
@@ -192,6 +200,7 @@ Future<void> pdfShowStylePickerAndPrint(
     printDirectly: true,
     loadRows: loadRows,
     includeSignatures: includeSignatures,
+    signers: signers,
     timeRange: timeRange,
   );
 }
