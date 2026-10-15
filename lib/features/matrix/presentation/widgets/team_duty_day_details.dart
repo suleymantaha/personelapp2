@@ -241,8 +241,7 @@ class TeamDutyDayDetails extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    '${group.gorev} · ${group.personelAdlari.length} '
-                                    '${context.l10n.bulkImportBlockPersonnelCount(0).replaceAll('0', '').trim()}',
+                                    '${group.gorev} · ${context.l10n.bulkImportBlockPersonnelCount(group.personelAdlari.length)}',
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: theme.textTheme.titleSmall?.copyWith(
