@@ -434,6 +434,15 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
                                   context,
                                   widget.database,
                                 ),
+                                onBack: _isSaving
+                                    ? null
+                                    : () {
+                                        if (_currentStep == 0) {
+                                          Navigator.pop(context);
+                                        } else {
+                                          setState(() => _currentStep--);
+                                        }
+                                      },
                                 onClose: _isSaving
                                     ? null
                                     : () => Navigator.pop(context),
@@ -624,11 +633,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       isMobile: isMobile,
       onSave: _saveAllToFaaliyet,
       onReturnToPreview: () {
+        // Back-navigation must not activate the next issue implicitly.
         setState(() => _currentStep = 1);
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          _focusNextProblem();
-        });
       },
     );
   }
