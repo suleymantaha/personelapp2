@@ -157,7 +157,7 @@ void main() {
       await tester.enterText(find.byType(TextField).first, pastedText);
       await tester.tap(
         find.widgetWithText(
-          ElevatedButton,
+          FilledButton,
           'Metni Ayrıştır ve Kartları Oluştur',
         ),
       );

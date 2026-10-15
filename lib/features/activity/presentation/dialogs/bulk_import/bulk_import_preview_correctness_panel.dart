@@ -2,6 +2,8 @@ part of 'bulk_import_preview_section.dart';
 
 enum _PreviewFilter { problems, all, ready }
 
+/// Single compact overview: detailed problems are displayed in the issue card,
+/// instead of duplicating a dashboard of five independent metrics.
 class _CorrectnessPanel extends StatelessWidget {
   const _CorrectnessPanel({
     required this.cardCount,
@@ -30,254 +32,19 @@ class _CorrectnessPanel extends StatelessWidget {
   final VoidCallback? onConfirmAllSuggestions;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-        builder: (context, constraints) {
-          if (compact && constraints.maxWidth < 600) {
-            return _buildMobilePanel(context);
-          }
-          return _buildPanel(
-            context,
-            compact && constraints.maxWidth >= 720,
-          );
-        },
-      );
-
-  Widget _buildMobilePanel(BuildContext context) {
-    final isAllOk = actionCount == 0 && !hasBlocking;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: context.cardBorderColor),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            isAllOk
-                ? Icons.check_circle_rounded
-                : (hasBlocking ? Icons.error_rounded : Icons.info_rounded),
-            size: 16,
-            color: isAllOk
-                ? context.approvedColor
-                : (hasBlocking ? context.rejectedColor : context.pendingColor),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              isAllOk
-                  ? context.l10n.bulkImportMobileSummaryReady(cardCount, personnelCount)
-                  : criticalCount > 0
-                      ? context.l10n.bulkImportMobileSummaryErrors(cardCount, personnelCount, criticalCount)
-                      : context.l10n.bulkImportMobileSummaryReviews(cardCount, personnelCount, reviewCount),
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: isAllOk
-                    ? context.approvedColor
-                    : (hasBlocking
-                        ? context.rejectedColor
-                        : context.pendingColor),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          if (onConfirmAllSuggestions != null) ...[
-            const SizedBox(width: 4),
-            FilledButton.icon(
-              key: const Key('bulk-confirm-all-suggestions'),
-              onPressed: onConfirmAllSuggestions,
-              icon: const Icon(Icons.done_all_rounded, size: 12),
-              label: Text(
-                context.l10n.bulkImportConfirmAction,
-                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
-              ),
-              style: FilledButton.styleFrom(
-                backgroundColor: context.approvedColor,
-                foregroundColor: context.onStatusColor(context.approvedColor),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                visualDensity: VisualDensity.compact,
-                minimumSize: const Size(0, 26),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-          ],
-          IconButton(
-            onPressed: onClearAll,
-            visualDensity: VisualDensity.compact,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            icon: Icon(
-              Icons.delete_outline_rounded,
-              color: context.rejectedColor,
-              size: 18,
-            ),
-            tooltip: context.l10n.bulkImportClearAllCards,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPanel(BuildContext context, bool compact) {
-    final actionText = actionCount == 0
+  Widget build(BuildContext context) {
+    final status = actionCount == 0
         ? context.l10n.bulkImportAllChecksPassed
         : hasBlocking
             ? context.l10n.bulkImportActionsRequiredBeforeSave(actionCount)
             : context.l10n.bulkImportOptionalReviewsCount(actionCount);
-    if (compact) {
-      return Container(
-        padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: context.cardBorderColor),
-        ),
-        child: Row(
-          children: [
-            Text(
-              context.l10n.bulkImportCorrectnessPanelTitle,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(width: 10),
-            if (hasBlocking) ...[
-              InkWell(
-                onTap: onStartWizard,
-                borderRadius: BorderRadius.circular(999),
-                child: _StatusPill(
-                  text: context.l10n.bulkImportCannotSaveStatus,
-                  color: context.rejectedColor,
-                  background: context.rejectedBgColor,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
-            if (criticalCount > 0 || reviewCount > 0) ...[
-              Text(
-                [
-                  if (criticalCount > 0) context.l10n.bulkImportCriticalErrors(criticalCount),
-                  if (reviewCount > 0) context.l10n.bulkImportReviewsCount(reviewCount),
-                ].join(' • '),
-                style: TextStyle(
-                  color: hasBlocking
-                      ? context.rejectedColor
-                      : context.pendingColor,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _MetricTile(
-                      icon: Icons.assignment_rounded,
-                      value: '$cardCount',
-                      label: context.l10n.bulkImportMetricCard,
-                      color: context.accentOrOlive,
-                      compact: true,
-                    ),
-                  ),
-                  Expanded(
-                    child: _MetricTile(
-                      icon: Icons.groups_rounded,
-                      value: '$personnelCount',
-                      label: context.l10n.bulkImportMetricPersonnel,
-                      color: context.accentOrOlive,
-                      compact: true,
-                    ),
-                  ),
-                  Expanded(
-                    child: _MetricTile(
-                      icon: Icons.calendar_month_rounded,
-                      value: '$dayCount',
-                      label: context.l10n.bulkImportMetricDay,
-                      color: context.accentOrOlive,
-                      compact: true,
-                    ),
-                  ),
-                  Expanded(
-                    child: _MetricTile(
-                      icon: Icons.error_rounded,
-                      value: '$criticalCount',
-                      label: context.l10n.bulkImportMetricCritical,
-                      color: context.rejectedColor,
-                      compact: true,
-                    ),
-                  ),
-                  Expanded(
-                    child: _MetricTile(
-                      icon: Icons.info_rounded,
-                      value: '$reviewCount',
-                      label: context.l10n.bulkImportMetricReview,
-                      color: context.pendingColor,
-                      compact: true,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            Flexible(
-              child: Text(
-                actionText,
-                overflow: TextOverflow.fade,
-                softWrap: false,
-                style: TextStyle(
-                  color: hasBlocking
-                      ? context.rejectedColor
-                      : context.approvedColor,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            if (onConfirmAllSuggestions != null) ...[
-              const SizedBox(width: 6),
-              FilledButton.icon(
-                key: const Key('bulk-confirm-all-suggestions'),
-                onPressed: onConfirmAllSuggestions,
-                icon: const Icon(Icons.done_all_rounded, size: 14),
-                label: Text(
-                  context.l10n.bulkImportConfirmAllAction,
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-                style: FilledButton.styleFrom(
-                  backgroundColor: context.approvedColor,
-                  foregroundColor: context.onStatusColor(context.approvedColor),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  visualDensity: VisualDensity.compact,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-            ],
-            IconButton(
-              onPressed: onClearAll,
-              visualDensity: VisualDensity.compact,
-              icon: Icon(
-                Icons.delete_outline_rounded,
-                color: context.rejectedColor,
-                size: 20,
-              ),
-              tooltip: context.l10n.bulkImportClearAllCards,
-            ),
-          ],
-        ),
-      );
-    }
+    final statusColor = hasBlocking
+        ? context.rejectedColor
+        : actionCount > 0
+            ? context.pendingColor
+            : context.approvedColor;
     return Container(
-      padding: EdgeInsets.fromLTRB(14, compact ? 8 : 12, 8, compact ? 8 : 12),
+      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
@@ -289,247 +56,80 @@ class _CorrectnessPanel extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      context.l10n.bulkImportCorrectnessPanelTitle,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    if (hasBlocking)
-                      InkWell(
-                        onTap: onStartWizard,
-                        borderRadius: BorderRadius.circular(999),
-                        child: _StatusPill(
-                          text: context.l10n.bulkImportCannotSaveStatus,
-                          color: context.rejectedColor,
-                          background: context.rejectedBgColor,
-                        ),
-                      ),
-                    if (onConfirmAllSuggestions != null)
-                      FilledButton.icon(
-                        key: const Key('bulk-confirm-all-suggestions'),
-                        onPressed: onConfirmAllSuggestions,
-                        icon: const Icon(Icons.done_all_rounded, size: 14),
-                        label: Text(
-                          context.l10n.bulkImportConfirmAllAction,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: context.approvedColor,
-                          foregroundColor:
-                              context.onStatusColor(context.approvedColor),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          visualDensity: VisualDensity.compact,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                  ],
+                child: Text(
+                  context.l10n.bulkImportCorrectnessPanelTitle,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
                 ),
               ),
               IconButton(
+                tooltip: MaterialLocalizations.of(context).deleteButtonTooltip,
                 onPressed: onClearAll,
+                icon: Icon(Icons.delete_outline_rounded,
+                    size: 19, color: context.textSecondary),
                 visualDensity: VisualDensity.compact,
-                icon: Icon(
-                  Icons.delete_outline_rounded,
-                  color: context.rejectedColor,
-                  size: 20,
-                ),
-                tooltip: context.l10n.bulkImportClearAllCards,
               ),
             ],
           ),
-          Text(
-            actionText,
-            style: TextStyle(
-              color:
-                  hasBlocking ? context.rejectedColor : context.approvedColor,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          if (criticalCount > 0 || reviewCount > 0) ...[
-            const SizedBox(height: 3),
-            Text(
-              [
-                if (criticalCount > 0) context.l10n.bulkImportCriticalErrors(criticalCount),
-                if (reviewCount > 0) context.l10n.bulkImportReviewsCount(reviewCount),
-              ].join(' • '),
-              style: TextStyle(
-                color:
-                    hasBlocking ? context.rejectedColor : context.pendingColor,
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-          const SizedBox(height: 10),
           Row(
             children: [
+              Icon(
+                hasBlocking ? Icons.error_outline_rounded :
+                    actionCount > 0 ? Icons.info_outline_rounded : Icons.check_circle_outline_rounded,
+                color: statusColor,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
               Expanded(
-                child: _MetricTile(
-                  icon: Icons.assignment_rounded,
-                  value: '$cardCount',
-                  label: context.l10n.bulkImportMetricCard,
-                  color: context.accentOrOlive,
+                child: Text(
+                  status,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: statusColor,
+                  ),
                 ),
               ),
-              Expanded(
-                child: _MetricTile(
-                  icon: Icons.groups_rounded,
-                  value: '$personnelCount',
-                  label: context.l10n.bulkImportMetricPersonnel,
-                  color: context.accentOrOlive,
+              if (hasBlocking)
+                InkWell(
+                  onTap: onStartWizard,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 8,
+                    ),
+                    child: Text(
+                      context.l10n.bulkImportCannotSaveStatus,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontSize: 11,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: _MetricTile(
-                  icon: Icons.calendar_month_rounded,
-                  value: '$dayCount',
-                  label: context.l10n.bulkImportMetricDay,
-                  color: context.accentOrOlive,
-                ),
-              ),
-              Expanded(
-                child: _MetricTile(
-                  icon: Icons.error_rounded,
-                  value: '$criticalCount',
-                  label: context.l10n.bulkImportMetricCritical,
-                  color: context.rejectedColor,
-                ),
-              ),
-              Expanded(
-                child: _MetricTile(
-                  icon: Icons.info_rounded,
-                  value: '$reviewCount',
-                  label: context.l10n.bulkImportMetricReview,
-                  color: context.pendingColor,
-                ),
-              ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MetricTile extends StatelessWidget {
-  const _MetricTile({
-    required this.icon,
-    required this.value,
-    required this.label,
-    required this.color,
-    this.compact = false,
-  });
-
-  final IconData icon;
-  final String value;
-  final String label;
-  final Color color;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    if (compact) {
-      return FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: color),
-            const SizedBox(width: 4),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                color: context.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10.5,
-                color: context.textSecondary,
-                fontWeight: FontWeight.w600,
+          const SizedBox(height: 8),
+          Text(
+            '$personnelCount personel  •  $cardCount kart  •  $dayCount gün'
+            '${criticalCount > 0 ? '  •  ${context.l10n.bulkImportCriticalErrors(criticalCount)}' : ''}'
+            '${reviewCount > 0 ? '  •  $reviewCount inceleme' : ''}',
+            style: TextStyle(fontSize: 12, color: context.textSecondary),
+          ),
+          if (onConfirmAllSuggestions != null) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                key: const Key('bulk-confirm-all-suggestions'),
+                onPressed: onConfirmAllSuggestions,
+                icon: const Icon(Icons.done_all_rounded, size: 16),
+                label: Text(context.l10n.bulkImportConfirmAllAction),
               ),
             ),
           ],
-        ),
-      );
-    }
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 17, color: color),
-        const SizedBox(height: 3),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            height: 1,
-            fontWeight: FontWeight.w800,
-            color: context.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.fade,
-          softWrap: false,
-          style: TextStyle(
-            fontSize: 11,
-            color: context.textSecondary,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({
-    required this.text,
-    required this.color,
-    required this.background,
-  });
-
-  final String text;
-  final Color color;
-  final Color background;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-        ),
+        ],
       ),
     );
   }

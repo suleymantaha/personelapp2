@@ -38,12 +38,14 @@ class BulkImportDialog extends ConsumerStatefulWidget {
     required this.database,
     required this.activityRepository,
     this.initialText,
+    this.isImageImport = false,
     this.targetActivity,
     super.key,
   });
   final AppDatabase database;
   final ActivityRepository activityRepository;
   final String? initialText;
+  final bool isImageImport;
   final GunlukFaaliyetTableData? targetActivity;
 
   @override
@@ -53,6 +55,7 @@ class BulkImportDialog extends ConsumerStatefulWidget {
 class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   static const _preferences = BulkImportPreferences();
   final TextEditingController _textController = TextEditingController();
+  final FocusNode _textFocusNode = FocusNode(debugLabel: 'bulkImportSourceText');
   List<ParsedActivityBlock> _parsedBlocks = [];
   List<BulkParseIssue> _parseIssues = [];
   // Preserve source rows that never became editable card fields until reparse.
@@ -187,6 +190,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   @override
   void dispose() {
     _textController.dispose();
+    _textFocusNode.dispose();
     _previewScrollController.dispose();
     super.dispose();
   }
@@ -430,10 +434,20 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
                             children: [
                               BulkImportHeaderBanner(
                                 isKeyboardVisible: isKeyboardVisible,
+                                isImageImport: widget.isImageImport,
                                 onOpenMemory: () => LearnedAliasesDialog.show(
                                   context,
                                   widget.database,
                                 ),
+                                onBack: _isSaving
+                                    ? null
+                                    : () {
+                                        if (_currentStep == 0) {
+                                          Navigator.pop(context);
+                                        } else {
+                                          setState(() => _currentStep--);
+                                        }
+                                      },
                                 onClose: _isSaving
                                     ? null
                                     : () => Navigator.pop(context),
@@ -624,11 +638,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       isMobile: isMobile,
       onSave: _saveAllToFaaliyet,
       onReturnToPreview: () {
+        // Back-navigation must not activate the next issue implicitly.
         setState(() => _currentStep = 1);
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          _focusNextProblem();
-        });
       },
     );
   }
@@ -639,6 +650,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }) {
     return BulkImportInputSection(
       textController: _textController,
+      textFocusNode: _textFocusNode,
       keepAuditText: _keepAuditText,
       onKeepAuditTextChanged: _setKeepAuditText,
       isMobile: isMobile,

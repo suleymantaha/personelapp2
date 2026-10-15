@@ -102,6 +102,7 @@ class DashboardScreen extends ConsumerWidget {
                   database: db,
                   activityRepository: activityRepo,
                   initialText: result.bulkImportText,
+                  isImageImport: true,
                 ),
               );
               ref.invalidate(activityRepositoryProvider);
