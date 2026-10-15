@@ -110,11 +110,26 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
           ),
         ),
         if (!_isMobileSearchOpen)
-          IconButton(
-            key: const ValueKey('matrix-export-button'),
+          PopupMenuButton<String>(
+            key: const ValueKey('matrix-export-menu'),
             tooltip: context.l10n.matrixExportExcel,
-            onPressed: onExport,
-            icon: const Icon(Icons.file_download_outlined),
+            enabled: onExport != null,
+            onSelected: (value) {
+              if (value == 'excel') onExport?.call();
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'excel',
+                child: Row(
+                  children: [
+                    const Icon(Icons.file_download_outlined, size: 20),
+                    const SizedBox(width: 10),
+                    Text(context.l10n.matrixExportExcel),
+                  ],
+                ),
+              ),
+            ],
+            icon: const Icon(Icons.more_vert_rounded),
           ),
         const SizedBox(width: 4),
       ],
