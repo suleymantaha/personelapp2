@@ -443,7 +443,7 @@ class ActivityCard extends ConsumerWidget {
               child: IgnorePointer(
                 ignoring: selectionMode,
                 child: ExpansionTile(
-                  tilePadding: const EdgeInsets.fromLTRB(14, 6, 8, 6),
+                  tilePadding: const EdgeInsets.fromLTRB(12, 2, 6, 2),
                   childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                   shape: const Border(),
                   collapsedShape: const Border(),
@@ -452,51 +452,42 @@ class ActivityCard extends ConsumerWidget {
                     backgroundColor: statusColor,
                     child: Icon(statusIcon, color: Colors.white, size: 23),
                   ),
-                  title: Text(
-                    activity.faaliyetAdi,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: compact ? 16 : 17,
-                    ),
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          activity.faaliyetAdi,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: compact ? 16 : 17,
+                          ),
+                        ),
+                      ),
+                      if (isAdmin && !selectionMode)
+                        _buildAdminActions(
+                          context,
+                          ref,
+                          db,
+                          assignments,
+                          hasPending: hasPending,
+                          compact: true,
+                        ),
+                    ],
                   ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Row(
-                      children: [
-                        if (hasPending || hasRejected) ...[
-                          Flexible(
+                  subtitle: hasPending || hasRejected
+                      ? Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 4),
                             child: _buildStatusBadge(
                               label: statusLabel,
                               color: statusColor,
                             ),
                           ),
-                          const SizedBox(width: 6),
-                        ],
-                        Expanded(
-                          child: Text(
-                            context.l10n.activityCreatedBy(activity.olusturanKullanici),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: context.textSecondary,
-                            ),
-                          ),
-                        ),
-                        if (isAdmin)
-                          _buildAdminActions(
-                            context,
-                            ref,
-                            db,
-                            assignments,
-                            hasPending: hasPending,
-                            compact: compact,
-                          ),
-                      ],
-                    ),
-                  ),
+                        )
+                      : null,
                   trailing: selectionMode
                       ? Icon(
                           isSelected
