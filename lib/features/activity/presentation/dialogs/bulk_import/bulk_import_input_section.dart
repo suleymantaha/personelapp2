@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
+import 'package:personelapp2/core/theme/app_theme.dart';
 
+/// Paste content is the only primary task; rarely used audit settings
+/// remain available behind an explicit disclosure.
 class BulkImportInputSection extends StatelessWidget {
   const BulkImportInputSection({
     required this.textController,
@@ -25,129 +27,97 @@ class BulkImportInputSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(isMobile ? (isKeyboardVisible ? 12 : 16) : 0),
+      padding: EdgeInsets.all(isMobile ? 16 : 0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.edit_note_rounded,
-                color: context.accentOrOlive,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  context.l10n.bulkImportInputRawTitle,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-              ),
-            ],
+          Text(
+            context.l10n.bulkImportInputRawTitle,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
           ),
           if (!isKeyboardVisible) ...[
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              decoration: BoxDecoration(
-                color: context.accentOrOlive.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                context.l10n.bulkImportInputRawSubtitle,
-                style: TextStyle(
-                  color: context.accentOrOlive,
-                  fontSize: 12,
-                  height: 1.3,
-                ),
-              ),
+            const SizedBox(height: 4),
+            Text(
+              context.l10n.bulkImportInputRawSubtitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: context.textSecondary, fontSize: 12),
             ),
           ],
-          SizedBox(height: isKeyboardVisible ? 8 : 10),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.l10n.bulkImportKeepAuditTextTitle,
-                      style:
-                          const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                    ),
-                    Text(
-                      context.l10n.bulkImportKeepAuditTextDesc,
-                      style: const TextStyle(fontSize: 10),
-                    ),
-                  ],
-                ),
-              ),
-              Switch(
-                value: keepAuditText,
-                onChanged: onKeepAuditTextChanged,
-              ),
-            ],
-          ),
-          SizedBox(height: isKeyboardVisible ? 4 : 6),
+          const SizedBox(height: 12),
           Expanded(
             child: TextField(
               controller: textController,
               maxLines: null,
               expands: true,
               textAlignVertical: TextAlignVertical.top,
-              style: const TextStyle(fontSize: 13, height: 1.4),
+              style: const TextStyle(fontSize: 14, height: 1.4),
               cursorColor: context.accentOrOlive,
               scrollPadding: const EdgeInsets.only(bottom: 80),
               decoration: InputDecoration(
                 hintText: context.l10n.bulkImportInputPlaceholderShort,
-                hintStyle: TextStyle(color: context.textMuted, fontSize: 13),
+                hintStyle: TextStyle(color: context.textMuted),
+                filled: true,
+                fillColor: Theme.of(context).cardColor,
+                contentPadding: const EdgeInsets.all(14),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: context.cardBorderColor),
-                ),
-                enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide(color: context.cardBorderColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(
-                    color: context.accentOrOlive,
-                    width: 2,
-                  ),
+                  borderSide: BorderSide(color: context.accentOrOlive, width: 1.5),
                 ),
-                filled: true,
-                fillColor: Theme.of(context).cardColor,
-                contentPadding: const EdgeInsets.all(14),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          if (!isKeyboardVisible)
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: EdgeInsets.zero,
+              title: Text(
+                'Gelişmiş seçenekler',
+                style: TextStyle(fontSize: 12, color: context.textSecondary),
+              ),
+              dense: true,
+              initiallyExpanded: keepAuditText,
+              children: [
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  value: keepAuditText,
+                  onChanged: onKeepAuditTextChanged,
+                  title: Text(
+                    context.l10n.bulkImportKeepAuditTextTitle,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  subtitle: Text(
+                    context.l10n.bulkImportKeepAuditTextDesc,
+                    style: TextStyle(fontSize: 11, color: context.textSecondary),
+                  ),
+                ),
+              ],
+            ),
+          const SizedBox(height: 8),
           SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
+            height: 50,
+            child: FilledButton.icon(
               onPressed: isParsing ? null : onProcessText,
               icon: isParsing
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: context.onAccentOrOlive,
-                      ),
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.auto_awesome_rounded),
+                  : const Icon(Icons.arrow_forward_rounded),
               label: Text(
                 context.l10n.bulkImportParseAndCreateCards,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              style: ElevatedButton.styleFrom(
+              style: FilledButton.styleFrom(
                 backgroundColor: context.accentOrOlive,
                 foregroundColor: context.onAccentOrOlive,
-                elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
