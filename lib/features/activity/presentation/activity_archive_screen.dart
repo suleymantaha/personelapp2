@@ -233,8 +233,8 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: context.accentOrOlive,
-        foregroundColor: context.onAccentOrOlive,
+        backgroundColor: context.colorScheme.surface,
+        foregroundColor: context.textPrimary,
         elevation: 0,
         centerTitle: false,
         titleSpacing: _selectionMode ? null : 0,
@@ -518,7 +518,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                     final ordered = _applyManualOrder(filtered, dateFilterStr);
 
                     const listPadding = EdgeInsets.symmetric(
-                      horizontal: 12,
+                      horizontal: 14,
                       vertical: 4,
                     );
 
@@ -526,28 +526,35 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.calendar_month_outlined,
-                                color: context.accentOrOlive,
-                                size: 22,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  context.l10n.activityArchiveDayActivityCount(
-                                    _formatTurkishDay(dateFilterStr),
-                                    ordered.length,
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                          padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_month_outlined,
+                                  color: context.accentOrOlive,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    context.l10n.activityArchiveDayActivityCount(
+                                      _formatTurkishDay(dateFilterStr),
+                                      ordered.length,
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                         if (_reorderMode)
