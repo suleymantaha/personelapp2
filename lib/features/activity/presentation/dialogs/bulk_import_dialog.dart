@@ -432,6 +432,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
                             children: [
                               BulkImportHeaderBanner(
                                 isKeyboardVisible: isKeyboardVisible,
+                                isImageImport: widget.isImageImport,
                                 onOpenMemory: () => LearnedAliasesDialog.show(
                                   context,
                                   widget.database,
