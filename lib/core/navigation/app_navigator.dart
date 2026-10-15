@@ -61,6 +61,10 @@ abstract final class AppNavigator {
     );
   }
 
+  static Future<void> toTeamAnalytics(BuildContext context) {
+    return context.push(AppRoutes.teamAnalytics);
+  }
+
   static Future<void> toMonthlyMatrix(BuildContext context) {
     return context.push(AppRoutes.monthlyMatrix);
   }

@@ -52,14 +52,16 @@ void main() {
     );
 
     expect(find.byType(CustomScrollView), findsOneWidget);
-    expect(find.byType(DashboardMenuCard), findsNWidgets(6));
+    expect(find.byType(DashboardMenuCard), findsNWidgets(7));
     expect(find.byType(DashboardArchiveAction), findsOneWidget);
+    expect(find.text('Tim Görev Analizi'), findsOneWidget);
     expect(find.text('Metinden Toplu Aktar'), findsOneWidget);
     expect(find.text('Görselden Toplu Aktar'), findsOneWidget);
     expect(find.text('Bekleyen Onaylar'), findsNothing);
   });
 
-  testWidgets('non-admin sees four grid actions and a separate archive action',
+  testWidgets(
+      'non-admin sees analytics and four existing grid actions and a separate archive action',
       (
     tester,
   ) async {
@@ -68,8 +70,9 @@ void main() {
       const UserSessionState(username: 'tim', role: UserRole.teamCommander),
     );
 
-    expect(find.byType(DashboardMenuCard), findsNWidgets(4));
+    expect(find.byType(DashboardMenuCard), findsNWidgets(5));
     expect(find.byType(DashboardArchiveAction), findsOneWidget);
+    expect(find.text('Tim Görev Analizi'), findsOneWidget);
     expect(find.text('Metinden Toplu Aktar'), findsNothing);
     expect(find.text('Bekleyen Onaylar'), findsNothing);
     expect(find.text('Kadro Durumu'), findsOneWidget);
