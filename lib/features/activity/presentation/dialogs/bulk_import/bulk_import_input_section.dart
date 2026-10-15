@@ -79,7 +79,6 @@ class BulkImportInputSection extends StatelessWidget {
                 'Gelişmiş seçenekler',
                 style: TextStyle(fontSize: 12, color: context.textSecondary),
               ),
-              dense: true,
               initiallyExpanded: keepAuditText,
               children: [
                 SwitchListTile.adaptive(
