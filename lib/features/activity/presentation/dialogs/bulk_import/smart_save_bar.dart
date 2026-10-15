@@ -70,6 +70,8 @@ class BulkImportSaveButton extends StatelessWidget {
   }
 }
 
+/// The footer exposes one active task at a time: resolve blocking issues or
+/// continue to date-based confirmation. Optional reviews stay secondary.
 class SmartSaveBar extends StatelessWidget {
   const SmartSaveBar({
     required this.problemCount,
@@ -104,176 +106,73 @@ class SmartSaveBar extends StatelessWidget {
       locations: problemLocs,
       issues: issues,
     );
-    final reviewWarningCount = summary.reviewCount;
-    final hasCritical = summary.hasBlocking;
-    final canSave = blocks.isNotEmpty && !hasCritical && !hasUnresolvedProblems;
-    final displayTotal = summary.totalCount;
-    final displayIndex = activeIssueFocusIndex < 0
-        ? 1
-        : (displayTotal > 0 ? (activeIssueFocusIndex % displayTotal) + 1 : 1);
-
-    final wizardButtonColor = hasCritical
-        ? context.rejectedColor
-        : context.pendingColor;
-
+    final canContinue = blocks.isNotEmpty &&
+        !summary.hasBlocking &&
+        !hasUnresolvedProblems;
+    final outstanding = summary.totalCount;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.cardBorderColor),
+        border: Border(top: BorderSide(color: context.cardBorderColor)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (canSave || isSaving) ...[
-            AnimatedScale(
-              scale: isSaving ? 0.96 : 1.0,
-              duration: const Duration(milliseconds: 200),
-              child: FilledButton.icon(
-                key: const Key('bulk-import-save-button'),
-                onPressed: isSaving ? null : onSave,
-                icon: isSaving
-                    ? SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: context.onStatusColor(context.approvedColor),
-                        ),
-                      )
-                    : const Icon(Icons.check_circle_rounded, size: 20),
-                label: Text(
-                  isSaving
-                      ? context.l10n.commonSaving
-                      : actionLabel ??
-                            context.l10n.bulkImportSaveWithCardCount(blocks.length),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: FilledButton.styleFrom(
-                  backgroundColor: context.approvedColor,
-                  foregroundColor: context.onStatusColor(context.approvedColor),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+          if (!canContinue && !isSaving && outstanding > 0) ...[
+            FilledButton.icon(
+              key: activeIssueFocusIndex < 0
+                  ? const Key('bulk-goto-problem')
+                  : const Key('bulk-wizard-next'),
+              onPressed: onGotoProblem,
+              icon: const Icon(Icons.build_circle_outlined, size: 18),
+              label: Text(
+                summary.hasBlocking
+                    ? context.l10n.bulkImportOpenNextProblem
+                    : context.l10n.bulkImportNextReview,
               ),
-            ),
-            if (!isSaving && reviewWarningCount > 0) ...[
-              const SizedBox(height: 6),
-              OutlinedButton.icon(
-                key: const Key('bulk-wizard-next'),
-                onPressed: onGotoProblem,
-                icon: Icon(
-                  Icons.info_outline_rounded,
-                  size: 16,
-                  color: wizardButtonColor,
-                ),
-                label: Text(
-                  context.l10n.bulkImportNextReview,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: wizardButtonColor,
-                  side: BorderSide(
-                    color: wizardButtonColor.withValues(alpha: 0.5),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+              style: FilledButton.styleFrom(
+                backgroundColor: context.rejectedColor,
+                foregroundColor: context.onStatusColor(context.rejectedColor),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-            ],
-          ] else ...[
-            Row(
-              children: [
-                SizedBox(
-                  width: 54,
-                  child: OutlinedButton(
-                    key: const Key('bulk-wizard-prev'),
-                    onPressed: onGotoPrevious,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: wizardButtonColor,
-                      side: BorderSide(
-                        color: wizardButtonColor.withValues(alpha: 0.4),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.keyboard_arrow_up_rounded,
-                      size: 22,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 54,
-                  child: Center(
-                    child: Text(
-                      '$displayIndex / $displayTotal',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: FilledButton.icon(
-                    key: activeIssueFocusIndex < 0
-                        ? const Key('bulk-goto-problem')
-                        : const Key('bulk-wizard-next'),
-                    onPressed: onGotoProblem,
-                    icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                    label: Text(
-                      hasCritical ? context.l10n.bulkImportOpenNextProblem : context.l10n.bulkImportNextReview,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: wizardButtonColor,
-                      foregroundColor: context.onStatusColor(wizardButtonColor),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ),
             const SizedBox(height: 6),
-            FilledButton(
-              key: const Key('bulk-import-save-button'),
-              onPressed: null,
-              style: FilledButton.styleFrom(
-                backgroundColor: context.colorScheme.surfaceContainerHighest,
-                foregroundColor: context.textMuted,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+          ],
+          FilledButton.icon(
+            key: const Key('bulk-import-save-button'),
+            onPressed: canContinue && !isSaving ? onSave : null,
+            icon: isSaving
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.arrow_forward_rounded, size: 18),
+            label: Text(
+              isSaving
+                  ? context.l10n.commonSaving
+                  : !canContinue && outstanding > 0
+                      ? context.l10n.bulkImportActionsRemainingToSave(outstanding)
+                      : actionLabel ?? context.l10n.bulkImportSaveWithCardCount(blocks.length),
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: context.approvedColor,
+              foregroundColor: context.onStatusColor(context.approvedColor),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(
-                context.l10n.bulkImportActionsRemainingToSave(displayTotal),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+            ),
+          ),
+          if (canContinue && summary.reviewCount > 0 && !isSaving) ...[
+            const SizedBox(height: 6),
+            TextButton.icon(
+              key: const Key('bulk-wizard-next'),
+              onPressed: onGotoProblem,
+              icon: const Icon(Icons.info_outline_rounded, size: 16),
+              label: Text(context.l10n.bulkImportNextReview),
             ),
           ],
         ],
