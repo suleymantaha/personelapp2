@@ -130,7 +130,7 @@ void main() {
     await tester.tap(reopenedEdit);
     await tester.pumpAndSettle();
     expect(find.text('Görev notu'), findsOneWidget);
-    await tester.pageBack();
+    await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.text(DutyOrLeaveType.nobetci), findsOneWidget);
     expect(find.text('Faaliyete Ekle'), findsOneWidget);
