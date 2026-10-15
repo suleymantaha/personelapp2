@@ -147,29 +147,31 @@ void main() {
         expect(find.text('2 personel seçildi'), findsOneWidget);
         await tester.tap(find.text('Devam et'));
         await tester.pumpAndSettle();
-        expect(find.byKey(Key('assignment-note-$person')), findsNothing);
+        // Archive add flow now uses exactly the same person-specific actions
+        // as the regular Activity Schedule screen.
+        final secondEdit = find.byKey(ValueKey('edit-personnel-$second'));
+        await tester.ensureVisible(secondEdit);
+        await tester.tap(secondEdit);
+        await tester.pumpAndSettle();
+        expect(find.text('Farklı görev seç'), findsOneWidget);
+        await tester.tap(find.text('Farklı görev seç'));
+        await tester.pumpAndSettle();
         await tester.tap(
-          find.byKey(Key('assignment-duty-$second-${DutyOrLeaveType.gorevli}')),
+          find.byKey(ValueKey('personnel-duty-$second-${DutyOrLeaveType.nobetci}')),
         );
         await tester.pumpAndSettle();
-        final targetTile = find.byKey(
-          ValueKey('assignment-duty-$second-${DutyOrLeaveType.nobetci}'),
-        );
-        await tester.scrollUntilVisible(
-          targetTile,
-          50,
-          scrollable: find.byType(Scrollable).last,
-        );
-        await tester.drag(find.byType(Scrollable).last, const Offset(0, -100));
+        final firstEdit = find.byKey(ValueKey('edit-personnel-$person'));
+        await tester.ensureVisible(firstEdit);
+        await tester.tap(firstEdit);
         await tester.pumpAndSettle();
-        await tester.tap(targetTile);
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Not ekle').first);
+        await tester.tap(find.text('Not ekle veya düzenle'));
         await tester.pumpAndSettle();
         await tester.enterText(
-          find.byKey(Key('assignment-note-$person')),
+          find.byKey(ValueKey('personnel-note-$person')),
           'Kapı nöbeti',
         );
+        await tester.tap(find.text('Tamam'));
+        await tester.pumpAndSettle();
         await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
         expect(find.text('2 personel seçildi'), findsOneWidget);
@@ -181,7 +183,15 @@ void main() {
         expect(find.text('2 personel seçildi'), findsOneWidget);
         await tester.tap(find.text('Devam et'));
         await tester.pumpAndSettle();
+        // The note stays in the draft even when returning to personnel
+        // selection and opening details again.
+        final persistedEdit = find.byKey(ValueKey('edit-personnel-$person'));
+        await tester.ensureVisible(persistedEdit);
+        await tester.tap(persistedEdit);
+        await tester.pumpAndSettle();
         expect(find.text('Kapı nöbeti'), findsOneWidget);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Faaliyete Ekle'));
         await tester.pumpAndSettle();
         expect(find.text('Arşiv'), findsOneWidget);
