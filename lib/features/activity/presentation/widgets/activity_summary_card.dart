@@ -427,55 +427,61 @@ class ActivityCard extends ConsumerWidget {
             final compact = constraints.maxWidth < 520;
             return AppCard(
               key: Key('activity-card-${activity.id}'),
-              elevation: isSelected ? 4 : 1,
+              elevation: isSelected ? 3 : 1.5,
               padding: EdgeInsets.zero,
-              margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
+              margin: const EdgeInsets.only(bottom: 10),
+              borderRadius: BorderRadius.circular(18),
               backgroundColor: isSelected
                   ? context.accentOrOlive.withValues(alpha: 0.12)
                   : context.colorScheme.surface,
               borderColor: isSelected
                   ? context.accentOrOlive
-                  : statusColor.withValues(alpha: 0.5),
+                  : (hasPending || hasRejected
+                      ? statusColor.withValues(alpha: 0.38)
+                      : context.cardBorderColor),
               onLongPress: onLongPress,
               onTap: selectionMode ? onSelectionToggle : null,
               child: IgnorePointer(
                 ignoring: selectionMode,
                 child: ExpansionTile(
-                  tilePadding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
-                  childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                  tilePadding: const EdgeInsets.fromLTRB(14, 6, 8, 6),
+                  childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  shape: const Border(),
+                  collapsedShape: const Border(),
                   leading: CircleAvatar(
-                    radius: 25,
+                    radius: 22,
                     backgroundColor: statusColor,
-                    child: Icon(statusIcon, color: Colors.white, size: 25),
+                    child: Icon(statusIcon, color: Colors.white, size: 23),
                   ),
                   title: Text(
                     activity.faaliyetAdi,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                       fontSize: compact ? 16 : 17,
-                      letterSpacing: 0.15,
                     ),
                   ),
                   subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 6),
+                    padding: const EdgeInsets.only(top: 4),
                     child: Row(
                       children: [
-                        Flexible(
-                          child: _buildStatusBadge(
-                            label: statusLabel,
-                            color: statusColor,
+                        if (hasPending || hasRejected) ...[
+                          Flexible(
+                            child: _buildStatusBadge(
+                              label: statusLabel,
+                              color: statusColor,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
+                          const SizedBox(width: 6),
+                        ],
                         Expanded(
                           child: Text(
                             context.l10n.activityCreatedBy(activity.olusturanKullanici),
-                            maxLines: compact ? 2 : 1,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 12.5,
+                              fontSize: 12,
                               color: context.textSecondary,
                             ),
                           ),
