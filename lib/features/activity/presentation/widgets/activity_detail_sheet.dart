@@ -170,8 +170,11 @@ class ActivityAssignmentDetails extends ConsumerWidget {
     }
 
     return Container(
-      color: context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: context.accentOrOlive.withValues(alpha: 0.035),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -183,17 +186,15 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                 TextButton.icon(
                   style: TextButton.styleFrom(
                     foregroundColor: context.accentOrOlive,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    backgroundColor: context.accentOrOlive.withValues(alpha: 0.07),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    minimumSize: const Size(0, 44),
                   ),
-                  icon: const Icon(Icons.person_add_alt_1, size: 16),
+                  icon: const Icon(Icons.person_add_alt_1_rounded, size: 19),
                   label: Text(
                     context.l10n.activityDetailAddPersonnelButton,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                   ),
                   onPressed: () async {
                     final action = await showModalBottomSheet<String>(
@@ -430,7 +431,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 10),
 
           ..._buildAssignmentContent(
             context: context,
