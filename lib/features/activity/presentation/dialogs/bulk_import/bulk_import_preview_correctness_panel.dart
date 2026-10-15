@@ -90,9 +90,23 @@ class _CorrectnessPanel extends StatelessWidget {
                 ),
               ),
               if (hasBlocking)
-                Text(
-                  context.l10n.bulkImportCannotSaveStatus,
-                  style: TextStyle(color: statusColor, fontSize: 11),
+                InkWell(
+                  onTap: onStartWizard,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 8,
+                    ),
+                    child: Text(
+                      context.l10n.bulkImportCannotSaveStatus,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontSize: 11,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
                 ),
             ],
           ),
