@@ -138,14 +138,14 @@ void main() {
       expect(back, findsOneWidget);
       expect(save, findsOneWidget);
 
-      final topBefore = tester.getTopLeft(heading).dy;
+      expect(heading, findsOneWidget);
       final backTopBefore = tester.getTopLeft(back).dy;
       await tester.drag(scrollable, const Offset(0, -360));
       await tester.pumpAndSettle();
 
-      // Previously only the list scrolled, leaving the large heading and
-      // summary permanently between records and the app bar.
-      expect(tester.getTopLeft(heading).dy, lessThan(topBefore - 100));
+      // The header scrolls completely out of the sliver viewport; it is
+      // intentionally no longer mounted while the rows occupy that space.
+      expect(heading, findsNothing);
       expect(tester.getTopLeft(back).dy, closeTo(backTopBefore, 1));
       expect(tester.getSize(back).height, 52);
       expect(tester.getSize(save).height, 52);
