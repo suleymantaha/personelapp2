@@ -33,8 +33,13 @@ void main() {
       onChangePerson: () {},
       onChanged: () {},
     ))));
-    expect(find.byKey(const Key('assignment-duty-1-NÖBETÇİ')), findsOneWidget);
-    expect(find.byKey(const Key('assignment-note-1')), findsNothing);
+    await tester.tap(find.byType(ExpansionTile).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('edit-personnel-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('Farklı görev seç'), findsOneWidget);
+    expect(find.text(DutyOrLeaveType.nobetci), findsOneWidget);
+    expect(find.text('Not ekle veya düzenle'), findsOneWidget);
   });
 
   testWidgets('tapping common duty opens bottom sheet duty picker and updates selection',
@@ -118,12 +123,17 @@ void main() {
       ),
     ));
 
-    expect(find.byKey(const Key('assignment-duty-1-GÖREVLİ')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('assignment-duty-1-GÖREVLİ')));
+    await tester.tap(find.byType(ExpansionTile).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('edit-personnel-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Farklı görev seç'));
     await tester.pumpAndSettle();
 
-    expect(find.text(DutyOrLeaveType.nobetci), findsOneWidget);
-    await tester.tap(find.text(DutyOrLeaveType.nobetci));
+    final dutyOption = find.byKey(
+      const ValueKey('personnel-duty-1-${DutyOrLeaveType.nobetci}'),
+    );
+    await tester.tap(dutyOption);
     await tester.pumpAndSettle();
 
     expect(draft.dutyFor(1), DutyOrLeaveType.nobetci);
