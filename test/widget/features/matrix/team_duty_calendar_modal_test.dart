@@ -38,8 +38,10 @@ void main() {
           ),
         ),
       );
-      expect(find.text('2 GÜLÜŞKÜR • Onaylı'), findsOneWidget);
-      expect(find.text('1 HEYBET • Bekleyen'), findsOneWidget);
+      expect(find.textContaining('GÜLÜŞKÜR · 2'), findsOneWidget);
+      expect(find.textContaining('HEYBET · 1'), findsOneWidget);
+      expect(find.text('Onaylı'), findsOneWidget);
+      expect(find.text('Bekleyen'), findsOneWidget);
       expect(find.text('Ali KAYA (#1)'), findsOneWidget);
       expect(find.text('Ali KAYA (#2)'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -88,10 +90,12 @@ void main() {
               ),
             ),
           );
-          await tester.tap(find.text('1'));
+          await tester.tap(find.byKey(const ValueKey('team-calendar-day-1')));
           await tester.pumpAndSettle();
           expect(find.text('Ahmet Yılmaz'), findsOneWidget);
-          await tester.tap(find.text('2'));
+          await tester.tap(find.byIcon(Icons.close_rounded).last);
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const ValueKey('team-calendar-day-2')));
           await tester.pumpAndSettle();
           expect(find.text('Ahmet Yılmaz'), findsNothing);
           expect(
