@@ -147,29 +147,53 @@ void main() {
         expect(find.text('2 personel seçildi'), findsOneWidget);
         await tester.tap(find.text('Devam et'));
         await tester.pumpAndSettle();
-        expect(find.byKey(Key('assignment-note-$person')), findsNothing);
+        // Archive uses the same expandable team and per-person bottom sheet
+        // as the Activity Schedule screen.
+        expect(
+          find.byKey(const ValueKey('selected-squad-group-1. Tim')),
+          findsOneWidget,
+        );
         await tester.tap(
-          find.byKey(Key('assignment-duty-$second-${DutyOrLeaveType.gorevli}')),
+          find.byKey(const ValueKey('selected-squad-group-1. Tim')),
         );
         await tester.pumpAndSettle();
-        final targetTile = find.byKey(
-          ValueKey('assignment-duty-$second-${DutyOrLeaveType.nobetci}'),
-        );
-        await tester.scrollUntilVisible(
-          targetTile,
-          50,
-          scrollable: find.byType(Scrollable).last,
-        );
-        await tester.drag(find.byType(Scrollable).last, const Offset(0, -100));
+
+        await tester.tap(find.byKey(ValueKey('edit-personnel-$second')));
         await tester.pumpAndSettle();
-        await tester.tap(targetTile);
+        expect(find.text('Farklı görev seç'), findsOneWidget);
+        expect(find.text('Not ekle veya düzenle'), findsOneWidget);
+        await tester.tap(find.text('Farklı görev seç'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Not ekle').first);
+        await tester.tap(
+          find.byKey(ValueKey('personnel-duty-$second-${DutyOrLeaveType.nobetci}')),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(ValueKey('edit-personnel-$person')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Not ekle veya düzenle'));
         await tester.pumpAndSettle();
         await tester.enterText(
-          find.byKey(Key('assignment-note-$person')),
+          find.byKey(ValueKey('personnel-note-$person')),
           'Kapı nöbeti',
         );
+        await tester.tap(find.text('Tamam'));
+        await tester.pumpAndSettle();
+
+        // The note is retained if the same person is edited again.
+        await tester.tap(find.byKey(ValueKey('edit-personnel-$person')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Not ekle veya düzenle'));
+        await tester.pumpAndSettle();
+        expect(
+          tester.widget<TextFormField>(
+            find.byKey(ValueKey('personnel-note-$person')),
+          ).initialValue,
+          'Kapı nöbeti',
+        );
+        await tester.tap(find.text('Vazgeç'));
+        await tester.pumpAndSettle();
+
         await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
         expect(find.text('2 personel seçildi'), findsOneWidget);
@@ -181,7 +205,6 @@ void main() {
         expect(find.text('2 personel seçildi'), findsOneWidget);
         await tester.tap(find.text('Devam et'));
         await tester.pumpAndSettle();
-        expect(find.text('Kapı nöbeti'), findsOneWidget);
         await tester.tap(find.text('Faaliyete Ekle'));
         await tester.pumpAndSettle();
         expect(find.text('Arşiv'), findsOneWidget);
