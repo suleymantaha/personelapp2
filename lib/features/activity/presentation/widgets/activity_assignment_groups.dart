@@ -183,10 +183,8 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
           return CollapsibleSquadCard(
             cardKey: Key('activity-team-card-$squadId'),
             headerKey: Key('activity-team-header-$squadId'),
-            title: context.l10n.activitySquadCardTitle(
-              teamName,
-              assignments.length,
-            ),
+            title: teamName,
+            personCount: assignments.length,
             expanded: expanded,
             isSelected: isSelected,
             selectionMode: isSelectionMode,
