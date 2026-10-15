@@ -108,18 +108,44 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(targetTile);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Not ekle'));
+    // The archive now uses the same personal action bottom sheet as
+    // the Activity Schedule rather than an inline note field.
+    await tester.tap(
+      find.byKey(const ValueKey('selected-squad-group-1. Tim')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('edit-personnel-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('Farklı görev seç'), findsOneWidget);
+    await tester.tap(find.text('Not ekle veya düzenle'));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(const Key('assignment-note-1')),
+      find.byKey(const ValueKey('personnel-note-1')),
       'Görev notu',
     );
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.text('1 personel seçildi'), findsOneWidget);
     await tester.tap(find.text('Devam et'));
     await tester.pumpAndSettle();
-    expect(find.text('Görev notu'), findsOneWidget);
+    await tester.tap(
+      find.byKey(const ValueKey('selected-squad-group-1. Tim')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('edit-personnel-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Not ekle veya düzenle'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextFormField>(
+        find.byKey(const ValueKey('personnel-note-1')),
+      ).initialValue,
+      'Görev notu',
+    );
+    await tester.tap(find.text('Vazgeç'));
+    await tester.pumpAndSettle();
     expect(find.text(DutyOrLeaveType.nobetci), findsOneWidget);
     expect(find.text('Faaliyete Ekle'), findsOneWidget);
     await tester.tap(find.byTooltip('Kapat'));
