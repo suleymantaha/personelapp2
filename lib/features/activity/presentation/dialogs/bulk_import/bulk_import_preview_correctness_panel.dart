@@ -113,7 +113,7 @@ class _CorrectnessPanel extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '$personnelCount personel  •  $cardCount kart  •  $dayCount gün'
-            '${criticalCount > 0 ? '  •  $criticalCount kritik' : ''}'
+            '${criticalCount > 0 ? '  •  ${context.l10n.bulkImportCriticalErrors(criticalCount)}' : ''}'
             '${reviewCount > 0 ? '  •  $reviewCount inceleme' : ''}',
             style: TextStyle(fontSize: 12, color: context.textSecondary),
           ),
