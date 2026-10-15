@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
-import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/widgets/app_card.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/presentation/view_models/activity_form_draft.dart';
