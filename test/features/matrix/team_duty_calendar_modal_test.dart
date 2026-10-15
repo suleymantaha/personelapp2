@@ -104,6 +104,61 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('days keep a visible painted surface in the dark or light theme', (tester) async {
+    await showCalendar(tester, const Size(390, 850));
+    final tile = find.byKey(const ValueKey('team-calendar-tile-8'));
+    expect(tile, findsOneWidget);
+    final material = tester.widget<Material>(tile);
+    expect(material.color, isNotNull);
+    expect(material.color, isNot(Colors.transparent));
+    expect(material.shape, isA<RoundedRectangleBorder>());
+  });
+
+  testWidgets('multiple groups show a truthful count rather than the first duty', (tester) async {
+    const mixedDay = TeamDayDutyDto(
+      tarih: '2026-10-08',
+      gunIndex: 8,
+      gorevKodu: '2 grup',
+      gorevTamAdi: '2 görev / durum',
+      gorevliPersonelAdlari: ['Ali CENGİZ', 'Mehmet BİLEK'],
+      gorevGruplari: [
+        TeamDutyGroupDto(
+          gorev: 'HEYBET',
+          durum: 'onaylandi',
+          personelIds: [11],
+          personelAdlari: ['Ali CENGİZ'],
+        ),
+        TeamDutyGroupDto(
+          gorev: 'GARAJ NÖB.',
+          durum: 'beklemede',
+          personelIds: [12],
+          personelAdlari: ['Mehmet BİLEK'],
+        ),
+      ],
+    );
+    const mixedCalendar = TeamMonthlyCalendarDto(
+      timId: 1,
+      timAdi: '1-B Timi',
+      yil: 2026,
+      ay: 10,
+      gunler: [mixedDay],
+      ozet: summary,
+    );
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: TeamDutyCalendarModal(calendarData: mixedCalendar),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('2 grup'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('team-calendar-day-8')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('team-day-group-0')), findsOneWidget);
+    expect(find.byKey(const ValueKey('team-day-group-1')), findsOneWidget);
+    expect(find.text('Bekleyen'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('narrow viewport does not overflow', (tester) async {
     await showCalendar(tester, const Size(320, 640));
     expect(tester.takeException(), isNull);
