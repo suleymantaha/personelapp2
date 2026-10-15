@@ -233,13 +233,13 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
 
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 4),
-              padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+              padding: const EdgeInsets.fromLTRB(12, 10, 8, 8),
               decoration: BoxDecoration(
                 color: context.colorScheme.surface,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: context.colorScheme.outlineVariant.withValues(
-                    alpha: 0.35,
+                    alpha: 0.65,
                   ),
                 ),
               ),
@@ -248,24 +248,31 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                 children: [
                   // Row 1: name (always full width) + status chip
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: context.accentOrOlive.withValues(alpha: 0.09),
+                        child: Icon(Icons.person_outline_rounded,
+                          size: 18, color: context.accentOrOlive),
+                      ),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           nameText,
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 160),
+                        constraints: const BoxConstraints(maxWidth: 110),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
+                            horizontal: 9,
+                            vertical: 5,
                           ),
                           decoration: BoxDecoration(
                             color:
@@ -278,7 +285,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                           alpha: 0.22,
                                         )
                                         : context.rejectedBgColor),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             isPending
@@ -306,23 +313,33 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                   // Row 2: rütbe + birlik bilgisi
                   if (subInfo.isNotEmpty) ...[
                     const SizedBox(height: 3),
-                    Text(
-                      subInfo,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: context.textSecondary,
+                    Padding(
+                      padding: const EdgeInsets.only(left: 46),
+                      child: Text(
+                        subInfo,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: context.textSecondary,
+                        ),
                       ),
                     ),
                   ],
                   // Row 3: not (varsa)
                   if (digerNote.isNotEmpty) ...[
                     const SizedBox(height: 2),
-                    Text(
-                      context.l10n.activityDetailNoteLabel(digerNote),
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontStyle: FontStyle.italic,
-                        color: context.accentOrOlive,
+                    Padding(
+                      padding: const EdgeInsets.only(left: 46),
+                      child: Text(
+                        context.l10n.activityDetailNoteLabel(digerNote),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontStyle: FontStyle.italic,
+                          color: context.accentOrOlive,
+                        ),
                       ),
                     ),
                   ],
