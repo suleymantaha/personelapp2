@@ -228,8 +228,12 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
                                     width: selected ? 2 : 1,
                                   ),
                                 ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                child: Center(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
                                       '$dayNumber',
@@ -269,6 +273,8 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
                                         ),
                                       ),
                                   ],
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
