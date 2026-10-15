@@ -5,6 +5,7 @@ abstract final class AppRoutes {
   static const activityAssignmentPreview = '/activity-assignment-preview';
   static const pendingApprovals = '/pending-approvals';
   static const personnelManagement = '/personnel-management';
+  static const teamAnalytics = '/team-analytics';
   static const monthlyMatrix = '/monthly-matrix';
   static const activityArchive = '/activity-archive';
   static const rosterOutput = '/roster-output';

@@ -28,6 +28,13 @@ class DashboardScreen extends ConsumerWidget {
 
     final gridActions = <DashboardActionItem>[
       DashboardActionItem(
+        icon: Icons.insights_outlined,
+        title: 'Tim Görev Analizi',
+        subtitle: 'Katılım, görev günleri ve karşılaştırmalar',
+        tone: DashboardActionTone.neutral,
+        onTap: () => AppNavigator.toTeamAnalytics(context),
+      ),
+      DashboardActionItem(
         icon: Icons.edit_calendar,
         title: context.l10n.dashboardActivitySchedule,
         subtitle: context.l10n.dashboardDailyDutyEntry,

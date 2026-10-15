@@ -1,3 +1,4 @@
+import 'package:personelapp2/features/analytics/presentation/team_analytics_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -86,6 +87,10 @@ GoRouter createAppRouter({UserSessionState? session}) {
           GoRoute(
             path: AppRoutes.personnelManagement,
             builder: (context, state) => const PersonnelManagementScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.teamAnalytics,
+            builder: (context, state) => const TeamAnalyticsScreen(),
           ),
           GoRoute(
             path: AppRoutes.monthlyMatrix,

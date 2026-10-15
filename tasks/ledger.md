@@ -4,6 +4,7 @@ Tek yazıcı: koordinatör. Henüz bu paketle başlatılmış proje görevi yokt
 
 | Görev ID | Hedef | Durum | Aktif kayıt / kanıt |
 |---|---|---|---|
+| team-duty-analytics | Salt-okunur tim görev analizi | IN_REVIEW | tasks/active/team-duty-analytics.md |
 | task-temgundrap-auto-generate | Faaliyetlerden Otomatik TEMGÜNDRAP Üretimi ve Düzenleme | COMPLETED | tasks/active/task-temgundrap-auto-generate.md |
 | task-temgundrap-fix-transfer | TEMGÜNDRAP düzeltmelerini F:/personelapp2 deposuna aktarma | DONE | tasks/active/task-temgundrap-fix-transfer.md |
 | task-temgundrap-import-export-stability | Import kimliği, overflow ve Excel/PDF çıktı düzeltmeleri | DONE | tasks/active/task-temgundrap-import-export-stability.md |
