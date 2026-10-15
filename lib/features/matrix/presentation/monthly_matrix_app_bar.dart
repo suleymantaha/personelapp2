@@ -12,8 +12,8 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
     return SliverAppBar(
       floating: true,
       snap: true,
-      toolbarHeight: 64,
-      titleSpacing: 8,
+      toolbarHeight: 56,
+      titleSpacing: 4,
       leading: _isMobileSearchOpen ? null : const AppBackButton(),
       title: _isMobileSearchOpen
           ? TextField(
@@ -78,7 +78,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
