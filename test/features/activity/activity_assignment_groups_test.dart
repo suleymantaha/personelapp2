@@ -94,13 +94,16 @@ void main() {
   testWidgets('groups start closed and behave as an accordion', (tester) async {
     await tester.pumpWidget(buildSubject());
 
-    expect(find.text('K.H — 2 kişi'), findsOneWidget);
-    expect(find.text('7-B Timi — 1 kişi'), findsOneWidget);
+    expect(find.text('K.H'), findsOneWidget);
+    expect(find.text('2 kişi'), findsOneWidget);
+    expect(find.text('7-B Timi'), findsOneWidget);
+    expect(find.text('1 kişi'), findsOneWidget);
+    expect(find.text('K.H — 2 kişi'), findsNothing);
     expect(find.byKey(const Key('assignment-1')), findsNothing);
     expect(find.byKey(const Key('assignment-3')), findsNothing);
     expect(
-      tester.getTopLeft(find.text('K.H — 2 kişi')).dy,
-      lessThan(tester.getTopLeft(find.text('7-B Timi — 1 kişi')).dy),
+      tester.getTopLeft(find.text('K.H')).dy,
+      lessThan(tester.getTopLeft(find.text('7-B Timi')).dy),
     );
 
     await tester.tap(find.byKey(const Key('activity-team-header-2')));

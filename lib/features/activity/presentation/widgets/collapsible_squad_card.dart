@@ -12,6 +12,7 @@ class CollapsibleSquadCard extends StatelessWidget {
     required this.expanded,
     required this.onToggle,
     required this.children,
+    this.personCount,
     this.warningCount = 0,
     this.actions = const [],
     this.isSelected = false,
@@ -27,6 +28,8 @@ class CollapsibleSquadCard extends StatelessWidget {
   final bool expanded;
   final VoidCallback onToggle;
   final List<Widget> children;
+  /// Displays the count separately from the squad name.
+  final int? personCount;
   final int warningCount;
   final List<Widget> actions;
   final bool isSelected;
@@ -78,21 +81,25 @@ class CollapsibleSquadCard extends StatelessWidget {
     return AppCard(
       key: cardKey,
       padding: EdgeInsets.zero,
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      borderRadius: BorderRadius.circular(16),
       borderColor: effectiveBorderColor,
       backgroundColor: effectiveBgColor,
       child: Column(
         children: [
           ListTile(
             key: headerKey,
-            dense: true,
+            dense: false,
+            visualDensity: const VisualDensity(vertical: -1),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12),
             leading: leadingIcon,
             title: Text(
               title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.bold,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
                 color: isSelected ? primaryColor : null,
               ),
             ),
@@ -111,6 +118,24 @@ class CollapsibleSquadCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                if (personCount != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: context.accentOrOlive.withValues(alpha: 0.09),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${personCount!} kişi',
+                      style: TextStyle(
+                        color: context.accentOrOlive,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                ],
                 ...actions,
                 Icon(expanded ? Icons.expand_less : Icons.expand_more),
               ],
