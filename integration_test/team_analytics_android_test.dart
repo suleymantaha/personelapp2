@@ -61,6 +61,10 @@ void main() {
     expect(
         Theme.of(tester.element(find.byType(TeamAnalyticsScreen))).brightness,
         Brightness.dark);
+    final tabDetails = find.byKey(const ValueKey('tab-details'));
+    await tester.ensureVisible(tabDetails);
+    await tester.tap(tabDetails);
+    await tester.pumpAndSettle();
     for (final key in [
       'analytics-team-$team',
       'analytics-duty-$team-HEYBET',

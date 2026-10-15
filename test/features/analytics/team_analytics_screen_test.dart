@@ -41,7 +41,23 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Tim Görev Analizi'), findsOneWidget);
         expect(find.text('Katılım'), findsWidgets);
+        expect(find.text('Görev Karşılaştırması'), findsOneWidget);
+        expect(find.text('Aylık Trend'), findsOneWidget);
         expect(tester.takeException(), isNull);
+
+        // Tim Aylık Görevleri sekmesi testi
+        final tabMonthly = find.byKey(const ValueKey('tab-monthly'));
+        await tester.ensureVisible(tabMonthly);
+        await tester.tap(tabMonthly);
+        await tester.pumpAndSettle();
+        expect(find.text('Timler Arası Görev Denge Analizi'), findsOneWidget);
+        expect(find.text('Aylık Tim Görev Dağılım Tablosu'), findsOneWidget);
+
+        // Personel Detayı sekmesine geçiş ve drill down
+        final tabDetails = find.byKey(const ValueKey('tab-details'));
+        await tester.ensureVisible(tabDetails);
+        await tester.tap(tabDetails);
+        await tester.pumpAndSettle();
         for (final key in [
           'analytics-team-1',
           'analytics-duty-1-HEYBET',
