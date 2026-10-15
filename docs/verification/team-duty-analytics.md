@@ -10,12 +10,13 @@ Ortam: Windows, Flutter 3.47.2, Dart 3.13.2; Android emulator-5554 API 37.
 | Tam unit/widget/regression | `flutter test --no-pub --reporter expanded --timeout 2m` | PASS, 645 test | 0 |
 | Statik analiz | `flutter analyze --no-pub` | PASS, No issues found | 0 |
 | Android analytics/tema/detay | `flutter test --no-pub integration_test/team_analytics_android_test.dart -d emulator-5554` | PASS, 1 test | 0 |
+| Tüm Android integration | `flutter test --no-pub integration_test -d emulator-5554` | PASS, 4 test | 0 |
 | Release APK | `flutter build apk --release` | PASS, 111.8 MB | 0 |
 | Paket bilgisi | `aapt dump badging build/app/outputs/flutter-apk/app-release.apk` | com.example.personelapp2, 1.0.2+3, SDK 24/36 | 0 |
 | Yerel release imzası | `apksigner verify build/app/outputs/flutter-apk/app-release.apk` | UNSIGNED: yerel key.properties yok | 1 |
 
 Ham yerel loglar: `build/analytics-verification/22-full-tests.log`,
-`26-analyze.log`, `24-android-integration.log`, `27-apk-release.log` (git ignored).
+`26-analyze.log`, `24-android-integration.log`, `28-all-android-integration.log`, `27-apk-release.log` (git ignored).
 Her logun dosya UTC modification zamanı ilgili koşunun bitiş kaydıdır.
 Yerel APK SHA256: E2DC6022F3CA74F6052B6470560D8B0D016DA0BA24B4885AE4F10474E6786EBE.
 
@@ -61,3 +62,5 @@ sürümleri değiştirilmedi. Sentetik in-memory fixture'lar kullanıldı.
   30 satır rehberinin gerekçeli istisnasıdır; dosyalar 300 satır altındadır.
 
 Yerel kayıt UTC: 2026-10-15T17:31:44.394876+00:00
+
+PR: https://github.com/suleymantaha/personelapp2/pull/41. CI için PR HEAD revision esas alınır.
