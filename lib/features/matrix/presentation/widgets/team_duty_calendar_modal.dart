@@ -177,6 +177,7 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
                       const gap = 4.0;
                       final cellWidth = (constraints.maxWidth - 6 * gap) / 7;
                       return GridView.builder(
+                        padding: EdgeInsets.zero,
                         key: const ValueKey('team-monthly-calendar-grid'),
                         itemCount: cellCount,
                         shrinkWrap: true,
@@ -215,6 +216,7 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
                             button: day != null,
                             label: '$dayNumber $monthName${hasDuty ? ', ${day.gorevTamAdi}' : ''}',
                             child: Material(
+                              key: ValueKey('team-calendar-tile-$dayNumber'),
                               color: selected
                                   ? context.accentOrOlive.withValues(alpha: 0.24)
                                   : background,
