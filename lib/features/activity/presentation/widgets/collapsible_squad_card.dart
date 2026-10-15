@@ -126,7 +126,7 @@ class CollapsibleSquadCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      context.l10n.activitySquadCardTitle('', personCount!).trim().replaceFirst(RegExp(r'^[^0-9]*'), ''),
+                      '${personCount!} kişi',
                       style: TextStyle(
                         color: context.accentOrOlive,
                         fontSize: 12,
