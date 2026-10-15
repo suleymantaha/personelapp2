@@ -42,20 +42,26 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
     String monthName,
   ) async {
     setState(() => _selectedDayIndex = day.gunIndex);
-    await TeamDutyDayDetails.show(
-      context,
-      day: day,
-      monthName: monthName,
-      year: widget.calendarData.yil,
-    );
+    try {
+      await TeamDutyDayDetails.show(
+        context,
+        day: day,
+        monthName: monthName,
+        year: widget.calendarData.yil,
+      );
+    } finally {
+      if (mounted) setState(() => _selectedDayIndex = null);
+    }
   }
 
   String _dutyLabel(TeamDayDutyDto day) {
     if (day.gorevGruplari.isEmpty) return day.gorevKodu;
-    final code =
-        DutyAbbreviationMapper.getAbbreviation(day.gorevGruplari.first.gorev);
-    final remaining = day.gorevGruplari.length - 1;
-    return remaining > 0 ? '$code +$remaining' : code;
+    if (day.gorevGruplari.length > 1) {
+      return '${day.gorevGruplari.length} grup';
+    }
+    return DutyAbbreviationMapper.getAbbreviation(
+      day.gorevGruplari.first.gorev,
+    );
   }
 
   @override
@@ -198,36 +204,37 @@ class _TeamDutyCalendarModalState extends State<TeamDutyCalendarModal> {
                                 )
                               : context.textSecondary;
                           final background = hasDuty
-                              ? DutyAbbreviationMapper.getBadgeBgColor(
-                                  day.gorevTamAdi,
-                                  isDark: isDark,
-                                )
+                              ? day.gorevGruplari.length > 1
+                                  ? context.colorScheme.surfaceContainerHigh
+                                  : DutyAbbreviationMapper.getBadgeBgColor(
+                                      day.gorevTamAdi,
+                                      isDark: isDark,
+                                    )
                               : context.colorScheme.surfaceContainer;
                           return Semantics(
                             button: day != null,
                             label: '$dayNumber $monthName${hasDuty ? ', ${day.gorevTamAdi}' : ''}',
-                            child: InkWell(
-                              key: ValueKey('team-calendar-day-$dayNumber'),
-                              onTap: day == null
-                                  ? null
-                                  : () => _showDay(context, day, monthName),
-                              borderRadius: BorderRadius.circular(10),
-                              child: Ink(
-                                decoration: BoxDecoration(
+                            child: Material(
+                              color: selected
+                                  ? context.accentOrOlive.withValues(alpha: 0.24)
+                                  : background,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side: BorderSide(
                                   color: selected
                                       ? context.accentOrOlive
-                                          .withValues(alpha: 0.18)
-                                      : background,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: selected
-                                        ? context.accentOrOlive
-                                        : (hasDuty
-                                            ? color.withValues(alpha: 0.30)
-                                            : context.cardBorderColor),
-                                    width: selected ? 2 : 1,
-                                  ),
+                                      : (hasDuty
+                                          ? color.withValues(alpha: 0.4)
+                                          : context.cardBorderColor),
+                                  width: selected ? 2 : 1,
                                 ),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: InkWell(
+                                key: ValueKey('team-calendar-day-$dayNumber'),
+                                onTap: day == null
+                                    ? null
+                                    : () => _showDay(context, day, monthName),
                                 child: Center(
                                   child: FittedBox(
                                     fit: BoxFit.scaleDown,
