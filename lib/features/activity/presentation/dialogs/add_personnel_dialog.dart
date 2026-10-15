@@ -258,6 +258,12 @@ class _AddPersonnelToActivityDialogState
                               duties: duties,
                               isAdmin: widget.isAdmin,
                               onChangePerson: _back,
+                              onRemovePersonnel: (id) => setState(() {
+                                _draft.togglePersonnel(id);
+                                if (_draft.selectedPersonnelIds.isEmpty) {
+                                  _details = false;
+                                }
+                              }),
                               onChanged: () => setState(() {}),
                             )
                           : FutureBuilder<Map<int, String>>(
