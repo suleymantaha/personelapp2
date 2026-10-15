@@ -260,6 +260,8 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                       Expanded(
                         child: Text(
                           nameText,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -308,107 +310,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  // Row 2: rütbe + birlik bilgisi
-                  if (subInfo.isNotEmpty) ...[
-                    const SizedBox(height: 3),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 46),
-                      child: Text(
-                        subInfo,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: context.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ],
-                  // Row 3: not (varsa)
-                  if (digerNote.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 46),
-                      child: Text(
-                        context.l10n.activityDetailNoteLabel(digerNote),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontStyle: FontStyle.italic,
-                          color: context.accentOrOlive,
-                        ),
-                      ),
-                    ),
-                  ],
-                  // Admin actions satırı
-                  if (isAdmin) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (isPending) ...[
-                          // Onayla ikonu
-                          SizedBox(
-                            width: 32,
-                            height: 28,
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.check_circle,
-                                color: context.approvedColor,
-                                size: 18,
-                              ),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              tooltip: context.l10n.commonApproveTooltip,
-                              onPressed: () async {
-                                final repo = ref.read(
-                                  activityRepositoryProvider,
-                                );
-                                final result = await repo.approveAssignment(
-                                  atama.id,
-                                  actor: session!,
-                                );
-                                if (context.mounted &&
-                                    result.blockedCount > 0) {
-                                  AppNotifications.error(
-                                    context.l10n.activityDetailApproveBlocked(
-                                      result.conflictDescriptions.join(', '),
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                          // Reddet ikonu
-                          SizedBox(
-                            width: 32,
-                            height: 28,
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.cancel,
-                                color: context.rejectedColor,
-                                size: 18,
-                              ),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              tooltip: context.l10n.commonRejectTooltip,
-                              onPressed: () async {
-                                final repo = ref.read(
-                                  activityRepositoryProvider,
-                                );
-                                await repo.updateAssignmentStatus(
-                                  atama.id,
-                                  AssignmentStatus.reddedildi,
-                                  actor: session!,
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                        // Düzenle + Sil → 3-nokta menü
+                      if (isAdmin)
                         PopupMenuButton<_AssignmentAction>(
                           icon: Icon(
                             Icons.more_horiz,
@@ -542,6 +444,107 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                                 ),
                               ],
                         ),
+                    ],
+                  ),
+                  // Row 2: rütbe + birlik bilgisi
+                  if (subInfo.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 46),
+                      child: Text(
+                        subInfo,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: context.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                  // Row 3: not (varsa)
+                  if (digerNote.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 46),
+                      child: Text(
+                        context.l10n.activityDetailNoteLabel(digerNote),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontStyle: FontStyle.italic,
+                          color: context.accentOrOlive,
+                        ),
+                      ),
+                    ),
+                  ],
+                  // Keep approval controls available only when needed.
+                  if (isAdmin && isPending) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (isPending) ...[
+                          // Onayla ikonu
+                          SizedBox(
+                            width: 32,
+                            height: 28,
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.check_circle,
+                                color: context.approvedColor,
+                                size: 18,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              tooltip: context.l10n.commonApproveTooltip,
+                              onPressed: () async {
+                                final repo = ref.read(
+                                  activityRepositoryProvider,
+                                );
+                                final result = await repo.approveAssignment(
+                                  atama.id,
+                                  actor: session!,
+                                );
+                                if (context.mounted &&
+                                    result.blockedCount > 0) {
+                                  AppNotifications.error(
+                                    context.l10n.activityDetailApproveBlocked(
+                                      result.conflictDescriptions.join(', '),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                          // Reddet ikonu
+                          SizedBox(
+                            width: 32,
+                            height: 28,
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.cancel,
+                                color: context.rejectedColor,
+                                size: 18,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              tooltip: context.l10n.commonRejectTooltip,
+                              onPressed: () async {
+                                final repo = ref.read(
+                                  activityRepositoryProvider,
+                                );
+                                await repo.updateAssignmentStatus(
+                                  atama.id,
+                                  AssignmentStatus.reddedildi,
+                                  actor: session!,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+
                       ],
                     ),
                   ],
