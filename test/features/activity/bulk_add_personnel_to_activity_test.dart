@@ -134,7 +134,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(DutyOrLeaveType.nobetci), findsOneWidget);
     expect(find.text('Faaliyete Ekle'), findsOneWidget);
-    await tester.tap(find.byTooltip('Kapat'));
+    // The AppBar floats away on scroll; the system back sequence remains
+    // reliable and must protect the draft even when the header is hidden.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.text('Değişikliklerden vazgeçilsin mi?'), findsOneWidget);
     await tester.tap(find.text('VAZGEÇ VE ÇIK'));
