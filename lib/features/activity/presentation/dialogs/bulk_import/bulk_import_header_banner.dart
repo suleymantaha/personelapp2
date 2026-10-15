@@ -63,7 +63,6 @@ class BulkImportHeaderBanner extends StatelessWidget {
             icon: const Icon(Icons.more_vert_rounded),
             onSelected: (value) {
               if (value == 'memory') onOpenMemory?.call();
-              if (value == 'close') onClose?.call();
             },
             itemBuilder: (context) => [
               if (onOpenMemory != null)
@@ -77,18 +76,13 @@ class BulkImportHeaderBanner extends StatelessWidget {
                     ],
                   ),
                 ),
-              PopupMenuItem(
-                value: 'close',
-                enabled: onClose != null,
-                child: Row(
-                  children: [
-                    const Icon(Icons.close_rounded, size: 20),
-                    const SizedBox(width: 12),
-                    Text(context.l10n.bulkImportCloseTooltip),
-                  ],
-                ),
-              ),
+
             ],
+          ),
+          IconButton(
+            tooltip: context.l10n.bulkImportCloseTooltip,
+            onPressed: onClose,
+            icon: const Icon(Icons.close),
           ),
         ],
       ),
