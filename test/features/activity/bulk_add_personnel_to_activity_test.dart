@@ -108,18 +108,30 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(targetTile);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Not ekle'));
+    final editPerson = find.byKey(const ValueKey('edit-personnel-1'));
+    await tester.ensureVisible(editPerson);
+    await tester.tap(editPerson);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Not ekle veya düzenle'));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(const Key('assignment-note-1')),
+      find.byKey(const ValueKey('personnel-note-1')),
       'Görev notu',
     );
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.text('1 personel seçildi'), findsOneWidget);
     await tester.tap(find.text('Devam et'));
     await tester.pumpAndSettle();
+    final reopenedEdit = find.byKey(const ValueKey('edit-personnel-1'));
+    await tester.ensureVisible(reopenedEdit);
+    await tester.tap(reopenedEdit);
+    await tester.pumpAndSettle();
     expect(find.text('Görev notu'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
     expect(find.text(DutyOrLeaveType.nobetci), findsOneWidget);
     expect(find.text('Faaliyete Ekle'), findsOneWidget);
     await tester.tap(find.byTooltip('Kapat'));
