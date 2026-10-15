@@ -55,7 +55,7 @@ class BulkImportStepper extends StatelessWidget {
               child: InkWell(
                 borderRadius: BorderRadius.circular(20),
                 onTap: _isEnabled(index) ? () => onStepTapped(index) : null,
-                child: Row(
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     CircleAvatar(
@@ -77,17 +77,20 @@ class BulkImportStepper extends StatelessWidget {
                               ),
                             ),
                     ),
-                    if (index == currentStep) ...[
-                      const SizedBox(width: 5),
-                      Text(
-                        steps[index],
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: context.accentOrOlive,
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      steps[index],
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: index == currentStep
+                            ? FontWeight.w800
+                            : FontWeight.w400,
+                        color: index == currentStep
+                            ? context.accentOrOlive
+                            : context.textMuted,
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),
