@@ -31,9 +31,11 @@ void main() {
       duties: const [DutyOrLeaveType.gorevli, DutyOrLeaveType.nobetci],
       isAdmin: true,
       onChangePerson: () {},
+      onRemovePersonnel: (_) {},
       onChanged: () {},
     ))));
-    expect(find.byKey(const Key('assignment-duty-1-NÖBETÇİ')), findsOneWidget);
+    expect(find.byKey(const ValueKey('edit-personnel-1')), findsOneWidget);
+    expect(find.textContaining(DutyOrLeaveType.nobetci), findsOneWidget);
     expect(find.byKey(const Key('assignment-note-1')), findsNothing);
   });
 
@@ -61,6 +63,8 @@ void main() {
           duties: const [DutyOrLeaveType.gorevli, DutyOrLeaveType.nobetci],
           isAdmin: true,
           onChangePerson: () {},
+          onRemovePersonnel: (_) {},
+      onRemovePersonnel: (_) {},
           onChanged: () => changed = true,
         ),
       ),
@@ -113,17 +117,25 @@ void main() {
           duties: const [DutyOrLeaveType.gorevli, DutyOrLeaveType.nobetci],
           isAdmin: true,
           onChangePerson: () {},
+          onRemovePersonnel: (_) {},
+      onRemovePersonnel: (_) {},
           onChanged: () => changed = true,
         ),
       ),
     ));
 
-    expect(find.byKey(const Key('assignment-duty-1-GÖREVLİ')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('assignment-duty-1-GÖREVLİ')));
+    final editButton = find.byKey(const ValueKey('edit-personnel-1'));
+    expect(editButton, findsOneWidget);
+    await tester.tap(editButton);
     await tester.pumpAndSettle();
 
-    expect(find.text(DutyOrLeaveType.nobetci), findsOneWidget);
-    await tester.tap(find.text(DutyOrLeaveType.nobetci));
+    expect(find.text('Farklı görev seç'), findsOneWidget);
+    await tester.tap(find.text('Farklı görev seç'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey('personnel-duty-1-NÖBETÇİ')),
+    );
     await tester.pumpAndSettle();
 
     expect(draft.dutyFor(1), DutyOrLeaveType.nobetci);
