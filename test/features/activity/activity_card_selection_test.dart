@@ -191,23 +191,14 @@ void main() {
       expect(find.text('ADMIN ONAYI BEKLİYOR'), findsOneWidget);
       expect(find.byIcon(Icons.expand_more), findsOneWidget);
 
-      if (width < 520) {
-        expect(find.byKey(const Key('activity-actions-81')), findsOneWidget);
-        expect(find.byIcon(Icons.edit_calendar_outlined), findsNothing);
-
-        await tester.tap(find.byKey(const Key('activity-actions-81')));
-        await tester.pumpAndSettle();
-        expect(find.text('Faaliyet adını değiştir'), findsOneWidget);
-        await tester.tapAt(Offset.zero);
-        await tester.pumpAndSettle();
-      } else {
-        expect(find.byKey(const Key('activity-actions-81')), findsNothing);
-        expect(find.byIcon(Icons.edit_calendar_outlined), findsOneWidget);
-        expect(
-          find.byIcon(Icons.drive_file_rename_outline_rounded),
-          findsOneWidget,
-        );
-      }
+      // Compact action menus stay accessible at all responsive widths.
+      expect(find.byKey(const Key('activity-actions-81')), findsOneWidget);
+      expect(find.byIcon(Icons.edit_calendar_outlined), findsNothing);
+      await tester.tap(find.byKey(const Key('activity-actions-81')));
+      await tester.pumpAndSettle();
+      expect(find.text('Faaliyet adını değiştir'), findsOneWidget);
+      await tester.tapAt(Offset.zero);
+      await tester.pumpAndSettle();
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
