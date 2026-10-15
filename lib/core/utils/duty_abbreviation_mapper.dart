@@ -3,6 +3,48 @@ import 'package:flutter/material.dart';
 /// Görev isimlerinin kısa kodlarını (Badge text) ve görsel renk temasını yöneten utility sınıfı.
 class DutyAbbreviationMapper {
   static const Map<String, Map<String, dynamic>> _dutyConfig = {
+    'HEYBET': {
+      'code': 'HEY',
+      'lightBg': Color(0xFFE3F2FD),
+      'darkBg': Color(0xFF173047),
+      'lightText': Color(0xFF1565C0),
+      'darkText': Color(0xFF81C9FA),
+    },
+    'HEYBET KOMUTANI': {
+      'code': 'HEY',
+      'lightBg': Color(0xFFE3F2FD),
+      'darkBg': Color(0xFF173047),
+      'lightText': Color(0xFF1565C0),
+      'darkText': Color(0xFF81C9FA),
+    },
+    'GÖREVLİ': {
+      'code': 'GÖR',
+      'lightBg': Color(0xFFE6F6EC),
+      'darkBg': Color(0xFF173A30),
+      'lightText': Color(0xFF1B6A44),
+      'darkText': Color(0xFF89DBB1),
+    },
+    'GARAJ NÖB.': {
+      'code': 'GAR',
+      'lightBg': Color(0xFFE6F6EC),
+      'darkBg': Color(0xFF173A30),
+      'lightText': Color(0xFF1B6A44),
+      'darkText': Color(0xFF89DBB1),
+    },
+    'MEBS NÖB.': {
+      'code': 'MEB',
+      'lightBg': Color(0xFFE3F2FD),
+      'darkBg': Color(0xFF173047),
+      'lightText': Color(0xFF1565C0),
+      'darkText': Color(0xFF81C9FA),
+    },
+    'NÖBETÇİ': {
+      'code': 'Nbt',
+      'lightBg': Color(0xFFFFEBEE),
+      'darkBg': Color(0xFF3E1C1C),
+      'lightText': Color(0xFFC62828),
+      'darkText': Color(0xFFEF9A9A),
+    },
     'GÜLÜŞKÜR': {
       'code': 'Gş',
       'lightBg': Color(0xFFE3F2FD),
