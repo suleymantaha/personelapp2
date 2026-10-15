@@ -271,6 +271,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                             database: db,
                             activityRepository: activityRepo,
                             initialText: imageResult.bulkImportText,
+                            isImageImport: true,
                             targetActivity: activity,
                           ),
                         );
