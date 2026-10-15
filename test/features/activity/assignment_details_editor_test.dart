@@ -139,4 +139,66 @@ void main() {
     expect(draft.dutyFor(1), DutyOrLeaveType.nobetci);
     expect(changed, isTrue);
   });
+  testWidgets('archive person sheet saves note and resets to common duty', (tester) async {
+    final draft = ActivityFormDraft(initialDate: DateTime(2026, 10, 15))
+      ..setCommonDuty(DutyOrLeaveType.gorevli)
+      ..togglePersonnel(1)
+      ..setDutyOverride(1, DutyOrLeaveType.nobetci);
+    var changes = 0;
+    const person = PersonelTableData(
+      aktif: true,
+      isDemo: false,
+      id: 1,
+      adSoyad: 'Örnek Personel',
+      rutbe: 'J.Asb.Çvş.',
+      birlik: 'K.H',
+      kayitTarihi: '2026-10-15',
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: ActivityAssignmentDetailsEditor(
+          people: const [person],
+          squadNames: const {},
+          draft: draft,
+          duties: const [DutyOrLeaveType.gorevli, DutyOrLeaveType.nobetci],
+          isAdmin: true,
+          onChangePerson: () {},
+          onRemovePersonnel: (_) {},
+          onChanged: () => changes++,
+        ),
+      ),
+    ));
+
+    expect(find.byKey(const ValueKey('edit-personnel-1')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('edit-personnel-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('Farklı görev seç'), findsOneWidget);
+    expect(find.text('Not ekle veya düzenle'), findsOneWidget);
+
+    await tester.tap(find.text('Not ekle veya düzenle'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('personnel-note-1')),
+      'Giriş kapısı',
+    );
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
+    expect(draft.notes[1], 'Giriş kapısı');
+    expect(draft.resolvedPersonnelAssignments.single.note, 'Giriş kapısı');
+
+    await tester.tap(find.byKey(const ValueKey('edit-personnel-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('Giriş kapısı'), findsOneWidget);
+    await tester.tap(find.text('Farklı görev seç'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ortak görevi kullan'));
+    await tester.pumpAndSettle();
+    expect(draft.dutyOverrides, isEmpty);
+    expect(draft.dutyFor(1), DutyOrLeaveType.gorevli);
+    expect(draft.notes[1], 'Giriş kapısı');
+    expect(changes, 2);
+    expect(tester.takeException(), isNull);
+  });
+
 }
