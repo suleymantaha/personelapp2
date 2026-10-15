@@ -7,12 +7,14 @@ class BulkImportHeaderBanner extends StatelessWidget {
   const BulkImportHeaderBanner({
     required this.isKeyboardVisible,
     required this.onClose,
+    this.isImageImport = false,
     this.onBack,
     this.onOpenMemory,
     super.key,
   });
 
   final bool isKeyboardVisible;
+  final bool isImageImport;
   final VoidCallback? onClose;
   final VoidCallback? onBack;
   final VoidCallback? onOpenMemory;
@@ -39,14 +41,16 @@ class BulkImportHeaderBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  context.l10n.bulkImportHeaderTitle,
+                  isImageImport
+                      ? context.l10n.dashboardBulkImportImage
+                      : context.l10n.bulkImportHeaderTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                 ),
                 if (!isKeyboardVisible)
                   Text(
-                    'WhatsApp / Telegram',
+                    isImageImport ? 'Görselden okunan liste' : 'WhatsApp / Telegram',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(color: context.textSecondary, fontSize: 11),
