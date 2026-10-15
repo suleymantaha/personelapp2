@@ -291,6 +291,7 @@ extension _MonthlyMatrixActions on _MonthlyMatrixScreenState {
             ),
             const SizedBox(height: 6),
             GridView.builder(
+              padding: EdgeInsets.zero,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: cellCount,
