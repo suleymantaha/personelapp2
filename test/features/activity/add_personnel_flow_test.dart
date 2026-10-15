@@ -190,7 +190,7 @@ void main() {
         await tester.tap(persistedEdit);
         await tester.pumpAndSettle();
         expect(find.text('Kapı nöbeti'), findsOneWidget);
-        await tester.pageBack();
+        await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
         await tester.tap(find.text('Faaliyete Ekle'));
         await tester.pumpAndSettle();
