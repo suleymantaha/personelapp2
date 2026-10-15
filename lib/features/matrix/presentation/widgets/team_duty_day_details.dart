@@ -27,6 +27,8 @@ class TeamDutyDayDetails extends StatelessWidget {
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
+      // Do not dim the already-open calendar a second time.
+      barrierColor: Colors.transparent,
       builder: (context) => TeamDutyDayDetails(
         day: day,
         monthName: monthName,
@@ -71,11 +73,11 @@ class TeamDutyDayDetails extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: context.colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: context.cardBorderColor),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -118,9 +120,9 @@ class TeamDutyDayDetails extends StatelessWidget {
     return DraggableScrollableSheet(
       key: const ValueKey('team-day-detail-sheet'),
       expand: false,
-      initialChildSize: 0.43,
+      initialChildSize: 0.52,
       minChildSize: 0.28,
-      maxChildSize: 0.82,
+      maxChildSize: 0.88,
       builder: (context, scrollController) => Container(
         decoration: BoxDecoration(
           color: theme.scaffoldBackgroundColor,
@@ -227,66 +229,92 @@ class TeamDutyDayDetails extends StatelessWidget {
                       final statusColor =
                           _statusColor(context, group.durum);
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(14),
+                        margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
                           color: context.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(14),
                           border: Border.all(color: context.cardBorderColor),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    '${group.gorev} · ${context.l10n.bulkImportBlockPersonnelCount(group.personelAdlari.length)}',
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.titleSmall?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 9, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: statusColor.withValues(alpha: 0.13),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    _statusLabel(context, group.durum),
-                                    style: theme.textTheme.labelSmall?.copyWith(
-                                      color: statusColor,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        child: ExpansionTile(
+                          key: ValueKey('team-day-group-$groupIndex'),
+                          initiallyExpanded: groupIndex == 0,
+                          shape: const Border(),
+                          collapsedShape: const Border(),
+                          tilePadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                          ),
+                          childrenPadding: const EdgeInsets.fromLTRB(
+                            12, 0, 12, 12,
+                          ),
+                          title: Text(
+                            group.gorev,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
                             ),
-                            if (group.devamEdenPersonelIds.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Text(
-                                  context.l10n.matrixContinuingFromPreviousDay(
-                                      group.devamEdenPersonelIds.length),
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                      color: context.textSecondary),
+                          ),
+                          subtitle: Row(
+                            children: [
+                              Text(
+                                context.l10n.bulkImportBlockPersonnelCount(
+                                  group.personelAdlari.length,
+                                ),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: context.textSecondary,
                                 ),
                               ),
-                            const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                for (var i = 0;
-                                    i < group.personelAdlari.length;
-                                    i++)
-                                  _personChip(context, group, i, groupIndex),
-                              ],
+                              const SizedBox(width: 8),
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: statusColor,
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              Flexible(
+                                child: Text(
+                                  _statusLabel(context, group.durum),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: statusColor,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          children: [
+                            if (group.devamEdenPersonelIds.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    context.l10n.matrixContinuingFromPreviousDay(
+                                      group.devamEdenPersonelIds.length,
+                                    ),
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: context.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
+                                children: [
+                                  for (var i = 0;
+                                      i < group.personelAdlari.length;
+                                      i++)
+                                    _personChip(context, group, i, groupIndex),
+                                ],
+                              ),
                             ),
                           ],
                         ),
