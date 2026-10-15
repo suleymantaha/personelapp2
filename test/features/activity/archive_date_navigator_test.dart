@@ -7,6 +7,7 @@ void main() {
     tester,
   ) async {
     DateTime? selected;
+    var calendarOpenCount = 0;
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -14,6 +15,7 @@ void main() {
             selectedDate: DateTime(2026, 8, 27),
             activityCount: 5,
             onDateSelected: (date) => selected = date,
+            onCalendarTap: () => calendarOpenCount++,
           ),
         ),
       ),
@@ -31,5 +33,8 @@ void main() {
 
     await tester.tap(find.byKey(const Key('archive-next-day')));
     expect(selected, DateTime(2026, 8, 28));
+
+    await tester.tap(find.byKey(const Key('archive-calendar-date-button')));
+    expect(calendarOpenCount, 1);
   });
 }
