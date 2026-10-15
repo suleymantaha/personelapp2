@@ -184,6 +184,8 @@ class _BulkImportPreviewSectionState extends State<BulkImportPreviewSection> {
                         ),
                         const SizedBox(height: 10),
                         if (!widget.previewFilterIsReady &&
+                            (widget.problemLocations.isNotEmpty ||
+                                widget.issues.isNotEmpty) &&
                             (widget.isMobile ||
                                 widget.activeIssueFocusIndex >= 0 ||
                                 (widget.problemLocations.isEmpty &&
