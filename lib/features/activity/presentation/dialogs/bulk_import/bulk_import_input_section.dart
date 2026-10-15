@@ -72,7 +72,9 @@ class BulkImportInputSection extends StatelessWidget {
             ),
           ),
           if (!isKeyboardVisible)
-            ExpansionTile(
+            Material(
+              color: Colors.transparent,
+              child: ExpansionTile(
               tilePadding: EdgeInsets.zero,
               childrenPadding: EdgeInsets.zero,
               title: Text(
@@ -96,6 +98,7 @@ class BulkImportInputSection extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
             ),
           const SizedBox(height: 8),
           SizedBox(
