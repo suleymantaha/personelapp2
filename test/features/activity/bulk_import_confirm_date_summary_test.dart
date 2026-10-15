@@ -101,4 +101,95 @@ void main() {
     );
     expect(find.text('Kaydedilemiyor'), findsOneWidget);
   });
+
+  testWidgets(
+    'confirmation cards scroll under the top while actions stay fixed',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: BulkImportConfirmSection(
+              blocks: [
+                for (var i = 0; i < 16; i++)
+                  record('Tim $i', '2026-10-16', 3),
+              ],
+              issues: const [],
+              unresolvedPersonnelCount: 0,
+              isSaving: false,
+              isMobile: true,
+              onSave: () {},
+              onReturnToPreview: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final scrollable = find.byKey(const Key('bulk-import-confirm-record-list'));
+      final back = find.byKey(const Key('bulk-import-confirm-back-button'));
+      final save = find.byKey(const Key('bulk-import-save-button'));
+      final heading = find.text('Kayda Hazır');
+      expect(scrollable, findsOneWidget);
+      expect(back, findsOneWidget);
+      expect(save, findsOneWidget);
+
+      final topBefore = tester.getTopLeft(heading).dy;
+      final backTopBefore = tester.getTopLeft(back).dy;
+      await tester.drag(scrollable, const Offset(0, -360));
+      await tester.pumpAndSettle();
+
+      // Previously only the list scrolled, leaving the large heading and
+      // summary permanently between records and the app bar.
+      expect(tester.getTopLeft(heading).dy, lessThan(topBefore - 100));
+      expect(tester.getTopLeft(back).dy, closeTo(backTopBefore, 1));
+      expect(tester.getSize(back).height, 52);
+      expect(tester.getSize(save).height, 52);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('320dp mobile width and large text never grow action buttons',
+      (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(1.5),
+          ),
+          child: child!,
+        ),
+        home: Scaffold(
+          body: BulkImportConfirmSection(
+            blocks: [
+              record('Çok Uzun Takım Adı / 10-B', '2026-10-16', 10),
+              record('7/B', '2026-10-17', 11),
+            ],
+            issues: const [],
+            unresolvedPersonnelCount: 0,
+            isSaving: false,
+            isMobile: true,
+            onSave: () {},
+            onReturnToPreview: () {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final back = find.byKey(const Key('bulk-import-confirm-back-button'));
+    final save = find.byKey(const Key('bulk-import-save-button'));
+    expect(tester.getSize(back).height, 52);
+    expect(tester.getSize(save).height, 52);
+    expect(find.text('Önizlemeye Dön'), findsOneWidget);
+    expect(find.text('TÜMÜNÜ KAYDET'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
