@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
+import 'package:personelapp2/core/theme/app_theme.dart';
 
 class BulkImportStepper extends StatelessWidget {
   const BulkImportStepper({
@@ -16,12 +16,10 @@ class BulkImportStepper extends StatelessWidget {
   final bool canProceedToSave;
   final ValueChanged<int> onStepTapped;
 
-  bool _isStepEnabled(int stepIndex) {
-    if (stepIndex <= currentStep) return true;
-    if (stepIndex == 1) return hasBlocks;
-    if (stepIndex == 2) return canProceedToSave;
-    return false;
-  }
+  bool _isEnabled(int index) =>
+      index <= currentStep ||
+      (index == 1 && hasBlocks) ||
+      (index == 2 && canProceedToSave);
 
   @override
   Widget build(BuildContext context) {
@@ -30,126 +28,70 @@ class BulkImportStepper extends StatelessWidget {
       context.l10n.bulkImportStepPreview,
       context.l10n.bulkImportStepConfirm,
     ];
-    final accentColor = context.accentOrOlive;
-    final approvedColor = context.approvedColor;
-    final disabledLineColor = context.cardBorderColor;
-    final disabledTextColor = context.textMuted;
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        border: Border(
-          bottom: BorderSide(color: context.cardBorderColor),
-        ),
+        border: Border(bottom: BorderSide(color: context.cardBorderColor)),
       ),
       child: Row(
         children: [
-          for (var i = 0; i < steps.length; i++) ...[
-            if (i > 0) ...[
+          for (var index = 0; index < steps.length; index++) ...[
+            if (index > 0)
               Expanded(
-                child: Container(
-                  height: 2,
-                  color: i <= currentStep ? accentColor : disabledLineColor,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
-            Flexible(
-              child: GestureDetector(
-                onTap: () {
-                  if (_isStepEnabled(i)) {
-                    onStepTapped(i);
-                  }
-                },
-                child: Tooltip(
-                  message: i == 2 && !canProceedToSave && currentStep < 2
-                      ? context.l10n.bulkImportStepperUnlockHint
-                      : steps[i],
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: i < currentStep
-                                  ? accentColor
-                                  : i == currentStep
-                                      ? accentColor
-                                      : (i == 2 && canProceedToSave)
-                                          ? approvedColor.withAlpha(40)
-                                          : disabledLineColor,
-                              border: i == 2 &&
-                                      canProceedToSave &&
-                                      currentStep < 2
-                                  ? Border.all(color: approvedColor, width: 1.5)
-                                  : null,
-                            ),
-                            child: Center(
-                              child: i < currentStep
-                                  ? Icon(Icons.check,
-                                      color: context.onAccentOrOlive, size: 16)
-                                  : Text(
-                                      '${i + 1}',
-                                      style: TextStyle(
-                                        color: i == currentStep
-                                            ? context
-                                                .customColors.onAccentOrOlive
-                                            : i == 2 && canProceedToSave
-                                                ? approvedColor
-                                                : disabledTextColor,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          if (i == 2 && !canProceedToSave && currentStep < 2)
-                            Positioned(
-                              right: -2,
-                              top: -2,
-                              child: Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                  color: disabledTextColor,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.lock_rounded,
-                                  color: context.onAccentOrOlive,
-                                  size: 9,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        steps[i],
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight:
-                              i == currentStep || (i == 2 && canProceedToSave)
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                          color: i == currentStep
-                              ? accentColor
-                              : i == 2 && canProceedToSave
-                                  ? approvedColor
-                                  : disabledTextColor,
-                        ),
-                      ),
-                    ],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Divider(
+                    thickness: 1.5,
+                    color: index <= currentStep
+                        ? context.accentOrOlive
+                        : context.cardBorderColor,
                   ),
                 ),
               ),
+            Semantics(
+              button: true,
+              enabled: _isEnabled(index),
+              selected: index == currentStep,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: _isEnabled(index) ? () => onStepTapped(index) : null,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircleAvatar(
+                      radius: 13,
+                      backgroundColor: index <= currentStep
+                          ? context.accentOrOlive
+                          : context.cardBorderColor,
+                      child: index < currentStep
+                          ? Icon(Icons.check_rounded,
+                              size: 15, color: context.onAccentOrOlive)
+                          : Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: index == currentStep
+                                    ? context.onAccentOrOlive
+                                    : context.textMuted,
+                              ),
+                            ),
+                    ),
+                    if (index == currentStep) ...[
+                      const SizedBox(width: 5),
+                      Text(
+                        steps[index],
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: context.accentOrOlive,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
-            if (i < steps.length - 1) const SizedBox(width: 4),
           ],
         ],
       ),
