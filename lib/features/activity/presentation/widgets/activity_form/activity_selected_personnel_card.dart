@@ -15,10 +15,12 @@ class ActivitySelectedPersonnelCard extends StatelessWidget {
     required this.onEditPersonnel,
     required this.onEditAssignment,
     required this.onAssignSquad,
+    this.expandSingleSquad = false,
     super.key,
   });
 
   final List<PersonelTableData> personnel;
+  final bool expandSingleSquad;
   final Map<int, String> squadNames;
   final ActivityFormDraft draft;
   final ValueChanged<int> onRemovePersonnel;
@@ -81,6 +83,7 @@ class ActivitySelectedPersonnelCard extends StatelessWidget {
             const SizedBox(height: 12),
             for (final timId in groupIds)
               ActivitySelectedSquadGroup(
+                initiallyExpanded: expandSingleSquad && groupIds.length == 1,
                 squadName: timId == null
                     ? context.l10n.bulkImportUnassignedOrOtherPersonnel
                     : (squadNames[timId] ?? context.l10n.personnelPickerUnknownTeam),
