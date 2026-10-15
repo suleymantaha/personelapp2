@@ -63,6 +63,57 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1));
   });
 
+  testWidgets('approved activity keeps status icon but hides redundant badge', (
+    tester,
+  ) async {
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+    const activity = GunlukFaaliyetTableData(
+      id: 91,
+      faaliyetAdi: 'GÖREVLİ',
+      tarih: '2026-10-15',
+      olusturanKullanici: 'admin',
+      olusturmaTarihi: '',
+    );
+    await database.into(database.gunlukFaaliyetTable).insert(activity);
+    final personnelId = await database.into(database.personelTable).insert(
+      PersonelTableCompanion.insert(
+        adSoyad: 'Test Personeli',
+        rutbe: 'J.Uzm.Çvş.',
+        birlik: 'K.H',
+        kayitTarihi: '2026-10-15',
+      ),
+    );
+    await database.into(database.faaliyetPersonelAtamaTable).insert(
+      FaaliyetPersonelAtamaTableCompanion.insert(
+        faaliyetId: activity.id,
+        personelId: personnelId,
+        gorevVeyaIzin: 'GÖREVLİ',
+        durum: 'onaylandi',
+      ),
+    );
+
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        databaseProvider.overrideWithValue(database),
+        allPersonnelProvider.overrideWith((ref) => Stream.value(const [])),
+        allSquadsProvider.overrideWith((ref) => Stream.value(const [])),
+      ],
+      child: MaterialApp(
+        home: Scaffold(
+          body: ActivityCard(activity: activity, onDateChanged: (_) {}),
+        ),
+      ),
+    ));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('GÖREVLİ'), findsOneWidget);
+    expect(find.text('ONAYLANDI'), findsNothing);
+    expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final width in [320.0, 360.0, 520.0, 800.0]) {
     testWidgets('long activity title stays readable at ${width.toInt()} px', (
       tester,
