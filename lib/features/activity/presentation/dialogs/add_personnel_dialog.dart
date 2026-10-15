@@ -166,7 +166,16 @@ class _AddPersonnelToActivityDialogState
         if (!didPop) _back();
       },
       child: Scaffold(
-        appBar: AppBar(
+        body: NestedScrollView(
+          key: const Key('add-personnel-nested-scroll'),
+          floatHeaderSlivers: true,
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverAppBar(
+              key: const Key('add-personnel-scroll-appbar'),
+              floating: true,
+              snap: true,
+              pinned: false,
+              toolbarHeight: 62,
           leading: IconButton(
             tooltip: context.l10n.commonBack,
             onPressed: _saving ? null : _back,
@@ -179,6 +188,7 @@ class _AddPersonnelToActivityDialogState
                 context.l10n.addPersonnelDialogTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
               Text(
                 '${widget.activity.faaliyetAdi} · ${DateFormat.yMMMMd('tr_TR').format(DateTime.parse(widget.activity.tarih))}',
@@ -199,8 +209,9 @@ class _AddPersonnelToActivityDialogState
               icon: const Icon(Icons.close),
             ),
           ],
-        ),
-        body: SafeArea(
+            ),
+          ],
+          body: SafeArea(
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 680),
@@ -344,6 +355,7 @@ class _AddPersonnelToActivityDialogState
               ),
             ),
           ),
+        ),
         ),
       ),
     );
