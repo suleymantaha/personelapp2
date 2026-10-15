@@ -112,6 +112,11 @@ void main() {
     expect(find.text('ONAYLANDI'), findsNothing);
     expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
     expect(tester.takeException(), isNull);
+
+    // Dispose Drift listeners and flush their zero-duration close timers.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 1));
   });
 
   for (final width in [320.0, 360.0, 520.0, 800.0]) {
