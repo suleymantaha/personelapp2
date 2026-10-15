@@ -38,12 +38,14 @@ class BulkImportDialog extends ConsumerStatefulWidget {
     required this.database,
     required this.activityRepository,
     this.initialText,
+    this.isImageImport = false,
     this.targetActivity,
     super.key,
   });
   final AppDatabase database;
   final ActivityRepository activityRepository;
   final String? initialText;
+  final bool isImageImport;
   final GunlukFaaliyetTableData? targetActivity;
 
   @override
