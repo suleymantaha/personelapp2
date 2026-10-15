@@ -156,9 +156,16 @@ void main() {
         expect(find.text('Farklı görev seç'), findsOneWidget);
         await tester.tap(find.text('Farklı görev seç'));
         await tester.pumpAndSettle();
-        await tester.tap(
-          find.byKey(ValueKey('personnel-duty-$second-${DutyOrLeaveType.nobetci}')),
+        final personalDutyTarget = find.byKey(
+          ValueKey('personnel-duty-$second-${DutyOrLeaveType.nobetci}'),
         );
+        await tester.scrollUntilVisible(
+          personalDutyTarget,
+          80,
+          scrollable: find.byType(Scrollable).last,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(personalDutyTarget);
         await tester.pumpAndSettle();
         final firstEdit = find.byKey(ValueKey('edit-personnel-$person'));
         await tester.ensureVisible(firstEdit);
