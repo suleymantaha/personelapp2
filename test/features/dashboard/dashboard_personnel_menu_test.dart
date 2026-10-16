@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/dashboard/presentation/dashboard_screen.dart';
-import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_archive_action.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_menu_card.dart';
 
 void main() {
@@ -51,17 +50,31 @@ void main() {
       const UserSessionState(username: 'admin', role: UserRole.admin),
     );
 
-    expect(find.byType(CustomScrollView), findsOneWidget);
-    expect(find.byType(DashboardMenuCard), findsNWidgets(7));
-    expect(find.byType(DashboardArchiveAction), findsOneWidget);
+    expect(find.byKey(const ValueKey('dashboard-action-grid')), findsOneWidget);
+    expect(find.byType(DashboardMenuCard), findsNWidgets(8));
+    expect(find.text('Faaliyet Arşivi'), findsOneWidget);
     expect(find.text('Tim Görev Analizi'), findsOneWidget);
     expect(find.text('Metinden Toplu Aktar'), findsOneWidget);
     expect(find.text('Görselden Toplu Aktar'), findsOneWidget);
     expect(find.text('Bekleyen Onaylar'), findsNothing);
+
+    final tiles = find.byType(DashboardMenuCard);
+    final expectedTitles = [
+      'Personel & Tim', 'Tim Görev Analizi', 'Aylık Matris',
+      'Görselden Toplu Aktar', 'TEMGÜNDRAP', 'Metinden Toplu Aktar',
+      'Faaliyet Çizelgesi', 'Faaliyet Arşivi',
+    ];
+    for (var index = 0; index < expectedTitles.length; index++) {
+      expect(tester.widget<DashboardMenuCard>(tiles.at(index)).title,
+          expectedTitles[index]);
+    }
+    final grid = tester.widget<GridView>(
+        find.byKey(const ValueKey('dashboard-action-grid')));
+    expect(grid.physics, isA<NeverScrollableScrollPhysics>());
   });
 
   testWidgets(
-      'non-admin sees analytics and four existing grid actions and a separate archive action',
+      'non-admin sees analytics and permitted actions in a compact grid',
       (
     tester,
   ) async {
@@ -70,8 +83,8 @@ void main() {
       const UserSessionState(username: 'tim', role: UserRole.teamCommander),
     );
 
-    expect(find.byType(DashboardMenuCard), findsNWidgets(5));
-    expect(find.byType(DashboardArchiveAction), findsOneWidget);
+    expect(find.byType(DashboardMenuCard), findsNWidgets(6));
+    expect(find.text('Faaliyet Arşivi'), findsOneWidget);
     expect(find.text('Tim Görev Analizi'), findsOneWidget);
     expect(find.text('Metinden Toplu Aktar'), findsNothing);
     expect(find.text('Bekleyen Onaylar'), findsNothing);
@@ -109,6 +122,13 @@ void main() {
 
     tester.view.physicalSize = const Size(390, 844);
     await tester.pump();
+
+    final grid = find.byKey(const ValueKey('dashboard-action-grid'));
+    final first = tester.getRect(find.byType(DashboardMenuCard).first);
+    final last = tester.getRect(find.byType(DashboardMenuCard).last);
+    final viewport = tester.getRect(grid);
+    expect(first.top, greaterThanOrEqualTo(viewport.top));
+    expect(last.bottom, lessThanOrEqualTo(viewport.bottom + 1));
 
     expect(find.text('Personel & Tim'), findsOneWidget);
     expect(find.text('Kayıt ve Yetki'), findsOneWidget);
