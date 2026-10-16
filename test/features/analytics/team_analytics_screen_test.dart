@@ -55,11 +55,9 @@ void main() {
 
         // A single person's duty remains one participation and one person-task.
         final dutyRow = find.byKey(const ValueKey('team-duty-1-HEYBET'));
-        await Scrollable.ensureVisible(
-          tester.element(dutyRow),
-          alignment: 0.3,
-          duration: const Duration(milliseconds: 100),
-        );
+        // WidgetTester.ensureVisible scrolls synchronously; awaiting an
+        // animated Scrollable.ensureVisible before pumping deadlocks the test.
+        await tester.ensureVisible(dutyRow);
         await tester.pumpAndSettle();
         await tester.tap(dutyRow);
         await tester.pumpAndSettle();
