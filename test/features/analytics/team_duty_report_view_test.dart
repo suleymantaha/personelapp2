@@ -62,8 +62,12 @@ void main() {
       ),
     ));
     expect(find.text('Tim Görev Raporu'), findsOneWidget);
+    final inactive = find.byKey(const ValueKey('report-inactive-teams'));
+    expect(inactive, findsOneWidget);
+    await tester.ensureVisible(inactive);
+    await tester.tap(inactive);
+    await tester.pumpAndSettle();
     expect(find.text('3-B Timi'), findsOneWidget);
-    expect(find.text('Bu dönemde görev kaydı yok'), findsOneWidget);
     final one = tester.getTopLeft(find.byKey(const ValueKey('report-team-5')));
     final two = tester.getTopLeft(find.byKey(const ValueKey('report-team-3')));
     expect(one.dy, lessThan(two.dy));
