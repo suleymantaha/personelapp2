@@ -98,7 +98,7 @@ class DashboardMenuCard extends StatelessWidget {
                     splashColor: palette.content.withValues(alpha: 0.18),
                     highlightColor: palette.content.withValues(alpha: 0.09),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                         horizontal: compact ? 8.0 : 12.0,
                         vertical: compact ? 6.0 : 10.0,
                       ),
