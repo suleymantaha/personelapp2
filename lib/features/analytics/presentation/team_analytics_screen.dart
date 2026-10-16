@@ -5,6 +5,7 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 import '../domain/team_analytics.dart';
 import 'analytics_charts.dart';
+import 'team_duty_report_view.dart';
 import 'analytics_details.dart';
 import 'team_analytics_provider.dart';
 import 'team_monthly_duty_view.dart';
@@ -25,6 +26,7 @@ class TeamAnalyticsScreen extends ConsumerStatefulWidget {
 class _TeamAnalyticsScreenState extends ConsumerState<TeamAnalyticsScreen> {
   late AnalyticsFilter filter;
   late int _selectedTab;
+  bool _showFilters = false;
 
   @override
   void initState() {
@@ -193,8 +195,6 @@ class _TeamAnalyticsScreenState extends ConsumerState<TeamAnalyticsScreen> {
                 children: [
                   _filterCard(context, data),
                   const SizedBox(height: 14),
-                  AnalyticsMetricsView(metrics: data.metrics),
-                  const SizedBox(height: 14),
                   if (data.unknownTeamAssignments > 0 ||
                       data.duplicateAssignments > 0 ||
                       data.possibleDuplicateActivities > 0)
@@ -230,17 +230,21 @@ class _TeamAnalyticsScreenState extends ConsumerState<TeamAnalyticsScreen> {
                         ),
                       ),
                     ),
-                  if (data.entries.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
-                      child: Center(
-                        child: Text('Seçilen filtrelerde görev kaydı yok.'),
-                      ),
-                    ),
                   _buildTabSelector(context),
                   const SizedBox(height: 14),
                   if (_selectedTab == 0) ...[
-                    AnalyticsCharts(data: data),
+                    TeamDutyReportView(data: data),
+                    const SizedBox(height: 12),
+                    Card(
+                      child: ExpansionTile(
+                        key: const ValueKey('report-advanced-charts'),
+                        leading: const Icon(Icons.bar_chart_outlined),
+                        title: const Text('Grafikler ve aylık eğilimler'),
+                        subtitle: const Text('Ayrıntılı karşılaştırmaları göster'),
+                        childrenPadding: const EdgeInsets.all(12),
+                        children: [AnalyticsCharts(data: data)],
+                      ),
+                    ),
                   ] else if (_selectedTab == 1) ...[
                     TeamMonthlyDutyView(data: data),
                   ] else ...[
@@ -266,21 +270,21 @@ class _TeamAnalyticsScreenState extends ConsumerState<TeamAnalyticsScreen> {
             index: 0,
             key: const ValueKey('tab-overview'),
             icon: Icons.insights_rounded,
-            label: 'Genel Bakış',
+            label: 'Tim Raporu',
           ),
           const SizedBox(width: 8),
           _tabPill(
             index: 1,
             key: const ValueKey('tab-monthly'),
             icon: Icons.calendar_month_rounded,
-            label: 'Tim Aylık Görevleri',
+            label: 'Aylık Döküm',
           ),
           const SizedBox(width: 8),
           _tabPill(
             index: 2,
             key: const ValueKey('tab-details'),
             icon: Icons.account_tree_outlined,
-            label: 'Personel Detayı',
+            label: 'Kayıt Ayrıntısı',
           ),
         ],
       ),
@@ -401,8 +405,29 @@ class _TeamAnalyticsScreenState extends ConsumerState<TeamAnalyticsScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                _buildDropdowns(context, data, constraints.maxWidth),
+                const SizedBox(height: 6),
+                TextButton.icon(
+                  key: const ValueKey('analytics-filters-toggle'),
+                  onPressed: () =>
+                      setState(() => _showFilters = !_showFilters),
+                  icon: Icon(_showFilters
+                      ? Icons.expand_less_rounded
+                      : Icons.tune_rounded, size: 18),
+                  label: Text(_showFilters ? 'Filtreleri gizle' : 'Tim, görev ve onay filtreleri'),
+                ),
+                if (_showFilters) ...[
+                  const SizedBox(height: 8),
+                  _buildDropdowns(context, data, constraints.maxWidth),
+                ] else if (filter.teamId != null ||
+                    filter.duty != null ||
+                    filter.status != 'onaylandi')
+                  Text(
+                    'Aktif filtre: ${filter.teamId == null ? 'Tüm timler' : data.teams[filter.teamId] ?? 'Seçili tim'} · '
+                    '${filter.duty ?? 'Tüm görevler'} · ${_statusLabel(filter.status)}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall,
+                  ),
               ],
             );
           },

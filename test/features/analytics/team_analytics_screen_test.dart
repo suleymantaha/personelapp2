@@ -40,10 +40,33 @@ void main() {
                 home: TeamAnalyticsScreen(initialFilter: initial))));
         await tester.pumpAndSettle();
         expect(find.text('Tim Görev Analizi'), findsOneWidget);
-        expect(find.text('Tim Katılımı'), findsOneWidget);
+        expect(find.text('Tim Görev Raporu'), findsOneWidget);
+        expect(find.text('Görev alan tim'), findsOneWidget);
+        expect(find.text('Görev Karşılaştırması'), findsNothing);
+        expect(tester.takeException(), isNull);
+
+        // Primary report: one tap opens the recorded activity and personnel.
+        final reportDuty = find.byKey(const ValueKey('report-duty-1-HEYBET'));
+        await tester.ensureVisible(reportDuty);
+        await tester.tap(reportDuty);
+        await tester.pumpAndSettle();
+        expect(find.text('1-B · HEYBET'), findsOneWidget);
+        expect(find.text('Test Personeli'), findsOneWidget);
+        Navigator.of(tester.element(find.text('1-B · HEYBET'))).pop();
+        await tester.pumpAndSettle();
+
+        // Dense visualizations remain available on demand.
+        final graphToggle = find.byKey(
+            const ValueKey('report-advanced-charts'));
+        // ListView builds the optional chart section lazily on narrow screens.
+        await tester.scrollUntilVisible(graphToggle, 200,
+            scrollable: find.byType(Scrollable).first);
+        await tester.ensureVisible(graphToggle);
+        expect(find.text('Grafikler ve aylık eğilimler'), findsOneWidget);
+        await tester.tap(graphToggle);
+        await tester.pumpAndSettle();
         expect(find.text('Görev Karşılaştırması'), findsOneWidget);
         expect(find.text('Aylık Trend'), findsOneWidget);
-        expect(tester.takeException(), isNull);
 
         // Tim Aylık Görevleri sekmesi testi
         final tabMonthly = find.byKey(const ValueKey('tab-monthly'));
@@ -91,9 +114,13 @@ void main() {
         }
         expect(find.text('Test Personeli'), findsOneWidget);
         expect(tester.takeException(), isNull);
-        await tester.scrollUntilVisible(
-            find.byKey(const ValueKey('analytics-status')), -250,
-            scrollable: find.byType(Scrollable).first);
+        final filterToggle = find.byKey(
+            const ValueKey('analytics-filters-toggle'));
+        await tester.ensureVisible(filterToggle);
+        await tester.tap(filterToggle);
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(
+            find.byKey(const ValueKey('analytics-status')));
         await tester.tap(find.byKey(const ValueKey('duty-null')));
         await tester.pumpAndSettle();
         await tester.tap(find.text('HEYBET').last);
@@ -108,10 +135,11 @@ void main() {
         await tester.tap(find.text('Bekleyen').last);
         await tester.pumpAndSettle();
         await tester.scrollUntilVisible(
-            find.text('Seçilen filtrelerde görev kaydı yok.'), 250,
+            find.text('Açılımı yapılacak görev detayı bulunamadı.'), 250,
             scrollable: find.byType(Scrollable).first);
         expect(
-            find.text('Seçilen filtrelerde görev kaydı yok.'), findsOneWidget);
+            find.text('Açılımı yapılacak görev detayı bulunamadı.'),
+            findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pumpAndSettle();
