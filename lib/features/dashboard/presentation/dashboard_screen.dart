@@ -10,7 +10,6 @@ import 'package:personelapp2/features/activity/services/roster_image_import_serv
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/dashboard/presentation/models/dashboard_action_item.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_action_tone.dart';
-import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_archive_action.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_grid_layout.dart';
 import 'package:personelapp2/features/dashboard/presentation/widgets/dashboard_menu_card.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
@@ -26,35 +25,9 @@ class DashboardScreen extends ConsumerWidget {
     final isAdmin = session?.isAdmin ?? false;
     final pendingAsync = ref.watch(pendingAssignmentsProvider);
 
+    // Left-to-right, low-to-high usage: the frequently used screens sit last.
+    // On the administrator dashboard, 2 columns x 4 rows.
     final gridActions = <DashboardActionItem>[
-      DashboardActionItem(
-        icon: Icons.insights_outlined,
-        title: 'Tim Görev Analizi',
-        subtitle: 'Katılım, görev günleri ve karşılaştırmalar',
-        tone: DashboardActionTone.neutral,
-        onTap: () => AppNavigator.toTeamAnalytics(context),
-      ),
-      DashboardActionItem(
-        icon: Icons.edit_calendar,
-        title: context.l10n.dashboardActivitySchedule,
-        subtitle: context.l10n.dashboardDailyDutyEntry,
-        tone: DashboardActionTone.primary,
-        onTap: () => AppNavigator.toActivityForm(context),
-      ),
-      DashboardActionItem(
-        icon: Icons.grid_on,
-        title: context.l10n.dashboardMonthlyMatrix,
-        subtitle: context.l10n.dashboardExcelDistribution,
-        tone: DashboardActionTone.neutral,
-        onTap: () => AppNavigator.toMonthlyMatrix(context),
-      ),
-      DashboardActionItem(
-        icon: Icons.table_chart_outlined,
-        title: 'TEMGÜNDRAP',
-        subtitle: context.l10n.dashboardTemgundrapSubtitle,
-        tone: DashboardActionTone.neutral,
-        onTap: () => AppNavigator.toTemgundrap(context),
-      ),
       DashboardActionItem(
         icon: Icons.people_alt,
         title: context.l10n.dashboardPersonnelAndSquad,
@@ -64,26 +37,21 @@ class DashboardScreen extends ConsumerWidget {
         tone: DashboardActionTone.personnel,
         onTap: () => AppNavigator.toPersonnelManagement(context),
       ),
-      if (isAdmin) ...[
-        DashboardActionItem(
-          icon: Icons.paste_rounded,
-          title: context.l10n.dashboardBulkImportText,
-          subtitle: context.l10n.dashboardWhatsAppListUpload,
-          tone: DashboardActionTone.import,
-          onTap: () async {
-            final db = ref.read(databaseProvider);
-            final activityRepo = ref.read(activityRepositoryProvider);
-            await showDialog<bool>(
-              context: context,
-              builder: (ctx) => BulkImportDialog(
-                database: db,
-                activityRepository: activityRepo,
-              ),
-            );
-            ref.invalidate(activityRepositoryProvider);
-          },
-        ),
-        DashboardActionItem(
+      DashboardActionItem(
+        icon: Icons.insights_outlined,
+        title: 'Tim Görev Analizi',
+        subtitle: 'Katılım, görev günleri ve karşılaştırmalar',
+        tone: DashboardActionTone.neutral,
+        onTap: () => AppNavigator.toTeamAnalytics(context),
+      ),
+      DashboardActionItem(
+        icon: Icons.grid_on,
+        title: context.l10n.dashboardMonthlyMatrix,
+        subtitle: context.l10n.dashboardExcelDistribution,
+        tone: DashboardActionTone.neutral,
+        onTap: () => AppNavigator.toMonthlyMatrix(context),
+      ),
+      if (isAdmin) DashboardActionItem(
           icon: Icons.image_search_rounded,
           title: context.l10n.dashboardBulkImportImage,
           subtitle: context.l10n.dashboardOcrNameMatch,
@@ -124,7 +92,45 @@ class DashboardScreen extends ConsumerWidget {
             }
           },
         ),
-      ],
+      DashboardActionItem(
+        icon: Icons.table_chart_outlined,
+        title: 'TEMGÜNDRAP',
+        subtitle: context.l10n.dashboardTemgundrapSubtitle,
+        tone: DashboardActionTone.neutral,
+        onTap: () => AppNavigator.toTemgundrap(context),
+      ),
+      if (isAdmin) DashboardActionItem(
+          icon: Icons.paste_rounded,
+          title: context.l10n.dashboardBulkImportText,
+          subtitle: context.l10n.dashboardWhatsAppListUpload,
+          tone: DashboardActionTone.import,
+          onTap: () async {
+            final db = ref.read(databaseProvider);
+            final activityRepo = ref.read(activityRepositoryProvider);
+            await showDialog<bool>(
+              context: context,
+              builder: (ctx) => BulkImportDialog(
+                database: db,
+                activityRepository: activityRepo,
+              ),
+            );
+            ref.invalidate(activityRepositoryProvider);
+          },
+        ),
+      DashboardActionItem(
+        icon: Icons.edit_calendar,
+        title: context.l10n.dashboardActivitySchedule,
+        subtitle: context.l10n.dashboardDailyDutyEntry,
+        tone: DashboardActionTone.primary,
+        onTap: () => AppNavigator.toActivityForm(context),
+      ),
+      DashboardActionItem(
+        icon: Icons.inventory_2_outlined,
+        title: context.l10n.activityArchive,
+        subtitle: context.l10n.dashboardSearchAndReview,
+        tone: DashboardActionTone.neutral,
+        onTap: () => AppNavigator.toActivityArchive(context),
+      )
     ];
 
     return Scaffold(
@@ -147,121 +153,84 @@ class DashboardScreen extends ConsumerWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final pendingList = pendingAsync.asData?.value ?? [];
-            final hasWarningBanner = isAdmin && pendingList.isNotEmpty;
-
-            final gridLayout = DashboardGridLayout.calculate(
+            final hasWarning = isAdmin && pendingList.isNotEmpty;
+            final layout = DashboardGridLayout.calculate(
               constraints,
               itemCount: gridActions.length,
-              hasArchive: true,
-              hasWarningBanner: hasWarningBanner,
+              hasWarningBanner: hasWarning,
             );
 
             return ResponsiveCenter(
-              padding: gridLayout.padding,
-              child: CustomScrollView(
-                physics: const ClampingScrollPhysics(),
-                slivers: [
-                  if (isAdmin)
-                    SliverToBoxAdapter(
-                      child: pendingAsync.when(
-                        data: (pendingList) {
-                          if (pendingList.isEmpty) {
-                            return const SizedBox.shrink();
-                          }
-                          return Container(
-                            margin: EdgeInsets.only(bottom: gridLayout.gap),
-                            child: Card(
-                              color: context.rejectedBgColor,
-                              shape: RoundedRectangleBorder(
-                                side: BorderSide(
-                                  color: context.rejectedBorderColor,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: ListTile(
-                                leading: Icon(
-                                  Icons.warning_amber_rounded,
-                                  color: context.rejectedColor,
-                                  size: 28,
-                                ),
-                                title: Text(
-                                  context.l10n.dashboardPendingConflictsNotice(pendingList.length),
-                                  style: TextStyle(
-                                    color: context.rejectedColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13.5,
+              padding: layout.padding,
+              child: Column(
+                children: [
+                  if (hasWarning)
+                    SizedBox(
+                      height: constraints.maxHeight < 560 ? 52 : 72,
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: layout.gap),
+                        child: Material(
+                          color: context.rejectedBgColor,
+                          borderRadius: BorderRadius.circular(10),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(10),
+                            onTap: () =>
+                                AppNavigator.toPendingApprovals(context),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.warning_amber_rounded,
+                                      color: context.rejectedColor, size: 22),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      context.l10n.dashboardPendingConflictsNotice(
+                                          pendingList.length),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: context.rejectedColor,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                subtitle: Text(
-                                  context.l10n.dashboardPendingTapToReview,
-                                  style: TextStyle(
-                                    color: context.textPrimary,
-                                    fontSize: 11.5,
-                                  ),
-                                ),
-                                trailing: Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 14,
-                                  color: context.rejectedColor,
-                                ),
-                                onTap: () => AppNavigator.toPendingApprovals(context),
+                                  Icon(Icons.chevron_right_rounded,
+                                      color: context.rejectedColor),
+                                ],
                               ),
                             ),
-                          );
-                        },
-                        loading: () => const SizedBox.shrink(),
-                        error: (err, st) => const SizedBox.shrink(),
-                      ),
-                    ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: gridLayout.gap * 0.8),
-                      child: Text(
-                        context.l10n.dashboardOperations,
-                        style: TextStyle(
-                          fontSize: gridLayout.gap < 10 ? 16 : 18,
-                          fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
+                  Expanded(
+                    child: GridView.builder(
+                      key: const ValueKey('dashboard-action-grid'),
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: EdgeInsets.zero,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: layout.columnCount,
+                        mainAxisExtent: layout.mainAxisExtent,
+                        crossAxisSpacing: layout.gap,
+                        mainAxisSpacing: layout.gap,
+                      ),
+                      itemCount: gridActions.length,
+                      itemBuilder: (context, index) {
+                        final action = gridActions[index];
+                        return DashboardMenuCard(
+                          key: ValueKey('dashboard-action-${action.title}'),
+                          icon: action.icon,
+                          title: action.title,
+                          subtitle: action.subtitle,
+                          tone: action.tone,
+                          animationIndex: index,
+                          onTap: action.onTap,
+                        );
+                      },
+                    ),
                   ),
-                  SliverGrid(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                       crossAxisCount: gridLayout.columnCount,
-                       mainAxisExtent: gridLayout.mainAxisExtent,
-                       crossAxisSpacing: gridLayout.gap,
-                       mainAxisSpacing: gridLayout.gap,
-                     ),
-                     delegate: SliverChildBuilderDelegate(
-                       (context, index) {
-                         final action = gridActions[index];
-                         return DashboardMenuCard(
-                           key: ValueKey('dashboard-action-${action.title}'),
-                           icon: action.icon,
-                           title: action.title,
-                           subtitle: action.subtitle,
-                           tone: action.tone,
-                           animationIndex: index,
-                           onTap: action.onTap,
-                         );
-                       },
-                       childCount: gridActions.length,
-                     ),
-                   ),
-                   SliverToBoxAdapter(
-                     child: SizedBox(height: gridLayout.gap),
-                   ),
-                   SliverToBoxAdapter(
-                     child: DashboardArchiveAction(
-                       key: const ValueKey('dashboard-archive-action'),
-                       icon: Icons.inventory_2_outlined,
-                       title: context.l10n.activityArchive,
-                       subtitle: context.l10n.dashboardSearchAndReview,
-                       height: gridLayout.archiveHeight,
-                       animationIndex: gridActions.length,
-                       onTap: () => AppNavigator.toActivityArchive(context),
-                     ),
-                   ),
                 ],
               ),
             );
