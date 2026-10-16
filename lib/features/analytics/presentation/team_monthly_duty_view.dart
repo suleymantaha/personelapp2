@@ -105,7 +105,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
     Widget stat(int count, String label) => Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('$' + '{count}',
+            Text('${count}',
                 style: theme.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(width: 4),
@@ -138,7 +138,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 5),
       child: InkWell(
-        key: ValueKey('team-duty-$' + '{teamId}-$' + '{duty}'),
+        key: ValueKey('team-duty-${teamId}-${duty}'),
         borderRadius: BorderRadius.circular(9),
         onTap: () => _showPersonnel(
           context,
@@ -160,15 +160,15 @@ class TeamMonthlyDutyView extends StatelessWidget {
                           ?.copyWith(fontWeight: FontWeight.w600)),
                 ),
                 const SizedBox(width: 6),
-                Text('$' + '{metrics.participations} katılım',
+                Text('${metrics.participations} katılım',
                     style: theme.textTheme.labelMedium),
                 const SizedBox(width: 8),
                 const Icon(Icons.chevron_right_rounded, size: 18),
               ]),
               const SizedBox(height: 3),
               Text(
-                '$' + '{metrics.personnelTasks} kişi-görev · '
-                '$' + '{metrics.uniquePersonnel} farklı kişi',
+                '${metrics.personnelTasks} kişi-görev · '
+                '${metrics.uniquePersonnel} farklı kişi',
                 style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 5),
@@ -192,10 +192,10 @@ class TeamMonthlyDutyView extends StatelessWidget {
     final theme = Theme.of(context);
     final parts = month.month.split('-');
     final date = DateTime(int.parse(parts[0]), int.parse(parts[1]));
-    final startOfMonth = '$' + '{month.month}-01';
+    final startOfMonth = '${month.month}-01';
     final lastDay = DateTime(date.year, date.month + 1, 0).day;
     final endOfMonth =
-        '$' + '{month.month}-$' + '{lastDay.toString().padLeft(2, '0')}';
+        '${month.month}-${lastDay.toString().padLeft(2, '0')}';
     final start = startOfMonth.compareTo(data.filter.start) < 0
         ? data.filter.start
         : startOfMonth;
@@ -206,15 +206,15 @@ class TeamMonthlyDutyView extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ExpansionTile(
-        key: ValueKey('team-month-$' + '{month.month}'),
+        key: ValueKey('team-month-${month.month}'),
         initiallyExpanded: latest,
         title: Text(DateFormat('MMMM yyyy', 'tr_TR').format(date),
             style: theme.textTheme.titleSmall
                 ?.copyWith(fontWeight: FontWeight.w600)),
         subtitle: Text(
-          '$' + '{month.metrics.participations} katılım · '
-          '$' + '{month.metrics.personnelTasks} kişi-görev · '
-          '$' + '{month.metrics.dutyDays} gün',
+          '${month.metrics.participations} katılım · '
+          '${month.metrics.personnelTasks} kişi-görev · '
+          '${month.metrics.dutyDays} gün',
           style: theme.textTheme.bodySmall,
         ),
         children: [
@@ -236,7 +236,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
     if (teamEntries.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
-    final teamName = data.teams[teamId] ?? 'Tim #$' + '{teamId}';
+    final teamName = data.teams[teamId] ?? 'Tim #${teamId}';
     final metrics = AnalyticsMetrics(teamEntries, start, end);
     final duties = teamEntries.map((entry) => entry.duty).toSet().toList()
       ..sort();
@@ -253,8 +253,8 @@ class TeamMonthlyDutyView extends StatelessWidget {
                       ?.copyWith(fontWeight: FontWeight.bold)),
             ),
             Text(
-              '$' + '{metrics.participations} katılım · '
-              '$' + '{metrics.personnelTasks} kişi-görev',
+              '${metrics.participations} katılım · '
+              '${metrics.personnelTasks} kişi-görev',
               style: theme.textTheme.bodySmall,
             ),
           ]),
@@ -265,15 +265,15 @@ class TeamMonthlyDutyView extends StatelessWidget {
                   teamEntries.where((entry) => entry.duty == duty).toList();
               final count = AnalyticsMetrics(entries, start, end);
               return ListTile(
-                key: ValueKey('team-month-duty-$' + '{teamId}-$' + '{duty}-$' + '{start}'),
+                key: ValueKey('team-month-duty-${teamId}-${duty}-${start}'),
                 dense: true,
                 visualDensity: VisualDensity.compact,
                 contentPadding: EdgeInsets.zero,
                 title: Text(duty, style: theme.textTheme.bodySmall),
                 subtitle: Text(
-                  '$' + '{count.participations} katılım · '
-                  '$' + '{count.personnelTasks} kişi-görev · '
-                  '$' + '{count.uniquePersonnel} kişi',
+                  '${count.participations} katılım · '
+                  '${count.personnelTasks} kişi-görev · '
+                  '${count.uniquePersonnel} kişi',
                   style: theme.textTheme.labelSmall,
                 ),
                 trailing: const Icon(Icons.chevron_right_rounded, size: 18),
@@ -321,12 +321,12 @@ class TeamMonthlyDutyView extends StatelessWidget {
               Text('Görevdeki Personel',
                   style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 4),
-              Text('$' + '{teamName} · $' + '{duty}'),
+              Text('${teamName} · ${duty}'),
               const SizedBox(height: 4),
               Text(
-                '$' + '{metrics.participations} faaliyet katılımı · '
-                '$' + '{metrics.personnelTasks} kişi-görev · '
-                '$' + '{metrics.uniquePersonnel} farklı kişi',
+                '${metrics.participations} faaliyet katılımı · '
+                '${metrics.personnelTasks} kişi-görev · '
+                '${metrics.uniquePersonnel} farklı kişi',
               ),
               const SizedBox(height: 8),
               for (final entry in ordered)
@@ -334,7 +334,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
                   dense: true,
                   title: Text(entry.personnelName),
                   subtitle: Text(
-                    '$' + '{entry.sourceDate} · $' + '{entry.activityName}',
+                    '${entry.sourceDate} · ${entry.activityName}',
                   ),
                 ),
               if (ordered.isEmpty)
