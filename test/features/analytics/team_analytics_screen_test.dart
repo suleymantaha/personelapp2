@@ -62,7 +62,7 @@ void main() {
         expect(find.text('Görevdeki Personel'), findsOneWidget);
         expect(find.text('Test Personeli'), findsOneWidget);
         expect(find.textContaining('1 kişi-görev'), findsWidgets);
-        await tester.pageBack();
+        Navigator.of(tester.element(find.text('Görevdeki Personel'))).pop();
         await tester.pumpAndSettle();
 
         // Personel Detayı sekmesine geçiş ve drill down
