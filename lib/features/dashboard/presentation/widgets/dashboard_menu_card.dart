@@ -25,6 +25,7 @@ class DashboardMenuCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = tone.resolve(context);
     final dark = context.isDarkMode;
+    final compact = MediaQuery.sizeOf(context).height < 680;
 
     return Semantics(
       button: true,
@@ -98,8 +99,8 @@ class DashboardMenuCard extends StatelessWidget {
                     highlightColor: palette.content.withValues(alpha: 0.09),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 10.0,
+                        horizontal: compact ? 8.0 : 12.0,
+                        vertical: compact ? 6.0 : 10.0,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,15 +126,15 @@ class DashboardMenuCard extends StatelessWidget {
                               ],
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.all(7.0),
+                              padding: EdgeInsets.all(compact ? 5.0 : 7.0),
                               child: Icon(
                                 icon,
-                                size: 20,
+                                size: compact ? 16 : 20,
                                 color: palette.content,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: compact ? 2 : 4),
                           Expanded(
                             child: Align(
                               alignment: Alignment.bottomLeft,
@@ -148,6 +149,7 @@ class DashboardMenuCard extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
+                                        fontSize: compact ? 12 : 14,
                                         letterSpacing: 0.15,
                                         height: 1.15,
                                         shadows: dark
@@ -169,7 +171,7 @@ class DashboardMenuCard extends StatelessWidget {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 11.0,
+                                      fontSize: compact ? 9.5 : 11.0,
                                       letterSpacing: 0.1,
                                       color: context.textSecondary,
                                     ),
