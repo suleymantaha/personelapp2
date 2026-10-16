@@ -72,6 +72,25 @@ void main() {
     expect(result.metrics.personnelDays, 2);
     expect(result.entries.length, 3);
   });
+  test('single person is a team participation, not a full-team assignment',
+      () async {
+    final activityId = await activity('2026-10-03', name: 'Hazır Kıta');
+    await assign(activityId, person, duty: 'HAZIR KITA');
+
+    final onePerson = await repo.load(october, admin);
+    expect(onePerson.forTeam(team).metrics.participations, 1);
+    expect(onePerson.forTeam(team).metrics.personnelTasks, 1);
+    expect(onePerson.forTeam(team).metrics.uniquePersonnel, 1);
+
+    await assign(activityId, second, duty: 'HAZIR KITA');
+    final twoPeople = await repo.load(october, admin);
+    expect(twoPeople.forTeam(team).metrics.participations, 1);
+    expect(twoPeople.forTeam(team).metrics.personnelTasks, 2);
+    expect(twoPeople.forTeam(team).metrics.uniquePersonnel, 2);
+    expect(twoPeople.monthly.single.metrics.participations, 1);
+    expect(twoPeople.monthly.single.metrics.personnelTasks, 2);
+  });
+
   test('repeated assignments collapse but distinct activity IDs remain visible',
       () async {
     final a = await activity('2026-10-02');
