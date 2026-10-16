@@ -11,10 +11,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final teamIds = data.entries.map((e) => e.teamId).whereType<int>().toSet()
-        .toList()
-      ..sort((a, b) =>
-          (data.teams[a] ?? '').compareTo(data.teams[b] ?? ''));
+    final teamIds = data.orderedTeamIds;
 
     if (teamIds.isEmpty) {
       return const Center(

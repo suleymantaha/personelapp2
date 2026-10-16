@@ -443,10 +443,10 @@ class _TeamAnalyticsScreenState extends ConsumerState<TeamAnalyticsScreen> {
                   value: filter.teamId,
                   child: const Text('Seçili tim kullanılamıyor'),
                 ),
-              for (final team in data.teams.entries)
+              for (final teamId in data.orderedAvailableTeamIds)
                 DropdownMenuItem(
-                  value: team.key,
-                  child: Text(team.value),
+                  value: teamId,
+                  child: Text(data.teams[teamId] ?? 'Tim #$teamId'),
                 )
             ],
             onChanged: (id) => _update(team: id, clearTeam: id == null),
