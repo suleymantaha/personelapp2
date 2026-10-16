@@ -27,18 +27,18 @@ class AnalyticsMetricsView extends StatelessWidget {
 
         final items = [
           (
-            'Katılım',
+            'Tim Katılımı',
             metrics.participations,
             Icons.flag_rounded,
             _metricColors[0],
-            'Faaliyet başına birim katılım'
+            'En az bir tim personelinin görevlendirildiği faaliyet; tam tim demek değildir'
           ),
           (
             'Görev Günü',
             metrics.dutyDays,
             Icons.calendar_month_rounded,
             _metricColors[1],
-            'Kapsanan takvim günü'
+            'Görevlendirme bulunan benzersiz takvim günü'
           ),
           (
             'Benzersiz Personel',
@@ -48,7 +48,7 @@ class AnalyticsMetricsView extends StatelessWidget {
             'Görev alan kişi sayısı'
           ),
           (
-            'Personel–Görev',
+            'Kişi–Görev',
             metrics.personnelTasks,
             Icons.assignment_ind_rounded,
             _metricColors[3],
@@ -259,7 +259,7 @@ class AnalyticsCharts extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  'Katılım Oranı',
+                  'Katılım Payı',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 11,
@@ -319,12 +319,16 @@ class AnalyticsCharts extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              Text(
-                '$count katılım',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12.5,
-                  color: color,
+              Flexible(
+                child: Text(
+                  '$count tim katılımı',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12.5,
+                    color: color,
+                  ),
                 ),
               ),
               const SizedBox(width: 6),
@@ -382,23 +386,18 @@ class AnalyticsCharts extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Icon(Icons.trending_up_rounded,
                     color: theme.colorScheme.primary, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Aylık Trend',
-                    overflow: TextOverflow.ellipsis,
+                Text('Aylık Trend',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                _legendChip('Katılım', const Color(0xFF4A5D36)),
-                const SizedBox(width: 6),
+                    )),
+                _legendChip('Tim katılımı', const Color(0xFF4A5D36)),
                 _legendChip('Gün', const Color(0xFF2563EB)),
               ],
             ),

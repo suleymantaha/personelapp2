@@ -40,7 +40,7 @@ void main() {
                 home: TeamAnalyticsScreen(initialFilter: initial))));
         await tester.pumpAndSettle();
         expect(find.text('Tim Görev Analizi'), findsOneWidget);
-        expect(find.text('Katılım'), findsWidgets);
+        expect(find.text('Tim Katılımı'), findsOneWidget);
         expect(find.text('Görev Karşılaştırması'), findsOneWidget);
         expect(find.text('Aylık Trend'), findsOneWidget);
         expect(tester.takeException(), isNull);
@@ -52,6 +52,20 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Timler Arası Görev Denge Analizi'), findsOneWidget);
         expect(find.text('Aylık Tim Görev Dağılım Tablosu'), findsOneWidget);
+
+        // A single person's duty remains one participation and one person-task.
+        final dutyRow = find.byKey(const ValueKey('team-duty-1-HEYBET'));
+        // WidgetTester.ensureVisible scrolls synchronously; awaiting an
+        // animated Scrollable.ensureVisible before pumping deadlocks the test.
+        await tester.ensureVisible(dutyRow);
+        await tester.pumpAndSettle();
+        await tester.tap(dutyRow);
+        await tester.pumpAndSettle();
+        expect(find.text('Görevdeki Personel'), findsOneWidget);
+        expect(find.text('Test Personeli'), findsOneWidget);
+        expect(find.textContaining('1 kişi-görev'), findsWidgets);
+        Navigator.of(tester.element(find.text('Görevdeki Personel'))).pop();
+        await tester.pumpAndSettle();
 
         // Personel Detayı sekmesine geçiş ve drill down
         final tabDetails = find.byKey(const ValueKey('tab-details'));

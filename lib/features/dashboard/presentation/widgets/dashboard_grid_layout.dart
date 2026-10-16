@@ -1,69 +1,51 @@
 import 'package:flutter/material.dart';
 
+/// Fits every authorized dashboard action into the available viewport.
+/// Portrait phones use two columns; wide and landscape screens use four.
 class DashboardGridLayout {
   const DashboardGridLayout._({
     required this.columnCount,
     required this.mainAxisExtent,
-    required this.archiveHeight,
     required this.gap,
     required this.padding,
   });
 
   final int columnCount;
   final double mainAxisExtent;
-  final double archiveHeight;
   final double gap;
   final EdgeInsets padding;
 
   factory DashboardGridLayout.calculate(
     BoxConstraints constraints, {
-    int itemCount = 6,
-    bool hasArchive = true,
+    int itemCount = 8,
     bool hasWarningBanner = false,
   }) {
-    final columns = constraints.maxWidth >= 720 ? 3 : 2;
-    final gridRows = (itemCount / columns).ceil().clamp(1, 10);
-
-    final double availableHeight =
-        constraints.hasBoundedHeight && constraints.maxHeight > 0
-            ? constraints.maxHeight
-            : 700.0;
-
-    final double gap = availableHeight < 620
-        ? 8.0
-        : (availableHeight < 720 ? 10.0 : 12.0);
-
-    final double vertPadding = availableHeight < 620 ? 8.0 : 12.0;
-
-    final double titleHeight = availableHeight < 620 ? 22.0 : 26.0;
-    final double bannerHeight = hasWarningBanner
-        ? (availableHeight < 620 ? 56.0 : 64.0) + gap
-        : 0.0;
-    final double archiveHeight =
-        hasArchive ? (availableHeight < 620 ? 54.0 : 64.0) : 0.0;
-
-    final double fixedHeight = bannerHeight +
-        titleHeight +
-        (gap * 0.8) +
-        (hasArchive ? (gap + archiveHeight) : 0.0) +
-        (vertPadding * 2) +
-        ((gridRows - 1) * gap);
-
-    final double remainingGridHeight = availableHeight - fixedHeight;
-    final double calculatedExtent = remainingGridHeight / gridRows;
-
-    final double minExtent = availableHeight < 600 ? 116.0 : 120.0;
-    final double maxExtent = columns == 3 ? 176.0 : 184.0;
-
-    final double finalExtent = calculatedExtent.clamp(minExtent, maxExtent);
+    final width = constraints.maxWidth;
+    final height = constraints.hasBoundedHeight
+        ? constraints.maxHeight
+        : 700.0;
+    final columns = width >= 760 || (width >= 600 && width > height)
+        ? 4
+        : 2;
+    final rows = (itemCount / columns).ceil().clamp(1, 10);
+    final gap = height < 560 ? 6.0 : 10.0;
+    final verticalPadding = height < 560 ? 7.0 : 12.0;
+    final horizontalPadding = width < 360 ? 8.0 : 14.0;
+    final bannerHeight = hasWarningBanner ? (height < 560 ? 52.0 : 72.0) : 0.0;
+    final available = height -
+        verticalPadding * 2 -
+        bannerHeight -
+        gap * (rows - 1);
+    final extent = (available / rows).clamp(0.0, 210.0);
 
     return DashboardGridLayout._(
       columnCount: columns,
-      mainAxisExtent: finalExtent,
-      archiveHeight: archiveHeight,
+      mainAxisExtent: extent,
       gap: gap,
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: vertPadding),
+      padding: EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+        vertical: verticalPadding,
+      ),
     );
   }
 }
-
