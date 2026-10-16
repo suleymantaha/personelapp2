@@ -168,7 +168,8 @@ class TeamMonthlyDutyView extends StatelessWidget {
               const SizedBox(height: 3),
               Text(
                 '${metrics.personnelTasks} kişi-görev · '
-                '${metrics.uniquePersonnel} farklı kişi',
+                '${metrics.uniquePersonnel} farklı kişi · '
+                '${metrics.dutyDays} gün',
                 style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 5),
@@ -246,18 +247,22 @@ class TeamMonthlyDutyView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Expanded(
-              child: Text(teamName,
+          Wrap(
+            spacing: 10,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(teamName,
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(fontWeight: FontWeight.bold)),
-            ),
-            Text(
-              '${metrics.participations} katılım · '
-              '${metrics.personnelTasks} kişi-görev',
-              style: theme.textTheme.bodySmall,
-            ),
-          ]),
+              Text(
+                '${metrics.participations} katılım · '
+                '${metrics.personnelTasks} kişi-görev · '
+                '${metrics.dutyDays} gün',
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+          ),
           const SizedBox(height: 3),
           for (final duty in duties)
             Builder(builder: (context) {
@@ -273,7 +278,8 @@ class TeamMonthlyDutyView extends StatelessWidget {
                 subtitle: Text(
                   '${count.participations} katılım · '
                   '${count.personnelTasks} kişi-görev · '
-                  '${count.uniquePersonnel} kişi',
+                  '${count.uniquePersonnel} kişi · '
+                  '${count.dutyDays} gün',
                   style: theme.textTheme.labelSmall,
                 ),
                 trailing: const Icon(Icons.chevron_right_rounded, size: 18),
