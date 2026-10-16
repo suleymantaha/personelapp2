@@ -13,10 +13,9 @@ class TeamDutyReportView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final metrics = data.metrics;
-    final teamIds = data.orderedAvailableTeamIds;
     final activeIds = data.orderedTeamIds;
-    // Historical teams may no longer exist in the authorized team map.
-    final ids = [...teamIds, ...activeIds.where((id) => !teamIds.contains(id))];
+    final inactiveIds = data.orderedAvailableTeamIds
+        .where((id) => !activeIds.contains(id)).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -54,26 +53,47 @@ class TeamDutyReportView extends StatelessWidget {
                     metrics.participations, Icons.flag_outlined),
                 _metric(context, width, 'Kişi-görev',
                     metrics.personnelTasks, Icons.assignment_ind_outlined),
-                _metric(context, width, 'Görev günü',
+                _metric(context, width, 'Aktif takvim günü',
                     metrics.dutyDays, Icons.calendar_today_outlined),
               ],
             );
           },
         ),
         const SizedBox(height: 16),
-        if (ids.isEmpty)
+        if (activeIds.isEmpty)
           const Padding(
-            padding: EdgeInsets.all(24),
-            child: Center(child: Text('Seçilen dönemde görüntülenecek tim yok.')),
+            padding: EdgeInsets.symmetric(vertical: 18),
+            child: Center(
+              child: Text('Seçilen dönemde görevlendirme kaydı yok.'),
+            ),
           )
         else
-          for (final id in ids)
+          for (final id in activeIds)
             _TeamDutyCard(
               key: ValueKey('report-team-$id'),
               teamId: id,
               teamName: data.teams[id] ?? 'Tim #$id',
               data: data,
             ),
+        if (inactiveIds.isNotEmpty)
+          Card(
+            child: ExpansionTile(
+              key: const ValueKey('report-inactive-teams'),
+              leading: const Icon(Icons.shield_outlined),
+              title: const Text('Kaydı olmayan timler'),
+              subtitle: Text(
+                '${inactiveIds.length} tim · Seçilen filtrelerde görev görünmüyor',
+              ),
+              children: [
+                for (final id in inactiveIds)
+                  ListTile(
+                    dense: true,
+                    title: Text(data.teams[id] ?? 'Tim #$id'),
+                    trailing: const Text('0 kayıt'),
+                  ),
+              ],
+            ),
+          ),
         if (data.unknownEntries.isNotEmpty)
           Card(
             child: ListTile(
