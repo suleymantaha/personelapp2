@@ -115,10 +115,10 @@ class _TeamAnalyticsScreenState extends ConsumerState<TeamAnalyticsScreen> {
               ),
               SizedBox(height: 6),
               Text(
-                '• Katılım: Görev türü ve faaliyet başına bir kez sayılır.\n'
+                '• Tim Katılımı: Timden en az bir kişi o faaliyet ve görevdeyse 1 sayılır. Timin tamamının göreve çıktığı anlamına gelmez.\n'
                 '• Görev Günü: Kapsanan benzersiz takvim günleridir.\n'
                 '• Benzersiz Personel: İlgili dönemde görev alan tekil personel sayısıdır.\n'
-                '• Personel–Görev: Faaliyet ve görev türü başına tekil kişi atamasıdır.\n'
+                '• Kişi–Görev: Faaliyet ve görev türü başına tekil kişi atamasıdır.\n'
                 '• Personel–Gün: Adam-gün toplam iş yüküdür.\n'
                 '• Devam Günleri: Önceki günden devam eden görevler yeni katılım oluşturmaz, görev günü üretir.\n'
                 '• Hariç Tutulanlar: İzin, istirahat, rapor ve sevk kayıtları operasyonel görev analizi dışında tutulur.',
