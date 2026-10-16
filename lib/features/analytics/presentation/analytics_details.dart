@@ -11,12 +11,7 @@ class AnalyticsDetails extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final ids = data.entries
-        .map((e) => e.teamId)
-        .whereType<int>()
-        .toSet()
-        .toList()
-      ..sort((a, b) => (data.teams[a] ?? '').compareTo(data.teams[b] ?? ''));
+    final ids = data.orderedTeamIds;
 
     if (ids.isEmpty && data.unknownEntries.isEmpty) {
       return const Padding(
