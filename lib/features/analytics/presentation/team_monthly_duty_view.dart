@@ -105,7 +105,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
     Widget stat(int count, String label) => Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('${count}',
+            Text('$count',
                 style: theme.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(width: 4),
@@ -138,7 +138,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 5),
       child: InkWell(
-        key: ValueKey('team-duty-${teamId}-${duty}'),
+        key: ValueKey('team-duty-$teamId-$duty'),
         borderRadius: BorderRadius.circular(9),
         onTap: () => _showPersonnel(
           context,
@@ -237,7 +237,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
     if (teamEntries.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
-    final teamName = data.teams[teamId] ?? 'Tim #${teamId}';
+    final teamName = data.teams[teamId] ?? 'Tim #$teamId';
     final metrics = AnalyticsMetrics(teamEntries, start, end);
     final duties = teamEntries.map((entry) => entry.duty).toSet().toList()
       ..sort();
@@ -270,7 +270,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
                   teamEntries.where((entry) => entry.duty == duty).toList();
               final count = AnalyticsMetrics(entries, start, end);
               return ListTile(
-                key: ValueKey('team-month-duty-${teamId}-${duty}-${start}'),
+                key: ValueKey('team-month-duty-$teamId-$duty-$start'),
                 dense: true,
                 visualDensity: VisualDensity.compact,
                 contentPadding: EdgeInsets.zero,
@@ -327,7 +327,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
               Text('Görevdeki Personel',
                   style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 4),
-              Text('${teamName} · ${duty}'),
+              Text('$teamName · $duty'),
               const SizedBox(height: 4),
               Text(
                 '${metrics.participations} faaliyet katılımı · '
