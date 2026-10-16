@@ -1,4 +1,5 @@
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
+import 'package:personelapp2/core/utils/military_structure_helper.dart';
 
 DateTime analyticsDate(String value) {
   final date = DateTime.tryParse(value);
@@ -132,6 +133,29 @@ class TeamAnalytics {
   final List<String> availableDuties;
   final int duplicateAssignments;
   final int possibleDuplicateActivities;
+  /// One ordering for every analytics surface, aligned with personnel and
+  /// activity screens. Unknown/custom names remain after the official squads.
+  List<int> sortTeamIds(Iterable<int> ids) {
+    final sorted = ids.toSet().toList();
+    sorted.sort((a, b) {
+      final nameA = teams[a] ?? 'Tim #$a';
+      final nameB = teams[b] ?? 'Tim #$b';
+      final weightA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
+      final weightB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
+      if (weightA != weightB) return weightA.compareTo(weightB);
+      final nameOrder = nameA.compareTo(nameB);
+      return nameOrder != 0 ? nameOrder : a.compareTo(b);
+    });
+    return sorted;
+  }
+
+  /// Timlerin görev raporlarındaki sırası (aktif filtre sonuçları).
+  List<int> get orderedTeamIds =>
+      sortTeamIds(entries.map((e) => e.teamId).whereType<int>());
+
+  /// Filtrede mevcut tüm yetkili timler; görev kaydı olmayanlar da dahil.
+  List<int> get orderedAvailableTeamIds => sortTeamIds(teams.keys);
+
   int get unknownTeamAssignments => unknownEntries.length;
   AnalyticsMetrics get metrics =>
       AnalyticsMetrics(entries, filter.start, filter.end);
