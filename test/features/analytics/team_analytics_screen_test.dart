@@ -42,7 +42,6 @@ void main() {
         expect(find.text('Tim Görev Analizi'), findsOneWidget);
         expect(find.text('Tim Görev Raporu'), findsOneWidget);
         expect(find.text('Görev alan tim'), findsOneWidget);
-        expect(find.text('Grafikler ve aylık eğilimler'), findsOneWidget);
         expect(find.text('Görev Karşılaştırması'), findsNothing);
         expect(tester.takeException(), isNull);
 
@@ -59,7 +58,11 @@ void main() {
         // Dense visualizations remain available on demand.
         final graphToggle = find.byKey(
             const ValueKey('report-advanced-charts'));
+        // ListView builds the optional chart section lazily on narrow screens.
+        await tester.scrollUntilVisible(graphToggle, 200,
+            scrollable: find.byType(Scrollable).first);
         await tester.ensureVisible(graphToggle);
+        expect(find.text('Grafikler ve aylık eğilimler'), findsOneWidget);
         await tester.tap(graphToggle);
         await tester.pumpAndSettle();
         expect(find.text('Görev Karşılaştırması'), findsOneWidget);
