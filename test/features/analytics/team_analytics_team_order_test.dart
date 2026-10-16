@@ -83,7 +83,9 @@ void main() {
     ));
     final positions = [
       for (final id in expected)
-        tester.getTopLeft(find.text(names[id]!).first).dy,
+        tester.getTopLeft(
+          id == 9 ? find.text('Özel Tim').at(1) : find.text(names[id]!).first,
+        ).dy,
     ];
     for (var i = 1; i < positions.length; i++) {
       expect(positions[i], greaterThan(positions[i - 1]),
@@ -123,8 +125,11 @@ void main() {
       ),
     ));
     await tester.pumpAndSettle();
-    final dropdown = tester.widget<DropdownButtonFormField<int>>(
-      find.byKey(const ValueKey('team-null')),
+    final dropdown = tester.widget<DropdownButton<int>>(
+      find.descendant(
+        of: find.byKey(const ValueKey('team-null')),
+        matching: find.byType(DropdownButton<int>),
+      ),
     );
     expect(dropdown.items!.map((e) => e.value).toList(),
         <int?>[null, ...expected]);
