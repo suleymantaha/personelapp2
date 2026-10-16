@@ -55,8 +55,12 @@ void main() {
 
         // A single person's duty remains one participation and one person-task.
         final dutyRow = find.byKey(const ValueKey('team-duty-1-HEYBET'));
-        await tester.scrollUntilVisible(dutyRow, 180,
-            scrollable: find.byType(Scrollable).first);
+        await Scrollable.ensureVisible(
+          tester.element(dutyRow),
+          alignment: 0.3,
+          duration: const Duration(milliseconds: 100),
+        );
+        await tester.pumpAndSettle();
         await tester.tap(dutyRow);
         await tester.pumpAndSettle();
         expect(find.text('Görevdeki Personel'), findsOneWidget);
