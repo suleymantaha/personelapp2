@@ -132,10 +132,11 @@ void main() {
         await tester.tap(find.text('Bekleyen').last);
         await tester.pumpAndSettle();
         await tester.scrollUntilVisible(
-            find.text('Seçilen filtrelerde görev kaydı yok.'), 250,
+            find.text('Açılımı yapılacak görev detayı bulunamadı.'), 250,
             scrollable: find.byType(Scrollable).first);
         expect(
-            find.text('Seçilen filtrelerde görev kaydı yok.'), findsOneWidget);
+            find.text('Açılımı yapılacak görev detayı bulunamadı.'),
+            findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pumpAndSettle();
