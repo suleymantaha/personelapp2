@@ -138,8 +138,14 @@ class TeamAnalytics {
   List<int> sortTeamIds(Iterable<int> ids) {
     final sorted = ids.toSet().toList();
     sorted.sort((a, b) {
-      final nameA = teams[a] ?? 'Tim #$a';
-      final nameB = teams[b] ?? 'Tim #$b';
+      final nameA = teams[a];
+      final nameB = teams[b];
+      // Historical records with no surviving team name come after named
+      // squads. Sorting their IDs numerically avoids 'Tim #10' < 'Tim #2'.
+      if (nameA == null || nameB == null) {
+        if (nameA == null && nameB == null) return a.compareTo(b);
+        return nameA == null ? 1 : -1;
+      }
       final weightA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
       final weightB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
       if (weightA != weightB) return weightA.compareTo(weightB);
