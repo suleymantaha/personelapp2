@@ -140,8 +140,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('team-header-1')));
     await tester.pumpAndSettle();
 
-    // Verify index, rank badge and name are present
-    expect(find.text('1'), findsOneWidget);
+    // Verify index, rank and name are present
+    expect(find.text('1.'), findsOneWidget);
     expect(find.text('J.Bnb.'), findsOneWidget);
     expect(find.text('Ahmet Yılmaz'), findsOneWidget);
     expect(tester.takeException(), isNull);

@@ -93,64 +93,44 @@ class PersonnelOrderGroup extends StatelessWidget {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Container(
-                                    width: 28,
-                                    height: 28,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary
-                                          .withValues(alpha: 0.12),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: theme.colorScheme.primary
-                                            .withValues(alpha: 0.28),
-                                        width: 1,
-                                      ),
-                                    ),
+                                  SizedBox(
+                                    width: 32,
                                     child: Text(
-                                      '${index + 1}',
+                                      '${index + 1}.',
                                       style: TextStyle(
-                                        color: theme.colorScheme.onSurfaceVariant,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary
-                                          .withValues(alpha: 0.16),
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(
-                                        color: theme.colorScheme.primary
-                                            .withValues(alpha: 0.45),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      person.rutbe,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: theme.colorScheme.onSurface,
-                                        letterSpacing: 0.2,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 6),
                                   Expanded(
-                                    child: Text(
-                                      person.adSoyad,
-                                      style:
-                                          theme.textTheme.titleSmall?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 0.15,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          person.adSoyad,
+                                          style: theme.textTheme.titleSmall
+                                              ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.15,
+                                          ),
+                                          softWrap: true,
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          person.rutbe,
+                                          style: TextStyle(
+                                            fontSize: 12.5,
+                                            color: theme
+                                                .colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ReorderableDragStartListener(

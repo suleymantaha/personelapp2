@@ -7,70 +7,43 @@ extension _PersonnelMemberTile on _PersonnelManagementScreenState {
     bool isAdmin, [
     Color? teamColor,
   ]) {
-    final theme = Theme.of(context);
-    final accent = teamColor ?? theme.colorScheme.primary;
-
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 28,
-            height: 28,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: accent.withValues(alpha: 0.28),
-                width: 1,
-              ),
-            ),
+          SizedBox(
+            width: 32,
             child: Text(
-              '${index + 1}',
+              '${index + 1}.',
               style: TextStyle(
                 color: context.textSecondary,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 6),
           Expanded(
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              runSpacing: 4,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: accent.withValues(alpha: 0.45),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    person.rutbe,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: context.textPrimary,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ),
                 Text(
                   person.adSoyad,
                   softWrap: true,
                   style: const TextStyle(
-                    fontSize: 14.5,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: 0.2,
+                    letterSpacing: 0.15,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  person.rutbe,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: context.textSecondary,
                   ),
                 ),
               ],
