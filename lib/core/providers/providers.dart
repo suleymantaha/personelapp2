@@ -80,9 +80,9 @@ final matrixRepositoryProvider = Provider<MatrixRepository>((ref) {
   return MatrixRepository(ref.watch(databaseProvider));
 });
 
-final StreamProviderFamily<Map<int, Map<int, MatrixDayCell>>, String>
+final AutoDisposeStreamProviderFamily<Map<int, Map<int, MatrixDayCell>>, String>
 monthlyMatrixProvider =
-    StreamProvider.family<Map<int, Map<int, MatrixDayCell>>, String>((
+    StreamProvider.autoDispose.family<Map<int, Map<int, MatrixDayCell>>, String>((
       ref,
       yearMonth,
     ) {
@@ -91,5 +91,4 @@ monthlyMatrixProvider =
       if (session == null) return Stream.value(const <int, Map<int, MatrixDayCell>>{});
       return repo.watchMonthlyMatrix(yearMonth,
         commanderUsername: session.isAdmin ? null : session.username);
-
     });

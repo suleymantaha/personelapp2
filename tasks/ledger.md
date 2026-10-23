@@ -16,3 +16,15 @@ Bu boş tablo tamamlanmış görev veya uygulama kanıtı değildir.
 | 2026-10-23-custom-personnel-order | Kalıcı tim/personel sırası ve çıktı entegrasyonu | DONE | [Kayıt](active/2026-10-23-custom-personnel-order.md) |
 
 | 2026-10-23-personnel-ui | Aynı sayfada personel/tim arayüzü ve sıralama | DONE | [Kayıt](active/2026-10-23-personnel-ui.md) |
+| 2026-10-24-daily-team-report | Günlük tek satır tim görevleri ve kişi detayları | DONE | [Kayıt](active/2026-10-24-daily-team-report.md) |
+
+- 2026-10-24: [Independent monthly watch roster](active/2026-10-24-independent-watch-roster.md) — RUNNING, read-only, dedicated emulator only.
+- 2026-10-24: Independent monthly watch roster DONE — 712 tests, analyze, dedicated emulator scenario and independent source review PASS; no commit/push.
+- 2026-10-24: [Analytics settings and watch location](active/2026-10-24-analytics-settings-cleanup.md) — RUNNING.
+- 2026-10-24: Analytics settings/location cleanup DONE — 714 tests, analyze, two isolated Android scenarios and independent review PASS; no user-emulator operations or commit/push.
+- 2026-10-24: [Watch calendar](active/2026-10-24-watch-calendar.md) — RUNNING, isolated UI change.
+- 2026-10-24: Watch calendar DONE — 718 tests, analyze, separate Android scenario and independent review PASS; other lib files unchanged, no user-emulator operations.
+- 2026-10-24: [Monthly default and collapsed teams](active/2026-10-24-monthly-collapsed-teams.md) — RUNNING.
+- 2026-10-24: Monthly default and collapsed teams DONE — 719 tests, analyze, separate Android scenario and independent source review PASS; no user-emulator install.
+- 2026-10-24: Duty rows now count distinct activity/duty records, not personnel; regression red/green, 719 tests, analyze and dedicated5560 drive PASS. Normal lib/main.dart APK installed -r on user-authorized baba5554 after local backup; DB/preferences byte-identical after navigation. Monthly default and collapsed cards observed. No commit/push.
+- 2026-10-24: [Pending changes review and main push](active/2026-10-24-pending-changes-commit.md) — verification PASS; 720 tests, clean analyze, provider lifecycle regression and historical evidence review; authorized commit/push follows.
