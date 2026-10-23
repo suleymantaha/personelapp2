@@ -96,7 +96,9 @@ void main() {
         of: find.byKey(const ValueKey('report-team-toggle-5')),
         matching: find.byIcon(Icons.expand_more));
     expect(tester.getCenter(expandIcon).dx,
-        greaterThan(tester.getCenter(headerDetails).dx));
+        greaterThan(tester.getCenter(find.text('1-B Timi')).dx));
+    expect(tester.getCenter(expandIcon).dx,
+        lessThan(tester.getCenter(headerDetails).dx));
     await tester.tap(headerDetails);
     await tester.pumpAndSettle();
     expect(find.text('Ali'), findsWidgets);
