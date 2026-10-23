@@ -12,3 +12,7 @@ Tek yazıcı: koordinatör. Henüz bu paketle başlatılmış proje görevi yokt
 Tier 2/3 görevde [şablonu](../.agents/templates/task.md)
 `tasks/active/<task-id>.md` olarak doldur ve bu indekse gerçek kayıt ekle.
 Bu boş tablo tamamlanmış görev veya uygulama kanıtı değildir.
+
+| 2026-10-23-custom-personnel-order | Kalıcı tim/personel sırası ve çıktı entegrasyonu | DONE | [Kayıt](active/2026-10-23-custom-personnel-order.md) |
+
+| 2026-10-23-personnel-ui | Aynı sayfada personel/tim arayüzü ve sıralama | DONE | [Kayıt](active/2026-10-23-personnel-ui.md) |

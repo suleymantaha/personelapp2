@@ -8,8 +8,8 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
-import 'package:personelapp2/core/utils/military_structure_helper.dart';
-import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/features/personnel/domain/personnel_display_order.dart';
+import 'widgets/personnel_inline_order_editor.dart';
 import 'package:personelapp2/core/widgets/app_card.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
@@ -17,16 +17,19 @@ import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/bulk_personnel_import_dialog.dart';
 import 'package:personelapp2/features/personnel/presentation/widgets/personnel_form_dialog.dart';
-import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
 part 'personnel_management_actions.dart';
 part 'squad_management_actions.dart';
+part 'personnel_order_actions.dart';
 part 'personnel_management_app_bar.dart';
 part 'personnel_management_filters.dart';
 
+part 'personnel_group_list.dart';
+part 'personnel_member_tile.dart';
+part 'personnel_member_menu.dart';
+
 class PersonnelManagementScreen extends ConsumerStatefulWidget {
   const PersonnelManagementScreen({super.key});
-
   @override
   ConsumerState<PersonnelManagementScreen> createState() =>
       _PersonnelManagementScreenState();
@@ -34,10 +37,11 @@ class PersonnelManagementScreen extends ConsumerStatefulWidget {
 
 class _PersonnelManagementScreenState
     extends ConsumerState<PersonnelManagementScreen> {
-  int? _selectedFilterTimId;
+  bool _ordering = false;
+  bool _searchVisible = false;
+  final _expandedTeamIds = <int?>{};
   final _searchController = TextEditingController();
   String _searchQuery = '';
-
   @override
   void dispose() {
     _searchController.dispose();
@@ -45,384 +49,48 @@ class _PersonnelManagementScreenState
   }
 
   void _updatePersonnelView(VoidCallback callback) => setState(callback);
-
+  void _toggleSearch() => setState(() {
+        _searchVisible = !_searchVisible;
+        if (!_searchVisible) {
+          _searchController.clear();
+          _searchQuery = '';
+          FocusScope.of(context).unfocus();
+        }
+      });
   @override
   Widget build(BuildContext context) {
+    if (_ordering) return _buildOrderScaffold();
     final session = ref.watch(userSessionProvider);
-    final isAdmin = session?.isAdmin ?? true;
-
-    final personnelAsync = ref.watch(allPersonnelProvider);
-    final squadsAsync = ref.watch(allSquadsProvider);
-
+    final isAdmin = session?.isAdmin ?? false;
+    final personnel = ref.watch(allPersonnelProvider);
+    final squads = ref.watch(allSquadsProvider);
     return Scaffold(
-      appBar: _buildPersonnelAppBar(
-        context: context,
-        isAdmin: isAdmin,
-      ),
-      floatingActionButton: isAdmin
-          ? FloatingActionButton.extended(
-              onPressed: _showAddPersonnelDialog,
-              icon: const Icon(Icons.person_add_alt_1_rounded),
-              label: Text(context.l10n.personnelAddButton),
-            )
-          : null,
-      body: TurkishFlagWatermarkBackground(
-        child: SingleChildScrollView(
-        child: ResponsiveCenter(
-          maxWidth: AppSpacing.readableContentWidth,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ..._buildPersonnelFilters(
-                context: context,
-                isAdmin: isAdmin,
-                session: session,
-                squadsAsync: squadsAsync,
-              ),
-              // 3. Personnel List Grouped by Squad (Matching Activity Form layout)
-              personnelAsync.when(
-                data: (rawPersonnelList) {
-                  final squads = squadsAsync.value ?? [];
-                  final squadMap = {for (final s in squads) s.id: s.timAdi};
-
-                  final matchingPersonnel = _searchQuery.isEmpty
-                      ? rawPersonnelList
-                      : PersonnelFuzzyMatcher.searchPersonnel(
-                          _searchQuery,
-                          rawPersonnelList,
-                          threshold: 0.5,
-                        );
-                  final matchingIds = {
-                    for (final p in matchingPersonnel) p.id,
-                  };
-
-                  // Filter by squad & commander permissions & search query
-                  final personnelList = rawPersonnelList.where((p) {
-                    // If Commander, restrict to commander's squad
-                    if (session != null && !session.isAdmin) {
-                      if (session.timId == null) {
-                        return false;
-                      }
-
-                      if (p.timId != session.timId) {
-                        return false;
-                      }
-                    }
-
-                    // Squad filter chip selection
-                    if (_selectedFilterTimId != null) {
-                      if (_selectedFilterTimId == -1) {
-                        if (p.timId != null) return false;
-                      } else {
-                        if (p.timId != _selectedFilterTimId) return false;
-                      }
-                    }
-
-                    // Search query filter (instant O(1) set lookup)
-                    if (_searchQuery.isNotEmpty && !matchingIds.contains(p.id)) {
-                      return false;
-                    }
-
-                    return true;
-                  }).toList();
-
-                  if (personnelList.isEmpty) {
-                    return AppEmptyState(
-                      icon: Icons.person_search_rounded,
-                      title: context.l10n.commonSearch,
-                      description: context.l10n.personnelNoCriteriaMatches,
-                    );
-                  }
-
-                  // Group personnel by Squad (timId)
-                  final grouped = <int?, List<PersonelTableData>>{};
-                  for (final p in personnelList) {
-                    grouped.putIfAbsent(p.timId, () => []).add(p);
-                  }
-
-                  final sortedTimIds = grouped.keys.toList()
-                    ..sort((a, b) {
-                      if (a == null) return 1;
-                      if (b == null) return -1;
-                      final nameA = squadMap[a] ?? '';
-                      final nameB = squadMap[b] ?? '';
-                      final wA = MilitaryStructureHelper.getSquadOrderWeight(
-                        nameA,
-                      );
-                      final wB = MilitaryStructureHelper.getSquadOrderWeight(
-                        nameB,
-                      );
-                      if (wA != wB) return wA.compareTo(wB);
-                      return nameA.compareTo(nameB);
-                    });
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              context.l10n.personnelListCount(personnelList.length),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            context.l10n.personnelOfficialOrderSubtitle,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: context.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      ...sortedTimIds.map((timId) {
-                        final members = grouped[timId]!
-                          ..sort(
-                            (a, b) => getRankWeight(
-                              a.rutbe,
-                            ).compareTo(getRankWeight(b.rutbe)),
-                          );
-
-                        final squadName = timId == null
-                            ? context.l10n.personnelUnassignedSquad
-                            : (squadMap[timId] ?? context.l10n.personnelUnknownSquad);
-
-                        return ExpansionTile(
-                          initiallyExpanded: false,
-                          tilePadding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                          ),
-                          childrenPadding: const EdgeInsets.only(bottom: 14),
-                          shape: const Border(),
-                          collapsedShape: const Border(),
-                          title: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  squadName,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: context.accentOrOlive,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                constraints: const BoxConstraints(
-                                  minWidth: 112,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                  ),
-                                decoration: BoxDecoration(
-                                  color: context.accentOrOlive,
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Text(
-                                  context.l10n.personnelCountSubtitle(members.length),
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: context.onAccentOrOlive,
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          children: [
-                            ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: members.length,
-                              separatorBuilder: (context, _) =>
-                                  const SizedBox(height: 8),
-                              itemBuilder: (context, index) {
-                                final p = members[index];
-
-                                return AppCard(
-                                  margin: EdgeInsets.zero,
-                                  padding: EdgeInsets.zero,
-                                  child: ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundColor: context.accentOrOlive,
-                                      child: Text(
-                                        '${index + 1}',
-                                        style: TextStyle(
-                                          color: context.onAccentOrOlive,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    title: Text(
-                                      '${p.rutbe} ${p.adSoyad}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    subtitle: Padding(
-                                      padding: const EdgeInsets.only(top: 2),
-                                      child: Text(
-                                        context.l10n.personnelUnitAndRegistration(
-                                          p.birlik,
-                                          p.kayitTarihi.toString(),
-                                        ),
-                                      ),
-                                    ),
-                                    trailing: isAdmin
-                                        ? PopupMenuButton<String>(
-                                            icon: const Icon(Icons.more_vert),
-                                            tooltip: context.l10n.commonActions,
-                                            elevation: 5,
-                                            shadowColor: context.shadowColor,
-                                            surfaceTintColor:
-                                                context.colorScheme.surface,
-                                            shape: modernPopupShape(context),
-                                            constraints: const BoxConstraints(
-                                              minWidth: 300,
-                                              maxWidth: 340,
-                                            ),
-                                            onSelected: (action) async {
-                                              if (action == 'edit') {
-                                                await _showEditPersonnelDialog(
-                                                  p,
-                                                );
-                                              } else if (action ==
-                                                  'commander') {
-                                                await _showMakeCommanderDialog(
-                                                  p,
-                                                );
-                                              } else if (action == 'delete') {
-                                                final confirm =
-                                                    await showDialog<bool>(
-                                                  context: context,
-                                                  builder: (ctx) => AlertDialog(
-                                                    title: Text(
-                                                      context.l10n.personnelDeactivateTitle,
-                                                    ),
-                                                    content: Text(
-                                                      context.l10n.personnelDeactivateConfirm(
-                                                        p.rutbe,
-                                                        p.adSoyad,
-                                                      ),
-                                                    ),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                          ctx,
-                                                        ).pop(false),
-                                                        child: Text(
-                                                          context.l10n.commonCancel,
-                                                        ),
-                                                      ),
-                                                      ElevatedButton(
-                                                        style: ElevatedButton
-                                                            .styleFrom(
-                                                          backgroundColor:
-                                                              context
-                                                                  .rejectedColor,
-                                                        ),
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                          ctx,
-                                                        ).pop(true),
-                                                        child: Text(
-                                                          context.l10n.personnelDeactivateAction,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                                if (confirm == true) {
-                                                  final repo = ref.read(
-                                                    personnelRepositoryProvider,
-                                                  );
-                                                  await repo.deletePersonnel(
-                                                    p.id,
-                                                  );
-                                                }
-                                              }
-                                            },
-                                            itemBuilder: (context) => [
-                                              ModernMenuHeader<String>(
-                                                title: context.l10n.personnelActionsMenuTitle,
-                                                subtitle:
-                                                    '${p.rutbe} ${p.adSoyad}',
-                                                icon: Icons.person_outline,
-                                              ),
-                                              const PopupMenuDivider(),
-                                              ModernPopupMenuItem(
-                                                option:
-                                                    ModernActionOption(
-                                                  value: 'edit',
-                                                  title:
-                                                      context.l10n.personnelEditOptionTitle,
-                                                  subtitle:
-                                                      context.l10n.personnelEditOptionSubtitle,
-                                                  icon: Icons.edit_outlined,
-                                                ),
-                                              ),
-                                              ModernPopupMenuItem(
-                                                option:
-                                                    ModernActionOption(
-                                                  value: 'commander',
-                                                  title: context.l10n.personnelCommanderOptionTitle,
-                                                  subtitle:
-                                                      context.l10n.personnelCommanderOptionSubtitle,
-                                                  icon: Icons.star_outline,
-                                                ),
-                                              ),
-                                              const PopupMenuDivider(),
-                                              ModernPopupMenuItem(
-                                                option:
-                                                    ModernActionOption(
-                                                  value: 'delete',
-                                                  title: context.l10n.personnelDeleteOptionTitle,
-                                                  subtitle:
-                                                      context.l10n.personnelDeleteOptionSubtitle,
-                                                  icon: Icons
-                                                      .delete_outline_rounded,
-                                                  isDestructive: true,
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                        : null,
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        );
-                      }),
-                    ],
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, st) => Center(
-                  child: Text(
-                    context.l10n.commonErrorWithDetails(err.toString()),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          ),
-        ),
-      ),
+      appBar: _buildPersonnelAppBar(context: context, isAdmin: isAdmin),
+      body: SingleChildScrollView(
+          child: ResponsiveCenter(
+              maxWidth: AppSpacing.readableContentWidth,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ..._buildPersonnelFilters(
+                        context: context,
+                        isAdmin: isAdmin,
+                        session: session,
+                        squadsAsync: squads),
+                    personnel.when(
+                        data: (people) => squads.when(
+                            data: (teams) =>
+                                _buildTeamList(people, teams, session),
+                            loading: () => const Center(
+                                child: CircularProgressIndicator()),
+                            error: (error, stack) => Text(context.l10n
+                                .commonErrorWithDetails(error.toString()))),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (error, stack) => Text(context.l10n
+                            .commonErrorWithDetails(error.toString()))),
+                    const SizedBox(height: 24),
+                  ]))),
     );
   }
 }

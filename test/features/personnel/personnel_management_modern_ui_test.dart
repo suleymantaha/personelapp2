@@ -19,7 +19,8 @@ void main() {
         allPersonnelProvider.overrideWith(
           (ref) => Stream.value(const [
             PersonelTableData(
-      aktif: true, isDemo: false,
+              aktif: true,
+              isDemo: false,
               id: 1,
               adSoyad: 'Ahmet Yılmaz',
               rutbe: 'J.Bnb.',
@@ -54,6 +55,10 @@ void main() {
 
     expect(find.text('Personel ve Timler'), findsOneWidget);
     expect(find.text('1 personel'), findsOneWidget);
+    expect(find.text('Personel Ekle'), findsNothing);
+    expect(find.byType(FloatingActionButton), findsNothing);
+    await tester.tap(find.byTooltip('Yönetim işlemleri'));
+    await tester.pumpAndSettle();
     expect(find.text('Personel Ekle'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -87,6 +92,8 @@ void main() {
     await tester.pumpWidget(buildSubject());
     await tester.pump();
 
+    await tester.tap(find.byTooltip('Yönetim işlemleri'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Personel Ekle'));
     await tester.pumpAndSettle();
     expect(find.text('Tek Personel Ekle'), findsOneWidget);

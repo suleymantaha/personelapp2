@@ -249,7 +249,10 @@ class PersonnelRepository {
             ..where((tbl) => tbl.id.equals(data.id))).getSingleOrNull();
 
       if (oldData == null) return false;
-      final result = await db.update(db.personelTable).replace(data);
+      final updated = data.copyWith(
+        sortOrder: Value(oldData.timId == data.timId ? oldData.sortOrder : null),
+      );
+      final result = await db.update(db.personelTable).replace(updated);
 
       if (oldData.timId != data.timId) {
         final islemStr = data.timId == null ? 'çıkarıldı' : 'eklendi';

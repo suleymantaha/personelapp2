@@ -5,7 +5,39 @@ import 'package:sqlite3/sqlite3.dart';
 
 void main() {
   group('AppDatabase migration', () {
-    test('v4 migration preserves phone and derives task team from dated history', () async {
+    test('v5 migration adds order without changing existing records', () async {
+      final sqliteDatabase = sqlite3.openInMemory();
+      sqliteDatabase.execute(
+          'CREATE TABLE tim_table (id INTEGER PRIMARY KEY, tim_adi TEXT NOT NULL, tim_komutani_id INTEGER, olusturma_tarihi TEXT NOT NULL)');
+      sqliteDatabase.execute(
+          'CREATE TABLE personel_table (aktif INTEGER NOT NULL DEFAULT 1, is_demo INTEGER NOT NULL DEFAULT 0, id INTEGER PRIMARY KEY, ad_soyad TEXT NOT NULL, rutbe TEXT NOT NULL, birlik TEXT NOT NULL, telefon TEXT, tim_id INTEGER, kayit_tarihi TEXT NOT NULL)');
+      sqliteDatabase.execute(
+          "INSERT INTO tim_table VALUES (7, '7-B', NULL, '2026-01-01')");
+      sqliteDatabase.execute(
+          "INSERT INTO personel_table VALUES (1, 0, 9, 'Ali', 'J.Er', 'Asayiş', '555', 7, '2026-01-01')");
+      sqliteDatabase.execute('PRAGMA user_version = 5');
+      final db = AppDatabase(
+          NativeDatabase.opened(sqliteDatabase, closeUnderlyingOnClose: false));
+      addTearDown(() async {
+        await db.close();
+        sqliteDatabase.close();
+      });
+      final person = await db.select(db.personelTable).getSingle();
+      final squad = await db.select(db.timTable).getSingle();
+      expect(person.id, 9);
+      expect(person.timId, 7);
+      expect(person.telefon, '555');
+      expect(person.aktif, isTrue);
+      expect(person.isDemo, isFalse);
+      expect(person.sortOrder, isNull);
+      expect(squad.sortOrder, isNull);
+      expect(squad.timAdi, '7-B');
+      expect(sqliteDatabase.userVersion, 6);
+    });
+
+    test(
+        'v4 migration preserves phone and derives task team from dated history',
+        () async {
       final sqliteDatabase = sqlite3.openInMemory();
       for (final sql in [
         'CREATE TABLE tim_table (id INTEGER PRIMARY KEY, tim_adi TEXT NOT NULL, tim_komutani_id INTEGER, olusturma_tarihi TEXT NOT NULL)',
@@ -19,17 +51,29 @@ void main() {
         "INSERT INTO faaliyet_personel_atama_table VALUES (1, 1, 1, 'HEYBET', 'onaylandi', NULL), (2, 1, 2, 'HEYBET', 'onaylandi', NULL)",
         "INSERT INTO tim_uyelik_gecmisi_table VALUES (1, 1, 1, '2026-01-01', 'eklendi'), (2, 1, 2, '2026-10-03', 'eklendi')",
         'PRAGMA user_version = 4',
-      ]) { sqliteDatabase.execute(sql); }
-      final db = AppDatabase(NativeDatabase.opened(sqliteDatabase, closeUnderlyingOnClose: false));
-      addTearDown(() async { await db.close(); sqliteDatabase.close(); });
-      final columns = await db.customSelect('PRAGMA table_info(personel_table)').get();
-      expect(columns.map((r) => r.read<String>('name')), containsAll(['aktif', 'is_demo']));
+      ]) {
+        sqliteDatabase.execute(sql);
+      }
+      final db = AppDatabase(
+          NativeDatabase.opened(sqliteDatabase, closeUnderlyingOnClose: false));
+      addTearDown(() async {
+        await db.close();
+        sqliteDatabase.close();
+      });
+      final columns =
+          await db.customSelect('PRAGMA table_info(personel_table)').get();
+      expect(columns.map((r) => r.read<String>('name')),
+          containsAll(['aktif', 'is_demo']));
       final assignments = await db.select(db.faaliyetPersonelAtamaTable).get();
       expect(assignments, hasLength(2));
-      final raw = await db.customSelect('SELECT gorev_tim_id FROM faaliyet_personel_atama_table ORDER BY id').get();
+      final raw = await db
+          .customSelect(
+              'SELECT gorev_tim_id FROM faaliyet_personel_atama_table ORDER BY id')
+          .get();
       expect(raw.first.read<int>('gorev_tim_id'), 1);
       expect(raw.last.data['gorev_tim_id'], null);
-      expect((await db.select(db.personelTable).get()).first.telefon, '5321112233');
+      expect((await db.select(db.personelTable).get()).first.telefon,
+          '5321112233');
     });
 
     test('upgrades schema version 1 by creating import support tables',
@@ -65,7 +109,7 @@ void main() {
           'toplu_aktarim_gecmisi_table',
         ],
       );
-      expect(sqliteDatabase.userVersion, 5);
+      expect(sqliteDatabase.userVersion, 6);
     });
 
     test('propagates migration failures instead of marking schema ready',
@@ -120,7 +164,7 @@ void main() {
 
       expect(
           columns.map((row) => row.read<String>('name')), contains('telefon'));
-      expect(sqliteDatabase.userVersion, 5);
+      expect(sqliteDatabase.userVersion, 6);
     });
   });
 }

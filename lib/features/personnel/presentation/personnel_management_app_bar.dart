@@ -16,6 +16,12 @@ extension _PersonnelManagementAppBar on _PersonnelManagementScreenState {
         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
       ),
       actions: [
+        IconButton(
+            key: const ValueKey('personnel-search-toggle'),
+            icon: Icon(_searchVisible ? Icons.close : Icons.search),
+            tooltip:
+                _searchVisible ? 'Aramayı kapat' : context.l10n.commonSearch,
+            onPressed: _toggleSearch),
         if (isAdmin && !context.isMobile)
           IconButton(
             icon: const Icon(Icons.import_export_rounded),
@@ -45,7 +51,7 @@ extension _PersonnelManagementAppBar on _PersonnelManagementScreenState {
             tooltip: context.l10n.personnelNewSquadTooltip,
             onPressed: _showAddSquadDialog,
           ),
-        if (isAdmin && context.isMobile)
+        if (isAdmin)
           PopupMenuButton<String>(
             tooltip: context.l10n.personnelManagementActionsTooltip,
             icon: const Icon(Icons.more_vert_rounded),
@@ -55,7 +61,11 @@ extension _PersonnelManagementAppBar on _PersonnelManagementScreenState {
             shape: modernPopupShape(context),
             constraints: const BoxConstraints(minWidth: 290, maxWidth: 330),
             onSelected: (action) async {
-              if (action == 'squad') {
+              if (action == 'add') {
+                await _showAddPersonnelDialog();
+              } else if (action == 'order') {
+                _showOrderOptions();
+              } else if (action == 'squad') {
                 await _showAddSquadDialog();
               } else if (action == 'commander') {
                 await _showCommanderDelegationDialog();
@@ -79,6 +89,20 @@ extension _PersonnelManagementAppBar on _PersonnelManagementScreenState {
                 icon: Icons.admin_panel_settings_outlined,
               ),
               const PopupMenuDivider(),
+              ModernPopupMenuItem(
+                  option: ModernActionOption(
+                      value: 'add',
+                      title: context.l10n.personnelAddButton,
+                      subtitle: 'Yeni personel kaydı oluştur',
+                      icon: Icons.person_add_alt_1_rounded)),
+              PopupMenuItem<String>(
+                  key: const ValueKey('edit-personnel-order'),
+                  value: 'order',
+                  child: Row(children: [
+                    const Icon(Icons.swap_vert),
+                    const SizedBox(width: 12),
+                    const Expanded(child: Text('Sıralamayı düzenle'))
+                  ])),
               ModernPopupMenuItem(
                 option: ModernActionOption(
                   value: 'squad',

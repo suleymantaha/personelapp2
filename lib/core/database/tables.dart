@@ -16,6 +16,7 @@ class KullaniciTable extends Table {
 
 /// 2. Tim Tablosu
 class TimTable extends Table {
+  IntColumn get sortOrder => integer().nullable()();
   IntColumn get id => integer().autoIncrement()();
   TextColumn get timAdi => text()();
   IntColumn get timKomutaniId =>
@@ -29,6 +30,7 @@ class TimTable extends Table {
 
 /// 3. Personel Tablosu
 class PersonelTable extends Table {
+  IntColumn get sortOrder => integer().nullable()();
   BoolColumn get aktif => boolean().withDefault(const Constant(true))();
   BoolColumn get isDemo => boolean().withDefault(const Constant(false))();
   IntColumn get id => integer().autoIncrement()();

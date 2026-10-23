@@ -90,6 +90,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
         ),
         rosterPersonnel,
         squadMap,
+        squadOrders: {for (final s in squadsList) s.id: s.sortOrder},
       );
 
       return [

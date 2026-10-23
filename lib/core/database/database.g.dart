@@ -9,6 +9,12 @@ class $TimTableTable extends TimTable
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $TimTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _sortOrderMeta =
+      const VerificationMeta('sortOrder');
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+      'sort_order', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -40,7 +46,7 @@ class $TimTableTable extends TimTable
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, timAdi, timKomutaniId, olusturmaTarihi];
+      [sortOrder, id, timAdi, timKomutaniId, olusturmaTarihi];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -51,6 +57,10 @@ class $TimTableTable extends TimTable
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('sort_order')) {
+      context.handle(_sortOrderMeta,
+          sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta));
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -83,6 +93,8 @@ class $TimTableTable extends TimTable
   TimTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TimTableData(
+      sortOrder: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}sort_order']),
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       timAdi: attachedDatabase.typeMapping
@@ -101,18 +113,23 @@ class $TimTableTable extends TimTable
 }
 
 class TimTableData extends DataClass implements Insertable<TimTableData> {
+  final int? sortOrder;
   final int id;
   final String timAdi;
   final int? timKomutaniId;
   final String olusturmaTarihi;
   const TimTableData(
-      {required this.id,
+      {this.sortOrder,
+      required this.id,
       required this.timAdi,
       this.timKomutaniId,
       required this.olusturmaTarihi});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (!nullToAbsent || sortOrder != null) {
+      map['sort_order'] = Variable<int>(sortOrder);
+    }
     map['id'] = Variable<int>(id);
     map['tim_adi'] = Variable<String>(timAdi);
     if (!nullToAbsent || timKomutaniId != null) {
@@ -124,6 +141,9 @@ class TimTableData extends DataClass implements Insertable<TimTableData> {
 
   TimTableCompanion toCompanion(bool nullToAbsent) {
     return TimTableCompanion(
+      sortOrder: sortOrder == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sortOrder),
       id: Value(id),
       timAdi: Value(timAdi),
       timKomutaniId: timKomutaniId == null && nullToAbsent
@@ -137,6 +157,7 @@ class TimTableData extends DataClass implements Insertable<TimTableData> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TimTableData(
+      sortOrder: serializer.fromJson<int?>(json['sortOrder']),
       id: serializer.fromJson<int>(json['id']),
       timAdi: serializer.fromJson<String>(json['timAdi']),
       timKomutaniId: serializer.fromJson<int?>(json['timKomutaniId']),
@@ -147,6 +168,7 @@ class TimTableData extends DataClass implements Insertable<TimTableData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'sortOrder': serializer.toJson<int?>(sortOrder),
       'id': serializer.toJson<int>(id),
       'timAdi': serializer.toJson<String>(timAdi),
       'timKomutaniId': serializer.toJson<int?>(timKomutaniId),
@@ -155,11 +177,13 @@ class TimTableData extends DataClass implements Insertable<TimTableData> {
   }
 
   TimTableData copyWith(
-          {int? id,
+          {Value<int?> sortOrder = const Value.absent(),
+          int? id,
           String? timAdi,
           Value<int?> timKomutaniId = const Value.absent(),
           String? olusturmaTarihi}) =>
       TimTableData(
+        sortOrder: sortOrder.present ? sortOrder.value : this.sortOrder,
         id: id ?? this.id,
         timAdi: timAdi ?? this.timAdi,
         timKomutaniId:
@@ -168,6 +192,7 @@ class TimTableData extends DataClass implements Insertable<TimTableData> {
       );
   TimTableData copyWithCompanion(TimTableCompanion data) {
     return TimTableData(
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       id: data.id.present ? data.id.value : this.id,
       timAdi: data.timAdi.present ? data.timAdi.value : this.timAdi,
       timKomutaniId: data.timKomutaniId.present
@@ -182,6 +207,7 @@ class TimTableData extends DataClass implements Insertable<TimTableData> {
   @override
   String toString() {
     return (StringBuffer('TimTableData(')
+          ..write('sortOrder: $sortOrder, ')
           ..write('id: $id, ')
           ..write('timAdi: $timAdi, ')
           ..write('timKomutaniId: $timKomutaniId, ')
@@ -191,11 +217,13 @@ class TimTableData extends DataClass implements Insertable<TimTableData> {
   }
 
   @override
-  int get hashCode => Object.hash(id, timAdi, timKomutaniId, olusturmaTarihi);
+  int get hashCode =>
+      Object.hash(sortOrder, id, timAdi, timKomutaniId, olusturmaTarihi);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TimTableData &&
+          other.sortOrder == this.sortOrder &&
           other.id == this.id &&
           other.timAdi == this.timAdi &&
           other.timKomutaniId == this.timKomutaniId &&
@@ -203,17 +231,20 @@ class TimTableData extends DataClass implements Insertable<TimTableData> {
 }
 
 class TimTableCompanion extends UpdateCompanion<TimTableData> {
+  final Value<int?> sortOrder;
   final Value<int> id;
   final Value<String> timAdi;
   final Value<int?> timKomutaniId;
   final Value<String> olusturmaTarihi;
   const TimTableCompanion({
+    this.sortOrder = const Value.absent(),
     this.id = const Value.absent(),
     this.timAdi = const Value.absent(),
     this.timKomutaniId = const Value.absent(),
     this.olusturmaTarihi = const Value.absent(),
   });
   TimTableCompanion.insert({
+    this.sortOrder = const Value.absent(),
     this.id = const Value.absent(),
     required String timAdi,
     this.timKomutaniId = const Value.absent(),
@@ -221,12 +252,14 @@ class TimTableCompanion extends UpdateCompanion<TimTableData> {
   })  : timAdi = Value(timAdi),
         olusturmaTarihi = Value(olusturmaTarihi);
   static Insertable<TimTableData> custom({
+    Expression<int>? sortOrder,
     Expression<int>? id,
     Expression<String>? timAdi,
     Expression<int>? timKomutaniId,
     Expression<String>? olusturmaTarihi,
   }) {
     return RawValuesInsertable({
+      if (sortOrder != null) 'sort_order': sortOrder,
       if (id != null) 'id': id,
       if (timAdi != null) 'tim_adi': timAdi,
       if (timKomutaniId != null) 'tim_komutani_id': timKomutaniId,
@@ -235,11 +268,13 @@ class TimTableCompanion extends UpdateCompanion<TimTableData> {
   }
 
   TimTableCompanion copyWith(
-      {Value<int>? id,
+      {Value<int?>? sortOrder,
+      Value<int>? id,
       Value<String>? timAdi,
       Value<int?>? timKomutaniId,
       Value<String>? olusturmaTarihi}) {
     return TimTableCompanion(
+      sortOrder: sortOrder ?? this.sortOrder,
       id: id ?? this.id,
       timAdi: timAdi ?? this.timAdi,
       timKomutaniId: timKomutaniId ?? this.timKomutaniId,
@@ -250,6 +285,9 @@ class TimTableCompanion extends UpdateCompanion<TimTableData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
@@ -268,6 +306,7 @@ class TimTableCompanion extends UpdateCompanion<TimTableData> {
   @override
   String toString() {
     return (StringBuffer('TimTableCompanion(')
+          ..write('sortOrder: $sortOrder, ')
           ..write('id: $id, ')
           ..write('timAdi: $timAdi, ')
           ..write('timKomutaniId: $timKomutaniId, ')
@@ -587,6 +626,12 @@ class $PersonelTableTable extends PersonelTable
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $PersonelTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _sortOrderMeta =
+      const VerificationMeta('sortOrder');
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+      'sort_order', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _aktifMeta = const VerificationMeta('aktif');
   @override
   late final GeneratedColumn<bool> aktif = GeneratedColumn<bool>(
@@ -651,8 +696,18 @@ class $PersonelTableTable extends PersonelTable
       'kayit_tarihi', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns =>
-      [aktif, isDemo, id, adSoyad, rutbe, birlik, telefon, timId, kayitTarihi];
+  List<GeneratedColumn> get $columns => [
+        sortOrder,
+        aktif,
+        isDemo,
+        id,
+        adSoyad,
+        rutbe,
+        birlik,
+        telefon,
+        timId,
+        kayitTarihi
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -663,6 +718,10 @@ class $PersonelTableTable extends PersonelTable
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('sort_order')) {
+      context.handle(_sortOrderMeta,
+          sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta));
+    }
     if (data.containsKey('aktif')) {
       context.handle(
           _aktifMeta, aktif.isAcceptableOrUnknown(data['aktif']!, _aktifMeta));
@@ -717,6 +776,8 @@ class $PersonelTableTable extends PersonelTable
   PersonelTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return PersonelTableData(
+      sortOrder: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}sort_order']),
       aktif: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}aktif'])!,
       isDemo: attachedDatabase.typeMapping
@@ -746,6 +807,7 @@ class $PersonelTableTable extends PersonelTable
 
 class PersonelTableData extends DataClass
     implements Insertable<PersonelTableData> {
+  final int? sortOrder;
   final bool aktif;
   final bool isDemo;
   final int id;
@@ -756,7 +818,8 @@ class PersonelTableData extends DataClass
   final int? timId;
   final String kayitTarihi;
   const PersonelTableData(
-      {required this.aktif,
+      {this.sortOrder,
+      required this.aktif,
       required this.isDemo,
       required this.id,
       required this.adSoyad,
@@ -768,6 +831,9 @@ class PersonelTableData extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (!nullToAbsent || sortOrder != null) {
+      map['sort_order'] = Variable<int>(sortOrder);
+    }
     map['aktif'] = Variable<bool>(aktif);
     map['is_demo'] = Variable<bool>(isDemo);
     map['id'] = Variable<int>(id);
@@ -786,6 +852,9 @@ class PersonelTableData extends DataClass
 
   PersonelTableCompanion toCompanion(bool nullToAbsent) {
     return PersonelTableCompanion(
+      sortOrder: sortOrder == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sortOrder),
       aktif: Value(aktif),
       isDemo: Value(isDemo),
       id: Value(id),
@@ -805,6 +874,7 @@ class PersonelTableData extends DataClass
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PersonelTableData(
+      sortOrder: serializer.fromJson<int?>(json['sortOrder']),
       aktif: serializer.fromJson<bool>(json['aktif']),
       isDemo: serializer.fromJson<bool>(json['isDemo']),
       id: serializer.fromJson<int>(json['id']),
@@ -820,6 +890,7 @@ class PersonelTableData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'sortOrder': serializer.toJson<int?>(sortOrder),
       'aktif': serializer.toJson<bool>(aktif),
       'isDemo': serializer.toJson<bool>(isDemo),
       'id': serializer.toJson<int>(id),
@@ -833,7 +904,8 @@ class PersonelTableData extends DataClass
   }
 
   PersonelTableData copyWith(
-          {bool? aktif,
+          {Value<int?> sortOrder = const Value.absent(),
+          bool? aktif,
           bool? isDemo,
           int? id,
           String? adSoyad,
@@ -843,6 +915,7 @@ class PersonelTableData extends DataClass
           Value<int?> timId = const Value.absent(),
           String? kayitTarihi}) =>
       PersonelTableData(
+        sortOrder: sortOrder.present ? sortOrder.value : this.sortOrder,
         aktif: aktif ?? this.aktif,
         isDemo: isDemo ?? this.isDemo,
         id: id ?? this.id,
@@ -855,6 +928,7 @@ class PersonelTableData extends DataClass
       );
   PersonelTableData copyWithCompanion(PersonelTableCompanion data) {
     return PersonelTableData(
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       aktif: data.aktif.present ? data.aktif.value : this.aktif,
       isDemo: data.isDemo.present ? data.isDemo.value : this.isDemo,
       id: data.id.present ? data.id.value : this.id,
@@ -871,6 +945,7 @@ class PersonelTableData extends DataClass
   @override
   String toString() {
     return (StringBuffer('PersonelTableData(')
+          ..write('sortOrder: $sortOrder, ')
           ..write('aktif: $aktif, ')
           ..write('isDemo: $isDemo, ')
           ..write('id: $id, ')
@@ -885,12 +960,13 @@ class PersonelTableData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(
-      aktif, isDemo, id, adSoyad, rutbe, birlik, telefon, timId, kayitTarihi);
+  int get hashCode => Object.hash(sortOrder, aktif, isDemo, id, adSoyad, rutbe,
+      birlik, telefon, timId, kayitTarihi);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is PersonelTableData &&
+          other.sortOrder == this.sortOrder &&
           other.aktif == this.aktif &&
           other.isDemo == this.isDemo &&
           other.id == this.id &&
@@ -903,6 +979,7 @@ class PersonelTableData extends DataClass
 }
 
 class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
+  final Value<int?> sortOrder;
   final Value<bool> aktif;
   final Value<bool> isDemo;
   final Value<int> id;
@@ -913,6 +990,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
   final Value<int?> timId;
   final Value<String> kayitTarihi;
   const PersonelTableCompanion({
+    this.sortOrder = const Value.absent(),
     this.aktif = const Value.absent(),
     this.isDemo = const Value.absent(),
     this.id = const Value.absent(),
@@ -924,6 +1002,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
     this.kayitTarihi = const Value.absent(),
   });
   PersonelTableCompanion.insert({
+    this.sortOrder = const Value.absent(),
     this.aktif = const Value.absent(),
     this.isDemo = const Value.absent(),
     this.id = const Value.absent(),
@@ -938,6 +1017,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
         birlik = Value(birlik),
         kayitTarihi = Value(kayitTarihi);
   static Insertable<PersonelTableData> custom({
+    Expression<int>? sortOrder,
     Expression<bool>? aktif,
     Expression<bool>? isDemo,
     Expression<int>? id,
@@ -949,6 +1029,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
     Expression<String>? kayitTarihi,
   }) {
     return RawValuesInsertable({
+      if (sortOrder != null) 'sort_order': sortOrder,
       if (aktif != null) 'aktif': aktif,
       if (isDemo != null) 'is_demo': isDemo,
       if (id != null) 'id': id,
@@ -962,7 +1043,8 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
   }
 
   PersonelTableCompanion copyWith(
-      {Value<bool>? aktif,
+      {Value<int?>? sortOrder,
+      Value<bool>? aktif,
       Value<bool>? isDemo,
       Value<int>? id,
       Value<String>? adSoyad,
@@ -972,6 +1054,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
       Value<int?>? timId,
       Value<String>? kayitTarihi}) {
     return PersonelTableCompanion(
+      sortOrder: sortOrder ?? this.sortOrder,
       aktif: aktif ?? this.aktif,
       isDemo: isDemo ?? this.isDemo,
       id: id ?? this.id,
@@ -987,6 +1070,9 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
     if (aktif.present) {
       map['aktif'] = Variable<bool>(aktif.value);
     }
@@ -1020,6 +1106,7 @@ class PersonelTableCompanion extends UpdateCompanion<PersonelTableData> {
   @override
   String toString() {
     return (StringBuffer('PersonelTableCompanion(')
+          ..write('sortOrder: $sortOrder, ')
           ..write('aktif: $aktif, ')
           ..write('isDemo: $isDemo, ')
           ..write('id: $id, ')
@@ -3294,12 +3381,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 }
 
 typedef $$TimTableTableCreateCompanionBuilder = TimTableCompanion Function({
+  Value<int?> sortOrder,
   Value<int> id,
   required String timAdi,
   Value<int?> timKomutaniId,
   required String olusturmaTarihi,
 });
 typedef $$TimTableTableUpdateCompanionBuilder = TimTableCompanion Function({
+  Value<int?> sortOrder,
   Value<int> id,
   Value<String> timAdi,
   Value<int?> timKomutaniId,
@@ -3400,6 +3489,9 @@ class $$TimTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+      column: $table.sortOrder, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
 
@@ -3529,6 +3621,9 @@ class $$TimTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+      column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
@@ -3569,6 +3664,9 @@ class $$TimTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -3716,24 +3814,28 @@ class $$TimTableTableTableManager extends RootTableManager<
           createComputedFieldComposer: () =>
               $$TimTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
+            Value<int?> sortOrder = const Value.absent(),
             Value<int> id = const Value.absent(),
             Value<String> timAdi = const Value.absent(),
             Value<int?> timKomutaniId = const Value.absent(),
             Value<String> olusturmaTarihi = const Value.absent(),
           }) =>
               TimTableCompanion(
+            sortOrder: sortOrder,
             id: id,
             timAdi: timAdi,
             timKomutaniId: timKomutaniId,
             olusturmaTarihi: olusturmaTarihi,
           ),
           createCompanionCallback: ({
+            Value<int?> sortOrder = const Value.absent(),
             Value<int> id = const Value.absent(),
             required String timAdi,
             Value<int?> timKomutaniId = const Value.absent(),
             required String olusturmaTarihi,
           }) =>
               TimTableCompanion.insert(
+            sortOrder: sortOrder,
             id: id,
             timAdi: timAdi,
             timKomutaniId: timKomutaniId,
@@ -4203,6 +4305,7 @@ typedef $$KullaniciTableTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function({bool timId, bool timTableRefs})>;
 typedef $$PersonelTableTableCreateCompanionBuilder = PersonelTableCompanion
     Function({
+  Value<int?> sortOrder,
   Value<bool> aktif,
   Value<bool> isDemo,
   Value<int> id,
@@ -4215,6 +4318,7 @@ typedef $$PersonelTableTableCreateCompanionBuilder = PersonelTableCompanion
 });
 typedef $$PersonelTableTableUpdateCompanionBuilder = PersonelTableCompanion
     Function({
+  Value<int?> sortOrder,
   Value<bool> aktif,
   Value<bool> isDemo,
   Value<int> id,
@@ -4309,6 +4413,9 @@ class $$PersonelTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+      column: $table.sortOrder, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<bool> get aktif => $composableBuilder(
       column: $table.aktif, builder: (column) => ColumnFilters(column));
 
@@ -4431,6 +4538,9 @@ class $$PersonelTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+      column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<bool> get aktif => $composableBuilder(
       column: $table.aktif, builder: (column) => ColumnOrderings(column));
 
@@ -4485,6 +4595,9 @@ class $$PersonelTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
   GeneratedColumn<bool> get aktif =>
       $composableBuilder(column: $table.aktif, builder: (column) => column);
 
@@ -4626,6 +4739,7 @@ class $$PersonelTableTableTableManager extends RootTableManager<
           createComputedFieldComposer: () =>
               $$PersonelTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
+            Value<int?> sortOrder = const Value.absent(),
             Value<bool> aktif = const Value.absent(),
             Value<bool> isDemo = const Value.absent(),
             Value<int> id = const Value.absent(),
@@ -4637,6 +4751,7 @@ class $$PersonelTableTableTableManager extends RootTableManager<
             Value<String> kayitTarihi = const Value.absent(),
           }) =>
               PersonelTableCompanion(
+            sortOrder: sortOrder,
             aktif: aktif,
             isDemo: isDemo,
             id: id,
@@ -4648,6 +4763,7 @@ class $$PersonelTableTableTableManager extends RootTableManager<
             kayitTarihi: kayitTarihi,
           ),
           createCompanionCallback: ({
+            Value<int?> sortOrder = const Value.absent(),
             Value<bool> aktif = const Value.absent(),
             Value<bool> isDemo = const Value.absent(),
             Value<int> id = const Value.absent(),
@@ -4659,6 +4775,7 @@ class $$PersonelTableTableTableManager extends RootTableManager<
             required String kayitTarihi,
           }) =>
               PersonelTableCompanion.insert(
+            sortOrder: sortOrder,
             aktif: aktif,
             isDemo: isDemo,
             id: id,

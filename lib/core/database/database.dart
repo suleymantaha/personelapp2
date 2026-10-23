@@ -25,7 +25,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -70,6 +70,14 @@ class AppDatabase extends _$AppDatabase {
               faaliyetPersonelAtamaTable.gorevTimAdi,
             );
             await backfillTaskTeamsFromHistory();
+          }
+        }
+        if (from < 6) {
+          if (await _tableExists('tim_table')) {
+            await m.addColumn(timTable, timTable.sortOrder);
+          }
+          if (await _tableExists('personel_table')) {
+            await m.addColumn(personelTable, personelTable.sortOrder);
           }
         }
       },

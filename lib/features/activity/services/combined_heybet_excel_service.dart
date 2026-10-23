@@ -109,6 +109,8 @@ class CombinedHeybetExcelService {
     int? selectedSquadId,
   }) async {
     if (sources.isEmpty || people.isEmpty) return [];
+    final squads = await db.select(db.timTable).get();
+    final squadOrders = {for (final s in squads) s.id: s.sortOrder};
     final assignments =
         await (db.select(db.faaliyetPersonelAtamaTable)..where(
               (a) =>
@@ -132,6 +134,7 @@ class CombinedHeybetExcelService {
           byCard[source.id] ?? [],
           people,
           squadNames,
+          squadOrders: squadOrders,
         ))
           MilitaryRosterRow(
             sNu: 0,

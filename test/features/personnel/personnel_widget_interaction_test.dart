@@ -36,18 +36,26 @@ void main() {
   }
 
   group('Personnel Management Widget Data Exchange & Interaction Tests', () {
-    testWidgets('renders personnel screen with seeded personnel and app bar interaction', (WidgetTester tester) async {
+    testWidgets(
+        'renders personnel screen with seeded personnel and app bar interaction',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
       expect(find.byType(PersonnelManagementScreen), findsOneWidget);
-      expect(find.byType(TextField), findsWidgets);
+      expect(find.byType(TextField), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('personnel-search-toggle')));
+      await tester.pumpAndSettle();
+      expect(find.byType(TextField), findsOneWidget);
     });
 
-    testWidgets('search field filters personnel list upon text entry', (WidgetTester tester) async {
+    testWidgets('search field filters personnel list upon text entry',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
+      await tester.tap(find.byKey(const ValueKey('personnel-search-toggle')));
+      await tester.pumpAndSettle();
       final searchFinder = find.byType(TextField).first;
       await tester.enterText(searchFinder, 'Ahmet');
       await tester.pumpAndSettle();

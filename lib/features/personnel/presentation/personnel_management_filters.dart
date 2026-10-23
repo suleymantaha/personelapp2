@@ -6,203 +6,42 @@ extension _PersonnelManagementFilters on _PersonnelManagementScreenState {
     required bool isAdmin,
     required UserSessionState? session,
     required AsyncValue<List<TimTableData>> squadsAsync,
-  }) {
-    return [
-      // 1. Search Bar
-      TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          hintText: context.l10n.personnelSearchHint,
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    _updatePersonnelView(() => _searchQuery = '');
-                  },
-                )
-              : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          filled: true,
-          fillColor: context.colorScheme.surfaceContainerHighest,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
-        ),
-        onChanged: (val) {
-          _updatePersonnelView(() => _searchQuery = val.trim());
-        },
-      ),
-      const SizedBox(height: 16),
-
-      // 2. Tim Filter / Info Header
-      if (isAdmin) ...[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              context.l10n.personnelSquadFilter,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            if (!context.isMobile)
-              TextButton.icon(
-                icon: const Icon(Icons.group_add, size: 18),
-                label: Text(context.l10n.personnelNewSquad),
-                onPressed: _showAddSquadDialog,
-              ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        squadsAsync.when(
-          data: (rawSquads) {
-            final squads = MilitaryStructureHelper.sortSquads(
-              rawSquads,
-              (s) => s.timAdi,
-            );
-            final filterChips = [
-              FilterChip(
-                avatar: const Icon(Icons.groups, size: 16),
-                label: Text(context.l10n.personnelAllPersonnel),
-                selected: _selectedFilterTimId == null,
-                onSelected: (selected) {
-                  _updatePersonnelView(() => _selectedFilterTimId = null);
-                },
-                selectedColor: context.accentOrOlive,
-                labelStyle: TextStyle(
-                  color: _selectedFilterTimId == null
-                      ? context.onAccentOrOlive
-                      : context.textPrimary,
-                  fontWeight: _selectedFilterTimId == null
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                ),
-              ),
-              ...squads.map((sq) {
-                final isSelected = _selectedFilterTimId == sq.id;
-                return FilterChip(
-                  avatar: Icon(
-                    Icons.shield,
-                    size: 16,
-                    color: isSelected
-                        ? context.onAccentOrOlive
-                        : context.accentOrOlive,
-                  ),
-                  label: Text(sq.timAdi),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    _updatePersonnelView(() {
-                      _selectedFilterTimId = selected ? sq.id : null;
-                    });
-                  },
-                  selectedColor: context.accentOrOlive,
-                  labelStyle: TextStyle(
-                    color: isSelected
-                        ? context.onAccentOrOlive
-                        : context.textPrimary,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                );
-              }),
-              FilterChip(
-                avatar: Icon(
-                  Icons.person_off,
-                  size: 16,
-                  color: _selectedFilterTimId == -1
-                      ? context.onStatusColor(context.rejectedBorderColor)
-                      : context.rejectedColor,
-                ),
-                label: Text(context.l10n.personnelUnassignedOrOffRoster),
-                selected: _selectedFilterTimId == -1,
-                onSelected: (selected) {
-                  _updatePersonnelView(() {
-                    _selectedFilterTimId = selected ? -1 : null;
-                  });
-                },
-                selectedColor: context.rejectedBorderColor,
-                labelStyle: TextStyle(
-                  color: _selectedFilterTimId == -1
-                      ? context.onStatusColor(context.rejectedBorderColor)
-                      : context.textPrimary,
-                  fontWeight: _selectedFilterTimId == -1
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                ),
-              ),
-            ];
-
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: filterChips
-                    .map(
-                      (chip) => Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: chip,
-                      ),
-                    )
-                    .toList(),
-              ),
-            );
-          },
-          loading: () => const LinearProgressIndicator(),
-          error: (err, st) => Text(
-            context.l10n.commonErrorWithDetails(err.toString()),
-          ),
-        ),
-      ] else ...[
-        squadsAsync.when(
-          data: (squads) {
-            final squadMap = {for (final s in squads) s.id: s.timAdi};
-            final timName = session?.timId != null
-                ? squadMap[session?.timId] ?? context.l10n.personnelAllUnit
-                : context.l10n.personnelNoSubscription;
-            return Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 10,
-              ),
-              decoration: BoxDecoration(
-                color: context.squadBadgeBg,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: context.cardBorderColor),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.shield,
-                    color: context.squadBadgeText,
-                    size: 22,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      context.l10n.personnelAuthorizedSquad(timName),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: context.squadBadgeText,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-          loading: () => const SizedBox.shrink(),
-          error: (err, st) => const SizedBox.shrink(),
-        ),
-      ],
-
-      const SizedBox(height: 20),
-    ];
-  }
+  }) =>
+      [
+        if (_searchVisible) ...[
+          TextField(
+              key: const ValueKey('personnel-search-field'),
+              controller: _searchController,
+              autofocus: true,
+              decoration: InputDecoration(
+                  hintText: 'Personel, rütbe veya tim ara',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchQuery.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: const Icon(Icons.clear),
+                          tooltip: 'Aramayı temizle',
+                          onPressed: () {
+                            _searchController.clear();
+                            _updatePersonnelView(() => _searchQuery = '');
+                          }),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  filled: true,
+                  fillColor: context.colorScheme.surfaceContainerHighest),
+              onChanged: (value) =>
+                  _updatePersonnelView(() => _searchQuery = value.trim())),
+          const SizedBox(height: 16),
+        ],
+        if (!isAdmin && session != null)
+          Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(session.timId == null
+                  ? context.l10n.personnelNoSubscription
+                  : context.l10n.personnelAuthorizedSquad(squadsAsync.value
+                          ?.where((s) => s.id == session.timId)
+                          .firstOrNull
+                          ?.timAdi ??
+                      context.l10n.personnelAllUnit))),
+      ];
 }

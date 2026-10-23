@@ -142,6 +142,7 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
       allAssignments,
       pMap,
       squadMap,
+        squadOrders: {for (final s in squadsList) s.id: s.sortOrder},
     );
 
     final rosterRows = <MilitaryRosterRow>[];

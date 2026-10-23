@@ -26,6 +26,7 @@ class PersonnelBackupService {
             (t) => {
               'id': t.id,
               'timAdi': t.timAdi,
+              'sortOrder': t.sortOrder,
               'olusturmaTarihi': t.olusturmaTarihi,
             },
           )
@@ -35,6 +36,7 @@ class PersonnelBackupService {
             (p) => {
               'id': p.id,
               'adSoyad': p.adSoyad,
+              'sortOrder': p.sortOrder,
               'rutbe': p.rutbe,
               'birlik': p.birlik,
               'telefon': p.telefon,
@@ -89,6 +91,9 @@ class PersonnelBackupService {
       throw const FormatException('Yedek çok fazla kayıt içeriyor.');
     }
 
+    for (final record in [...squads, ...personnel]) {
+      _readSortOrder(record);
+    }
     var importedCount = 0;
 
     await db.transaction(() async {
@@ -107,6 +112,7 @@ class PersonnelBackupService {
         final newSquadId = await db.into(db.timTable).insert(
               TimTableCompanion.insert(
                 timAdi: timAdi,
+                sortOrder: Value(_readSortOrder(squad)),
                 olusturmaTarihi: _readString(
                   squad,
                   'olusturmaTarihi',
@@ -145,6 +151,7 @@ class PersonnelBackupService {
           final newPersonnelId = await db.into(db.personelTable).insert(
                 PersonelTableCompanion.insert(
                   adSoyad: adSoyad,
+                  sortOrder: Value(_readSortOrder(p)),
                   aktif: Value(p['aktif'] as bool? ?? true),
                   isDemo: Value(p['isDemo'] as bool? ?? false),
                   rutbe: rutbe,
@@ -204,6 +211,15 @@ class PersonnelBackupService {
     });
 
     return importedCount;
+  }
+
+  int? _readSortOrder(Map<String, Object?> record) {
+    final value = record['sortOrder'];
+    if (value == null) return null;
+    if (value is! int || value < 0) {
+      throw const FormatException('sortOrder negatif olmayan tam sayı olmalıdır.');
+    }
+    return value;
   }
 
   Object? _decodeBackup(String input) {
