@@ -38,3 +38,23 @@ Sistem/geliştirici talimatları ve geçerli kullanıcı talebi önceliklidir.
 
 [Orkestrasyon](.agents/policies/orchestration.md) · [Okuma haritası](docs/architecture.md) ·
 [Ortak varsayılanlar](.agents/framework.json). Bu kurallar otomatik runtime enforcement oluşturmaz.
+
+<!-- universal-agent-kit:start -->
+# Universal Agent Kit 3.0 — UMAF Active Orchestra
+
+Bu blok bu projede ortak çalışma ve orkestrasyon disiplinini tanımlar.
+Mevcut mimari kuralları, DI ve state yapısı ile birlikte harmanlanarak uygulanır.
+
+## Hibrit Akıllı Orkestrasyon Karar Matrisi
+- **Tier 1 (`native_fast`):** Tek dosya, <30 dk, kök nedeni açık düzeltmelerde doğrudan yürütme.
+- **Tier 2 (`orchestrated_research_worker_verifier`):** Çoklu dosya, yeni özellik veya bağımsız işlerde
+  Orkestra Şefi olarak 5-rol ajan ordusunu (`researcher` -> `worker` -> `verifier`) görevlendir.
+- **Tier 3 (`full_army_with_security_audit`):** Yetki, güvenlik, ödeme veya canlı yayın işlerinde
+  `orchestra-security-auditor` denetimini zorunlu ekle.
+
+## Hata Bağışıklık Muhafızları
+- **`root_cause_before_patch`:** Ham veri ve çağrı zincirini doğrulamadan tahmini yama yazma.
+- **`merge_never_clobber_agents_md`:** Mevcut mimariyi ve kuralları ezme; orkestra kurallarıyla harmanla.
+- **`single_writer_file_ownership`:** Aynı dosyaya iki yazıcı atama; 200 satırı aşan dosya üretme.
+- **`zero_qa_runtime_verification`:** Kullanıcı QA elemanı değildir; gerçek kontrolleri ölç.
+<!-- universal-agent-kit:end -->

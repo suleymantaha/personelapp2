@@ -141,8 +141,8 @@ extension _PersonnelGroupList on _PersonnelManagementScreenState {
                           padding: EdgeInsets.all(16),
                           child: Text('Bu timde personel yok.')),
                     for (var index = 0; index < people.length; index++) ...[
-                      Divider(height: 1, color: color.withValues(alpha: 0.15)),
-                      _buildMemberTile(people[index], index, isAdmin),
+                      Divider(height: 1, color: color.withValues(alpha: 0.22)),
+                      _buildMemberTile(people[index], index, isAdmin, color),
                     ],
                   ],
                 ])));

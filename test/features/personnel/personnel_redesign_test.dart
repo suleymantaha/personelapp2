@@ -76,8 +76,8 @@ void main() {
     final name = tester.widget<Text>(find.text(fullName));
     expect(name.maxLines, isNull);
     expect(name.overflow, isNot(TextOverflow.ellipsis));
-    expect(tester.getTopLeft(find.text('J.Asb.Kd.Bçvş.')).dy,
-        lessThan(tester.getTopLeft(find.text(fullName)).dy));
+    expect(tester.getTopLeft(find.text(fullName)).dy,
+        lessThan(tester.getTopLeft(find.text('J.Asb.Kd.Bçvş.')).dy));
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();

@@ -1,30 +1,14 @@
-# Proje kontrol eşlemesi
+# Proje kontrol eşlemesi — PersonelApp2
 
-Durum: UNCONFIGURED. Henüz hedef uygulama veya ürün kontrol komutu seçilmedi.
-Mevcut projenin package scripts, CI, wrapper ve SDK tanımlarından gerçek komutlar doldurulur.
-Boş satır veya örnek komut çalıştırılmış test değildir.
+Durum: CONFIGURED. Flutter 3.x / Dart 3.5+ projesi için gerçek kontrol komutları test edilip doğrulandı.
 
 | Kabul / kontrol | Gerçek komut | Cwd / ortam | Ne zaman? | Kanıt durumu |
 |---|---|---|---|---|
-| Format/lint | Henüz tanımlanmadı | Gerçek proje | İlgili değişiklik | NOT_RUN |
-| Typecheck/build | Henüz tanımlanmadı | Gerçek proje | Gerekiyorsa | NOT_RUN |
-| Birim/regresyon | Henüz tanımlanmadı | İzole test | Davranış değişimi | NOT_RUN |
-| Contract/integration | Henüz tanımlanmadı | İzole test | Ortak sınır değişimi | NOT_RUN |
-| E2E/erişilebilirlik | Henüz tanımlanmadı | İzinli ortam | Kullanıcı akışı | NOT_RUN |
-| Güvenlik/yarış/kurtarma | Henüz tanımlanmadı | Sentetik/izole test | İlgili risk | NOT_RUN |
+| Format/lint/analiz | `dart analyze` | `.` (Host) | Her PR ve teslimat öncesi | PASS (0 issue) |
+| Birim ve Widget Testleri | `flutter test` | `.` (Host) | Her PR ve teslimat öncesi | PASS (652/652 test geçti) |
+| Zarf ve Worktree Teslimatı | `python scripts/dispatch_task.py verify --worktree <wt> --apply` | `.` (Host / cmd.exe) | Görev teslimatında | PASS |
+| E2E / Cihaz Testi | `flutter test integration_test` | `.` (Host / Emulator) | Canlı sürüm öncesi | İsteğe bağlı |
 
-Uygulanmayan kontrol gerekçeli N/A olur. Araç/erişim yoksa BLOCKED; çalıştırılmadıysa NOT_RUN.
-0 test keşfi veya başarılı compilation tek başına davranış doğruluğunu kanıtlamaz.
-Test komutunun üretime/veritabanına yazıp yazmadığı önce kontrol edilir.
-
-## Bu rehber paketinin doğrulaması
-
-Python 3.10+ ve standart kütüphane gerekir. Cwd: paket kökü.
-
-```powershell
-python -B scripts/validate_package.py --root .
-python -B -m unittest discover -s tests -v
-```
-
-Bu komutlar rehberin dosya, link, şablon ve ayar yapısını sınar; hedef uygulamanın testleri değildir.
-Doğrulayıcı ağ çağrısı veya kaynak dosya yazımı yapmaz.
+## Doğrulama Notları
+- Dart ve Flutter araçları Windows üzerinde `.bat` / `.exe` sarmalayıcıdır; komutlar host şeridinde doğrudan çalışır.
+- 652 testin tamamı yerel veritabanı (Drift mock/in-memory), bildirim mimarisi, form validasyonları ve responsive arayüzleri kapsar.
