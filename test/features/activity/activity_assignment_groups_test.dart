@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -6,7 +7,8 @@ import 'package:personelapp2/features/activity/presentation/widgets/activity_ass
 void main() {
   const personnel = {
     1: PersonelTableData(
-      aktif: true, isDemo: false,
+      aktif: true,
+      isDemo: false,
       id: 1,
       adSoyad: 'Ziya KAYA',
       rutbe: 'J.Uzm.Çvş.',
@@ -15,7 +17,8 @@ void main() {
       kayitTarihi: '2026-01-01',
     ),
     2: PersonelTableData(
-      aktif: true, isDemo: false,
+      aktif: true,
+      isDemo: false,
       id: 2,
       adSoyad: 'Ahmet YILMAZ',
       rutbe: 'J.Bnb.',
@@ -24,7 +27,8 @@ void main() {
       kayitTarihi: '2026-01-01',
     ),
     3: PersonelTableData(
-      aktif: true, isDemo: false,
+      aktif: true,
+      isDemo: false,
       id: 3,
       adSoyad: 'Mehmet DEMİR',
       rutbe: 'J.Asb.',
@@ -65,6 +69,7 @@ void main() {
 
   Widget buildSubject({
     int? selectedSquadId,
+    Map<int, int?> squadOrders = const {},
     Map<int, String> squadNames = const {1: 'K.H', 2: '7-B Timi'},
     Future<void> Function(int? squadId, String squadName)? onTransferSquad,
     Future<void> Function(List<FaaliyetPersonelAtamaTableData>)?
@@ -78,6 +83,7 @@ void main() {
           assignments: assignments,
           personnelById: personnel,
           squadNames: squadNames,
+          squadOrders: squadOrders,
           selectedSquadId: selectedSquadId,
           onTransferSquad: onTransferSquad,
           onExportSelected: onExportSelected,
@@ -119,6 +125,50 @@ void main() {
       tester.getTopLeft(find.text('Ahmet YILMAZ')).dy,
       lessThan(tester.getTopLeft(find.text('Ziya KAYA')).dy),
     );
+  });
+
+  testWidgets('rank wins, then saved position; transferred position is ignored',
+      (tester) async {
+    final people = {
+      1: personnel[1]!.copyWith(sortOrder: const Value(0)),
+      2: personnel[2]!.copyWith(sortOrder: const Value(9)),
+      3: personnel[1]!
+          .copyWith(id: 3, adSoyad: 'Ali', sortOrder: const Value(1)),
+      4: personnel[1]!.copyWith(
+          id: 4,
+          adSoyad: 'A Transfer',
+          timId: const Value(2),
+          sortOrder: const Value(0)),
+    };
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+      body: ActivityAssignmentGroups(
+        assignments: [
+          for (final id in people.keys)
+            assignments[0].copyWith(id: id, personelId: id)
+        ],
+        personnelById: people,
+        squadNames: const {1: 'K.H'},
+        selectedSquadId: 1,
+        assignmentBuilder: (a) => Text('row-${a.personelId}'),
+      ),
+    )));
+    final visibleOrder = tester
+        .widgetList<Text>(find.byType(Text))
+        .map((t) => t.data)
+        .where((t) => t?.startsWith('row-') ?? false)
+        .toList();
+    expect(visibleOrder, ['row-2', 'row-1', 'row-3', 'row-4']);
+  });
+
+  testWidgets('saved team order overrides official order and updates live',
+      (tester) async {
+    await tester.pumpWidget(buildSubject(squadOrders: {1: 1, 2: 0}));
+    expect(tester.getTopLeft(find.text('7-B Timi')).dy,
+        lessThan(tester.getTopLeft(find.text('K.H')).dy));
+    await tester.pumpWidget(buildSubject(squadOrders: {1: 0, 2: 1}));
+    expect(tester.getTopLeft(find.text('K.H')).dy,
+        lessThan(tester.getTopLeft(find.text('7-B Timi')).dy));
   });
 
   testWidgets('selected team opens automatically', (tester) async {

@@ -5,6 +5,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
+import 'package:personelapp2/features/personnel/domain/personnel_display_order.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/collapsible_squad_card.dart';
 
 class ActivityAssignmentGroups extends StatefulWidget {
@@ -13,6 +14,7 @@ class ActivityAssignmentGroups extends StatefulWidget {
     required this.personnelById,
     required this.squadNames,
     required this.assignmentBuilder,
+    this.squadOrders = const {},
     this.selectedSquadId,
     this.onExportSelected,
     this.onDeleteSelected,
@@ -23,6 +25,7 @@ class ActivityAssignmentGroups extends StatefulWidget {
   final List<FaaliyetPersonelAtamaTableData> assignments;
   final Map<int, PersonelTableData> personnelById;
   final Map<int, String> squadNames;
+  final Map<int, int?> squadOrders;
   final int? selectedSquadId;
   final Future<void> Function(List<FaaliyetPersonelAtamaTableData> assignments)?
   onExportSelected;
@@ -91,21 +94,35 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
           personA?.rutbe ?? '',
         ).compareTo(getRankWeight(personB?.rutbe ?? ''));
         if (rankComparison != 0) return rankComparison;
-        return (personA?.adSoyad ?? '').compareTo(personB?.adSoyad ?? '');
+        // A position in a new team must not reorder historical assignments.
+        final saved = compareSavedOrder(
+          personA?.timId == a.gorevTimId ? personA?.sortOrder : null,
+          personB?.timId == b.gorevTimId ? personB?.sortOrder : null,
+        );
+        if (saved != 0) return saved;
+        final name = (personA?.adSoyad ?? '').compareTo(personB?.adSoyad ?? '');
+        return name != 0 ? name : a.id.compareTo(b.id);
       });
     }
 
-    final squadIds =
-        grouped.keys.toList()..sort((a, b) {
-          if (a == null) return 1;
-          if (b == null) return -1;
-          final nameA = widget.squadNames[a] ?? context.l10n.activityDetailUnknownSquad;
-          final nameB = widget.squadNames[b] ?? context.l10n.activityDetailUnknownSquad;
-          final weightA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
-          final weightB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
-          if (weightA != weightB) return weightA.compareTo(weightB);
-          return nameA.compareTo(nameB);
-        });
+    final squadIds = grouped.keys.toList()
+      ..sort((a, b) {
+        if (a == b) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        final saved =
+            compareSavedOrder(widget.squadOrders[a], widget.squadOrders[b]);
+        if (saved != 0) return saved;
+        final nameA =
+            widget.squadNames[a] ?? context.l10n.activityDetailUnknownSquad;
+        final nameB =
+            widget.squadNames[b] ?? context.l10n.activityDetailUnknownSquad;
+        final weightA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
+        final weightB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
+        if (weightA != weightB) return weightA.compareTo(weightB);
+        final name = nameA.compareTo(nameB);
+        return name != 0 ? name : a.compareTo(b);
+      });
 
     final isSelectionMode = _selectedSquadIds.isNotEmpty;
 

@@ -9,6 +9,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
     required List<FaaliyetPersonelAtamaTableData> filteredAssignments,
     required Map<int, PersonelTableData> personnelById,
     required Map<int, String> squadNames,
+    required Map<int, int?> squadOrders,
     required List<MilitaryRosterRow> Function(
       Iterable<FaaliyetPersonelAtamaTableData> assignments,
     )
@@ -35,6 +36,7 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
           assignments: filteredAssignments,
           personnelById: pMap,
           squadNames: squadMap,
+          squadOrders: squadOrders,
           selectedSquadId: selectedSquadId,
           onTransferSquad:
               !isAdmin

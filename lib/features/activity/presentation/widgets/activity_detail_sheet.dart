@@ -475,6 +475,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
             filteredAssignments: filteredAssignments,
             personnelById: pMap,
             squadNames: squadMap,
+            squadOrders: {for (final s in squadsList) s.id: s.sortOrder},
             buildRosterRows: buildRosterRows,
             loadCurrentRows: loadCurrentRows,
           ),
