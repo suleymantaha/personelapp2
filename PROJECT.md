@@ -1,22 +1,17 @@
-# Proje bağlamı
+# Proje bağlamı — PersonelApp2
 
-Durum: UNCONFIGURED. Bu belge şablondur; henüz bir ürün seçilmedi.
-Yeni projede bu dosya doldurulur. Mevcut projede bilgi önce README, kod, config ve testlerden doğrulanır.
-Eksik alan kritik değilse ajan doğrulanabilir varsayımı kaydederek ilerler.
+Durum: ACTIVE. Personel ve görev/nöbet takip sistemi.
 
-| Alan | Doldurulacak bilgi |
+| Alan | Proje Değeri |
 |---|---|
-| Proje adı | Gerçek ad |
-| Kullanıcı ve ihtiyaç | Kimin hangi işini çözüyor? |
-| Hedef ve kabul | Gözlenebilir başarı ölçütü |
-| Mevcut durum | Çalışan özellikler, eksikler, başlangıç hataları |
-| Teknoloji/sürüm | Gerçek config/lockfile/SDK kanıtı; öneri ayrı belirtilir |
-| Repo ve çalışma düzeni | Dizinler, conventions, sahiplik, mevcut CI |
-| Kapsam dışı | Bu görevde değişmeyecek ürün alanları |
-| Veri ve güven sınırları | Yetki, tenant, kişisel veri, secret, dış sistem |
-| Ortamlar | Yerel/test/staging/üretim ayrımı |
-| Kontroller | CHECKS.md içindeki gerçek komut eşlemesi |
-| Kararlar ve açık konular | Varsayım, gerekçe, karar sahibi ve sonraki adım |
-
-Teknoloji ve sağlayıcı tercihi bu belgeye aittir; ortak ajan politikalarına taşınmaz.
-Yalnız ilgili sözleşme/plan/runbook yollarını ekle; bütün geçmişi başlangıç bağlamına yükleme.
+| Proje adı | PersonelApp2 (v1.0.2+3) |
+| Kullanıcı ve ihtiyaç | Saha/ekip personel yönetimi, nöbet çizelgeleri, METİ timi, aktivite kayıtları ve arşivleme |
+| Hedef ve kabul | Yüksek veri bütünlüğü, yerel şifreli depolama, responsive arayüz ve 0 regresyon |
+| Mevcut durum | 652 test yeşil, `dart analyze` 0 issue, Drift veritabanı aktif, bildirim mimarisi kurulu |
+| Teknoloji/sürüm | Flutter 3.x, Dart 3.5+, Drift 2.34.2, Riverpod 2.6.1, GoRouter 17.3, Cryptography 2.9 |
+| Repo ve çalışma düzeni | `lib/core/` (db, notifications, services) · `lib/features/` (activity, personnel, etc.) · `test/` |
+| Kapsam dışı | Üçüncü taraf harici bulut backend (uygulama yerel-öncelikli / offline-first mimaridedir) |
+| Veri ve güven sınırları | Personel kimlik/iletişim bilgileri, yerel SQLite şifreleme, Excel/PDF ihracı |
+| Ortamlar | Windows Masaüstü, Android/iOS mobil hedefleri |
+| Kontroller | [CHECKS.md](CHECKS.md) — `dart analyze` ve `flutter test` |
+| Orkestrasyon | UMAF v3.0 Active Orchestra (Orkestra Şefi + 5-Rol Ajan Ordusu) |

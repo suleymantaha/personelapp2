@@ -1,0 +1,51 @@
+// UMAF v3.0 — OpenCode V2 kablolaması.
+//
+// Bu klasör kiti "ilk kez gerçekten çağrılabilir" hale getirir:
+//   agents/   → beş rolün V2 ajan tanımı ve motor seviyesinde izinleri
+//   skills/   → umaf becerisi; operasyonel prosedürler tembel yüklenir
+//   commands/ → /tier, /verify, /adopt slash komutları
+//
+// TEK KAYNAK KURALI: ajan tanımının kaynağı .opencode/agents/*.md dosyalarıdır.
+// Aynı tanımı buraya ikinci kez yazma. İki kaynak, biri diğerini yalancı yapar.
+//
+// $schema nesnenin ilk anahtarıdır; yorum satırı JSONC'de nesne öncesinde durur.
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // Bu kit ile açılan oturumların varsayılan ajanı Orkestra Şefi'dir.
+  "default_agent": "orchestra-coordinator",
+
+  // Taban politika `{"action":"*","resource":"*","effect":"allow"}` olduğu için
+// KURAL YAZILMAYAN bir eylem reddedilmez; izinli sayılır. Aşağıdaki liste yalnız
+// bilinen tehlikeli kalıpları kapatır — güvenliği varsayılan değil, açıkça
+// yazılan reddi sağlar. Reddedilmeyen her şey için gerekçe yoktur.
+//
+// İzin kuralları sıralıdır, en son eşleşen kural kazanır; ajan dosyasındaki
+  // kurallar bu katmanın üstüne yazılır.
+  //
+  // Bu liste bilinçli olarak DAR tutulmuştur. OpenCode kabuğu host yetkisiyle
+  // çalıştırır; "her tehlikeli komutu tanımak" yerine bilinen yıkıcı komut
+  // kalıplarını reddetmek gerçekçidir. Bu bir hız bariyeridir, kelepçe değil.
+  "permissions": [
+    { "action": "shell", "resource": "git reset --hard*", "effect": "deny" },
+    { "action": "shell", "resource": "git clean*", "effect": "deny" },
+    { "action": "shell", "resource": "git restore*", "effect": "deny" },
+    { "action": "shell", "resource": "git checkout .", "effect": "deny" },
+    { "action": "shell", "resource": "git checkout --*", "effect": "deny" },
+    { "action": "shell", "resource": "git push --force*", "effect": "ask" },
+    { "action": "shell", "resource": "git stash*", "effect": "ask" }
+  ]
+
+  // "instructions" BİLEREK YAZILMADI.
+  // Politika metnini her turda yüklemek token israfıdır. Aynı prosedürler
+  // .opencode/skills/umaf/SKILL.md içinde tembel yüklenir: beceri listesi her
+  // adımda yalnız id + ad + açıklama olarak görünür, gövde ancak skill aracı
+  // çağrıldığında konuşmaya eklenir.
+  //
+  // "agents" bloğu da BİLEREK YOK. Markdown ajan dosyaları zaten tam tanımı
+  // taşıyor; buraya ikinci bir tanım koymak iki bakım noktası yaratır.
+  //
+  // "policies" BİLEREK YOK. Sert engel şeması bu kurulumda doğrulanmadı ve
+  // yanlış şema config'i kırabilir. Zorunlu engeller permissions katmanında
+  // zaten tanımlı; ajan bazlı kısıtlar ise ajan dosyalarında.
+}
