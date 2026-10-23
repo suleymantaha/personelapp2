@@ -88,24 +88,71 @@ class PersonnelOrderGroup extends StatelessWidget {
                                           color: theme
                                               .colorScheme.outlineVariant
                                               .withValues(alpha: .5)))),
-                              padding: const EdgeInsets.fromLTRB(12, 12, 0, 12),
-                              child: Row(children: [
-                                SizedBox(
-                                    width: 30,
-                                    child: Text('${index + 1}',
-                                        style: theme.textTheme.bodySmall)),
-                                Expanded(
-                                    child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                      Text(person.rutbe,
-                                          style: theme.textTheme.bodySmall),
-                                      const SizedBox(height: 4),
-                                      Text(person.adSoyad,
-                                          style: theme.textTheme.titleSmall,
-                                          softWrap: true),
-                                    ])),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 28,
+                                    height: 28,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.28),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '${index + 1}',
+                                      style: TextStyle(
+                                        color: theme.colorScheme.onSurfaceVariant,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.16),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.45),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      person.rutbe,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: theme.colorScheme.onSurface,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      person.adSoyad,
+                                      style:
+                                          theme.textTheme.titleSmall?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.15,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
                                 ReorderableDragStartListener(
                                     index: index,
                                     enabled: enabled,

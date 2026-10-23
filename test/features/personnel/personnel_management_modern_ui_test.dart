@@ -124,4 +124,26 @@ void main() {
     expect(find.byKey(const Key('bulk-personnel-squad-0')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+      'personnel member tile renders index, rank badge and name side-by-side cleanly',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(buildSubject());
+    await tester.pump();
+
+    // Expand team card
+    await tester.tap(find.byKey(const ValueKey('team-header-1')));
+    await tester.pumpAndSettle();
+
+    // Verify index, rank badge and name are present
+    expect(find.text('1'), findsOneWidget);
+    expect(find.text('J.Bnb.'), findsOneWidget);
+    expect(find.text('Ahmet Yılmaz'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
