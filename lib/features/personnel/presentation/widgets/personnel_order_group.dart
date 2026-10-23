@@ -88,24 +88,51 @@ class PersonnelOrderGroup extends StatelessWidget {
                                           color: theme
                                               .colorScheme.outlineVariant
                                               .withValues(alpha: .5)))),
-                              padding: const EdgeInsets.fromLTRB(12, 12, 0, 12),
-                              child: Row(children: [
-                                SizedBox(
-                                    width: 30,
-                                    child: Text('${index + 1}',
-                                        style: theme.textTheme.bodySmall)),
-                                Expanded(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 32,
+                                    child: Text(
+                                      '${index + 1}.',
+                                      style: TextStyle(
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
                                     child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                      Text(person.rutbe,
-                                          style: theme.textTheme.bodySmall),
-                                      const SizedBox(height: 4),
-                                      Text(person.adSoyad,
-                                          style: theme.textTheme.titleSmall,
-                                          softWrap: true),
-                                    ])),
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          person.adSoyad,
+                                          style: theme.textTheme.titleSmall
+                                              ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.15,
+                                          ),
+                                          softWrap: true,
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          person.rutbe,
+                                          style: TextStyle(
+                                            fontSize: 12.5,
+                                            color: theme
+                                                .colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ReorderableDragStartListener(
                                     index: index,
                                     enabled: enabled,
