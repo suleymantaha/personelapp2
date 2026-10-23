@@ -69,30 +69,16 @@ class TeamDutyReportView extends StatelessWidget {
           side: BorderSide(color: theme.colorScheme.outlineVariant)),
       child: ExpansionTile(
           key: ValueKey('report-team-toggle-$id'),
-          leading:
-              Icon(Icons.shield_outlined, color: theme.colorScheme.primary),
+          leading: IconButton(
+              key: ValueKey('report-team-details-$id'),
+              tooltip: 'Tim detayları',
+              onPressed: () => showTeamReportDetails(context,
+                  title: name, data: slice, teamId: id),
+              icon: Icon(Icons.list_alt_outlined,
+                  color: theme.colorScheme.primary)),
           title: Text(name,
               style: theme.textTheme.titleMedium
                   ?.copyWith(fontWeight: FontWeight.bold)),
-          trailing: Builder(builder: (context) {
-            final controller = ExpansibleController.of(context);
-            return Row(mainAxisSize: MainAxisSize.min, children: [
-              ListenableBuilder(
-                  listenable: controller,
-                  builder: (context, child) => AnimatedRotation(
-                      turns: controller.isExpanded ? .5 : 0,
-                      duration: const Duration(milliseconds: 200),
-                      child: child),
-                  child: const Icon(Icons.expand_more)),
-              IconButton(
-                  key: ValueKey('report-team-details-$id'),
-                  tooltip: 'Tim detayları',
-                  onPressed: () => showTeamReportDetails(context,
-                      title: name, data: slice, teamId: id),
-                  icon: Icon(Icons.list_alt_outlined,
-                      color: theme.colorScheme.primary)),
-            ]);
-          }),
           subtitle: Text('${reportRecords(slice.entries).length} görev kaydı · '
               '${reportPeople(slice.entries)} farklı kişi'),
           children: [
