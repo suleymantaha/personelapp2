@@ -83,13 +83,18 @@ void main() {
     ));
     final positions = [
       for (final id in expected)
-        tester.getTopLeft(
-          id == 9 ? find.text('Özel Tim').at(1) : find.text(names[id]!).first,
-        ).dy,
+        tester
+            .getTopLeft(
+              id == 9
+                  ? find.text('Özel Tim').at(1)
+                  : find.text(names[id]!).first,
+            )
+            .dy,
     ];
     for (var i = 1; i < positions.length; i++) {
       expect(positions[i], greaterThan(positions[i - 1]),
-          reason: '${names[expected[i]]} must follow ${names[expected[i - 1]]}');
+          reason:
+              '${names[expected[i]]} must follow ${names[expected[i - 1]]}');
     }
     expect(tester.takeException(), isNull);
   });
@@ -102,9 +107,11 @@ void main() {
         ),
       ),
     ));
-    final tiles = tester.widgetList<ExpansionTile>(
-      find.byType(ExpansionTile),
-    ).toList();
+    final tiles = tester
+        .widgetList<ExpansionTile>(
+          find.byType(ExpansionTile),
+        )
+        .toList();
     expect(
       tiles.map((t) => (t.key! as ValueKey<String>).value).toList(),
       [for (final id in expected) 'analytics-team-$id'],
@@ -125,7 +132,7 @@ void main() {
       ),
     ));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('analytics-filters-toggle')));
+    await tester.tap(find.byKey(const ValueKey('analytics-settings')));
     await tester.pumpAndSettle();
     final dropdown = tester.widget<DropdownButton<int>>(
       find.descendant(

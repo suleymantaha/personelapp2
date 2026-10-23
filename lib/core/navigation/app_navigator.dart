@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/navigation/app_routes.dart';
+import 'package:personelapp2/features/watch_roster/presentation/watch_roster_screen.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/presentation/activity_assignment_preview_screen.dart';
 import 'package:personelapp2/features/activity/presentation/activity_form_screen.dart';
@@ -63,6 +64,20 @@ abstract final class AppNavigator {
 
   static Future<void> toTeamAnalytics(BuildContext context) {
     return context.push(AppRoutes.teamAnalytics);
+  }
+
+  static Future<void> toWatchRoster(BuildContext context,
+      {DateTime? initialMonth}) {
+    if (GoRouter.maybeOf(context) != null) {
+      final uri = Uri(
+          path: AppRoutes.watchRoster,
+          queryParameters: initialMonth == null
+              ? null
+              : {'month': DateFormat('yyyy-MM').format(initialMonth)});
+      return context.push(uri.toString());
+    }
+    return Navigator.of(context).push<void>(MaterialPageRoute(
+        builder: (_) => WatchRosterScreen(initialMonth: initialMonth)));
   }
 
   static Future<void> toMonthlyMatrix(BuildContext context) {

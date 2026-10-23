@@ -1,4 +1,5 @@
 import 'package:personelapp2/features/analytics/presentation/team_analytics_screen.dart';
+import 'package:personelapp2/features/watch_roster/presentation/watch_roster_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -91,6 +92,21 @@ GoRouter createAppRouter({UserSessionState? session}) {
           GoRoute(
             path: AppRoutes.teamAnalytics,
             builder: (context, state) => const TeamAnalyticsScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.watchRoster,
+            builder: (context, state) {
+              final month = state.uri.queryParameters['month'];
+              final parsed = month != null &&
+                      RegExp(r'^\d{4}-(0[1-9]|1[0-2])$').hasMatch(month)
+                  ? DateTime.tryParse('$month-01')
+                  : null;
+              return WatchRosterScreen(
+                  initialMonth: parsed != null &&
+                          parsed.year >= 1900 && parsed.year <= 9998
+                      ? parsed
+                      : null);
+            },
           ),
           GoRoute(
             path: AppRoutes.monthlyMatrix,

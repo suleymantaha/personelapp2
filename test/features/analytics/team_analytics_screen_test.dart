@@ -41,10 +41,12 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Tim Görev Analizi'), findsOneWidget);
         expect(find.text('Tim Görev Raporu'), findsOneWidget);
-        expect(find.text('Görev alan tim'), findsOneWidget);
+        expect(find.textContaining('Görev alan tim:'), findsOneWidget);
         expect(find.text('Görev Karşılaştırması'), findsNothing);
         expect(tester.takeException(), isNull);
 
+        await tester.tap(find.text('1-B'));
+        await tester.pumpAndSettle();
         // Primary report: one tap opens the recorded activity and personnel.
         final reportDuty = find.byKey(const ValueKey('report-duty-1-HEYBET'));
         await tester.ensureVisible(reportDuty);
@@ -56,8 +58,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Dense visualizations remain available on demand.
-        final graphToggle = find.byKey(
-            const ValueKey('report-advanced-charts'));
+        final graphToggle =
+            find.byKey(const ValueKey('report-advanced-charts'));
         // ListView builds the optional chart section lazily on narrow screens.
         await tester.scrollUntilVisible(graphToggle, 200,
             scrollable: find.byType(Scrollable).first);
@@ -114,13 +116,10 @@ void main() {
         }
         expect(find.text('Test Personeli'), findsOneWidget);
         expect(tester.takeException(), isNull);
-        final filterToggle = find.byKey(
-            const ValueKey('analytics-filters-toggle'));
-        await tester.ensureVisible(filterToggle);
-        await tester.tap(filterToggle);
+        await tester.tap(find.byKey(const ValueKey('analytics-settings')));
         await tester.pumpAndSettle();
-        await tester.ensureVisible(
-            find.byKey(const ValueKey('analytics-status')));
+        await tester
+            .ensureVisible(find.byKey(const ValueKey('analytics-status')));
         await tester.tap(find.byKey(const ValueKey('duty-null')));
         await tester.pumpAndSettle();
         await tester.tap(find.text('HEYBET').last);
@@ -134,11 +133,13 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.text('Bekleyen').last);
         await tester.pumpAndSettle();
+        await tester
+            .tap(find.byKey(const ValueKey('analytics-settings-close')));
+        await tester.pumpAndSettle();
         await tester.scrollUntilVisible(
             find.text('Açılımı yapılacak görev detayı bulunamadı.'), 250,
             scrollable: find.byType(Scrollable).first);
-        expect(
-            find.text('Açılımı yapılacak görev detayı bulunamadı.'),
+        expect(find.text('Açılımı yapılacak görev detayı bulunamadı.'),
             findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
