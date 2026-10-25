@@ -57,6 +57,44 @@ void main() {
     expect(layout.cells.single.rect.height, greaterThan(200));
   });
 
+  test('decoded merged summaries and unit retain their outer borders', () {
+    final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
+        faaliyetAdi: 'TEST', tarih: '2026-10-25', rows: rows(3));
+    final layout =
+        SpreadsheetImageLayout.fromSheet(decodeSpreadsheetImageWorkbook(bytes));
+    for (final label in ['Hazır Kıta', 'Gülüşkür', 'Diğer Tüm Personel']) {
+      final cell = layout.cells.firstWhere((c) => c.text == label);
+      expect(cell.borders[2]?.borderStyle, BorderStyle.Thin,
+          reason: '$label right edge');
+    }
+    final unit = layout.cells.firstWhere((c) => c.text == 'ÖRNEK BİRLİK');
+    expect(unit.borders[3]?.borderStyle, BorderStyle.Thin,
+        reason: 'vertically merged unit bottom edge');
+    final title = layout.cells
+        .firstWhere((c) => c.text.contains('PERSONEL İSİM LİSTESİ'));
+    expect(title.borders[2]?.borderStyle, anyOf(isNull, BorderStyle.None));
+    expect(title.borders[3]?.borderStyle, anyOf(isNull, BorderStyle.None));
+  });
+
+  test('merged empty far-edge border objects fall back to anchor borders', () {
+    final sheet = Excel.createExcel()['Test'];
+    final anchor = CellIndex.indexByString('A1');
+    sheet.merge(anchor, CellIndex.indexByString('B2'));
+    sheet.cell(anchor)
+      ..value = TextCellValue('Merged')
+      ..cellStyle = CellStyle(
+          rightBorder: Border(borderStyle: BorderStyle.Thin),
+          bottomBorder: Border(borderStyle: BorderStyle.Thin));
+    for (final address in ['B1', 'A2']) {
+      sheet.cell(CellIndex.indexByString(address)).cellStyle = CellStyle(
+          rightBorder: Border(borderStyle: BorderStyle.None),
+          bottomBorder: Border(borderStyle: BorderStyle.None));
+    }
+    final cell = SpreadsheetImageLayout.fromSheet(sheet).cells.single;
+    expect(cell.borders[2]?.borderStyle, BorderStyle.Thin);
+    expect(cell.borders[3]?.borderStyle, BorderStyle.Thin);
+  });
+
   test('renders complete long PNG with signatures and correct background',
       () async {
     final png = await RosterImageExporter.generate(

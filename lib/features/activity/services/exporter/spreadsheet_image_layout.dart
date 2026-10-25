@@ -71,12 +71,17 @@ class SpreadsheetImageLayout {
     final cells = entries.map((e) {
       CellStyle? styleAt(int r, int c) => data[r][c]?.cellStyle;
       final style = e.$5.cellStyle;
+      // excel decoding can discard the covered cells' outer border styles.
+      Border? outerBorder(Border? edge, Border? anchor) =>
+          edge?.borderStyle == null || edge!.borderStyle == BorderStyle.None
+              ? anchor
+              : edge;
       return SpreadsheetImageCell(e.$5.value?.toString() ?? '', style,
           f.Rect.fromLTRB(x[e.$2], y[e.$1], x[e.$4 + 1], y[e.$3 + 1]), [
         style?.leftBorder,
         style?.topBorder,
-        styleAt(e.$1, e.$4)?.rightBorder,
-        styleAt(e.$3, e.$2)?.bottomBorder,
+        outerBorder(styleAt(e.$1, e.$4)?.rightBorder, style?.rightBorder),
+        outerBorder(styleAt(e.$3, e.$2)?.bottomBorder, style?.bottomBorder),
       ]);
     }).toList();
     return SpreadsheetImageLayout(cells, x.last + margin, y.last + margin);
