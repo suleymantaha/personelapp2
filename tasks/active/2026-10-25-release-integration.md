@@ -1,6 +1,6 @@
 # Nizam 1.0.4 release integration
 
-Status: IN_PROGRESS; user explicitly authorizes all pending changes into main and private Google Drive APK delivery.
+Status: COMPLETE for local release acceptance and private Drive delivery; user explicitly authorizes all pending changes into main and private Google Drive APK delivery.
 
 ## Ownership and acceptance
 - Primary: staging, integration, final source/artifact evidence checks, Drive upload, Git push.
@@ -19,3 +19,17 @@ Status: IN_PROGRESS; user explicitly authorizes all pending changes into main an
 
 ## Integration
 Base32c3671 equals fetched origin/main. Preserve existing dirty work; stage authorized product/docs/tests/tools and commit with Conventional Commits. Fast-forward local main, rerun required source checks on integrated revision, push normally after release acceptance; no force push or tag/release publication requested.
+
+
+## Final acceptance
+- Product source commits000ad29 and46c7e7e; source reviewed independently,280 current product hashes equal final APK build manifest.
+- PASS accepted main: flutter test --no-pub --reporter expanded,732 passed/1 skipped (exit0); dart analyze,0 issues (exit0); scoped border tests7PASS; Python opt-in offline tests6PASS; git diff --check PASS.
+- Real release build1.0.4/10310; same com.example.personelapp2 and certificate as10309; aapt/apksigner/16KBzipalign PASS independently checked. Final APK93,453,474 bytes, SHA256547d89e6cb1f94429c5a217cfbdcc0477cadfc82f596c7360491f16ee47aac25, MD5dc1926081b1dced7d5e360acc2fc0469.
+- PASS original10309->10310 install-r data/settings preservation; final rebuilt10310 installed-r again, synthetic personnel/admin/dark retained. Only validated nizam-nobet-test touched; user device unchanged.
+- Artifact review discovered merged summary right/bottom border loss after Excel decoding. Added two RED->GREEN regressions and anchor fallback. Preliminary/intermediate bytes retained under ignored build release folder; none uploaded. Final real Android PNG1692x500/64,961bytes has closed outer edges; actual document save success/file confirmed. Separate synthetic120row long PNG also checked.
+- Final independent source/security/artifact review PASS; no open actionable findings. Runtime executed by worker, evidence verified read-only by reviewer and primary.
+- Drive upload PASS private/nonshared file1ZMcoGSQJ9g0_E8ZxgIgzWaAm_istPPZx, Nizam-1.0.4-10310.apk. Metadata size93,453,474 agrees with actual final file; authenticated raw fetch succeeded and returned same full size, proving download access. Connector did not expose cloud MD5; no remote byte-hash comparison claimed. No public sharing permission added.
+- Drive link: https://drive.google.com/file/d/1ZMcoGSQJ9g0_E8ZxgIgzWaAm_istPPZx/view
+- Web release build PASS before border-only painter correction; no later web rebuild. Physical Android/iOS/desktop picker acceptance NOT_RUN; Android real document picker PASS on synthetic test AVD.
+- Owned coordinator registry cleaned after both native agents completed. Local .serena files remain local assistant metadata, excluded from product commits.
+- Final Git evidence note commit and ordinary main push follow this record; hosted CI outcome tracked separately, no CI success inferred from local results.

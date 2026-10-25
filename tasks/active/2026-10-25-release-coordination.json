@@ -4,11 +4,24 @@
   "agents": [
     {
       "rufloId": "nizam-release-worker",
-      "nativeId": null,
-      "status": "intent",
+      "nativeId": "/root/release_worker",
+      "status": "completed",
       "role": "worker",
       "requestedModel": "gpt-6.1-sol",
-      "requestedEffort": "medium"
+      "requestedEffort": "medium",
+      "confirmedModel": null
+    },
+    {
+      "rufloId": "nizam-release-review",
+      "nativeId": "/root/release_review",
+      "status": "completed",
+      "role": "reviewer",
+      "requestedModel": "gpt-6.1-sol",
+      "requestedEffort": "high",
+      "confirmedModel": null
     }
-  ]
+  ],
+  "workerTransientFailure": "One model capacity failure; same native agent resumed from existing UI, no build restart for capacity.",
+  "reviewPolicyNote": "Reviewer initially requested high before user changed default to medium mid-task; no independent runtime model metadata was exposed. Existing reviewer continued; no extra specialist.",
+  "cleanup": "Both native agents completed; exact owned swarm terminated; owned registry records removed; final registry empty."
 }

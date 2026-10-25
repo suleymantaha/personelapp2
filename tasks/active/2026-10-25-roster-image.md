@@ -20,3 +20,5 @@ Checks: focused Flutter tests; dart analyze changed files; flutter test; synthet
 - Oversized images are rejected without truncation (32760 px dimension / 32M pixels raster budget). No list splitting or silent row omission.
 - Coordination: owned Ruflo swarm terminated after both native agents completed; remaining owned registry entries removed, final agent_list empty.
 - Logs and visual: build/roster-image-validation/{full-tests-final.log,final-image-tests.log,analysis-final.log,daily-list.png} (ignored build artifacts).
+
+Release follow-up2026-10-25: merged outer-border decode loss found by actual Android PNG inspection, corrected in46c7e7e with two regression tests. Release integration record supersedes original NOT_RUN Android/APK fields; final accepted suite732pass/1skip and real native PNG save PASS.
