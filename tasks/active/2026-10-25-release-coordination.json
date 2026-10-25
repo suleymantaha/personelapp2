@@ -1,0 +1,14 @@
+{
+  "taskId": "2026-10-25-release",
+  "swarmId": "swarm-1792932174938-skcg1c",
+  "agents": [
+    {
+      "rufloId": "nizam-release-worker",
+      "nativeId": null,
+      "status": "intent",
+      "role": "worker",
+      "requestedModel": "gpt-6.1-sol",
+      "requestedEffort": "medium"
+    }
+  ]
+}

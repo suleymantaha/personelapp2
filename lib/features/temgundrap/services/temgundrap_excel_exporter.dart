@@ -220,11 +220,7 @@ class TemgundrapExcelExporter {
       ShareParams(
         sharePositionOrigin: sharePositionOrigin,
         files: [
-          XFile(
-            file.path,
-            mimeType:
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          ),
+          file,
         ],
         text: localizations.temgundrapExportShareTextExcel,
       ),

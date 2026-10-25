@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:personelapp2/core/database/tables.dart';
+
+import 'connection/connection.dart';
 
 part 'database.g.dart';
 
@@ -22,7 +19,7 @@ part 'database.g.dart';
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
+  AppDatabase([QueryExecutor? e]) : super(e ?? openConnection());
 
   @override
   int get schemaVersion => 6;
@@ -195,13 +192,5 @@ class AppDatabase extends _$AppDatabase {
     if (toInsert.isNotEmpty) {
       await batch((b) => b.insertAll(timTable, toInsert));
     }
-  });
-}
-
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'jandarma_app.sqlite'));
-    return NativeDatabase(file);
   });
 }

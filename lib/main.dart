@@ -3,6 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/database/connection/storage_unavailable.dart';
+import 'package:personelapp2/core/database/startup_database.dart';
+import 'package:personelapp2/core/widgets/startup_failure.dart';
 import 'package:personelapp2/core/navigation/app_router.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/services/session_storage.dart';
@@ -14,7 +17,11 @@ Future<void> main() async {
   await initializeDateFormatting('tr_TR');
 
   final database = AppDatabase();
-  await database.ensureSeeded();
+  final error = await prepareDatabase(database);
+  if (error != null) {
+    runApp(StartupFailure(storageUnavailable: error is StorageUnavailable));
+    return;
+  }
 
   final savedThemeMode = await SessionStorage.loadThemeMode();
   final initialSession = await SessionStorage.loadValidatedSession(database);

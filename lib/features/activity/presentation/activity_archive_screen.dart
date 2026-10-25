@@ -19,6 +19,7 @@ import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/services/activity_order_preferences.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
+import 'package:personelapp2/features/activity/services/roster_image_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/services/temgundrap_activity_converter.dart';

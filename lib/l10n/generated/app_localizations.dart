@@ -94,6 +94,36 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('tr')];
 
+  /// No description provided for @rosterImageAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uzun görsel olarak kaydet'**
+  String get rosterImageAction;
+
+  /// No description provided for @rosterImageSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Excel görünümünde listenin tamamı, tek PNG'**
+  String get rosterImageSubtitle;
+
+  /// No description provided for @rosterImageSaving.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uzun görsel hazırlanıyor…'**
+  String get rosterImageSaving;
+
+  /// No description provided for @rosterImageSaved.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görsel kaydedildi.'**
+  String get rosterImageSaved;
+
+  /// No description provided for @rosterImageTooLarge.
+  ///
+  /// In tr, this message translates to:
+  /// **'Liste okunaklı tek görsel için çok uzun. Daha az kart seçerek tekrar deneyin.'**
+  String get rosterImageTooLarge;
+
   /// Uygulama adı
   ///
   /// In tr, this message translates to:

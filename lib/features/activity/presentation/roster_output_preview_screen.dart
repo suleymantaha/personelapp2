@@ -7,6 +7,7 @@ import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
+import 'package:personelapp2/features/activity/services/roster_image_exporter.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/roster_signature.dart';
 import 'package:personelapp2/features/activity/services/roster_signature_store.dart';
@@ -118,6 +119,13 @@ class _RosterOutputPreviewScreenState
             signers: _signers,
             timeRange: action.timeRange,
           );
+        case ArchiveExportType.image:
+          final rows = await _validatedRows();
+          if (!mounted) return;
+          await saveRosterImage(context,
+            faaliyetAdi: title, tarih: widget.date, rows: rows,
+            mergeCells: false, includeSignatures: true, signers: _signers,
+            timeRange: action.timeRange);
         case ArchiveExportType.pdf:
           await PdfRosterExporter.showStylePickerAndSharePdf(
             context,

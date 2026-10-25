@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:personelapp2/features/activity/services/roster_share_file.dart';
 import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -166,6 +168,7 @@ class ExcelXmlGenerator {
 
   /// Cleans up old exported XML/XLSX files in temporary directory to prevent cache bloat
   static Future<void> cleanOldExports() async {
+    if (kIsWeb) return;
     try {
       final dir = await getTemporaryDirectory();
       if (dir.existsSync()) {
@@ -200,13 +203,12 @@ class ExcelXmlGenerator {
       month: month,
     );
 
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/Faaliyet_Matrisi_${year}_$month.xlsx');
-    await file.writeAsBytes(bytes);
+    final file = await createRosterShareFile(
+        'Faaliyet_Matrisi_${year}_$month.xlsx', bytes);
 
     await SharePlus.instance.share(
       ShareParams(
-        files: [XFile(file.path)],
+        files: [file],
         text: 'Jandarma Görev Takip - Aylık Faaliyet Matrisi Excel Çıktısı',
       ),
     );

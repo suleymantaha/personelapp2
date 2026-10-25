@@ -142,7 +142,9 @@ jobs:
         run: |
           VERSION_LINE=$(grep '^version:' pubspec.yaml | awk '{print $2}')
           VERSION_NAME=${VERSION_LINE%%+*}
-          VERSION_CODE=$((10000 + GITHUB_RUN_NUMBER))
+          PUBSPEC_CODE=${VERSION_LINE##*+}
+          RUN_CODE=$((10000 + GITHUB_RUN_NUMBER))
+          VERSION_CODE=$((PUBSPEC_CODE > RUN_CODE ? PUBSPEC_CODE : RUN_CODE))
           echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
           echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
           echo "versionName=$VERSION_NAME"

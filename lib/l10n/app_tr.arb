@@ -1,4 +1,10 @@
 {
+  "rosterImageAction": "Uzun görsel olarak kaydet",
+  "rosterImageSubtitle": "Excel görünümünde listenin tamamı, tek PNG",
+  "rosterImageSaving": "Uzun görsel hazırlanıyor…",
+  "rosterImageSaved": "Görsel kaydedildi.",
+  "rosterImageTooLarge": "Liste okunaklı tek görsel için çok uzun. Daha az kart seçerek tekrar deneyin.",
+
   "@@locale": "tr",
   "appTitle": "Nizam",
   "@appTitle": {

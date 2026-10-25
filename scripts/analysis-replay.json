@@ -1,0 +1,10 @@
+[
+  {
+    "role": "summary",
+    "response": {
+      "status": "ok",
+      "text": "Offline wiring fixture only. The supplied helper and tests require human review; this is not a model analysis or quality verdict.",
+      "sources": ["helper", "tests"]
+    }
+  }
+]

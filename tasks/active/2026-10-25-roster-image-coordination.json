@@ -1,0 +1,23 @@
+{
+  "taskId": "2026-10-25-roster-image",
+  "swarmId": "swarm-1792931330498-rr6aks",
+  "agents": [
+    {
+      "rufloId": "roster-image-research",
+      "nativeId": "/root/excel_image_research",
+      "status": "completed",
+      "role": "explorer",
+      "requestedModel": "gpt-6-luna",
+      "confirmedModel": null
+    },
+    {
+      "rufloId": "roster-image-review",
+      "nativeId": "/root/roster_image_review",
+      "status": "completed",
+      "role": "reviewer",
+      "requestedModel": "gpt-6.1-sol",
+      "confirmedModel": null
+    }
+  ],
+  "cleanup": "terminated swarm and owned registry records; final registry empty"
+}

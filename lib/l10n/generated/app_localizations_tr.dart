@@ -9,6 +9,23 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String get rosterImageAction => 'Uzun görsel olarak kaydet';
+
+  @override
+  String get rosterImageSubtitle =>
+      'Excel görünümünde listenin tamamı, tek PNG';
+
+  @override
+  String get rosterImageSaving => 'Uzun görsel hazırlanıyor…';
+
+  @override
+  String get rosterImageSaved => 'Görsel kaydedildi.';
+
+  @override
+  String get rosterImageTooLarge =>
+      'Liste okunaklı tek görsel için çok uzun. Daha az kart seçerek tekrar deneyin.';
+
+  @override
   String get appTitle => 'Nizam';
 
   @override

@@ -1,0 +1,42 @@
+{
+  "timestampUtc": "2026-10-25T12:39:59.224931+00:00",
+  "cwd": "F:/personelapp2",
+  "head": "32c3671",
+  "files": {
+    "lib/features/activity/services/exporter/spreadsheet_image_layout.dart": "1e0ab6feb2f1f0710684f1461b85356630f22e78b6045f3e3cb755a9e4caabcc",
+    "lib/features/activity/services/exporter/spreadsheet_image_renderer.dart": "dde4793f88575b4c079495d3392d4d6f1dd72b1627f14d8a97b6b8657b54ac52",
+    "lib/features/activity/services/exporter/spreadsheet_image_workbook.dart": "159eb40c71d5a4b78e008babbd20e47aec28f057cb773a9ec62aaf88de7d9ffd",
+    "lib/features/activity/services/roster_image_exporter.dart": "83dc03c803c09dae8dc403d3f1c09741f77d43a186b3c737a0ef672fa0ac5bd6",
+    "lib/features/activity/services/roster_image_file_gateway.dart": "e050fa98202fb50d85331d726537c155bb44b4dce2b5818b63dbc48c634fc25c",
+    "lib/features/activity/services/roster_share_mime.dart": "85b9d1e53120550ae5ac652fce11e9d58a15587ea801d259abf9b710deea712f",
+    "lib/features/activity/presentation/activity_archive_actions.dart": "8a30ac8d938c9e28d61ffd51153b681940031d8513a10e47c2585d6712fb987c",
+    "lib/features/activity/presentation/activity_archive_screen.dart": "67248ff641adaf633d55bbedf95308a5e31ec1e715669fdaad38b0606cd810ac",
+    "lib/features/activity/presentation/roster_output_preview_screen.dart": "516833545c72db91496547d13449c7a6521036d96fddf1c88f4b6ac55575c62f",
+    "lib/features/activity/presentation/widgets/activity_detail_assignments.dart": "54672fdce27c05dad7f47782e67a05d8b13c8d791697ef26d9694f4cad7ba43a",
+    "lib/features/activity/presentation/widgets/activity_detail_sheet.dart": "0b110c27f4c30cbc74ae65cf034f2556c014b921ea30e116f97b5c508e96be12",
+    "lib/features/activity/presentation/widgets/archive_export_sheet.dart": "c999c07b9f390296f67e553b5f06d3c4d9764623dc7f82ebaf6ce776420081e3",
+    "test/features/activity/roster_image_exporter_test.dart": "1ecd2937199f0cfd011efa991d7fd87740da45cea526d8e6b17cf194f3864a3e",
+    "test/features/activity/roster_image_preview_test.dart": "396b9a2d76acb8335e22bc21d50e83b54b2e5b7da9035a5f5647e64805f0e42b",
+    "test/features/activity/archive_export_sheet_test.dart": "1f483e3b7209f6bc5bb903ddf71d7f55b12cc47a6f26a59f527b13dc24e9b5db",
+    "lib/l10n/app_tr.arb": "019de0e7359660088a4bdaab65005ab7a513c5125cbf497ed2854e65c32ce372"
+  },
+  "checks": {
+    "fullTests": {
+      "exit": 0,
+      "passed": 730,
+      "skipped": 1
+    },
+    "analyze": {
+      "exit": 0,
+      "issues": 0
+    },
+    "format": {
+      "exit": 0
+    },
+    "diffCheck": {
+      "exit": 0
+    },
+    "review": "no actionable findings",
+    "device": "NOT_RUN"
+  }
+}

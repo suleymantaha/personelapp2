@@ -28,7 +28,7 @@ Future<void> pdfShareRoster({
 
   await SharePlus.instance.share(
     ShareParams(
-      files: [XFile(file.path, mimeType: 'application/pdf')],
+      files: [file],
       text: '$faaliyetAdi - Resmi İsim Listesi PDF Dökümanı',
     ),
   );

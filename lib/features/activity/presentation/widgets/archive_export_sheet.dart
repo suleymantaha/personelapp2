@@ -4,6 +4,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 
 enum ArchiveExportType {
   excel,
+  image,
   pdf,
   print,
   text,
@@ -284,6 +285,12 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
                 ),
                 subtitle: Text(context.l10n.archiveExportExcelSubtitle),
                 onTap: () => _select(ArchiveExportType.excel),
+              ),
+              ListTile(
+                leading: const Icon(Icons.image_outlined),
+                title: Text(context.l10n.rosterImageAction),
+                subtitle: Text(context.l10n.rosterImageSubtitle),
+                onTap: () => _select(ArchiveExportType.image),
               ),
               ListTile(
                 leading: Container(

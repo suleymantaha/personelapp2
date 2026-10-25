@@ -88,6 +88,11 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                   timeRange: action.timeRange,
                 );
                 return;
+              case ArchiveExportType.image:
+                await saveRosterImage(context,
+                  faaliyetAdi: activity.faaliyetAdi, tarih: activity.tarih,
+                  rows: currentRows, timeRange: action.timeRange);
+                return;
               case ArchiveExportType.pdf:
                 await PdfRosterExporter.showStylePickerAndSharePdf(
                   context,

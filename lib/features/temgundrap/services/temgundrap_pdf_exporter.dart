@@ -269,7 +269,7 @@ class TemgundrapPdfExporter {
     await SharePlus.instance.share(
       ShareParams(
         sharePositionOrigin: sharePositionOrigin,
-        files: [XFile(file.path, mimeType: 'application/pdf')],
+        files: [file],
         text: localizations.temgundrapExportShareText,
       ),
     );

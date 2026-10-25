@@ -29,7 +29,20 @@ void main() {
     );
   }
 
-  testWidgets('returns export result without time range when no hour is typed', (tester) async {
+  testWidgets('offers long image with entered time range', (tester) async {
+    ArchiveExportResult? received;
+    await tester.pumpWidget(buildTestHost(onResult: (res) => received = res));
+    await tester.tap(find.text('Aç'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '08.00-20.00');
+    await tester.ensureVisible(find.text('Uzun görsel olarak kaydet'));
+    await tester.tap(find.text('Uzun görsel olarak kaydet'));
+    await tester.pumpAndSettle();
+    expect(received?.type.name, 'image');
+    expect(received?.timeRange, '08.00-20.00');
+  });
+  testWidgets('returns export result without time range when no hour is typed',
+      (tester) async {
     ArchiveExportResult? received;
     await tester.pumpWidget(
       buildTestHost(onResult: (res) => received = res),
@@ -50,7 +63,9 @@ void main() {
     expect(received!.timeRange, isNull);
   });
 
-  testWidgets('returns typed time range when user fills hour input and taps print', (tester) async {
+  testWidgets(
+      'returns typed time range when user fills hour input and taps print',
+      (tester) async {
     ArchiveExportResult? received;
     await tester.pumpWidget(
       buildTestHost(onResult: (res) => received = res),
@@ -62,6 +77,7 @@ void main() {
     await tester.enterText(find.byType(TextField), '06.00-08.00');
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('Doğrudan Yazdır'));
     await tester.tap(find.text('Doğrudan Yazdır'));
     await tester.pumpAndSettle();
 
@@ -70,7 +86,8 @@ void main() {
     expect(received!.timeRange, equals('06.00-08.00'));
   });
 
-  testWidgets('preset chip populates time field and clear button resets it', (tester) async {
+  testWidgets('preset chip populates time field and clear button resets it',
+      (tester) async {
     ArchiveExportResult? received;
     await tester.pumpWidget(
       buildTestHost(onResult: (res) => received = res),

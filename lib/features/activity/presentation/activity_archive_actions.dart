@@ -298,6 +298,15 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
       case ArchiveExportType.excel:
         await _exportMasterExcel(activities, personnelList);
         return;
+      case ArchiveExportType.image:
+        final rows = await _buildRosterRowsForMasterExport(activities, personnelList);
+        if (!mounted || rows.isEmpty) return;
+        await saveRosterImage(context,
+          faaliyetAdi: activities.length == 1 ? activities.first.faaliyetAdi
+              : context.l10n.activityArchiveAllActivitiesDefaultName,
+          tarih: _buildExportDateTitle(activities), rows: rows,
+          timeRange: action.timeRange);
+        return;
       case ArchiveExportType.pdf:
         await _exportMasterPdf(activities, personnelList);
         return;

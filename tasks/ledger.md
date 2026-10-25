@@ -28,3 +28,15 @@ Bu boş tablo tamamlanmış görev veya uygulama kanıtı değildir.
 - 2026-10-24: Monthly default and collapsed teams DONE — 719 tests, analyze, separate Android scenario and independent source review PASS; no user-emulator install.
 - 2026-10-24: Duty rows now count distinct activity/duty records, not personnel; regression red/green, 719 tests, analyze and dedicated5560 drive PASS. Normal lib/main.dart APK installed -r on user-authorized baba5554 after local backup; DB/preferences byte-identical after navigation. Monthly default and collapsed cards observed. No commit/push.
 - 2026-10-24: [Pending changes review and main push](active/2026-10-24-pending-changes-commit.md) — verification PASS; 720 tests, clean analyze, provider lifecycle regression and historical evidence review; authorized commit/push follows.
+
+- 2026-10-24: [Nizam responsive design](active/nizam-responsive-design.md) — IN_REVIEW; UI implemented, 747 tests PASS, analyze PASS; full web build blocked by existing drift/native imports. No publication.
+
+- 2026-10-24: [Role bridge opt-in](active/2026-10-24-role-bridge-opt-in.md) - offline integration, see task record.
+
+- 2026-10-24 | APK/private Drive + persistent local web | DONE | tasks/active/2026-10-24-apk-web.md | 10306 upgrade verified; 748 tests + 3 focused, analyze/build PASS; browser-runner blocked; no push/deploy.
+
+- 2026-10-24 | Compact dashboard and archive hero | PASS | tasks/active/2026-10-24-compact-dashboard.md | 42 dashboard tests, analyze and visual review; no APK distribution.
+
+- 2026-10-24 | User-ordered workspace / APK10308 | DONE | tasks/active/2026-10-24-ordered-workspace.md | 42 tests/analyze/build/update PASS; private Drive delivered.
+
+- 2026-10-24 | Restore original dashboard / APK10309 | DONE | tasks/active/2026-10-24-restore-original-ui.md | 18 tests/analyze/build/update PASS; private Drive delivered; web fixes preserved.

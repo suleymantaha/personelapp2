@@ -1,5 +1,6 @@
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_formatters.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
@@ -129,7 +130,8 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
       _emit();
       await _rememberPhone(phone);
       if (mounted) {
-        AppNotifications.success(context.l10n.temgundrapPhoneMatchedWithPersonnel);
+        AppNotifications.success(
+            context.l10n.temgundrapPhoneMatchedWithPersonnel);
       }
     } finally {
       if (mounted) setState(() => _pickingContact = false);
@@ -184,7 +186,8 @@ class _TemgundrapCommanderPickerState extends State<TemgundrapCommanderPicker> {
                   suffixIcon: IconButton(
                     key: const Key('pick-commander-contact'),
                     tooltip: context.l10n.temgundrapSelectFromContacts,
-                    onPressed: _pickingContact ? null : _pickFromContacts,
+                    onPressed:
+                        kIsWeb || _pickingContact ? null : _pickFromContacts,
                     icon: _pickingContact
                         ? const Padding(
                             padding: EdgeInsets.all(12),

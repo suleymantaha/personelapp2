@@ -1,9 +1,6 @@
 import 'roster_signature.dart';
 import 'roster_share_file.dart';
 
-import 'dart:io';
-
-import 'package:path_provider/path_provider.dart';
 import 'package:personelapp2/core/utils/export_file_name_helper.dart';
 import 'package:personelapp2/core/utils/official_roster_title.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
@@ -219,11 +216,7 @@ class MilitaryRosterExporter {
     await SharePlus.instance.share(
       ShareParams(
         files: [
-          XFile(
-            file.path,
-            mimeType:
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          ),
+          file,
         ],
         text: '$faaliyetAdi - Resmi İsim Listesi Excel Dökümanı',
       ),
@@ -231,7 +224,7 @@ class MilitaryRosterExporter {
   }
 
   /// Saves Excel file directly to the device's public Downloads / Storage folder
-  static Future<File> saveExcelToDevice({
+  static Future<XFile> saveExcelToDevice({
     required String faaliyetAdi,
     required String tarih,
     required List<MilitaryRosterRow> rows,
@@ -250,31 +243,7 @@ class MilitaryRosterExporter {
       extension: 'xlsx',
     );
 
-    Directory targetDir;
-    try {
-      if (Platform.isAndroid) {
-        targetDir = Directory('/storage/emulated/0/Download');
-        if (!targetDir.existsSync()) {
-          targetDir = await getApplicationDocumentsDirectory();
-        }
-      } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-        final userHome =
-            Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
-        if (userHome != null) {
-          targetDir = Directory('$userHome/Downloads');
-        } else {
-          targetDir = await getApplicationDocumentsDirectory();
-        }
-      } else {
-        targetDir = await getApplicationDocumentsDirectory();
-      }
-    } catch (_) {
-      targetDir = await getApplicationDocumentsDirectory();
-    }
-
-    final file = File('${targetDir.path}/$fileName');
-    await file.writeAsBytes(bytes);
-    return file;
+    return saveRosterToDevice(fileName, bytes);
   }
 
   /// Master XML generator helper
@@ -308,11 +277,7 @@ class MilitaryRosterExporter {
     await SharePlus.instance.share(
       ShareParams(
         files: [
-          XFile(
-            file.path,
-            mimeType:
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          ),
+          file,
         ],
         text: '$title - Günlük Tüm Faaliyetler Birleşik Excel Dökümanı',
       ),

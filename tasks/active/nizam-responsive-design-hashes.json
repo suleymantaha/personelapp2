@@ -1,0 +1,29 @@
+{
+  "base": "32c3671",
+  "utc": "2026-10-23T23:57:06.754780+00:00",
+  "sha256": {
+    "lib/core/theme/app_colors.dart": "981a28331dc427b2c1b118ebb4a672948f39c6b0cd132d55ea8f9d5e3d7335ff",
+    "lib/core/theme/app_custom_colors.dart": "8d1ee17d27f98fdca152e64e272e47bb21b2414100c9ac4569d933f2d2be6b2b",
+    "lib/core/theme/app_theme.dart": "6343bb26dee3d6c7b27c7f8b2308f91d3a782b278a4bde1d03a9bc43387cbc34",
+    "lib/features/dashboard/presentation/dashboard_actions.dart": "5bb5957732591af633031b1178905dd0869321688e7bdfc41ade11c3db058335",
+    "lib/features/dashboard/presentation/dashboard_screen.dart": "04ee860189aa394a527c9ec19df094d4adf63bf5e0620d1fb68d2e061bc827eb",
+    "lib/features/dashboard/presentation/models/dashboard_action_item.dart": "e70be9775b0b87a6ec28ebd45d809f27f1c487eb9e249d7ab5453acb04a50d21",
+    "lib/features/dashboard/presentation/widgets/dashboard_bottom_navigation.dart": "2e7fe69e0a78a607271326a879a2f0969c0cc8e30cd2dbfca6b183e3f28ff405",
+    "lib/features/dashboard/presentation/widgets/dashboard_identity.dart": "ffc5ab109205e1cdf72b9711715fe6be6948c6953138b118306b33e059c254c7",
+    "lib/features/dashboard/presentation/widgets/dashboard_schedule_card.dart": "ddc5f10493748ea15caa91f5f81b50fe701aaebdd3c598cb8cb43e2ecad11613",
+    "lib/features/dashboard/presentation/widgets/dashboard_sidebar.dart": "2f3d6f32eba6f4814796c999d7ce7cc102c7bbaf685a6280932b86ba97fd5930",
+    "lib/features/dashboard/presentation/widgets/dashboard_tool_tile.dart": "90662108ef241a491a85dacc1cf9cec931541e98a93641f18e06c27fead6238a",
+    "lib/features/dashboard/presentation/widgets/dashboard_tools_sheet.dart": "fbf784a114d84065ca8485ce4f7acafbbfaa0d5b517d2b0344722f35e6a5b1b4",
+    "lib/features/dashboard/presentation/widgets/dashboard_workspace.dart": "0578aeef9e5768d5409819c943a37e48805141f582fdeb852ff96607ef90c8c4",
+    "lib/l10n/app_tr.arb": "26dcd42f3d9de91e453f463c374d2ceaf51ae7d968955b06f75bf66d4e4f47a8",
+    "lib/l10n/generated/app_localizations.dart": "0a70155196d413edb08a7fc793abd52200de8319eadbbee722e08980067de2c8",
+    "lib/l10n/generated/app_localizations_tr.dart": "4ea80d78f422c01fb3a65c4e119d14ec37b9dfce153c228aaf478e69d190a9fc",
+    "test/core/theme/app_theme_palette_test.dart": "710ea6f90170a9c9792170507133414a8cdfd3c9a30cf20aae518615b0d6afeb",
+    "test/features/dashboard/dashboard_import_access_test.dart": "a4107d06dd53bc704c22a6035c08b9bf5693a73edf71e71863b77a606d78f87a",
+    "test/features/dashboard/dashboard_personnel_menu_test.dart": "340f1b72f04264d2dc53e2b36755517290a094e32a33396ad9f9e2b21c255ddb",
+    "test/features/dashboard/dashboard_responsive_design_test.dart": "18d9a4969cd7640ea4cb79ddd0e191dc997aa6215db4bdb6e77c4da7b7d1f7e2",
+    "test/features/dashboard/dashboard_settings_access_test.dart": "09428d74c7838dfe13cefe3a56264d2820d9bb3b0f83788c312eb27ac22236c3",
+    "test/features/dashboard/dashboard_test_host.dart": "6c346aef38bf5c201ef1ee1ffbde64a0a322a14e8a2cff33550aab48d4203cc5",
+    "test/features/dashboard/dashboard_visual_capture_test.dart": "04d648a7b96ece961dbed6f819821267438fb46633febbbcd155a099c7054a91"
+  }
+}

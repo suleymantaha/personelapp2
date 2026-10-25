@@ -25,6 +25,13 @@ class DeviceBackupFileGateway implements BackupFileGateway {
   @override
   Future<bool> saveBackup(String contents, {Rect? shareOrigin}) async {
     final filename = _filename();
+    if (kIsWeb) {
+      final file = XFile.fromData(Uint8List.fromList(utf8.encode(contents)),
+          mimeType: 'application/json', name: filename);
+      await file.saveTo(filename);
+      // Browser APIs confirm download initiation, not the eventual disk write.
+      return true;
+    }
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       return await _androidFiles.invokeMethod<bool>('saveBackup', {
             'name': filename,

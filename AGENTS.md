@@ -39,6 +39,16 @@ Sistem/geliştirici talimatları ve geçerli kullanıcı talebi önceliklidir.
 [Orkestrasyon](.agents/policies/orchestration.md) · [Okuma haritası](docs/architecture.md) ·
 [Ortak varsayılanlar](.agents/framework.json). Bu kurallar otomatik runtime enforcement oluşturmaz.
 
+## APK hazırlama ve güvenli güncelleme
+
+- Her APK hazırlığında önceki dağıtılmış APK'ların, GitHub Actions paketlerinin ve ilgili kurulu sürümün gerçek `versionCode` değerlerini kontrol et. Yeni `versionCode` bu değerlerin en büyüğünden yüksek olmalı; yalnızca `versionName` veya `pubspec.yaml` değerine bakarak karar verme. Doğrulanan kodu `pubspec.yaml` ile derleme parametrelerinde tutarlı kullan.
+- Önceki dağıtılmış APK ile aynı `applicationId` ve aynı imza anahtarını kullan. Eski ve yeni APK'nın imza sertifikası SHA-256 değerlerini karşılaştır; anahtar/parola gibi sırları kaydetme veya paylaşma. İmza eşleşmesi doğrulanmadan paketi güncelleme olarak teslim etme.
+- Testleri kullanıcının gerçek kayıtlarının bulunduğu cihaz/emülatörde çalıştırma. Ayrı test emülatörünü kullan; her kurulum veya veri değiştiren işlem öncesinde hedef AVD adını ve cihaz kimliğini doğrula. Beklenen test AVD'si `nizam-nobet-test`; cihazın seri numarasını her çalışmada yeniden doğrula.
+- Ayrı emülatöre önce önceki dağıtılmış sürümü kur ve sentetik kayıtlar ile ayarlar oluştur. Yeni imzalı release APK'yı mevcut sürümün üzerine `adb install -r` ile yükle. Bu güncelleme testi sırasında uygulamayı kaldırma, veriyi temizleme veya downgrade izni kullanma; temiz kurulum başarısını güncelleme kanıtı sayma.
+- Güncellemeden sonra uygulamanın açıldığını, mevcut kayıtların ve ayarların korunduğunu doğrula. Yalnızca kurulum komutunun başarılı olması, kurulum kimliğinin korunması veya APK'nın derlenmesi yeterli değildir.
+- Teslim edilecek APK'nın gerçek sürüm kodunu, imzasını ve dosya hash'ini doğrula; önceki paket, güncelleme testi ve veri/ayar kontrollerinin sonuçlarını yerel doğrulama kaydına yaz. Kullanıcının verilerini veya sırlarını bu kayıtlara ekleme.
+- Bu kontroller geçmeden APK'yı hazır olarak teslim etme veya dağıtıma yükleme. Eski APK ya da gerekli test ortamı bulunamadığında eksik doğrulamayı açıkça bildir; kontrolü yapılmış gibi sunma. Kullanıcının mevcut uygulamasını kaldırmasını çözüm olarak önerme.
+
 <!-- universal-agent-kit:start -->
 # Universal Agent Kit 3.0 — UMAF Active Orchestra
 
