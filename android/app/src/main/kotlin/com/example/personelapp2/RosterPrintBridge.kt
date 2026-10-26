@@ -91,7 +91,7 @@ internal object RosterPrintBridge {
             callback: WriteResultCallback,
         ) {
             // The PDF contains all pages. AOSP PrintSpooler maps requested page
-            // ranges to this full file when ALL_PAGES is reported as written.
+            // ranges to this full file when the actual written pages are reported.
             writer.execute {
                 var failure: Exception? = null
                 try {
@@ -110,7 +110,7 @@ internal object RosterPrintBridge {
                 // Report once, after the descriptor has been closed.
                 if (cancellationSignal.isCanceled) callback.onWriteCancelled()
                 else if (failure != null) callback.onWriteFailed(failure.message)
-                else callback.onWriteFinished(arrayOf(PageRange.ALL_PAGES))
+                else callback.onWriteFinished(arrayOf(PageRange(0, pageCount - 1)))
             }
         }
     }
