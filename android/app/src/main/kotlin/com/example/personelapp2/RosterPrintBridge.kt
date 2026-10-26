@@ -79,7 +79,7 @@ internal object RosterPrintBridge {
             }
             val info = PrintDocumentInfo.Builder(name)
                 .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
-                .setPageCount(pageCount)
+                .setPageCount(PrintDocumentInfo.PAGE_COUNT_UNKNOWN)
                 .build()
             callback.onLayoutFinished(info, false)
         }
