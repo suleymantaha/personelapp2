@@ -12,6 +12,7 @@ import 'package:personelapp2/features/activity/services/military_roster_exporter
 part 'excel_xlsx_military_generator.dart';
 part 'excel_xlsx_master_generator.dart';
 part 'excel_xlsx_support.dart';
+part 'excel_xlsx_layout.dart';
 
 /// Generates native XLSX workbooks for military activity rosters.
 class ExcelXlsxGenerator {

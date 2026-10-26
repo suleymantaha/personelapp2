@@ -230,6 +230,7 @@ List<int> _generateMasterDailyExcelBytes({
   final lastDataRowNumber = currentRow;
 
   currentRow++;
+  final summaryStartRow = currentRow;
   final allRows = activities.expand((activity) => activity.rows).toList();
   _writeThreeBoxSummary(
     sheet: sheet,
@@ -239,21 +240,13 @@ List<int> _generateMasterDailyExcelBytes({
     contentStyle: cellLeftStyle,
   );
 
-  sheet
-    ..setColumnWidth(0, 10)
-    ..setColumnWidth(1, 22)
-    ..setColumnWidth(2, 18)
-    ..setColumnWidth(3, 30)
-    ..setColumnWidth(4, 25)
-    ..setColumnWidth(5, 7);
-
-  final encoded = excel.encode();
+  final encoded = _encodeRosterLayout(sheet, summaryStartRow);
   if (encoded == null) return <int>[];
   return _applyPrintSettings(
     encoded,
     sheetName: sheetName,
     endRow: lastDataRowNumber,
-    endColumn: 'E',
+    endColumn: 'G',
     repeatHeaderRange: r'$1:$2',
   );
 }

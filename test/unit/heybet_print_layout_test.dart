@@ -8,15 +8,15 @@ import 'package:personelapp2/features/activity/services/military_roster_exporter
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 
 List<MilitaryRosterRow> roster(int count) => List.generate(
-  count,
-  (i) => MilitaryRosterRow(
-    sNu: i + 1,
-    birligi: 'J.Komd.Öz.Hrk.Tb.Klığı',
-    rutbe: 'J.Uzm.Çvş.',
-    adSoyad: 'Personel ${i + 1}',
-    diger: '',
-  ),
-);
+      count,
+      (i) => MilitaryRosterRow(
+        sNu: i + 1,
+        birligi: 'J.Komd.Öz.Hrk.Tb.Klığı',
+        rutbe: 'J.Uzm.Çvş.',
+        adSoyad: 'Personel ${i + 1}',
+        diger: '',
+      ),
+    );
 
 void main() {
   test('signed Excel puts centered signatures at left and right edges', () {
@@ -32,7 +32,7 @@ void main() {
       (r) => r.any((c) => c?.value?.toString() == 'TANZİM EDEN'),
     );
     expect(row.first?.value?.toString(), 'TANZİM EDEN');
-    expect(row[4]?.value?.toString(), 'TASDİK EDEN');
+    expect(row[6]?.value?.toString(), 'TASDİK EDEN');
   });
   test('signed Excel includes time range in header when provided', () {
     final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
@@ -83,7 +83,7 @@ void main() {
           .firstMatch(workbook)!
           .group(1)!;
       final lastRow = int.parse(
-        RegExp(r'\$E\$(\d+)').firstMatch(area)!.group(1)!,
+        RegExp(r'\$G\$(\d+)').firstMatch(area)!.group(1)!,
       );
       expect(lastRow, greaterThan(ihsan + 1));
       expect(lastRow, lessThan(total + 1));
@@ -133,7 +133,8 @@ void main() {
       tarih: '2026-10-06',
       rows: roster(1),
     );
-    final text = Excel.decodeBytes(bytes)['İsim Listesi'].rows
+    final text = Excel.decodeBytes(bytes)['İsim Listesi']
+        .rows
         .expand((r) => r)
         .map((c) => c?.value?.toString() ?? '')
         .join('\n');

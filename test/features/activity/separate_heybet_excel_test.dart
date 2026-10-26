@@ -260,16 +260,30 @@ void main() {
         combinedPaths.add(path);
         final workbook = Excel.decodeBytes(File(path).readAsBytesSync());
         final sheet = workbook['İsim Listesi'];
-        expect(sheet.spannedItems, [
-          'A1:E1',
-          'A6:B6',
-          'A7:B7',
-          'A8:B8',
-          'A9:B9',
-          'A10:B10',
-        ]);
+        // The seven-column grid preserves five visible fields with horizontal
+        // merges; disabling grouping must still prevent vertical data merges.
+        expect(
+            sheet.spannedItems,
+            containsAll([
+              'A1:G1',
+              'C3:D3',
+              'E3:F3',
+              'C4:D4',
+              'E4:F4',
+              'A6:B6',
+              'A7:B7',
+              'A8:B8',
+              'A9:B9',
+              'A10:B10',
+            ]));
+        for (final range in sheet.spannedItems) {
+          final ends = range.split(':').map(CellIndex.indexByString).toList();
+          if (ends.first.rowIndex >= 2 && ends.first.rowIndex < 4) {
+            expect(ends.first.rowIndex, ends.last.rowIndex);
+          }
+        }
         for (var index = 2; index < 4; index++) {
-          for (var column = 0; column < 5; column++) {
+          for (final column in [0, 1, 2, 4, 6]) {
             final style = sheet
                 .cell(
                   CellIndex.indexByColumnRow(
@@ -300,7 +314,7 @@ void main() {
             sheet
                     .cell(
                       CellIndex.indexByColumnRow(
-                        columnIndex: 4,
+                        columnIndex: 6,
                         rowIndex: index,
                       ),
                     )

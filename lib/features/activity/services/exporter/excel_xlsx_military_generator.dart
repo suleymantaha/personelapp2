@@ -220,6 +220,7 @@ List<int> _generateMilitaryExcelBytes({
   }
 
   currentRow += 1;
+  final summaryStartRow = currentRow;
   _writeThreeBoxSummary(
     sheet: sheet,
     startRow: currentRow,
@@ -228,17 +229,9 @@ List<int> _generateMilitaryExcelBytes({
     contentStyle: cellLeftStyle,
   );
 
-  sheet
-    ..setColumnWidth(0, 10)
-    ..setColumnWidth(1, 22)
-    ..setColumnWidth(2, 18)
-    ..setColumnWidth(3, 30)
-    ..setColumnWidth(4, 25)
-    ..setColumnWidth(5, 7);
-
   if (!mergeCells) {
-    // Keep the title merged; all personnel and summary cells remain independent.
-    // Restore values and full borders after removing the data merged ranges.
+    // Disable vertical personnel grouping and restore each row's values/borders.
+    // The final layout restores structural horizontal field/summary spans.
     for (final range in sheet.spannedItems.toList()) {
       final startRow = int.parse(RegExp(r'\d+').firstMatch(range)!.group(0)!);
       final isSignature = signatureStartRow != null &&
@@ -279,13 +272,13 @@ List<int> _generateMilitaryExcelBytes({
     }
   }
 
-  final encoded = excel.encode();
+  final encoded = _encodeRosterLayout(sheet, summaryStartRow);
   if (encoded == null) return <int>[];
   return _applyPrintSettings(
     encoded,
     sheetName: sheetName,
     endRow: lastPrintRowNumber,
-    endColumn: 'E',
+    endColumn: 'G',
     repeatHeaderRange: r'$1:$2',
     printScale: includeSignatures ? 90 : null,
     pageBreakRows: includeSignatures
