@@ -1,0 +1,23 @@
+{
+  "taskId": "2026-10-26-roster-summary-width",
+  "coordination": "native fallback; Ruflo tools unavailable in live tool catalog",
+  "agents": [
+    {
+      "nativeId": "/root/equal_summary_worker",
+      "role": "worker",
+      "requestedModel": "gpt-6.1-sol",
+      "requestedEffort": "medium",
+      "confirmedModel": null,
+      "status": "completed",
+      "ownership": "completed XLSX geometry correction; now version-only release packaging + owned release artifacts"
+    },
+    {
+      "nativeId": "/root/equal_summary_review",
+      "role": "reviewer",
+      "requestedModel": "gpt-6.1-sol",
+      "requestedEffort": "medium",
+      "confirmedModel": null,
+      "status": "completed"
+    }
+  ]
+}
