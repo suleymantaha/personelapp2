@@ -2,7 +2,7 @@ name: personelapp2
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.5+10311
+version: 1.0.6+10312
 
 environment:
   sdk: ^3.5.0

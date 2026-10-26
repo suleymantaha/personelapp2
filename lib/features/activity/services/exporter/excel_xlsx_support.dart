@@ -13,6 +13,43 @@ final _tableBorder = Border(
 
 final _noneBorder = Border(borderStyle: BorderStyle.None);
 
+/// Calibri 14 pt title on the 760 px wide merged personnel table. Estimate
+/// word wrapping before encoding XLSX: Excel needs an explicit row height for
+/// merged cells and the image renderer must use that same geometry.
+double _rosterTitleRowHeight(String title) {
+  const availableWidth = 553.0; // 760 px at 96 dpi, less cell side margins.
+
+  double glyphWidth(String c) {
+    if ('ilI.,:;!| '.contains(c)) return 3.7;
+    if ('MW@%ĞÖÜ'.contains(c)) return 12.6;
+    if (c.toUpperCase() == c && c.toLowerCase() != c) return 9.5;
+    return 7.3;
+  }
+
+  var lines = 0;
+  for (final paragraph in title.split('\n')) {
+    lines++;
+    var used = 0.0;
+    for (final word in paragraph.split(RegExp(r'\s+'))) {
+      final width =
+          word.split('').fold<double>(0, (sum, c) => sum + glyphWidth(c));
+      if (used > 0 && used + 3.7 + width > availableWidth) {
+        lines++;
+        used = 0;
+      }
+      if (width > availableWidth) {
+        lines += (width / availableWidth).ceil() - 1;
+        used = width % availableWidth;
+      } else {
+        used += (used == 0 ? 0 : 3.7) + width;
+      }
+    }
+  }
+  // 18 pt line pitch and 8 pt of clear space above and below the glyphs.
+  final height = lines * 18.0 + 16;
+  return height < 32 ? 32 : height;
+}
+
 double _excelRowHeightFor(String name, String detail, String rank) {
   final longest = [
     name.length,

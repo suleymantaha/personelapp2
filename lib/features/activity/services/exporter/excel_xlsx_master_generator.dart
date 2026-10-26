@@ -115,7 +115,7 @@ List<int> _generateMasterDailyExcelBytes({
     baseStyle: titleStyle,
     outerBorder: _noneBorder,
   );
-  sheet.setRowHeight(0, 30);
+  sheet.setRowHeight(0, _rosterTitleRowHeight(title));
 
   // Row 1: Common Column Headers
   final headers = ['S. NU', 'BİRLİĞİ', 'RÜTBE', 'ADI SOYADI', 'DİĞER'];

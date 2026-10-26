@@ -52,10 +52,9 @@ Future<void> pdfPrintRoster({
     signers: signers,
     timeRange: timeRange,
   );
-  final bytes = await pdf.save();
-  await Printing.layoutPdf(
+  await const RosterPrintGateway().printDocument(
     name: '$faaliyetAdi - $tarih',
-    onLayout: (_) async => bytes,
+    document: pdf,
   );
 }
 

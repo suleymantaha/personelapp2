@@ -20,6 +20,7 @@ class MainActivity : FlutterActivity() {
         private const val TAG = "NizamNative"
         private const val BACKUP_CHANNEL = "nizam/backup_files"
         private const val OCR_CHANNEL = "nizam/ocr"
+        private const val ROSTER_PRINT_CHANNEL = "nizam/roster_print"
         private const val CREATE_BACKUP_REQUEST = 7101
         private const val OPEN_BACKUP_REQUEST = 7102
         private const val OPEN_OCR_IMAGE_REQUEST = 7103
@@ -35,6 +36,8 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler(::handleBackupMethodCall)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, OCR_CHANNEL)
             .setMethodCallHandler(::handleOcrMethodCall)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ROSTER_PRINT_CHANNEL)
+            .setMethodCallHandler { call, result -> RosterPrintBridge.print(this, call, result) }
     }
 
     private fun handleOcrMethodCall(call: MethodCall, result: MethodChannel.Result) {

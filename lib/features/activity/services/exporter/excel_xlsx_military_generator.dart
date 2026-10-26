@@ -112,7 +112,8 @@ List<int> _generateMilitaryExcelBytes({
     baseStyle: titleStyle,
     outerBorder: _noneBorder,
   );
-  sheet.setRowHeight(0, 30);
+  final titleHeight = _rosterTitleRowHeight(titleHeader);
+  sheet.setRowHeight(0, titleHeight);
 
   // Row 1: Table Headers
   final headers = ['S. NU', 'BİRLİĞİ', 'RÜTBE', 'ADI SOYADI', 'DİĞER'];
@@ -282,15 +283,16 @@ List<int> _generateMilitaryExcelBytes({
     repeatHeaderRange: r'$1:$2',
     printScale: includeSignatures ? 90 : null,
     pageBreakRows: includeSignatures
-        ? _signedRosterPageBreaks(signedRowHeights)
+        ? _signedRosterPageBreaks(signedRowHeights, titleHeight: titleHeight)
         : const [],
   );
 }
 
 // Reserve printable A4 height at 90% scale, after repeated title/header rows.
 // The final two personnel rows, gap and all five signature rows form one block.
-List<int> _signedRosterPageBreaks(List<double> heights) {
-  const pageBodyHeight = 780.0;
+List<int> _signedRosterPageBreaks(List<double> heights,
+    {required double titleHeight}) {
+  final pageBodyHeight = 780.0 - (titleHeight - 30.0);
   final breaks = <int>[];
   var used = 0.0;
   final tailStart = heights.length > 2 ? heights.length - 2 : 0;

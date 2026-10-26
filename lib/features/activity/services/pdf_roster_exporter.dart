@@ -1,5 +1,6 @@
 import 'roster_share_file.dart';
 import 'roster_signature.dart';
+import 'roster_print_gateway.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
