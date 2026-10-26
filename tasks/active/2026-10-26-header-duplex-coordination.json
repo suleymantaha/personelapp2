@@ -1,0 +1,50 @@
+{
+  "taskId": "2026-10-26-header-duplex",
+  "swarmId": "swarm-1792997082872-g08z8t",
+  "registryCapacity": 15,
+  "agents": [
+    {
+      "rufloId": "header-readable-worker",
+      "nativeId": "/root/title_padding_worker",
+      "status": "completed",
+      "requestedModel": "gpt-6-sol",
+      "requestedEffort": "medium",
+      "confirmedModel": null
+    },
+    {
+      "rufloId": "duplex-print-worker",
+      "nativeId": "/root/duplex_print_worker",
+      "status": "completed",
+      "requestedModel": "gpt-6-sol",
+      "requestedEffort": "medium",
+      "confirmedModel": null
+    },
+    {
+      "rufloId": "header-duplex-review",
+      "nativeId": "/root/header_duplex_review",
+      "status": "completed",
+      "requestedModel": "gpt-6-sol",
+      "requestedEffort": "medium",
+      "confirmedModel": null
+    },
+    {
+      "rufloId": "header-duplex-diagnosis",
+      "nativeId": "/root/print_range_diagnosis",
+      "status": "completed",
+      "requestedModel": "gpt-6-sol",
+      "requestedEffort": "high",
+      "confirmedModel": null,
+      "escalationReason": "new native direct-print selected-page regression reproducible against working share-print baseline; explicit written range patch failed, Sol medium evidence insufficient"
+    }
+  ],
+  "priorNativeFailure": {
+    "nativeId": "/root/header_duplex_worker",
+    "status": "errored modelcapacity twice, no code edits; not retriggered"
+  },
+  "cleanup": {
+    "swarmStatus": "terminated",
+    "ownedRegistryEntriesRemoved": 4,
+    "force": false,
+    "registryReadbackEmpty": true
+  }
+}
