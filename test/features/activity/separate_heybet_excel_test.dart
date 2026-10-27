@@ -148,6 +148,22 @@ void main() {
         await tester.tap(find.text(label));
         await tester.pumpAndSettle();
         if (label == 'Kartları Birleştir ve Çıktı Al') {
+          Future<void> selectCard(String key) async {
+            final target = find.byKey(ValueKey(key));
+            await tester.ensureVisible(target);
+            await tester.pumpAndSettle();
+            final previewTop =
+                tester.getTopLeft(find.byKey(const Key('roster-preview'))).dy;
+            final cardY = tester.getCenter(target).dy;
+            if (cardY >= previewTop) {
+              await tester.drag(find.byType(ListView).last,
+                  Offset(0, -(cardY - previewTop + 70)));
+              await tester.pumpAndSettle();
+            }
+            await tester.tap(target);
+            await tester.pumpAndSettle();
+          }
+
           for (var wait = 0;
               wait < 100 &&
                   find
@@ -160,7 +176,8 @@ void main() {
             );
             await tester.pump();
           }
-          expect(find.text('Devriye', skipOffstage: false), findsOneWidget);
+          expect(find.text('Bugünkü Devriye', skipOffstage: false),
+              findsOneWidget);
           expect(shares.length, expectedShares - 1);
           expect(
             tester
@@ -168,21 +185,13 @@ void main() {
                 .onPressed,
             isNull,
           );
-          await tester.ensureVisible(
-            find.byKey(const ValueKey('current-activity-2')),
-          );
-          await tester.tap(find.byKey(const ValueKey('current-activity-2')));
+          await selectCard('current-activity-2');
+          await tester.tap(find.byKey(const Key('roster-previous-tab')));
           await tester.pumpAndSettle();
-          await tester.ensureVisible(
-            find.byKey(const ValueKey('previous-activity-1')),
-          );
-          await tester.tap(find.byKey(const ValueKey('previous-activity-1')));
-          await tester.pump();
-          await tester.ensureVisible(
-            find.byKey(const ValueKey('current-activity-4')),
-          );
-          await tester.tap(find.byKey(const ValueKey('current-activity-4')));
-          await tester.pump();
+          await selectCard('previous-activity-1');
+          await tester.tap(find.byKey(const Key('roster-today-tab')));
+          await tester.pumpAndSettle();
+          await selectCard('current-activity-4');
           await tester.tap(find.byKey(const Key('roster-preview')));
           for (var wait = 0;
               wait < 100 &&

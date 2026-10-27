@@ -29,9 +29,7 @@ void main() {
       addTearDown(db.close);
       await tester.runAsync(() async {
         for (final name in ['Heybet personeli', 'Z Personel', 'A Personel']) {
-          await db
-              .into(db.personelTable)
-              .insert(
+          await db.into(db.personelTable).insert(
                 PersonelTableCompanion.insert(
                   adSoyad: name,
                   rutbe: 'J.Uzm.Çvş.',
@@ -45,9 +43,7 @@ void main() {
           ('Devriye', '2026-10-06'),
           ('Hazır Kıta', '2026-10-05'),
         ]) {
-          final id = await db
-              .into(db.gunlukFaaliyetTable)
-              .insert(
+          final id = await db.into(db.gunlukFaaliyetTable).insert(
                 GunlukFaaliyetTableCompanion.insert(
                   faaliyetAdi: item.$1,
                   tarih: item.$2,
@@ -55,9 +51,7 @@ void main() {
                   olusturmaTarihi: '',
                 ),
               );
-          await db
-              .into(db.faaliyetPersonelAtamaTable)
-              .insert(
+          await db.into(db.faaliyetPersonelAtamaTable).insert(
                 FaaliyetPersonelAtamaTableCompanion.insert(
                   faaliyetId: id,
                   personelId: id,
@@ -91,6 +85,8 @@ void main() {
             .onPressed,
         isNull,
       );
+      await tester.tap(find.byKey(const Key('roster-previous-tab')));
+      await tester.pumpAndSettle();
       await tester.ensureVisible(
         find.byKey(const ValueKey('previous-activity-3')),
       );
@@ -100,7 +96,10 @@ void main() {
 
       // Seçilen kart alttaki havuzdan eksildi
       expect(find.byKey(const ValueKey('previous-activity-3')), findsNothing);
+      expect(find.byKey(const ValueKey('selected-card-3')), findsOneWidget);
 
+      await tester.tap(find.byKey(const Key('roster-today-tab')));
+      await tester.pumpAndSettle();
       await tester.ensureVisible(
         find.byKey(const ValueKey('current-activity-2')),
       );
@@ -109,10 +108,17 @@ void main() {
 
       // Seçilen kart alttaki havuzdan eksildi
       expect(find.byKey(const ValueKey('current-activity-2')), findsNothing);
+      expect(find.byKey(const ValueKey('selected-card-2')), findsOneWidget);
       // Seçilmeyen kart halen havuzda
       expect(find.byKey(const ValueKey('current-activity-1')), findsOneWidget);
 
       expect(find.byKey(const ValueKey('selected-card-1')), findsNothing);
+      await waitFor(tester, find.text('2 kişiyle önizle'));
+      expect(
+          tester
+              .widget<Text>(find.byKey(const Key('roster-total-people')))
+              .data,
+          '2');
       await tester.tap(find.byKey(const Key('roster-preview')));
       await waitFor(tester, find.text('Birleşik Çıktı Önizlemesi'));
       expect(find.text('1. Z Personel'), findsOneWidget);
@@ -122,12 +128,20 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Çıktı Hazırla'), findsOneWidget);
       expect(find.byKey(const ValueKey('selected-card-2')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('roster-previous-tab')));
+      await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('selected-card-3')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('roster-today-tab')));
+      await tester.pumpAndSettle();
       // Geri dönüldüğünde de seçilenler altta bulunmamalı
       expect(find.byKey(const ValueKey('current-activity-2')), findsNothing);
 
+      await tester.tap(find.byKey(const Key('roster-sort')));
+      await tester.pumpAndSettle();
       await tester.ensureVisible(find.byKey(const Key('remove-card-2')));
       await tester.tap(find.byKey(const Key('remove-card-2')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('roster-sort')));
       await tester.pumpAndSettle();
 
       // Üstten kaldırılan kart alttaki seçim havuzuna geri döndü
@@ -138,6 +152,77 @@ void main() {
       await waitFor(tester, find.text('Birleşik Çıktı Önizlemesi'));
       expect(find.text('1. A Personel'), findsOneWidget);
       expect(find.textContaining('Z Personel'), findsNothing);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+  testWidgets(
+    'shows separate day counts and one unique total for an overlapping person',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      await tester.runAsync(() async {
+        for (final name in ['Ortak Kişi', 'Bugünün Kişisi']) {
+          await db.into(db.personelTable).insert(
+                PersonelTableCompanion.insert(
+                  adSoyad: name,
+                  rutbe: 'J.Uzm.Çvş.',
+                  birlik: '',
+                  kayitTarihi: '',
+                ),
+              );
+        }
+        for (final date in ['2026-10-05', '2026-10-06']) {
+          final cardId = await db.into(db.gunlukFaaliyetTable).insert(
+                GunlukFaaliyetTableCompanion.insert(
+                  faaliyetAdi: 'HEYBET',
+                  tarih: date,
+                  olusturanKullanici: 'admin',
+                  olusturmaTarihi: '',
+                ),
+              );
+          for (final personId in cardId == 1 ? [1] : [1, 2]) {
+            await db.into(db.faaliyetPersonelAtamaTable).insert(
+                  FaaliyetPersonelAtamaTableCompanion.insert(
+                    faaliyetId: cardId,
+                    personelId: personId,
+                    gorevVeyaIzin: 'HAZIR KITA',
+                    durum: 'onaylandi',
+                  ),
+                );
+          }
+        }
+      });
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+          userSessionProvider.overrideWith((ref) => const UserSessionState(
+                username: 'admin',
+                role: UserRole.admin,
+              )),
+        ],
+        child: const MaterialApp(
+          home: RosterOutputScreen(initialDate: '2026-10-06'),
+        ),
+      ));
+      await waitFor(tester, find.byKey(const Key('roster-today-tab')));
+      await tester.tap(find.byKey(const ValueKey('current-activity-2')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('roster-previous-tab')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('previous-activity-1')));
+      await waitFor(
+          tester, find.textContaining('1 ortak kişi çıktıda bir kez'));
+      expect(
+          tester
+              .widget<Text>(find.byKey(const Key('roster-total-people')))
+              .data,
+          '2');
+      expect(find.text('2 kişiyle önizle'), findsOneWidget);
+      expect(find.text('1 kişi'), findsWidgets);
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
