@@ -8,7 +8,7 @@ Tek yazıcı: koordinatör. Henüz bu paketle başlatılmış proje görevi yokt
 | task-temgundrap-auto-generate | Faaliyetlerden Otomatik TEMGÜNDRAP Üretimi ve Düzenleme | COMPLETED | tasks/active/task-temgundrap-auto-generate.md |
 | task-temgundrap-fix-transfer | TEMGÜNDRAP düzeltmelerini F:/personelapp2 deposuna aktarma | DONE | tasks/active/task-temgundrap-fix-transfer.md |
 | task-temgundrap-import-export-stability | Import kimliği, overflow ve Excel/PDF çıktı düzeltmeleri | DONE | tasks/active/task-temgundrap-import-export-stability.md |
-| 2026-10-27-roster-ui-apk-drive | Çıktı Hazırla UI, güvenli APK güncellemesi ve Drive | RUNNING | [Kayıt](active/2026-10-27-roster-ui-apk-drive.md) |
+| 2026-10-27-roster-ui-apk-drive | Çıktı Hazırla UI, güvenli APK güncellemesi ve Drive | DONE | [Kayıt](active/2026-10-27-roster-ui-apk-drive.md) |
 
 Tier 2/3 görevde [şablonu](../.agents/templates/task.md)
 `tasks/active/<task-id>.md` olarak doldur ve bu indekse gerçek kayıt ekle.
