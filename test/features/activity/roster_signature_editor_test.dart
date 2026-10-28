@@ -16,6 +16,20 @@ Widget preview() => ProviderScope(
       )),
     );
 
+Future<void> revealSigner(WidgetTester tester, int index) async {
+  await tester.scrollUntilVisible(
+    find.byKey(const Key('roster-preview-signers-toggle')),
+    150,
+  );
+  await tester.tap(find.byKey(const Key('roster-preview-signers-toggle')));
+  await tester.pumpAndSettle();
+  await tester.scrollUntilVisible(
+    find.byKey(Key('edit-roster-signer-$index')),
+    150,
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
   testWidgets('failed saving keeps the editor open and allows retry',
@@ -42,6 +56,7 @@ void main() {
   testWidgets('blank name cannot replace a saved signer', (tester) async {
     await tester.pumpWidget(preview());
     await tester.pumpAndSettle();
+    await revealSigner(tester, 0);
     await tester.tap(find.byKey(const Key('edit-roster-signer-0')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('signer-name')), '   ');
@@ -56,6 +71,7 @@ void main() {
       (tester) async {
     await tester.pumpWidget(preview());
     await tester.pumpAndSettle();
+    await revealSigner(tester, 0);
     await tester.tap(find.byKey(const Key('edit-roster-signer-0')));
     await tester.pumpAndSettle();
     await tester.enterText(
@@ -68,6 +84,7 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpWidget(preview());
     await tester.pumpAndSettle();
+    await revealSigner(tester, 0);
     expect(find.text('Yeni Tanzim Eden'), findsOneWidget);
     expect(find.text('Yeni Rütbe'), findsOneWidget);
     expect(find.text('Yeni Görev'), findsOneWidget);
@@ -78,6 +95,7 @@ void main() {
       (tester) async {
     await tester.pumpWidget(preview());
     await tester.pumpAndSettle();
+    await revealSigner(tester, 1);
     await tester.tap(find.byKey(const Key('edit-roster-signer-1')));
     await tester.pumpAndSettle();
     await tester.enterText(

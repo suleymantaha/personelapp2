@@ -120,9 +120,14 @@ void main() {
               .data,
           '2');
       await tester.tap(find.byKey(const Key('roster-preview')));
-      await waitFor(tester, find.text('Birleşik Çıktı Önizlemesi'));
-      expect(find.text('1. Z Personel'), findsOneWidget);
-      expect(find.text('2. A Personel'), findsOneWidget);
+      await waitFor(tester, find.text('Birleşik Çıktı'));
+      await tester.ensureVisible(
+        find.byKey(const Key('roster-preview-people-toggle')),
+      );
+      await tester.tap(find.byKey(const Key('roster-preview-people-toggle')));
+      await tester.pumpAndSettle();
+      expect(find.text('Z Personel'), findsOneWidget);
+      expect(find.text('A Personel'), findsOneWidget);
       expect(find.textContaining('Heybet personeli'), findsNothing);
       await tester.pageBack();
       await tester.pumpAndSettle();
@@ -149,8 +154,13 @@ void main() {
       expect(find.byKey(const ValueKey('current-activity-2')), findsOneWidget);
 
       await tester.tap(find.byKey(const Key('roster-preview')));
-      await waitFor(tester, find.text('Birleşik Çıktı Önizlemesi'));
-      expect(find.text('1. A Personel'), findsOneWidget);
+      await waitFor(tester, find.text('Birleşik Çıktı'));
+      await tester.ensureVisible(
+        find.byKey(const Key('roster-preview-people-toggle')),
+      );
+      await tester.tap(find.byKey(const Key('roster-preview-people-toggle')));
+      await tester.pumpAndSettle();
+      expect(find.text('A Personel'), findsOneWidget);
       expect(find.textContaining('Z Personel'), findsNothing);
       await tester.pumpWidget(const SizedBox.shrink());
     },

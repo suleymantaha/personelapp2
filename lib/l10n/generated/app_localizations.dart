@@ -5058,8 +5058,140 @@ abstract class AppLocalizations {
   /// No description provided for @rosterOutputPreviewTitle.
   ///
   /// In tr, this message translates to:
-  /// **'Birleşik Çıktı Önizlemesi'**
+  /// **'Birleşik Çıktı'**
   String get rosterOutputPreviewTitle;
+
+  /// No description provided for @rosterPreviewPeopleLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'kişi'**
+  String get rosterPreviewPeopleLabel;
+
+  /// No description provided for @rosterPreviewCardsSelectedLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'kart seçili'**
+  String get rosterPreviewCardsSelectedLabel;
+
+  /// No description provided for @rosterPreviewSelectedCards.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçilen kartlar'**
+  String get rosterPreviewSelectedCards;
+
+  /// No description provided for @rosterPreviewPeopleTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Personel listesi'**
+  String get rosterPreviewPeopleTitle;
+
+  /// No description provided for @rosterPreviewSignersTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İmzalar'**
+  String get rosterPreviewSignersTitle;
+
+  /// No description provided for @rosterPreviewShowAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümünü gör'**
+  String get rosterPreviewShowAll;
+
+  /// No description provided for @rosterPreviewShowLess.
+  ///
+  /// In tr, this message translates to:
+  /// **'Daha az göster'**
+  String get rosterPreviewShowLess;
+
+  /// No description provided for @rosterRuleMonthTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aylık matris · {month}'**
+  String rosterRuleMonthTitle(String month);
+
+  /// No description provided for @rosterRuleDescription.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçilen güne kadar 20 X\'i aşanlar hariç'**
+  String get rosterRuleDescription;
+
+  /// No description provided for @rosterRulePreviewSummary.
+  ///
+  /// In tr, this message translates to:
+  /// **'{excluded} kişi hariç · {included} kişi çıktıda'**
+  String rosterRulePreviewSummary(int excluded, int included);
+
+  /// No description provided for @rosterRuleIncludedCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} kişi çıktıda'**
+  String rosterRuleIncludedCount(int count);
+
+  /// No description provided for @rosterRuleIncludedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıktıdaki personel ({count})'**
+  String rosterRuleIncludedTitle(int count);
+
+  /// No description provided for @rosterRuleExcludedCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} kişi hariç'**
+  String rosterRuleExcludedCount(int count);
+
+  /// No description provided for @rosterRuleEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kurala uyan personel kalmadı.'**
+  String get rosterRuleEmpty;
+
+  /// No description provided for @rosterRulePreviewAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kurallı çıktıyı önizle'**
+  String get rosterRulePreviewAction;
+
+  /// No description provided for @rosterRuleRefreshAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Listeyi yenile'**
+  String get rosterRuleRefreshAction;
+
+  /// No description provided for @rosterRuleExportAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kurallı Çıktı Al'**
+  String get rosterRuleExportAction;
+
+  /// No description provided for @rosterRuleBackToNormal.
+  ///
+  /// In tr, this message translates to:
+  /// **'Normal listeye dön'**
+  String get rosterRuleBackToNormal;
+
+  /// No description provided for @rosterRulePeopleTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kurallı personel listesi'**
+  String get rosterRulePeopleTitle;
+
+  /// No description provided for @rosterRuleExcludedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıktıya alınmayanlar ({count})'**
+  String rosterRuleExcludedTitle(int count);
+
+  /// No description provided for @rosterRuleExcludedHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçilen güne kadar 20 X\'i aşanlar'**
+  String get rosterRuleExcludedHint;
+
+  /// No description provided for @rosterRuleExcludedDayCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} gün X'**
+  String rosterRuleExcludedDayCount(int count);
 
   /// No description provided for @rosterOutputPreviewDeduplicationNote.
   ///
@@ -5078,6 +5210,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Çıktı Al'**
   String get rosterOutputGetOutput;
+
+  /// No description provided for @rosterOutputGetRankOrderedOutput.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rütbe Sırasıyla Çıktı Al'**
+  String get rosterOutputGetRankOrderedOutput;
 
   /// No description provided for @rosterOutputExportError.
   ///

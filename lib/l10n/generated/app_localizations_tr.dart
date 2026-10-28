@@ -2931,7 +2931,88 @@ class AppLocalizationsTr extends AppLocalizations {
   String get rosterOutputSelectedCardsTitle => 'Seçilen Kartlar';
 
   @override
-  String get rosterOutputPreviewTitle => 'Birleşik Çıktı Önizlemesi';
+  String get rosterOutputPreviewTitle => 'Birleşik Çıktı';
+
+  @override
+  String get rosterPreviewPeopleLabel => 'kişi';
+
+  @override
+  String get rosterPreviewCardsSelectedLabel => 'kart seçili';
+
+  @override
+  String get rosterPreviewSelectedCards => 'Seçilen kartlar';
+
+  @override
+  String get rosterPreviewPeopleTitle => 'Personel listesi';
+
+  @override
+  String get rosterPreviewSignersTitle => 'İmzalar';
+
+  @override
+  String get rosterPreviewShowAll => 'Tümünü gör';
+
+  @override
+  String get rosterPreviewShowLess => 'Daha az göster';
+
+  @override
+  String rosterRuleMonthTitle(String month) {
+    return 'Aylık matris · $month';
+  }
+
+  @override
+  String get rosterRuleDescription =>
+      'Seçilen güne kadar 20 X\'i aşanlar hariç';
+
+  @override
+  String rosterRulePreviewSummary(int excluded, int included) {
+    return '$excluded kişi hariç · $included kişi çıktıda';
+  }
+
+  @override
+  String rosterRuleIncludedCount(int count) {
+    return '$count kişi çıktıda';
+  }
+
+  @override
+  String rosterRuleIncludedTitle(int count) {
+    return 'Çıktıdaki personel ($count)';
+  }
+
+  @override
+  String rosterRuleExcludedCount(int count) {
+    return '$count kişi hariç';
+  }
+
+  @override
+  String get rosterRuleEmpty => 'Kurala uyan personel kalmadı.';
+
+  @override
+  String get rosterRulePreviewAction => 'Kurallı çıktıyı önizle';
+
+  @override
+  String get rosterRuleRefreshAction => 'Listeyi yenile';
+
+  @override
+  String get rosterRuleExportAction => 'Kurallı Çıktı Al';
+
+  @override
+  String get rosterRuleBackToNormal => 'Normal listeye dön';
+
+  @override
+  String get rosterRulePeopleTitle => 'Kurallı personel listesi';
+
+  @override
+  String rosterRuleExcludedTitle(int count) {
+    return 'Çıktıya alınmayanlar ($count)';
+  }
+
+  @override
+  String get rosterRuleExcludedHint => 'Seçilen güne kadar 20 X\'i aşanlar';
+
+  @override
+  String rosterRuleExcludedDayCount(int count) {
+    return '$count gün X';
+  }
 
   @override
   String rosterOutputPreviewDeduplicationNote(int count) {
@@ -2943,6 +3024,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get rosterOutputGetOutput => 'Çıktı Al';
+
+  @override
+  String get rosterOutputGetRankOrderedOutput => 'Rütbe Sırasıyla Çıktı Al';
 
   @override
   String rosterOutputExportError(String error) {

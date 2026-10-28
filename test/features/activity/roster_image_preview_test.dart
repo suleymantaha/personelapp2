@@ -50,7 +50,7 @@ void main() {
             }),
       )));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('roster-export')));
+      await tester.tap(find.byKey(const Key('roster-export-rank')));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Uzun görsel olarak kaydet'));
       await tester.tap(find.text('Uzun görsel olarak kaydet'));

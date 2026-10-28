@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/roster_preview_overview.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/roster_preview_people_sheet.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/roster_preview_rule_and_people.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/roster_preview_actions.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/roster_preview_signers.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/roster_image_exporter.dart';
+import 'package:personelapp2/features/activity/services/roster_rank_order.dart';
+import 'package:personelapp2/features/activity/services/roster_matrix_x_rule.dart';
 import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/roster_signature.dart';
 import 'package:personelapp2/features/activity/services/roster_signature_store.dart';
@@ -16,6 +24,7 @@ import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart
 import 'package:personelapp2/features/temgundrap/domain/services/temgundrap_activity_converter.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
+import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 
 class RosterOutputPreviewScreen extends ConsumerStatefulWidget {
   const RosterOutputPreviewScreen({
@@ -24,11 +33,15 @@ class RosterOutputPreviewScreen extends ConsumerStatefulWidget {
     required this.sources,
     required this.rows,
     required this.loadRows,
+    this.loadMatrix,
+    this.loadSigners,
   });
   final String date;
   final List<GunlukFaaliyetTableData> sources;
   final List<MilitaryRosterRow> rows;
   final Future<List<MilitaryRosterRow>> Function() loadRows;
+  final Future<Map<int, Map<int, MatrixDayCell>>> Function()? loadMatrix;
+  final Future<List<RosterSigner>> Function()? loadSigners;
   @override
   ConsumerState<RosterOutputPreviewScreen> createState() =>
       _RosterOutputPreviewScreenState();
@@ -41,6 +54,11 @@ class _RosterOutputPreviewScreenState
   final _signatureStore = RosterSignatureStore();
   List<RosterSigner> _signers = List.of(heybetRosterSigners);
   bool _signaturesReady = false;
+  bool _signerLoadFailed = false;
+  RosterMatrixXResult? _ruleResult;
+  bool _showAllPeople = false;
+  bool _showAllCards = false;
+  bool _showSigners = false;
 
   @override
   void initState() {
@@ -50,16 +68,22 @@ class _RosterOutputPreviewScreenState
 
   Future<void> _loadSigners() async {
     try {
-      final signers = await _signatureStore.load();
+      final signers =
+          await (widget.loadSigners?.call() ?? _signatureStore.load());
       if (mounted) {
         setState(() {
           _signers = signers;
           _signaturesReady = true;
+          _signerLoadFailed = false;
+          _error = null;
         });
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _error = context.l10n.rosterSignaturesLoadError);
+        setState(() {
+          _signerLoadFailed = true;
+          _error = context.l10n.rosterSignaturesLoadError;
+        });
       }
     }
   }
@@ -91,7 +115,113 @@ class _RosterOutputPreviewScreenState
     return refreshed;
   }
 
-  Future<void> _export() async {
+  String get _month => widget.date.substring(0, 7);
+  int get _outputDay => DateTime.parse(widget.date).day;
+
+  Future<Map<int, Map<int, MatrixDayCell>>> _matrixForMonth() async {
+    if (widget.loadMatrix != null) return widget.loadMatrix!();
+    final teamRevokedMsg = context.l10n.rosterOutputCommanderTeamRevoked;
+    final session = ref.read(userSessionProvider);
+    if (session == null) {
+      throw StateError(context.l10n.commonSessionNotVerified);
+    }
+    if (!session.isAdmin) {
+      final team = await ref
+          .read(personnelRepositoryProvider)
+          .currentCommanderTeam(session.username);
+      if (team == null) {
+        throw StateError(teamRevokedMsg);
+      }
+    }
+    return ref
+        .read(matrixRepositoryProvider)
+        .watchMonthlyMatrix(
+          _month,
+          commanderUsername: session.isAdmin ? null : session.username,
+        )
+        .first;
+  }
+
+  Future<void> _previewRule() async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final rows = await _validatedRows();
+      final matrix = await _matrixForMonth();
+      if (!mounted) return;
+      setState(() {
+        _ruleResult = applyRosterMatrixXRule(
+          rows,
+          matrix,
+          throughDay: _outputDay,
+        );
+        _showAllPeople = false;
+      });
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _ruleResult = null;
+          _showAllPeople = false;
+          _error = '$error';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _showRulePeople({required bool excluded}) {
+    final result = _ruleResult;
+    if (result == null || _busy) return;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => RosterPreviewPeopleSheet(
+        result: result,
+        excluded: excluded,
+      ),
+    );
+  }
+
+  Future<List<MilitaryRosterRow>> _exportRows(
+    bool rankOrdered, {
+    bool rule = false,
+  }) async {
+    final recordChangedMsg = context.l10n.rosterOutputRecordsChangedError;
+    final rows = await _validatedRows();
+    if (rule) {
+      final preview = _ruleResult;
+      if (preview == null) {
+        throw StateError(recordChangedMsg);
+      }
+      final current = applyRosterMatrixXRule(
+        rows,
+        await _matrixForMonth(),
+        throughDay: _outputDay,
+      );
+      String fingerprint(List<MilitaryRosterRow> list) => list
+          .map((row) => '${row.personelId}|${row.rutbe}|${row.adSoyad}')
+          .join('\n');
+      if (current.excludedCount != preview.excludedCount ||
+          fingerprint(current.rows) != fingerprint(preview.rows) ||
+          current.excludedPeople
+                  .map((person) => '${person.row.personelId}|${person.xDays}')
+                  .join('\n') !=
+              preview.excludedPeople
+                  .map((person) => '${person.row.personelId}|${person.xDays}')
+                  .join('\n')) {
+        throw StateError(recordChangedMsg);
+      }
+      return current.rows;
+    }
+    return rankOrdered ? rankOrderedRosterRows(rows) : rows;
+  }
+
+  Future<void> _export({bool rankOrdered = false, bool rule = false}) async {
     if (_busy) return;
     setState(() {
       _busy = true;
@@ -102,14 +232,15 @@ class _RosterOutputPreviewScreenState
         context,
         subtitle: context.l10n.rosterOutputSignedOutput(
           widget.date,
-          widget.rows.length,
+          rule ? _ruleResult?.rows.length ?? 0 : widget.rows.length,
         ),
+        showTemgundrap: !rankOrdered && !rule,
       );
       if (!mounted || action == null) return;
       final title = context.l10n.rosterOutputSelectedCardsTitle;
       switch (action.type) {
         case ArchiveExportType.excel:
-          final rows = await _validatedRows();
+          final rows = await _exportRows(rankOrdered, rule: rule);
           await MilitaryRosterExporter.shareExcelRoster(
             faaliyetAdi: title,
             tarih: widget.date,
@@ -120,19 +251,27 @@ class _RosterOutputPreviewScreenState
             timeRange: action.timeRange,
           );
         case ArchiveExportType.image:
-          final rows = await _validatedRows();
+          final rows = await _exportRows(rankOrdered, rule: rule);
           if (!mounted) return;
           await saveRosterImage(context,
-            faaliyetAdi: title, tarih: widget.date, rows: rows,
-            mergeCells: false, includeSignatures: true, signers: _signers,
-            timeRange: action.timeRange);
+              faaliyetAdi: title,
+              tarih: widget.date,
+              rows: rows,
+              mergeCells: false,
+              includeSignatures: true,
+              signers: _signers,
+              timeRange: action.timeRange);
         case ArchiveExportType.pdf:
           await PdfRosterExporter.showStylePickerAndSharePdf(
             context,
             faaliyetAdi: title,
             tarih: widget.date,
-            rows: widget.rows,
-            loadRows: _validatedRows,
+            rows: rule
+                ? _ruleResult?.rows ?? const []
+                : rankOrdered
+                    ? rankOrderedRosterRows(widget.rows)
+                    : widget.rows,
+            loadRows: () => _exportRows(rankOrdered, rule: rule),
             includeSignatures: true,
             signers: _signers,
             timeRange: action.timeRange,
@@ -142,14 +281,18 @@ class _RosterOutputPreviewScreenState
             context,
             faaliyetAdi: title,
             tarih: widget.date,
-            rows: widget.rows,
-            loadRows: _validatedRows,
+            rows: rule
+                ? _ruleResult?.rows ?? const []
+                : rankOrdered
+                    ? rankOrderedRosterRows(widget.rows)
+                    : widget.rows,
+            loadRows: () => _exportRows(rankOrdered, rule: rule),
             includeSignatures: true,
             signers: _signers,
             timeRange: action.timeRange,
           );
         case ArchiveExportType.text:
-          final rows = await _validatedRows();
+          final rows = await _exportRows(rankOrdered, rule: rule);
           await MilitaryRosterExporter.shareTextRoster(
             faaliyetAdi: title,
             tarih: widget.date,
@@ -206,105 +349,90 @@ class _RosterOutputPreviewScreenState
   }
 
   @override
-  Widget build(BuildContext context) => PopScope(
-        canPop: !_busy,
-        child: Scaffold(
-          appBar: AppBar(
-            leading: const AppBackButton(),
-            title: Text(context.l10n.rosterOutputPreviewTitle),
-          ),
-          body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 900),
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  Text(
-                    context.l10n.rosterOutputPreviewDeduplicationNote(
-                      widget.rows.length,
-                    ),
-                  ),
-                  for (var i = 0; i < widget.sources.length; i++)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Text(
-                        '${i + 1}. ${widget.sources[i].tarih} • ${widget.sources[i].faaliyetAdi}',
-                      ),
-                    ),
-                  if (_error != null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        _error!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                    ),
-                  if (_error != null && !_signaturesReady)
-                    TextButton(
-                      onPressed: _loadSigners,
-                      child: Text(context.l10n.commonRetry),
-                    ),
-                  const Divider(),
-                  for (final row in widget.rows)
-                    ListTile(
-                      title: Text('${row.sNu}. ${row.adSoyad}'),
-                      subtitle: Text(row.rutbe),
-                    ),
-                  const Divider(),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (final entry in _signers.asMap().entries)
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: Column(
-                              children: [
-                                Text(entry.value.title,
-                                    textAlign: TextAlign.center),
-                                TextButton.icon(
-                                  key: Key('edit-roster-signer-${entry.key}'),
-                                  onPressed: _busy || !_signaturesReady
-                                      ? null
-                                      : () => _editSigner(entry.key),
-                                  icon:
-                                      const Icon(Icons.edit_outlined, size: 16),
-                                  label: Text(context.l10n.commonEdit),
-                                ),
-                                const SizedBox(height: 24),
-                                Text(entry.value.name,
-                                    textAlign: TextAlign.center),
-                                Text(entry.value.rank,
-                                    textAlign: TextAlign.center),
-                                Text(entry.value.role,
-                                    textAlign: TextAlign.center),
-                              ],
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          bottomNavigationBar: SafeArea(
-            child: Padding(
+  Widget build(BuildContext context) {
+    final displayRows = _ruleResult?.rows ?? widget.rows;
+    final hasRulePreview = _ruleResult != null;
+    final throughDateLabel =
+        '1–${DateFormat('d MMMM yyyy', 'tr').format(DateTime.parse(widget.date))}';
+    return PopScope(
+      canPop: !_busy,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: const AppBackButton(),
+          title: Text(context.l10n.rosterOutputPreviewTitle),
+        ),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: ListView(
               padding: const EdgeInsets.all(16),
-              child: FilledButton.icon(
-                key: const Key('roster-export'),
-                onPressed: _busy || !_signaturesReady ? null : _export,
-                icon: const Icon(Icons.ios_share_outlined),
-                label: Text(
-                  _busy
-                      ? context.l10n.rosterOutputPreparing
-                      : context.l10n.rosterOutputGetOutput,
+              children: [
+                RosterPreviewOverview(
+                  peopleCount: widget.rows.length,
+                  sources: widget.sources,
+                  expanded: _showAllCards,
+                  onToggleCards: () =>
+                      setState(() => _showAllCards = !_showAllCards),
                 ),
-              ),
+                const SizedBox(height: 12),
+                RosterPreviewRuleCard(
+                  month: throughDateLabel,
+                  result: _ruleResult,
+                  busy: _busy,
+                  onPreview: _previewRule,
+                  onShowIncluded: () => _showRulePeople(excluded: false),
+                  onShowExcluded: () => _showRulePeople(excluded: true),
+                  onReset: () => setState(() {
+                    _ruleResult = null;
+                    _showAllPeople = false;
+                  }),
+                ),
+                if (_error != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      _error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
+                if (_signerLoadFailed && !_signaturesReady)
+                  TextButton(
+                    key: const Key('roster-signatures-retry'),
+                    onPressed: _loadSigners,
+                    child: Text(context.l10n.commonRetry),
+                  ),
+                const SizedBox(height: 12),
+                RosterPreviewPeople(
+                  rows: displayRows,
+                  showAll: _showAllPeople,
+                  onToggleAll: () =>
+                      setState(() => _showAllPeople = !_showAllPeople),
+                ),
+                const SizedBox(height: 18),
+                RosterPreviewSigners(
+                  signers: _signers,
+                  busy: _busy,
+                  ready: _signaturesReady,
+                  expanded: _showSigners,
+                  onToggle: () => setState(() => _showSigners = !_showSigners),
+                  onEdit: _editSigner,
+                ),
+              ],
             ),
           ),
         ),
-      );
+        bottomNavigationBar: RosterPreviewActions(
+          hasRulePreview: hasRulePreview,
+          ruleRowsEmpty: _ruleResult?.rows.isEmpty ?? false,
+          busy: _busy,
+          signaturesReady: _signaturesReady,
+          onRulePreview: _previewRule,
+          onRuleExport: () => _export(rule: true),
+          onRankExport: () => _export(rankOrdered: true),
+        ),
+      ),
+    );
+  }
 }

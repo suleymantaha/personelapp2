@@ -194,23 +194,35 @@ void main() {
           await selectCard('current-activity-4');
           await tester.tap(find.byKey(const Key('roster-preview')));
           for (var wait = 0;
-              wait < 100 &&
-                  find.text('Birleşik Çıktı Önizlemesi').evaluate().isEmpty;
+              wait < 100 && find.text('Birleşik Çıktı').evaluate().isEmpty;
               wait++) {
             await tester.runAsync(
               () => Future<void>.delayed(const Duration(milliseconds: 10)),
             );
             await tester.pump();
           }
-          expect(find.text('Birleşik Çıktı Önizlemesi'), findsOneWidget);
-          expect(find.textContaining('Önceki gün personeli'), findsOneWidget);
+          expect(find.text('Birleşik Çıktı'), findsOneWidget);
+          final showAll = find.byKey(const Key('roster-preview-people-toggle'));
+          if (showAll.evaluate().isNotEmpty) {
+            await tester.ensureVisible(showAll);
+            await tester.drag(find.byType(ListView).last, const Offset(0, -220));
+            await tester.pumpAndSettle();
+            await tester.tap(showAll);
+            await tester.pumpAndSettle();
+          }
+          await tester.scrollUntilVisible(
+            find.byKey(const Key('roster-person-2')),
+            180,
+            scrollable: find.byType(Scrollable).last,
+          );
+          expect(find.byKey(const Key('roster-person-2')), findsOneWidget);
           expect(shares.length, expectedShares - 1);
           if (afterPreview != null) {
             debugPrint('Heybet preview mutation start');
             await afterPreview();
             debugPrint('Heybet preview mutation complete');
           }
-          await tester.tap(find.text('Çıktı Al'));
+          await tester.tap(find.byKey(const Key('roster-export-rank')));
           await tester.pumpAndSettle();
           await tester.tap(find.text('Excel Olarak Aktar (.xlsx)'));
           await tester.pumpAndSettle();

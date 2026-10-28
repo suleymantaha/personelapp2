@@ -25,6 +25,7 @@ Future<ArchiveExportResult?> showArchiveExportSheet(
   BuildContext context, {
   required String subtitle,
   String? initialTimeRange,
+  bool showTemgundrap = true,
 }) {
   return showModalBottomSheet<ArchiveExportResult>(
     context: context,
@@ -37,6 +38,7 @@ Future<ArchiveExportResult?> showArchiveExportSheet(
     builder: (sheetContext) => ArchiveExportSheet(
       subtitle: subtitle,
       initialTimeRange: initialTimeRange,
+      showTemgundrap: showTemgundrap,
     ),
   );
 }
@@ -45,11 +47,13 @@ class ArchiveExportSheet extends StatefulWidget {
   const ArchiveExportSheet({
     required this.subtitle,
     this.initialTimeRange,
+    this.showTemgundrap = true,
     super.key,
   });
 
   final String subtitle;
   final String? initialTimeRange;
+  final bool showTemgundrap;
 
   @override
   State<ArchiveExportSheet> createState() => _ArchiveExportSheetState();
@@ -61,7 +65,8 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
   @override
   void initState() {
     super.initState();
-    _timeController = TextEditingController(text: widget.initialTimeRange ?? '');
+    _timeController =
+        TextEditingController(text: widget.initialTimeRange ?? '');
   }
 
   @override
@@ -147,18 +152,20 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
                           color: context.accentOrOlive,
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          context.l10n.archiveExportSheetTimeRangeLabel,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: context.textPrimary,
+                        Expanded(
+                          child: Text(
+                            context.l10n.archiveExportSheetTimeRangeLabel,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: context.textPrimary,
+                            ),
                           ),
                         ),
-                        const Spacer(),
                         if (_timeController.text.isNotEmpty)
                           GestureDetector(
-                            onTap: () => setState(() => _timeController.clear()),
+                            onTap: () =>
+                                setState(() => _timeController.clear()),
                             child: Text(
                               context.l10n.commonClear,
                               style: TextStyle(
@@ -189,13 +196,15 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
-                            color: context.textSecondary.withValues(alpha: 0.25),
+                            color:
+                                context.textSecondary.withValues(alpha: 0.25),
                           ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
-                            color: context.textSecondary.withValues(alpha: 0.25),
+                            color:
+                                context.textSecondary.withValues(alpha: 0.25),
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
@@ -247,26 +256,28 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
               const SizedBox(height: 12),
               const Divider(height: 1),
               const SizedBox(height: 6),
-              ListTile(
-                key: const Key('export-option-temgundrap'),
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.teal.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
+              if (widget.showTemgundrap)
+                ListTile(
+                  key: const Key('export-option-temgundrap'),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.teal.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.assignment_outlined,
+                      color: Colors.teal,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.assignment_outlined,
-                    color: Colors.teal,
+                  title: Text(
+                    context.l10n.activityArchiveExportToTemgundrap,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
+                  subtitle: Text(
+                      context.l10n.activityArchiveExportToTemgundrapSubtitle),
+                  onTap: () => _select(ArchiveExportType.temgundrap),
                 ),
-                title: Text(
-                  context.l10n.activityArchiveExportToTemgundrap,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(context.l10n.activityArchiveExportToTemgundrapSubtitle),
-                onTap: () => _select(ArchiveExportType.temgundrap),
-              ),
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
@@ -356,4 +367,3 @@ class _ArchiveExportSheetState extends State<ArchiveExportSheet> {
     );
   }
 }
-
