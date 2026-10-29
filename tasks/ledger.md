@@ -61,3 +61,4 @@ Bu boş tablo tamamlanmış görev veya uygulama kanıtı değildir.
 - 2026-10-30 | Fixed daily detail summary / scrollable task-team lists | DONE | [Task](active/2026-10-29-monthly-fixed-header.md) | 79 analytics PASS; 4 final sheet regressions PASS; scoped analyze and independent review clear; Android integration PASS + interactive emulator checked with synthetic data; separate QA package, no product release/commit/push.
 
 - 2026-10-30-main-release-10323: main integration and version1.0.8+10323 APK; verification in progress; see tasks/active/2026-10-30-main-release-10323.md.
+- 2026-10-30-main-release-10323 DONE: main5bf4633, 887PASS/1skip, signed1.0.8+10323, retained-data upgrade PASS, private Drive upload/readback PASS; no push/CI.
