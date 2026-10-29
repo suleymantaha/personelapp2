@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/analytics/presentation/team_analytics_provider.dart';
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -56,6 +56,37 @@ void main() {
     second = await add('Veli');
   });
   tearDown(() => db.close());
+
+  test(
+      'current headcount independent of month duty and status excludes inactive/demo',
+      () async {
+    await db.into(db.personelTable).insert(PersonelTableCompanion.insert(
+        adSoyad: 'Inactive synthetic',
+        rutbe: 'Er',
+        birlik: '',
+        aktif: const Value(false),
+        timId: Value(team),
+        kayitTarihi: '2026-01-01'));
+    await db.into(db.personelTable).insert(PersonelTableCompanion.insert(
+        adSoyad: 'Demo synthetic',
+        rutbe: 'Er',
+        birlik: '',
+        isDemo: const Value(true),
+        timId: Value(team),
+        kayitTarihi: '2026-01-01'));
+    final result = await repo.load(
+        AnalyticsFilter(
+            start: '2025-01-01',
+            end: '2025-01-31',
+            duty: 'HEYBET',
+            status: 'beklemede'),
+        admin);
+    expect(result.currentHeadcount, 2);
+    expect(result.headcountAsOf, isNotNull);
+    expect(result.entries, isEmpty);
+    final denied = await repo.load(october, null);
+    expect(denied.currentHeadcount, isNull);
+  });
 
   test('same day different duties and people retain independent participation',
       () async {
@@ -172,6 +203,7 @@ void main() {
         username: 'missing', role: UserRole.teamCommander, timId: team);
     final result = await repo.load(october, commander);
     expect(result.entries, isEmpty);
+    expect(result.currentHeadcount, isNull);
     expect(result.unknownTeamAssignments, 0);
   });
   test('valid commander sees only authorized snapshot team and no unknowns',
@@ -187,6 +219,12 @@ void main() {
     await assign(await activity('2026-10-03'), person, unknown: true);
     final other = await db.into(db.timTable).insert(
         TimTableCompanion.insert(timAdi: '2-B', olusturmaTarihi: '2026-01-01'));
+    await db.into(db.personelTable).insert(PersonelTableCompanion.insert(
+        adSoyad: 'Other team synthetic',
+        rutbe: 'Er',
+        birlik: '',
+        timId: Value(other),
+        kayitTarihi: '2026-01-01'));
     final id = await activity('2026-10-04');
     await db.into(db.faaliyetPersonelAtamaTable).insert(
         FaaliyetPersonelAtamaTableCompanion.insert(
@@ -202,6 +240,12 @@ void main() {
     expect(result.entries.single.teamId, team);
     expect(result.unknownTeamAssignments, 0);
     expect(result.teams.keys, [team]);
+    expect(result.currentHeadcount, 2);
+    final outsideFilter = await repo.load(
+        AnalyticsFilter(start: october.start, end: october.end, teamId: other),
+        UserSessionState(
+            username: 'commander', role: UserRole.teamCommander, timId: other));
+    expect(outsideFilter.currentHeadcount, 0);
   });
   test('filters combine and monthly trend includes empty months', () async {
     await assign(await activity('2026-10-02'), person);
@@ -279,6 +323,17 @@ void main() {
     await revoked.future.timeout(const Duration(seconds: 5));
     expect(container.read(teamAnalyticsProvider(october)).requireValue.entries,
         isEmpty);
+  });
+  test('verified duty alias shares filters and two-day coverage', () async {
+    await assign(await activity('2026-10-31'), person, duty: 'Hazırkıta');
+    final result = await repo.load(
+        AnalyticsFilter(
+            start: '2026-11-01', end: '2026-11-01', duty: 'HAZIR KITA'),
+        admin);
+    expect(result.entries, hasLength(1));
+    expect(result.entries.single.duty, 'HAZIR KITA');
+    expect(result.metrics.dutyDays, 1);
+    expect(result.metrics.participations, 0);
   });
   test('invalid or unbounded dates are rejected', () {
     expect(() => AnalyticsFilter(start: '2026-02-30', end: '2026-03-01'),

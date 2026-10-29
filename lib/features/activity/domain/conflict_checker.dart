@@ -18,6 +18,7 @@ class DutyOrLeaveType {
   static const String hazirKita = 'HAZIR KITA';
   static const String guluskur = 'GÜLÜŞKÜR';
   static const String heybet = 'HEYBET';
+  static const String meti = 'METİ';
   static const String gorevli = 'GÖREVLİ';
   static const String nobetci = 'NÖBETÇİ';
   static const String izinli = 'İZİNLİ';
@@ -36,9 +37,10 @@ class DutyOrLeaveType {
   ];
 
   static const List<String> generalDuties = [
+    heybet,
     hazirKita,
     guluskur,
-    heybet,
+    meti,
     gorevli,
     nobetci,
     izinli,
@@ -49,8 +51,23 @@ class DutyOrLeaveType {
   ];
 
   static const List<String> allDuties = [
-    ...adminOnlyDuties,
-    ...generalDuties,
+    heybetKomutani,
+    nobSb,
+    mebsNob,
+    garajNob,
+    ttzaNob,
+    heybet,
+    hazirKita,
+    guluskur,
+    kuleNob,
+    meti,
+    gorevli,
+    nobetci,
+    izinli,
+    istirahatli,
+    raporlu,
+    sevk,
+    diger,
   ];
 
   static List<String> dutiesForRole({required bool isAdmin}) =>
@@ -61,12 +78,11 @@ class DutyOrLeaveType {
       status == AssignmentStatus.onaylandi && isOperationalDuty(dutyOrLeave);
 
   static bool isOperationalDuty(String dutyOrLeave) {
-    final d =
-        dutyOrLeave
-            .toUpperCase()
-            .replaceAll('İ', 'I')
-            .replaceAll('Ş', 'S')
-            .trim();
+    final d = dutyOrLeave
+        .toUpperCase()
+        .replaceAll('İ', 'I')
+        .replaceAll('Ş', 'S')
+        .trim();
     if (d.contains('IZIN') ||
         d.contains('ISTIRAHAT') ||
         d.contains('RAPOR') ||

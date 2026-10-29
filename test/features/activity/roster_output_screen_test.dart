@@ -2,7 +2,10 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
+import 'package:personelapp2/core/navigation/app_routes.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/presentation/roster_output_screen.dart';
 
@@ -18,6 +21,83 @@ Future<void> waitFor(WidgetTester tester, Finder target) async {
 }
 
 void main() {
+  testWidgets('preview reload survives disposal and rechecks the session',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    await tester.runAsync(() async {
+      await db.into(db.personelTable).insert(PersonelTableCompanion.insert(
+            adSoyad: 'Test Personel',
+            rutbe: 'J.Uzm.Çvş.',
+            birlik: '',
+            kayitTarihi: '',
+          ));
+      final cardId = await db.into(db.gunlukFaaliyetTable).insert(
+            GunlukFaaliyetTableCompanion.insert(
+              faaliyetAdi: 'Devriye',
+              tarih: '2026-10-06',
+              olusturanKullanici: 'admin',
+              olusturmaTarihi: '',
+            ),
+          );
+      await db.into(db.faaliyetPersonelAtamaTable).insert(
+            FaaliyetPersonelAtamaTableCompanion.insert(
+              faaliyetId: cardId,
+              personelId: 1,
+              gorevVeyaIzin: 'HAZIR KITA',
+              durum: 'onaylandi',
+            ),
+          );
+    });
+    final container = ProviderContainer(overrides: [
+      databaseProvider.overrideWithValue(db),
+      userSessionProvider.overrideWith((ref) => const UserSessionState(
+            username: 'admin',
+            role: UserRole.admin,
+          )),
+    ]);
+    addTearDown(container.dispose);
+    late RosterOutputPreviewArgs preview;
+    final router = GoRouter(initialLocation: '/output', routes: [
+      GoRoute(path: '/', builder: (_, __) => const SizedBox.shrink()),
+      GoRoute(
+        path: '/output',
+        builder: (_, __) => const RosterOutputScreen(initialDate: '2026-10-06'),
+      ),
+      GoRoute(
+        path: AppRoutes.rosterOutputPreview,
+        builder: (_, state) {
+          preview = state.extra! as RosterOutputPreviewArgs;
+          return const Scaffold(body: Text('Preview route'));
+        },
+      ),
+    ]);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(UncontrolledProviderScope(
+      container: container,
+      child: MaterialApp.router(routerConfig: router),
+    ));
+    await waitFor(tester, find.byKey(const ValueKey('current-activity-1')));
+    await tester
+        .ensureVisible(find.byKey(const ValueKey('current-activity-1')));
+    await tester.tap(find.byKey(const ValueKey('current-activity-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('roster-preview')));
+    await waitFor(tester, find.text('Preview route'));
+    router.go('/');
+    await tester.pumpAndSettle();
+    expect(find.byType(RosterOutputScreen, skipOffstage: false), findsNothing);
+    final rows = await tester.runAsync(preview.loadRows);
+    expect(rows!.map((row) => row.adSoyad), ['Test Personel']);
+    container.read(userSessionProvider.notifier).state = null;
+    await expectLater(preview.loadRows(), throwsException);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets(
     'starts unselected, preserves card order and selection after preview back',
     (tester) async {
@@ -121,6 +201,17 @@ void main() {
           '2');
       await tester.tap(find.byKey(const Key('roster-preview')));
       await waitFor(tester, find.text('Birleşik Çıktı'));
+      // Preparation must finish independently of the preview route's lifetime.
+      // Browser history can restore this screen without completing push's Future.
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(
+              const Key('roster-preview'),
+              skipOffstage: false,
+            ))
+            .onPressed,
+        isNotNull,
+      );
       await tester.ensureVisible(
         find.byKey(const Key('roster-preview-people-toggle')),
       );

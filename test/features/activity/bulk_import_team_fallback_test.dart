@@ -11,6 +11,8 @@ import 'package:personelapp2/features/activity/domain/parser/bulk_text_parser.da
 import 'package:personelapp2/features/activity/domain/parser/personnel_fuzzy_matcher.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
 
+import '../../support/task_team_history_fixture.dart';
+
 void main() {
   late AppDatabase database;
 
@@ -40,6 +42,7 @@ void main() {
         ),
       ]);
     });
+    await seedTaskTeamHistory(database);
   });
 
   tearDown(() => database.close());

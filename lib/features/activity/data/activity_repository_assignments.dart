@@ -10,13 +10,14 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
   }) {
     _requireAdmin(actor);
     return db.transaction(() async {
-      final assignment =
-          await (db.select(db.faaliyetPersonelAtamaTable)
-            ..where((table) => table.id.equals(assignmentId))).getSingle();
-      final activity =
-          await (db.select(db.gunlukFaaliyetTable)..where(
-            (table) => table.id.equals(assignment.faaliyetId),
-          )).getSingle();
+      final assignment = await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((table) => table.id.equals(assignmentId)))
+          .getSingle();
+      final activity = await (db.select(db.gunlukFaaliyetTable)
+            ..where(
+              (table) => table.id.equals(assignment.faaliyetId),
+            ))
+          .getSingle();
       if (newStatus != AssignmentStatus.reddedildi) {
         final status = ConflictChecker.evaluateAssignmentStatus(
           personelId: assignment.personelId,
@@ -36,7 +37,8 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
         }
       }
       return (db.update(db.faaliyetPersonelAtamaTable)
-        ..where((tbl) => tbl.id.equals(assignmentId))).write(
+            ..where((tbl) => tbl.id.equals(assignmentId)))
+          .write(
         FaaliyetPersonelAtamaTableCompanion(
           gorevVeyaIzin: Value(gorevVeyaIzin),
           aciklama: Value(aciklama),
@@ -60,23 +62,23 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
     _requireAdmin(actor);
     final ids = assignmentIds.toSet();
     final normalizedDuty = duty.trim();
-    if (!DutyOrLeaveType.dutiesForRole(isAdmin: true).contains(normalizedDuty)) {
+    if (!DutyOrLeaveType.dutiesForRole(isAdmin: true)
+        .contains(normalizedDuty)) {
       throw ArgumentError.value(duty, 'duty', 'Unsupported duty');
     }
     if (ids.isEmpty) return Future.value(0);
 
     return db.transaction(() async {
-      final activity =
-          await (db.select(db.gunlukFaaliyetTable)
-                ..where((t) => t.id.equals(activityId)))
-              .getSingleOrNull();
+      final activity = await (db.select(db.gunlukFaaliyetTable)
+            ..where((t) => t.id.equals(activityId)))
+          .getSingleOrNull();
       if (activity == null) {
-        throw ArgumentError.value(activityId, 'activityId', 'Activity not found');
+        throw ArgumentError.value(
+            activityId, 'activityId', 'Activity not found');
       }
-      final selected =
-          await (db.select(db.faaliyetPersonelAtamaTable)
-                ..where((t) => t.id.isIn(ids)))
-              .get();
+      final selected = await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((t) => t.id.isIn(ids)))
+          .get();
       if (selected.length != ids.length ||
           selected.any((row) => row.faaliyetId != activityId)) {
         throw StateError('Selected assignments changed; reload the archive.');
@@ -111,11 +113,11 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
         await (db.update(db.faaliyetPersonelAtamaTable)
               ..where((t) => t.id.equals(row.id)))
             .write(
-              FaaliyetPersonelAtamaTableCompanion(
-                gorevVeyaIzin: Value(normalizedDuty),
-                durum: const Value(AssignmentStatus.onaylandi),
-              ),
-            );
+          FaaliyetPersonelAtamaTableCompanion(
+            gorevVeyaIzin: Value(normalizedDuty),
+            durum: const Value(AssignmentStatus.onaylandi),
+          ),
+        );
       }
       return toUpdate.length;
     });
@@ -127,6 +129,8 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
     required int personelId,
     required String gorevVeyaIzin,
     required String tarih,
+    int? taskTeamId,
+    bool isOutsideTeam = false,
     String? aciklama,
     required UserSessionState actor,
   }) async {
@@ -135,15 +139,24 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
         PersonnelAssignmentInput(
           personnelId: personelId,
           duty: gorevVeyaIzin,
+          teamId: taskTeamId,
+          isOutsideTeam: isOutsideTeam,
           note: aciklama,
         ),
       ]);
-      final duplicate =
-          await (db.select(db.faaliyetPersonelAtamaTable)..where(
-            (tbl) =>
-                tbl.faaliyetId.equals(faaliyetId) &
-                tbl.personelId.equals(personelId),
-          )).getSingleOrNull();
+      final activity = await (db.select(db.gunlukFaaliyetTable)
+            ..where((f) => f.id.equals(faaliyetId)))
+          .getSingle();
+      if (activity.tarih != tarih) {
+        throw StateError('Faaliyet tarihi değişti; kaydı yenileyin.');
+      }
+      final duplicate = await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where(
+              (tbl) =>
+                  tbl.faaliyetId.equals(faaliyetId) &
+                  tbl.personelId.equals(personelId),
+            ))
+          .getSingleOrNull();
       if (duplicate != null) return duplicate.id;
 
       final reports = await _loadDomainReports();
@@ -165,13 +178,14 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
       }
       if (!actor.isAdmin) status = AssignmentStatus.beklemede;
 
-      return db
-          .into(db.faaliyetPersonelAtamaTable)
-          .insert(
+      return db.into(db.faaliyetPersonelAtamaTable).insert(
             await _newAssignment(
+              actor: actor,
               faaliyetId: faaliyetId,
               personelId: personelId,
               gorevVeyaIzin: gorevVeyaIzin,
+              taskTeamId: taskTeamId,
+              isOutsideTeam: isOutsideTeam,
               durum: status,
               aciklama: Value(aciklama),
             ),
@@ -183,15 +197,16 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
   /// transaction. Existing members and conflicting assignments are reported
   /// separately instead of aborting the whole import.
   Future<ActivityAssignmentBatchResult> addAssignmentsToActivity({
+    String? expectedDate,
     required int activityId,
     required List<PersonnelAssignmentInput> assignments,
     required UserSessionState actor,
   }) {
     return db.transaction(() async {
       await _requirePersonnelScope(actor, assignments);
-      final activity =
-          await (db.select(db.gunlukFaaliyetTable)
-            ..where((table) => table.id.equals(activityId))).getSingleOrNull();
+      final activity = await (db.select(db.gunlukFaaliyetTable)
+            ..where((table) => table.id.equals(activityId)))
+          .getSingleOrNull();
       if (activity == null) {
         throw ArgumentError.value(
           activityId,
@@ -200,9 +215,14 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
         );
       }
 
-      final existingInActivity =
-          await (db.select(db.faaliyetPersonelAtamaTable)
-            ..where((table) => table.faaliyetId.equals(activityId))).get();
+      if (expectedDate != null && activity.tarih != expectedDate) {
+        throw StateError(
+            'Faaliyet tarihi değişti; görev timini yeniden doğrulayın.');
+      }
+
+      final existingInActivity = await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((table) => table.faaliyetId.equals(activityId)))
+          .get();
       final existingPersonnelIds =
           existingInActivity.map((row) => row.personelId).toSet();
       final reports = await _loadDomainReports();
@@ -239,16 +259,16 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
         }
         if (!actor.isAdmin) status = AssignmentStatus.beklemede;
 
-        final id = await db
-            .into(db.faaliyetPersonelAtamaTable)
-            .insert(
+        final id = await db.into(db.faaliyetPersonelAtamaTable).insert(
               await _newAssignment(
+                actor: actor,
                 faaliyetId: activityId,
                 personelId: assignment.personnelId,
                 gorevVeyaIzin: duty,
                 durum: status,
                 aciklama: Value(assignment.note?.trim()),
                 taskTeamId: assignment.teamId,
+                isOutsideTeam: assignment.isOutsideTeam,
               ),
             );
         existingAssignments.add(

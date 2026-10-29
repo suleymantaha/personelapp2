@@ -1,3 +1,4 @@
+import '../support/task_team_history_fixture.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -48,6 +49,7 @@ void main() {
     final activityCountBefore =
         await database.select(database.gunlukFaaliyetTable).get();
 
+    await seedTaskTeamHistory(database);
     final preview = await repository.previewActivityAssignments(
       tarih: '2026-08-06',
       personnelAssignments: [

@@ -8,6 +8,8 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
 
+import '../../support/task_team_history_fixture.dart';
+
 void main() {
   late AppDatabase db;
   setUp(() async {
@@ -139,9 +141,11 @@ void main() {
     await tester.tap(find.text('Not ekle veya düzenle'));
     await tester.pumpAndSettle();
     expect(
-      tester.widget<TextFormField>(
-        find.byKey(const ValueKey('personnel-note-1')),
-      ).initialValue,
+      tester
+          .widget<TextFormField>(
+            find.byKey(const ValueKey('personnel-note-1')),
+          )
+          .initialValue,
       'Görev notu',
     );
     await tester.tap(find.text('Vazgeç'));
@@ -188,17 +192,13 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       final database = db;
-      final teamId = await database
-          .into(database.timTable)
-          .insert(
+      final teamId = await database.into(database.timTable).insert(
             TimTableCompanion.insert(
               timAdi: '1. Tim',
               olusturmaTarihi: '2026-08-05',
             ),
           );
-      final personId = await database
-          .into(database.personelTable)
-          .insert(
+      final personId = await database.into(database.personelTable).insert(
             PersonelTableCompanion.insert(
               adSoyad: 'Ahmet YILMAZ',
               rutbe: 'J.Asb.Cvs.',
@@ -207,16 +207,16 @@ void main() {
               kayitTarihi: '2026-08-05',
             ),
           );
-      final activityId = await database
-          .into(database.gunlukFaaliyetTable)
-          .insert(
-            GunlukFaaliyetTableCompanion.insert(
-              faaliyetAdi: 'Hedef Faaliyet',
-              tarih: '2026-08-05',
-              olusturanKullanici: 'admin',
-              olusturmaTarihi: '2026-08-05T08:00:00',
-            ),
-          );
+      await seedTaskTeamHistory(database);
+      final activityId =
+          await database.into(database.gunlukFaaliyetTable).insert(
+                GunlukFaaliyetTableCompanion.insert(
+                  faaliyetAdi: 'Hedef Faaliyet',
+                  tarih: '2026-08-05',
+                  olusturanKullanici: 'admin',
+                  olusturmaTarihi: '2026-08-05T08:00:00',
+                ),
+              );
       final activity = GunlukFaaliyetTableData(
         id: activityId,
         faaliyetAdi: 'Hedef Faaliyet',
@@ -288,9 +288,8 @@ void main() {
       await tester.tap(find.text('TAMAM'));
       await tester.pumpAndSettle();
 
-      final assignments = await database
-          .select(database.faaliyetPersonelAtamaTable)
-          .get();
+      final assignments =
+          await database.select(database.faaliyetPersonelAtamaTable).get();
       expect(assignments, hasLength(1));
       expect(assignments.single.faaliyetId, activityId);
       expect(assignments.single.personelId, personId);

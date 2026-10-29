@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/navigation/app_navigator.dart';
 import '../domain/team_analytics.dart';
-import 'analytics_charts.dart';
 import 'analytics_details.dart';
 import 'team_analytics_settings.dart';
 import 'team_analytics_notice.dart';
 import 'team_analytics_provider.dart';
 import 'team_duty_report_view.dart';
 import 'team_monthly_duty_view.dart';
+import 'monthly_analytics_view.dart';
 
 class TeamAnalyticsScreen extends ConsumerStatefulWidget {
   const TeamAnalyticsScreen(
@@ -144,11 +144,20 @@ class _TeamAnalyticsScreenState extends ConsumerState<TeamAnalyticsScreen> {
                   key: const ValueKey('report-advanced-charts'),
                   title: const Text('Grafikler ve aylık eğilimler'),
                   childrenPadding: const EdgeInsets.all(12),
-                  children: [AnalyticsCharts(data: data)],
+                  children: [
+                    MonthlyAnalyticsView(data: data, onFilterChanged: _change)
+                  ],
                 )),
-              ] else if (selectedTab == 1)
-                TeamMonthlyDutyView(data: data)
-              else
+              ] else if (selectedTab == 1) ...[
+                MonthlyAnalyticsView(data: data, onFilterChanged: _change),
+                Card(
+                    child: ExpansionTile(
+                  key: const ValueKey('monthly-legacy-detail'),
+                  title: const Text('Tim bazında faaliyet ayrıntıları'),
+                  childrenPadding: const EdgeInsets.all(12),
+                  children: [TeamMonthlyDutyView(data: data)],
+                )),
+              ] else
                 AnalyticsDetails(data: data),
               const SizedBox(height: 24),
             ]),

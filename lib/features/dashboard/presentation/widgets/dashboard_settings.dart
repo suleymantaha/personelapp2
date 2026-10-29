@@ -12,6 +12,7 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
+import 'package:personelapp2/features/personnel/presentation/dialogs/task_team_repair_dialog.dart';
 
 class DashboardSettings {
   const DashboardSettings._();
@@ -29,101 +30,97 @@ class DashboardSettings {
         context: context,
         builder: (ctx) {
           return StatefulBuilder(
-            builder:
-                (ctx, updateDialog) => PopScope(
-                  canPop: !saving,
-                  child: AlertDialog(
-                    title: Text(context.l10n.settingsChangePassword),
-                    content: SingleChildScrollView(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 400),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              context.l10n.settingsUserAccount(username),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            TextField(
-                              controller: passCtrl,
-                              obscureText: true,
-                              decoration: InputDecoration(
-                                errorText: errorText,
-                                labelText: context.l10n.settingsNewPassword,
-                                prefixIcon: const Icon(Icons.lock),
-                              ),
-                            ),
-                          ],
+            builder: (ctx, updateDialog) => PopScope(
+              canPop: !saving,
+              child: AlertDialog(
+                title: Text(context.l10n.settingsChangePassword),
+                content: SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          context.l10n.settingsUserAccount(username),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: passCtrl,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            errorText: errorText,
+                            labelText: context.l10n.settingsNewPassword,
+                            prefixIcon: const Icon(Icons.lock),
+                          ),
+                        ),
+                      ],
                     ),
-                    actions: [
-                      TextButton(
-                        onPressed:
-                            saving ? null : () => Navigator.of(ctx).pop(),
-                        child: Text(context.l10n.commonCancel.toUpperCase()),
-                      ),
-                      ElevatedButton(
-                        onPressed:
-                            saving
-                                ? null
-                                : () async {
-                                  final newPass = passCtrl.text.trim();
-                                  if (!PasswordPolicy.isValid(newPass)) {
-                                    updateDialog(
-                                      () => errorText = context.l10n
-                                          .authPasswordPolicyMinLength(
-                                        PasswordPolicy.minimumLength,
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  updateDialog(() {
-                                    saving = true;
-                                    errorText = null;
-                                  });
-                                  final l10n = context.l10n;
-                                  try {
-                                    final changed = await ref
-                                        .read(personnelRepositoryProvider)
-                                        .updateUserPassword(
-                                          kullaniciAdi: username,
-                                          newPassword: newPass,
-                                        );
-                                    if (changed != 1) {
-                                      throw StateError(l10n.settingsUserNotFound);
-                                    }
-                                    if (ctx.mounted) {
-                                      updateDialog(() => saving = false);
-                                      await WidgetsBinding.instance.endOfFrame;
-                                      if (!ctx.mounted) return;
-                                      Navigator.of(ctx).pop();
-                                      AppNotifications.success(
-                                        l10n.settingsPasswordUpdated,
-                                      );
-                                    }
-                                  } catch (error) {
-                                    if (ctx.mounted) {
-                                      updateDialog(
-                                        () =>
-                                            errorText =
-                                                context.l10n.settingsPasswordUpdateFailed('$error'),
-                                      );
-                                    }
-                                  } finally {
-                                    if (ctx.mounted) {
-                                      updateDialog(() => saving = false);
-                                    }
-                                  }
-                                },
-                        child: Text(context.l10n.settingsUpdate),
-                      ),
-                    ],
                   ),
                 ),
+                actions: [
+                  TextButton(
+                    onPressed: saving ? null : () => Navigator.of(ctx).pop(),
+                    child: Text(context.l10n.commonCancel.toUpperCase()),
+                  ),
+                  ElevatedButton(
+                    onPressed: saving
+                        ? null
+                        : () async {
+                            final newPass = passCtrl.text.trim();
+                            if (!PasswordPolicy.isValid(newPass)) {
+                              updateDialog(
+                                () => errorText =
+                                    context.l10n.authPasswordPolicyMinLength(
+                                  PasswordPolicy.minimumLength,
+                                ),
+                              );
+                              return;
+                            }
+                            updateDialog(() {
+                              saving = true;
+                              errorText = null;
+                            });
+                            final l10n = context.l10n;
+                            try {
+                              final changed = await ref
+                                  .read(personnelRepositoryProvider)
+                                  .updateUserPassword(
+                                    kullaniciAdi: username,
+                                    newPassword: newPass,
+                                  );
+                              if (changed != 1) {
+                                throw StateError(l10n.settingsUserNotFound);
+                              }
+                              if (ctx.mounted) {
+                                updateDialog(() => saving = false);
+                                await WidgetsBinding.instance.endOfFrame;
+                                if (!ctx.mounted) return;
+                                Navigator.of(ctx).pop();
+                                AppNotifications.success(
+                                  l10n.settingsPasswordUpdated,
+                                );
+                              }
+                            } catch (error) {
+                              if (ctx.mounted) {
+                                updateDialog(
+                                  () => errorText = context.l10n
+                                      .settingsPasswordUpdateFailed('$error'),
+                                );
+                              }
+                            } finally {
+                              if (ctx.mounted) {
+                                updateDialog(() => saving = false);
+                              }
+                            }
+                          },
+                    child: Text(context.l10n.settingsUpdate),
+                  ),
+                ],
+              ),
+            ),
           );
         },
       );
@@ -220,17 +217,22 @@ class DashboardSettings {
                                   segments: [
                                     ButtonSegment<ThemeMode>(
                                       value: ThemeMode.light,
-                                      label: Text(context.l10n.settingsThemeLight),
-                                      icon: const Icon(Icons.light_mode_outlined),
+                                      label:
+                                          Text(context.l10n.settingsThemeLight),
+                                      icon:
+                                          const Icon(Icons.light_mode_outlined),
                                     ),
                                     ButtonSegment<ThemeMode>(
                                       value: ThemeMode.dark,
-                                      label: Text(context.l10n.settingsThemeDark),
-                                      icon: const Icon(Icons.dark_mode_outlined),
+                                      label:
+                                          Text(context.l10n.settingsThemeDark),
+                                      icon:
+                                          const Icon(Icons.dark_mode_outlined),
                                     ),
                                     ButtonSegment<ThemeMode>(
                                       value: ThemeMode.system,
-                                      label: Text(context.l10n.settingsThemeSystem),
+                                      label: Text(
+                                          context.l10n.settingsThemeSystem),
                                       icon: const Icon(Icons.brightness_auto),
                                     ),
                                   ],
@@ -261,8 +263,30 @@ class DashboardSettings {
                             );
                           },
                         ),
-                        if (isAdmin) ...[
+                        if (ref.watch(userSessionProvider)?.isAdmin ??
+                            false) ...[
                           const Divider(),
+                          ListTile(
+                            leading: Icon(
+                              Icons.history_rounded,
+                              color: context.accentOrOlive,
+                            ),
+                            title: const Text('Görev timi geçmişini onar'),
+                            subtitle: const Text(
+                              'Önizleme ve doğrulanmış tam yedek ile güvenli onarım',
+                            ),
+                            onTap: () async {
+                              if (!(ref.read(userSessionProvider)?.isAdmin ??
+                                  false)) {
+                                return;
+                              }
+                              Navigator.pop(ctx);
+                              await showTaskTeamRepairDialog(
+                                context: context,
+                                database: ref.read(databaseProvider),
+                              );
+                            },
+                          ),
                           ListTile(
                             leading: Icon(
                               Icons.storage_rounded,
@@ -293,7 +317,8 @@ class DashboardSettings {
                                 Icons.group_add,
                                 color: context.accentOrOlive,
                               ),
-                              title: Text(context.l10n.settingsAddTestPersonnelTitle),
+                              title: Text(
+                                  context.l10n.settingsAddTestPersonnelTitle),
                               subtitle: Text(
                                 context.l10n.settingsAddTestPersonnelSubtitle,
                               ),
@@ -306,7 +331,9 @@ class DashboardSettings {
                                     await repo.seedTestPersonnelPerSquad();
                                 if (context.mounted) {
                                   AppNotifications.success(
-                                    context.l10n.settingsTestPersonnelAddedSuccess(count),
+                                    context.l10n
+                                        .settingsTestPersonnelAddedSuccess(
+                                            count),
                                   );
                                 }
                               },
@@ -328,31 +355,33 @@ class DashboardSettings {
                                 Navigator.pop(ctx);
                                 final confirm = await showDialog<bool>(
                                   context: context,
-                                  builder:
-                                      (dCtx) => AlertDialog(
-                                        title: Text(context.l10n.settingsDeletePersonnelConfirmTitle),
-                                        content: Text(
-                                          context.l10n.settingsDeleteTestPersonnelConfirmMessage,
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed:
-                                                () =>
-                                                    Navigator.pop(dCtx, false),
-                                            child: Text(context.l10n.commonCancel.toUpperCase()),
-                                          ),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  context.rejectedColor,
-                                              foregroundColor: Colors.white,
-                                            ),
-                                            onPressed:
-                                                () => Navigator.pop(dCtx, true),
-                                            child: Text(context.l10n.commonDelete.toUpperCase()),
-                                          ),
-                                        ],
+                                  builder: (dCtx) => AlertDialog(
+                                    title: Text(context.l10n
+                                        .settingsDeletePersonnelConfirmTitle),
+                                    content: Text(
+                                      context.l10n
+                                          .settingsDeleteTestPersonnelConfirmMessage,
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(dCtx, false),
+                                        child: Text(context.l10n.commonCancel
+                                            .toUpperCase()),
                                       ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              context.rejectedColor,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                        onPressed: () =>
+                                            Navigator.pop(dCtx, true),
+                                        child: Text(context.l10n.commonDelete
+                                            .toUpperCase()),
+                                      ),
+                                    ],
+                                  ),
                                 );
 
                                 if (confirm == true) {

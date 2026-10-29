@@ -13,9 +13,9 @@ class PersonnelFuzzyMatcher {
   Future<List<ParsedActivityBlock>> matchBlocks(
     List<ParsedActivityBlock> blocks,
   ) async {
-    final allPersonnel =
-        await (database.select(database.personelTable)
-          ..where((p) => p.aktif.equals(true) & p.isDemo.equals(false))).get();
+    final allPersonnel = await (database.select(database.personelTable)
+          ..where((p) => p.aktif.equals(true) & p.isDemo.equals(false)))
+        .get();
     final allTeams = await database.select(database.timTable).get();
     final aliases = await BulkImportLearningService(database).loadAliases();
     final teamNames = {for (final team in allTeams) team.id: team.timAdi};
@@ -38,11 +38,10 @@ class PersonnelFuzzyMatcher {
 
       var updatedTimName = block.parsedTimName;
       if (updatedTimName.trim().isEmpty) {
-        final matchedTeamIds =
-            matchedPersonnelList
-                .where((p) => p.isMatched && p.matchedTimId != null)
-                .map((p) => p.matchedTimId!)
-                .toSet();
+        final matchedTeamIds = matchedPersonnelList
+            .where((p) => p.isMatched && p.matchedTimId != null)
+            .map((p) => p.matchedTimId!)
+            .toSet();
         if (matchedTeamIds.length == 1) {
           // Tüm personeller %100 aynı timden geliyorsa tim adını çıkar
           final inferredName = teamNames[matchedTeamIds.first];
@@ -52,18 +51,20 @@ class PersonnelFuzzyMatcher {
         }
       }
 
-      final taskTeams =
-          allTeams
-              .where(
-                (t) =>
-                    BulkImportLearningService.normalizeTeam(t.timAdi) ==
-                    BulkImportLearningService.normalizeTeam(updatedTimName),
-              )
-              .toList();
+      final taskTeams = allTeams
+          .where(
+            (t) =>
+                BulkImportLearningService.normalizeTeam(t.timAdi) ==
+                BulkImportLearningService.normalizeTeam(block.parsedTimName),
+          )
+          .toList();
       matchedBlocks.add(
         block.copyWith(
           parsedTimName: updatedTimName,
-          taskTeamId: taskTeams.length == 1 ? taskTeams.single.id : null,
+          taskTeamId:
+              block.parsedTimName.trim().isNotEmpty && taskTeams.length == 1
+                  ? taskTeams.single.id
+                  : null,
           personnelList: matchedPersonnelList,
         ),
       );
@@ -82,17 +83,15 @@ class PersonnelFuzzyMatcher {
     if (dbList.isEmpty) return item;
 
     final rawNameClean = _sanitizeString(item.rawName);
-    final scopedAlias =
-        aliases[BulkImportLearningService.aliasKey(
-          item.rawName,
-          teamName: parsedTeamName,
-        )];
+    final scopedAlias = aliases[BulkImportLearningService.aliasKey(
+      item.rawName,
+      teamName: parsedTeamName,
+    )];
     final aliasPersonnelId = scopedAlias ?? aliases[rawNameClean];
     if (aliasPersonnelId != null) {
-      final aliasMatch =
-          dbList
-              .where((personnel) => personnel.id == aliasPersonnelId)
-              .firstOrNull;
+      final aliasMatch = dbList
+          .where((personnel) => personnel.id == aliasPersonnelId)
+          .firstOrNull;
       // Zehirlenmiş Alias Kalkanı (Identity Hijacking Protection):
       // Eğer rawName, veritabanında mevcut olan BAŞKA bir gerçek personelin adıyla tam veya
       // ters token olarak uyuşuyorsa, alias bu gerçek personelin adını gasbedemez!
@@ -101,13 +100,13 @@ class PersonnelFuzzyMatcher {
         final dbClean = _sanitizeString(p.adSoyad);
         if (dbClean == rawNameClean) return true;
         final dbTokens = _nameTokens(dbClean);
-        return dbTokens.length >= 2 && _nameTokens(rawNameClean).containsAll(dbTokens);
+        return dbTokens.length >= 2 &&
+            _nameTokens(rawNameClean).containsAll(dbTokens);
       });
 
       final isAliasSafe = aliasMatch != null && !conflictsWithRealPerson;
 
-      final isLegacySafe =
-          isAliasSafe &&
+      final isLegacySafe = isAliasSafe &&
           dbList
                   .where(
                     (p) =>
@@ -141,16 +140,16 @@ class PersonnelFuzzyMatcher {
       double confidence,
     ) {
       if (candidates.length > 1 && item.rawRank.trim().isNotEmpty) {
-        final normalizedItemRank = MilitaryRankNormalizer.normalizeRank(item.rawRank);
+        final normalizedItemRank =
+            MilitaryRankNormalizer.normalizeRank(item.rawRank);
         if (normalizedItemRank.isNotEmpty) {
-          final inRank =
-              candidates
-                  .where(
-                    (p) =>
-                        MilitaryRankNormalizer.normalizeRank(p.rutbe) ==
-                        normalizedItemRank,
-                  )
-                  .toList();
+          final inRank = candidates
+              .where(
+                (p) =>
+                    MilitaryRankNormalizer.normalizeRank(p.rutbe) ==
+                    normalizedItemRank,
+              )
+              .toList();
           if (inRank.length == 1) {
             candidates = inRank;
           } else if (inRank.isNotEmpty) {
@@ -160,16 +159,15 @@ class PersonnelFuzzyMatcher {
       }
 
       if (candidates.length > 1 && parsedTeamName.trim().isNotEmpty) {
-        final inTeam =
-            candidates
-                .where(
-                  (p) =>
-                      BulkImportLearningService.normalizeTeam(
-                        teamNames[p.timId] ?? p.birlik,
-                      ) ==
-                      BulkImportLearningService.normalizeTeam(parsedTeamName),
-                )
-                .toList();
+        final inTeam = candidates
+            .where(
+              (p) =>
+                  BulkImportLearningService.normalizeTeam(
+                    teamNames[p.timId] ?? p.birlik,
+                  ) ==
+                  BulkImportLearningService.normalizeTeam(parsedTeamName),
+            )
+            .toList();
         if (inTeam.length == 1) {
           candidates = inTeam;
         } else if (inTeam.isNotEmpty) {
@@ -178,39 +176,38 @@ class PersonnelFuzzyMatcher {
       }
       return candidates.length == 1
           ? _withMatch(
-            item,
-            candidates.single,
-            confidence,
-            parsedTeamName,
-            teamNames,
-          )
+              item,
+              candidates.single,
+              confidence,
+              parsedTeamName,
+              teamNames,
+            )
           : item;
     }
 
-    final exactMatches =
-        dbList
-            .where((p) => _sanitizeString(p.adSoyad) == rawNameClean)
-            .toList();
+    final exactMatches = dbList
+        .where((p) => _sanitizeString(p.adSoyad) == rawNameClean)
+        .toList();
     if (exactMatches.isNotEmpty) return resolve(exactMatches, 1);
 
     final rawTokens = _nameTokens(rawNameClean);
-    final tokenMatches =
-        dbList.where((p) {
-          final dbTokens = _nameTokens(_sanitizeString(p.adSoyad));
-          return rawTokens.length == dbTokens.length &&
-              rawTokens.containsAll(dbTokens);
-        }).toList();
+    final tokenMatches = dbList.where((p) {
+      final dbTokens = _nameTokens(_sanitizeString(p.adSoyad));
+      return rawTokens.length == dbTokens.length &&
+          rawTokens.containsAll(dbTokens);
+    }).toList();
     if (tokenMatches.isNotEmpty) return resolve(tokenMatches, 0.95);
 
     // Reverse token containment:
     // If raw name contains extra rank tokens (e.g. J.Per.Asb...), but contains
     // all tokens of a db personnel's clean name, match it with full confidence.
-    final reverseTokenMatches =
-        dbList.where((p) {
-          final dbTokens = _nameTokens(_sanitizeString(p.adSoyad));
-          return dbTokens.length >= 2 && rawTokens.containsAll(dbTokens);
-        }).toList();
-    if (reverseTokenMatches.isNotEmpty) return resolve(reverseTokenMatches, 1.0);
+    final reverseTokenMatches = dbList.where((p) {
+      final dbTokens = _nameTokens(_sanitizeString(p.adSoyad));
+      return dbTokens.length >= 2 && rawTokens.containsAll(dbTokens);
+    }).toList();
+    if (reverseTokenMatches.isNotEmpty) {
+      return resolve(reverseTokenMatches, 1.0);
+    }
 
     // An initial requires the remaining name tokens AND the surname to match.
     // Do not use fuzzy/partial fallback when that explicit abbreviation fails.
@@ -218,14 +215,13 @@ class PersonnelFuzzyMatcher {
       return resolve(_firstLetterSurnameMatches(rawTokens, dbList), 0.9);
     }
 
-    final subsetMatches =
-        dbList
-            .where(
-              (p) => _nameTokens(
-                _sanitizeString(p.adSoyad),
-              ).containsAll(rawTokens),
-            )
-            .toList();
+    final subsetMatches = dbList
+        .where(
+          (p) => _nameTokens(
+            _sanitizeString(p.adSoyad),
+          ).containsAll(rawTokens),
+        )
+        .toList();
     if (subsetMatches.isNotEmpty) return resolve(subsetMatches, 0.85);
 
     final fuzzyMatch = _tryFuzzyMatch(rawNameClean, dbList);
@@ -247,8 +243,7 @@ class PersonnelFuzzyMatcher {
       final dbTokens = _nameTokens(_sanitizeString(p.adSoyad));
       final intersection = rawTokens.intersection(dbTokens);
       if (intersection.isEmpty) continue;
-      final score =
-          intersection.length /
+      final score = intersection.length /
           (rawTokens.length > dbTokens.length
               ? rawTokens.length
               : dbTokens.length);
@@ -287,8 +282,7 @@ class PersonnelFuzzyMatcher {
       matchedRutbe: personnel.rutbe,
       matchedTimId: personnel.timId,
       matchConfidence: confidence,
-      teamMismatch:
-          parsedTeamKey.isNotEmpty &&
+      teamMismatch: parsedTeamKey.isNotEmpty &&
           storedTeamKey.isNotEmpty &&
           parsedTeamKey != storedTeamKey,
       reviewConfirmed: false,
@@ -346,10 +340,9 @@ class PersonnelFuzzyMatcher {
     }
 
     try {
-      final candidates =
-          dbList
-              .where((p) => _sanitizeString(p.adSoyad) == bestMatch.item)
-              .toList();
+      final candidates = dbList
+          .where((p) => _sanitizeString(p.adSoyad) == bestMatch.item)
+          .toList();
       if (candidates.length != 1) return const _FuzzyPersonnelMatch.ambiguous();
       final personnel = candidates.single;
       return _FuzzyPersonnelMatch(
@@ -369,18 +362,21 @@ class PersonnelFuzzyMatcher {
     List<PersonelTableData> personnelList, {
     double threshold = 0.4,
     int maxResults = 50,
-  }) => PersonnelSearchService.searchPersonnel(
-    query,
-    personnelList,
-    threshold: threshold,
-    maxResults: maxResults,
-  );
+  }) =>
+      PersonnelSearchService.searchPersonnel(
+        query,
+        personnelList,
+        threshold: threshold,
+        maxResults: maxResults,
+      );
 }
 
 class _FuzzyPersonnelMatch {
   const _FuzzyPersonnelMatch(this.personnel, this.confidence);
 
-  const _FuzzyPersonnelMatch.ambiguous() : personnel = null, confidence = 0;
+  const _FuzzyPersonnelMatch.ambiguous()
+      : personnel = null,
+        confidence = 0;
 
   final PersonelTableData? personnel;
   final double confidence;

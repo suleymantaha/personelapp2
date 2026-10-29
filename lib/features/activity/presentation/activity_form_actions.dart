@@ -2,6 +2,7 @@ part of 'activity_form_screen.dart';
 
 extension _ActivityFormActions on _ActivityFormScreenState {
   Future<void> _submitActivity() async {
+    if (_preparingTaskTeams) return;
     final dateStr = DateFormat('yyyy-MM-dd').format(_draft.selectedDate);
     final name = _draft.activityName.trim();
     final userSession = ref.read(userSessionProvider);
@@ -15,7 +16,7 @@ extension _ActivityFormActions on _ActivityFormScreenState {
       return;
     }
 
-    final payload = _draft.resolvedDuties.entries.map((
+    var payload = _draft.resolvedDuties.entries.map((
       e,
     ) {
       final note = _draft.notes[e.key]?.trim();
@@ -34,7 +35,16 @@ extension _ActivityFormActions on _ActivityFormScreenState {
     }
 
     final repo = ref.read(activityRepositoryProvider);
+    _preparingTaskTeams = true;
     try {
+      final confirmed = await confirmTaskTeams(
+          context: context,
+          repository: repo,
+          date: dateStr,
+          assignments: payload,
+          actor: userSession);
+      if (confirmed == null || !mounted) return;
+      payload = confirmed;
       final preview = await repo.previewActivityAssignments(
         tarih: dateStr,
         personnelAssignments: payload,
@@ -48,6 +58,7 @@ extension _ActivityFormActions on _ActivityFormScreenState {
           date: _draft.selectedDate,
           preview: preview,
           requiresAdminApproval: !userSession.isAdmin,
+          isActive: () => mounted,
           onConfirm: () => _persistActivity(
             name: name,
             dateStr: dateStr,
@@ -65,6 +76,8 @@ extension _ActivityFormActions on _ActivityFormScreenState {
       AppNotifications.error(
         context.l10n.activityFormPreviewPrepareError(error.toString()),
       );
+    } finally {
+      _preparingTaskTeams = false;
     }
   }
 
@@ -89,6 +102,7 @@ extension _ActivityFormActions on _ActivityFormScreenState {
       if (choice == null || !mounted) return false;
       if (choice.action == ExistingActivityAction.merge) {
         mergeResult = await repo.mergeAssignmentsIntoActivity(
+          expectedDate: dateStr,
           activityId: choice.activityId!,
           personnelAssignments: payload,
           updateDifferentAssignments: choice.updateDifferentAssignments,
@@ -157,7 +171,8 @@ extension _ActivityFormActions on _ActivityFormScreenState {
             children: [
               Text(
                 context.l10n.activityFormBulkImportTitle,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               Text(

@@ -124,7 +124,8 @@ void main() {
     expect(find.textContaining('eski yedekten aktarıldı'), findsOneWidget);
   });
 
-  testWidgets('validates formatted backup file with reordered keys picked from gateway',
+  testWidgets(
+      'validates formatted backup file with reordered keys picked from gateway',
       (tester) async {
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);
@@ -139,6 +140,7 @@ void main() {
       'preferences': rawPayload['preferences'],
       'tables': rawPayload['tables'],
       'databaseSchemaVersion': rawPayload['databaseSchemaVersion'],
+      ...rawPayload,
     };
     final prettyJson = const JsonEncoder.withIndent('   ').convert(decoded);
 

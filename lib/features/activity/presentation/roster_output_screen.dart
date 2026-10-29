@@ -13,6 +13,37 @@ class _SessionException implements Exception {}
 
 class _TeamRevokedException implements Exception {}
 
+Future<int?> _authorizedTeam(ProviderContainer container) async {
+  final session = container.read(userSessionProvider);
+  if (session == null) throw _SessionException();
+  if (session.isAdmin) return null;
+  final team = await container
+      .read(personnelRepositoryProvider)
+      .currentCommanderTeam(session.username);
+  if (team == null) throw _TeamRevokedException();
+  return team;
+}
+
+Future<List<MilitaryRosterRow>> _loadRosterRows(
+  ProviderContainer container,
+  String date,
+  List<GunlukFaaliyetTableData> sources,
+  int? selectedSquadId,
+) async {
+  final team = await _authorizedTeam(container);
+  final db = container.read(databaseProvider);
+  final people = await db.select(db.personelTable).get();
+  final squads = await db.select(db.timTable).get();
+  return CombinedHeybetExcelService(db).buildSelected(
+    date: date,
+    sources: sources,
+    personnelById: {for (final person in people) person.id: person},
+    squadNames: {for (final squad in squads) squad.id: squad.timAdi},
+    authorizedTeamId: team,
+    selectedSquadId: selectedSquadId,
+  );
+}
+
 class RosterOutputScreen extends ConsumerStatefulWidget {
   const RosterOutputScreen({
     super.key,
@@ -46,23 +77,14 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
     _loadCards();
   }
 
-  Future<int?> _authorizedTeam() async {
-    final session = ref.read(userSessionProvider);
-    if (session == null) throw _SessionException();
-    if (session.isAdmin) return null;
-    final team = await ref
-        .read(personnelRepositoryProvider)
-        .currentCommanderTeam(session.username);
-    if (team == null) throw _TeamRevokedException();
-    return team;
-  }
-
   Future<void> _loadCards() async {
     final date = _date;
     final generation = ++_loadGeneration;
     try {
       final service = CombinedHeybetExcelService(ref.read(databaseProvider));
-      final team = await _authorizedTeam();
+      final team = await _authorizedTeam(
+        ProviderScope.containerOf(context, listen: false),
+      );
       final day = DateFormat('yyyy-MM-dd').parseStrict(date);
       final previous = DateFormat('yyyy-MM-dd')
           .format(DateTime(day.year, day.month, day.day - 1));
@@ -150,20 +172,13 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
   Future<List<MilitaryRosterRow>> _loadRows(
     String date,
     List<GunlukFaaliyetTableData> sources,
-  ) async {
-    final team = await _authorizedTeam();
-    final db = ref.read(databaseProvider);
-    final people = await db.select(db.personelTable).get();
-    final squads = await db.select(db.timTable).get();
-    return CombinedHeybetExcelService(db).buildSelected(
-      date: date,
-      sources: sources,
-      personnelById: {for (final person in people) person.id: person},
-      squadNames: {for (final squad in squads) squad.id: squad.timAdi},
-      authorizedTeamId: team,
-      selectedSquadId: widget.selectedSquadId,
-    );
-  }
+  ) =>
+      _loadRosterRows(
+        ProviderScope.containerOf(context, listen: false),
+        date,
+        sources,
+        widget.selectedSquadId,
+      );
 
   Future<void> _preview() async {
     if (_working || _currentIds.isEmpty && _previousIds.isEmpty) return;
@@ -172,12 +187,22 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
       ..._ordered(_previous, _previousIds),
     ];
     final date = _date;
+    final container = ProviderScope.containerOf(context, listen: false);
+    final selectedSquadId = widget.selectedSquadId;
+    Future<List<MilitaryRosterRow>> loadRows() =>
+        _loadRosterRows(container, date, sources, selectedSquadId);
     setState(() {
       _working = true;
       _error = null;
     });
     try {
-      final rows = await _loadRows(date, sources);
+      final List<MilitaryRosterRow> rows;
+      try {
+        rows = await loadRows();
+      } finally {
+        // Browser history can restore this screen before push's Future completes.
+        if (mounted) setState(() => _working = false);
+      }
       if (!mounted) return;
       if (rows.isEmpty) {
         setState(
@@ -191,14 +216,12 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
           date: date,
           sources: sources,
           rows: rows,
-          loadRows: () => _loadRows(date, sources),
+          loadRows: loadRows,
         ),
       );
       if (mounted) _loadCards();
     } catch (error) {
       if (mounted) setState(() => _error = '$error');
-    } finally {
-      if (mounted) setState(() => _working = false);
     }
   }
 

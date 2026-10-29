@@ -8,6 +8,7 @@ import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
+import 'task_team_confirmation.dart';
 import 'package:personelapp2/features/activity/domain/bulk_activity_import_preparer.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
@@ -55,7 +56,8 @@ class BulkImportDialog extends ConsumerStatefulWidget {
 class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   static const _preferences = BulkImportPreferences();
   final TextEditingController _textController = TextEditingController();
-  final FocusNode _textFocusNode = FocusNode(debugLabel: 'bulkImportSourceText');
+  final FocusNode _textFocusNode =
+      FocusNode(debugLabel: 'bulkImportSourceText');
   List<ParsedActivityBlock> _parsedBlocks = [];
   List<BulkParseIssue> _parseIssues = [];
   // Preserve source rows that never became editable card fields until reparse.
@@ -112,9 +114,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       });
       return;
     }
-    final index = _activeIssueFocusIndex < 0
-        ? 0
-        : _activeIssueFocusIndex % locs.length;
+    final index =
+        _activeIssueFocusIndex < 0 ? 0 : _activeIssueFocusIndex % locs.length;
     _focusProblemAtIndex(locs, index);
   }
 
@@ -134,8 +135,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     }
     final index =
         _activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length
-        ? 0
-        : (_activeIssueFocusIndex + 1) % locs.length;
+            ? 0
+            : (_activeIssueFocusIndex + 1) % locs.length;
     _focusProblemAtIndex(locs, index);
   }
 
@@ -155,8 +156,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     }
     final index =
         _activeIssueFocusIndex < 0 || _activeIssueFocusIndex >= locs.length
-        ? locs.length - 1
-        : (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
+            ? locs.length - 1
+            : (_activeIssueFocusIndex - 1 + locs.length) % locs.length;
     _focusProblemAtIndex(locs, index);
   }
 
@@ -199,11 +200,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     final focus = _focusedIssue;
     final focusedBlock =
         focus != null && focus.blockIndex < _parsedBlocks.length
-        ? _parsedBlocks[focus.blockIndex]
-        : null;
+            ? _parsedBlocks[focus.blockIndex]
+            : null;
     final personIndex = focus?.personIndex;
-    final focusedPersonOrder =
-        focusedBlock != null &&
+    final focusedPersonOrder = focusedBlock != null &&
             personIndex != null &&
             personIndex < focusedBlock.personnelList.length
         ? focusedBlock.personnelList[personIndex].stableOrder
@@ -360,9 +360,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }
 
   Future<void> _loadPersonnel() async {
-    final list = await widget.database
-        .select(widget.database.personelTable)
-        .get();
+    final list =
+        await widget.database.select(widget.database.personelTable).get();
     final squads = await widget.database.select(widget.database.timTable).get();
     if (!mounted) return;
     setState(() {
@@ -487,9 +486,9 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   Widget _buildMobileBody(bool isKeyboardVisible) {
     return switch (_currentStep) {
       0 => _buildInputSection(
-        isMobile: true,
-        isKeyboardVisible: isKeyboardVisible,
-      ),
+          isMobile: true,
+          isKeyboardVisible: isKeyboardVisible,
+        ),
       1 => _buildPreviewSection(isMobile: true),
       _ => _buildConfirmStep(isMobile: true),
     };
@@ -622,9 +621,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       onRemovePerson: _removePerson,
       onConfirmPersonnelSuggestion: _confirmPersonnelSuggestion,
       onAddNewPersonnel: _quickAddNewPersonnelToTim,
-      onConfirmAllSuggestions: _hasReviewableSuggestions
-          ? _confirmAllSuggestions
-          : null,
+      onConfirmAllSuggestions:
+          _hasReviewableSuggestions ? _confirmAllSuggestions : null,
       onSave: _proceedToConfirmation,
     );
   }

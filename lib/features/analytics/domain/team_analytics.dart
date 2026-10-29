@@ -118,6 +118,8 @@ class TeamAnalytics {
       Iterable<AnalyticsEntry> unknownEntries = const [],
       Map<int, String> teams = const {},
       Iterable<String>? availableDuties,
+      this.currentHeadcount,
+      this.headcountAsOf,
       this.duplicateAssignments = 0,
       this.possibleDuplicateActivities = 0})
       : entries = List.unmodifiable(entries),
@@ -131,8 +133,13 @@ class TeamAnalytics {
   final List<AnalyticsEntry> unknownEntries;
   final Map<int, String> teams;
   final List<String> availableDuties;
+
+  /// Current active roster snapshot, not the headcount of the selected period.
+  final int? currentHeadcount;
+  final DateTime? headcountAsOf;
   final int duplicateAssignments;
   final int possibleDuplicateActivities;
+
   /// One ordering for every analytics surface, aligned with personnel and
   /// activity screens. Unknown/custom names remain after the official squads.
   List<int> sortTeamIds(Iterable<int> ids) {

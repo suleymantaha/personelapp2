@@ -5,6 +5,7 @@ import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
+import '../task_team_confirmation.dart';
 import 'package:personelapp2/features/activity/domain/bulk_activity_import_preparer.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
@@ -35,23 +36,23 @@ class BulkImportSaveHandler {
       (items) => items.length > 1,
     )) {
       for (final entry in entries) {
-        result['${entry.blockIndex}:${entry.personIndex}'] = entries
-            .where((other) => other != entry)
-            .map((other) {
-              final block = blocks[other.blockIndex];
-              final time = block.parsedTimeRange?.trim();
-              return time == null || time.isEmpty
-                  ? block.parsedActivityType
-                  : '${block.parsedActivityType} ($time)';
-            })
-            .toList(growable: false);
+        result['${entry.blockIndex}:${entry.personIndex}'] =
+            entries.where((other) => other != entry).map((other) {
+          final block = blocks[other.blockIndex];
+          final time = block.parsedTimeRange?.trim();
+          return time == null || time.isEmpty
+              ? block.parsedActivityType
+              : '${block.parsedActivityType} ($time)';
+        }).toList(growable: false);
       }
     }
     return result;
   }
 
-  static ({List<ParsedActivityBlock> blocks, int removedCount})
-  deduplicateSameDuty(List<ParsedActivityBlock> blocks) =>
+  static ({
+    List<ParsedActivityBlock> blocks,
+    int removedCount
+  }) deduplicateSameDuty(List<ParsedActivityBlock> blocks) =>
       BulkActivityImportPreparer.deduplicateSameDuty(blocks);
 
   static Future<bool> confirmSavePreflight({
@@ -90,28 +91,27 @@ class BulkImportSaveHandler {
     if (!context.mounted) return false;
     final userChoice = await showDialog<bool>(
       context: context,
-      builder:
-          (dialogContext) => AlertDialog(
-            title: Text(context.l10n.bulkImportDuplicateListTitle),
-            content: Text(
-              context.l10n.bulkImportDuplicateWarningContent(
-                existingImport.tarihler,
-                existingImport.kayitTarihi,
-                existingImport.aktaranKullanici,
-                activeCount,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: Text(context.l10n.commonCancel.toUpperCase()),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(dialogContext, true),
-                child: Text(context.l10n.bulkImportCompleteMissingOrReimport),
-              ),
-            ],
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.bulkImportDuplicateListTitle),
+        content: Text(
+          context.l10n.bulkImportDuplicateWarningContent(
+            existingImport.tarihler,
+            existingImport.kayitTarihi,
+            existingImport.aktaranKullanici,
+            activeCount,
           ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(context.l10n.commonCancel.toUpperCase()),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(context.l10n.bulkImportCompleteMissingOrReimport),
+          ),
+        ],
+      ),
     );
     return userChoice == true;
   }
@@ -146,10 +146,27 @@ class BulkImportSaveHandler {
       throw StateError(l10n.authSessionFailed);
     }
 
+    final requests = <ActivityCreateRequest>[];
+    for (final request in preparation.requests) {
+      if (!context.mounted) return null;
+      final confirmed = await confirmTaskTeams(
+          context: context,
+          repository: activityRepository,
+          date: request.tarih,
+          assignments: request.personnelAssignments,
+          actor: actor);
+      if (confirmed == null) return null;
+      requests.add(ActivityCreateRequest(
+          faaliyetAdi: request.faaliyetAdi,
+          tarih: request.tarih,
+          olusturanKullanici: request.olusturanKullanici,
+          personnelAssignments: confirmed));
+    }
+
     final learningService = BulkImportLearningService(database);
     final fingerprint = BulkImportLearningService.fingerprint(blocks);
     final result = await activityRepository.createActivitiesWithAssignments(
-      preparation.requests,
+      requests,
       actor: actor,
     );
 
@@ -166,38 +183,41 @@ class BulkImportSaveHandler {
       if (result.skippedAssignmentCount > 0) {
         await showDialog<void>(
           context: context,
-          builder:
-              (_) => ConflictPersonnelDialog(
-                descriptions: result.conflictDescriptions,
-              ),
+          builder: (_) => ConflictPersonnelDialog(
+            descriptions: result.conflictDescriptions,
+          ),
         );
         if (!context.mounted) return null;
       }
 
       final summaryLines = <String>[
-        context.l10n.bulkImportSummaryActivitiesProcessed(preparation.requests.length),
-        context.l10n.bulkImportSummaryPersonnelAdded(result.addedAssignmentCount),
+        context.l10n
+            .bulkImportSummaryActivitiesProcessed(preparation.requests.length),
+        context.l10n
+            .bulkImportSummaryPersonnelAdded(result.addedAssignmentCount),
         if (result.alreadyAssignedCount > 0)
-          context.l10n.bulkImportSummaryAlreadyAssigned(result.alreadyAssignedCount),
+          context.l10n
+              .bulkImportSummaryAlreadyAssigned(result.alreadyAssignedCount),
         if (deduplicatedPersonnelCount > 0)
-          context.l10n.bulkImportSummaryDeduplicated(deduplicatedPersonnelCount),
+          context.l10n
+              .bulkImportSummaryDeduplicated(deduplicatedPersonnelCount),
         if (result.skippedAssignmentCount > 0)
-          context.l10n.bulkImportSummarySkippedConflict(result.skippedAssignmentCount),
+          context.l10n
+              .bulkImportSummarySkippedConflict(result.skippedAssignmentCount),
       ];
 
       await showDialog<void>(
         context: context,
-        builder:
-            (dialogContext) => AlertDialog(
-              title: Text(context.l10n.bulkImportCompletedTitle),
-              content: Text(summaryLines.join('\n')),
-              actions: [
-                FilledButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: Text(context.l10n.commonOk.toUpperCase()),
-                ),
-              ],
+        builder: (dialogContext) => AlertDialog(
+          title: Text(context.l10n.bulkImportCompletedTitle),
+          content: Text(summaryLines.join('\n')),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(context.l10n.commonOk.toUpperCase()),
             ),
+          ],
+        ),
       );
       if (!context.mounted) return null;
       Navigator.pop(context, true);

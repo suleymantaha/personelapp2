@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'task_team_repair_audit.dart';
+import 'task_team_repair_sequences.dart';
 
 import 'package:crypto/crypto.dart';
 import 'package:drift/drift.dart';
@@ -8,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AppBackupService {
   AppBackupService(this.db, {Future<SharedPreferences> Function()? preferences})
-    : _preferences = preferences ?? SharedPreferences.getInstance;
+      : _preferences = preferences ?? SharedPreferences.getInstance;
 
   final AppDatabase db;
   final Future<SharedPreferences> Function() _preferences;
@@ -23,6 +25,7 @@ class AppBackupService {
     'temgundrap_approver_defaults_v1',
     'bulk_import_keep_audit_text_enabled',
     'app_theme_mode',
+    'roster_signers_v1',
   };
 
   static bool _isCardOrderKey(String key) {
@@ -36,9 +39,9 @@ class AppBackupService {
   }
 
   static Set<String> _savedPreferenceKeys(SharedPreferences prefs) => {
-    ..._preferenceKeys,
-    ...prefs.getKeys().where(_isCardOrderKey),
-  };
+        ..._preferenceKeys,
+        ...prefs.getKeys().where(_isCardOrderKey),
+      };
 
   Future<String> exportBackupJson() async {
     final prefs = await _preferences();
@@ -52,62 +55,58 @@ class AppBackupService {
     final payload = <String, Object?>{
       'databaseSchemaVersion': db.schemaVersion,
       'tables': <String, Object?>{
-        'users':
-            usersList
-                .map((row) => row.timId != null && !squadIds.contains(row.timId!)
-                    ? row.copyWith(timId: const Value(null))
-                    : row)
-                .map((row) => row.toJson())
-                .toList(),
-        'squads':
-            squadsList
-                .map((row) => row.timKomutaniId != null && !userIds.contains(row.timKomutaniId!)
-                    ? row.copyWith(timKomutaniId: const Value(null))
-                    : row)
-                .map((row) => row.toJson())
-                .toList(),
-        'personnel':
-            personnelList
-                .map((row) => row.timId != null && !squadIds.contains(row.timId!)
-                    ? row.copyWith(timId: const Value(null))
-                    : row)
-                .map((row) => row.toJson())
-                .toList(),
-        'activities':
-            (await db.select(db.gunlukFaaliyetTable).get())
-                .map((row) => row.toJson())
-                .toList(),
-        'assignments':
-            (await db.select(db.faaliyetPersonelAtamaTable).get())
-                .where((row) => personnelIds.contains(row.personelId))
-                .map((row) => row.gorevTimId != null && !squadIds.contains(row.gorevTimId!)
+        'users': usersList
+            .map((row) => row.timId != null && !squadIds.contains(row.timId!)
+                ? row.copyWith(timId: const Value(null))
+                : row)
+            .map((row) => row.toJson())
+            .toList(),
+        'squads': squadsList
+            .map((row) => row.timKomutaniId != null &&
+                    !userIds.contains(row.timKomutaniId!)
+                ? row.copyWith(timKomutaniId: const Value(null))
+                : row)
+            .map((row) => row.toJson())
+            .toList(),
+        'personnel': personnelList
+            .map((row) => row.timId != null && !squadIds.contains(row.timId!)
+                ? row.copyWith(timId: const Value(null))
+                : row)
+            .map((row) => row.toJson())
+            .toList(),
+        'activities': (await db.select(db.gunlukFaaliyetTable).get())
+            .map((row) => row.toJson())
+            .toList(),
+        'assignments': (await db.select(db.faaliyetPersonelAtamaTable).get())
+            .where((row) => personnelIds.contains(row.personelId))
+            .map((row) =>
+                row.gorevTimId != null && !squadIds.contains(row.gorevTimId!)
                     ? row.copyWith(gorevTimId: const Value(null))
                     : row)
-                .map((row) => row.toJson())
-                .toList(),
-        'reports':
-            (await db.select(db.raporKayitTable).get())
-                .where((row) => personnelIds.contains(row.personelId))
-                .map((row) => row.toJson())
-                .toList(),
-        'membershipHistory':
-            (await db.select(db.timUyelikGecmisiTable).get())
-                .where((row) => personnelIds.contains(row.personelId))
-                .map((row) => row.timId != null && !squadIds.contains(row.timId!)
-                    ? row.copyWith(timId: const Value(null))
-                    : row)
-                .map((row) => row.toJson())
-                .toList(),
-        'aliases':
-            (await db.select(db.personelIsimTakmaAdTable).get())
-                .where((row) => personnelIds.contains(row.personelId))
-                .map((row) => row.toJson())
-                .toList(),
+            .map((row) => row.toJson())
+            .toList(),
+        'reports': (await db.select(db.raporKayitTable).get())
+            .where((row) => personnelIds.contains(row.personelId))
+            .map((row) => row.toJson())
+            .toList(),
+        'membershipHistory': (await db.select(db.timUyelikGecmisiTable).get())
+            .where((row) => personnelIds.contains(row.personelId))
+            .map((row) => row.timId != null && !squadIds.contains(row.timId!)
+                ? row.copyWith(timId: const Value(null))
+                : row)
+            .map((row) => row.toJson())
+            .toList(),
+        'aliases': (await db.select(db.personelIsimTakmaAdTable).get())
+            .where((row) => personnelIds.contains(row.personelId))
+            .map((row) => row.toJson())
+            .toList(),
         'bulkImportHistory':
             (await db.select(db.topluAktarimGecmisiTable).get())
                 .map((row) => row.toJson())
                 .toList(),
       },
+      'taskTeamRepairAudit': await TaskTeamRepairAudit.read(db),
+      'sqliteSequences': await TaskTeamRepairSequences.read(db),
       'preferences': <String, Object?>{
         for (final key in _savedPreferenceKeys(prefs))
           if (prefs.containsKey(key)) key: prefs.get(key),
@@ -121,6 +120,39 @@ class AppBackupService {
       'payload': payload,
     };
     return const JsonEncoder.withIndent('  ').convert(envelope);
+  }
+
+  /// Repair requires a backup whose restore representation loses no values.
+  void verifyLosslessBackupJson(String jsonString) {
+    final decoded = _decode(jsonString);
+    final payload = _object(decoded['payload'], 'payload');
+    final data = _parseAndValidate(jsonString);
+    final restored = <String, Object?>{
+      'databaseSchemaVersion': payload['databaseSchemaVersion'],
+      'tables': <String, Object?>{
+        'users': data.users.map((r) => r.toJson()).toList(),
+        'squads': data.squads.map((r) => r.toJson()).toList(),
+        'personnel': data.personnel.map((r) => r.toJson()).toList(),
+        'activities': data.activities.map((r) => r.toJson()).toList(),
+        'assignments': data.assignments.map((r) => r.toJson()).toList(),
+        'reports': data.reports.map((r) => r.toJson()).toList(),
+        'membershipHistory':
+            data.membershipHistory.map((r) => r.toJson()).toList(),
+        'aliases': data.aliases.map((r) => r.toJson()).toList(),
+        'bulkImportHistory':
+            data.bulkImportHistory.map((r) => r.toJson()).toList(),
+      },
+      'taskTeamRepairAudit':
+          TaskTeamRepairAudit.parse(payload['taskTeamRepairAudit']),
+      'preferences': data.preferences,
+      'sqliteSequences':
+          TaskTeamRepairSequences.parse(payload['sqliteSequences'], payload),
+    };
+    if (computeCanonicalChecksum(restored) !=
+        computeCanonicalChecksum(payload)) {
+      throw StateError(
+          'Yedek geri yüklenirken veri değişeceği için onarım yapılamaz.');
+    }
   }
 
   Future<AppBackupPreview> inspectBackupJson(String jsonString) async {
@@ -153,6 +185,11 @@ class AppBackupService {
     }
 
     final parsed = _parseAndValidate(jsonString);
+    final audit = TaskTeamRepairAudit.parse(
+        _object(decoded['payload'], 'payload')['taskTeamRepairAudit']);
+    final payload = _object(decoded['payload'], 'payload');
+    final sequences =
+        TaskTeamRepairSequences.parse(payload['sqliteSequences'], payload);
     final prefs = await _preferences();
     final oldPreferences = <String, Object?>{
       for (final key in _savedPreferenceKeys(prefs))
@@ -161,7 +198,11 @@ class AppBackupService {
 
     try {
       await _replacePreferences(prefs, parsed.preferences);
-      await db.transaction(() => _replaceDatabase(parsed));
+      await db.transaction(() async {
+        await _replaceDatabase(parsed);
+        await TaskTeamRepairAudit.replace(db, audit);
+        await TaskTeamRepairSequences.restore(db, sequences, audit);
+      });
     } on Object {
       await _replacePreferences(prefs, oldPreferences);
       rethrow;
@@ -194,6 +235,8 @@ class AppBackupService {
       );
     }
 
+    TaskTeamRepairAudit.parse(payload['taskTeamRepairAudit']);
+    TaskTeamRepairSequences.parse(payload['sqliteSequences'], payload);
     final tables = _object(payload['tables'], 'tables');
     final rawUsers = _rows(tables, 'users', KullaniciTableData.fromJson);
     final rawSquads = _rows(tables, 'squads', TimTableData.fromJson);
@@ -272,9 +315,10 @@ class AppBackupService {
             : row)
         .toList();
     final squads = rawSquads
-        .map((row) => row.timKomutaniId != null && !userIds.contains(row.timKomutaniId!)
-            ? row.copyWith(timKomutaniId: const Value(null))
-            : row)
+        .map((row) =>
+            row.timKomutaniId != null && !userIds.contains(row.timKomutaniId!)
+                ? row.copyWith(timKomutaniId: const Value(null))
+                : row)
         .toList();
     final personnel = rawPersonnel
         .map((row) => row.timId != null && !squadIds.contains(row.timId!)
@@ -282,9 +326,10 @@ class AppBackupService {
             : row)
         .toList();
     final assignments = rawAssignments
-        .map((row) => row.gorevTimId != null && !squadIds.contains(row.gorevTimId!)
-            ? row.copyWith(gorevTimId: const Value(null))
-            : row)
+        .map((row) =>
+            row.gorevTimId != null && !squadIds.contains(row.gorevTimId!)
+                ? row.copyWith(gorevTimId: const Value(null))
+                : row)
         .toList();
     final reports = rawReports
         .where((row) => personnelIds.contains(row.personelId))
@@ -354,14 +399,18 @@ class AppBackupService {
           .insert(row.copyWith(timKomutaniId: const Value(null)));
     }
     for (final row in data.users.where((row) => row.timId != null)) {
-      await (db.update(db.kullaniciTable)..where(
-        (table) => table.id.equals(row.id),
-      )).write(KullaniciTableCompanion(timId: Value(row.timId)));
+      await (db.update(db.kullaniciTable)
+            ..where(
+              (table) => table.id.equals(row.id),
+            ))
+          .write(KullaniciTableCompanion(timId: Value(row.timId)));
     }
     for (final row in data.squads.where((row) => row.timKomutaniId != null)) {
-      await (db.update(db.timTable)..where(
-        (table) => table.id.equals(row.id),
-      )).write(TimTableCompanion(timKomutaniId: Value(row.timKomutaniId)));
+      await (db.update(db.timTable)
+            ..where(
+              (table) => table.id.equals(row.id),
+            ))
+          .write(TimTableCompanion(timKomutaniId: Value(row.timKomutaniId)));
     }
     await db.batch((batch) {
       batch.insertAll(db.personelTable, data.personnel);
@@ -372,7 +421,6 @@ class AppBackupService {
       batch.insertAll(db.personelIsimTakmaAdTable, data.aliases);
       batch.insertAll(db.topluAktarimGecmisiTable, data.bulkImportHistory);
     });
-    await db.backfillTaskTeamsFromHistory();
   }
 
   Future<void> _replacePreferences(
@@ -392,9 +440,9 @@ class AppBackupService {
         final double v => prefs.setDouble(entry.key, v),
         final String v => prefs.setString(entry.key, v),
         final List<Object?> v => prefs.setStringList(
-          entry.key,
-          v.map((item) => item as String).toList(),
-        ),
+            entry.key,
+            v.map((item) => item as String).toList(),
+          ),
         _ => throw FormatException('${entry.key} tercihi geçersiz.'),
       };
       if (!await saved) {
@@ -517,14 +565,29 @@ class AppBackupService {
 
   void _validatePreferences(Map<String, Object?> preferences) {
     for (final entry in preferences.entries) {
-      final valid =
-          entry.value is bool ||
+      final valid = entry.value is bool ||
           entry.value is int ||
           entry.value is double ||
           entry.value is String ||
           (entry.value is List<Object?> &&
               (entry.value as List<Object?>).every((item) => item is String));
       if (!valid) throw FormatException('${entry.key} tercihi geçersiz.');
+    }
+    final signers = preferences['roster_signers_v1'];
+    if (signers != null) {
+      try {
+        final rows = jsonDecode(signers as String) as List;
+        if (rows.length != 2 ||
+            rows.any((row) =>
+                row is! Map ||
+                row['name'] is! String ||
+                row['rank'] is! String ||
+                row['role'] is! String)) {
+          throw const FormatException();
+        }
+      } catch (_) {
+        throw const FormatException('Görev imzacı ayarları geçersiz.');
+      }
     }
     final defaults = preferences['temgundrap_approver_defaults_v1'];
     if (defaults != null) {

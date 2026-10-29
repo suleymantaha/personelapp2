@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
+import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_personnel_duty_row.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/batch_duty_picker.dart';
 
@@ -65,7 +66,8 @@ class ActivitySquadExpansionTile extends StatelessWidget {
             IconButton(
               key: ValueKey('batch-duty-button-$squadName'),
               icon: const Icon(Icons.more_vert_rounded, size: 22),
-              tooltip: context.l10n.activityBatchDutyAssignSquadTooltip(squadName),
+              tooltip:
+                  context.l10n.activityBatchDutyAssignSquadTooltip(squadName),
               onPressed: () async {
                 final duty = await showBatchDutyPicker(
                   context,
@@ -138,7 +140,13 @@ class ActivitySquadExpansionTile extends StatelessWidget {
                 child: ActivityPersonnelDutyRow(
                   personnel: p,
                   currentSelection: currentSelection,
-                  availableDuties: availableDuties,
+                  availableDuties: [
+                    for (final duty in DutyOrLeaveType.allDuties)
+                      if (availableDuties.contains(duty)) duty,
+                    ...availableDuties.where(
+                      (duty) => !DutyOrLeaveType.allDuties.contains(duty),
+                    ),
+                  ],
                   adminOnlyDuties: adminOnlyDuties,
                   onDutyChanged: (val) {
                     if (val != null) {

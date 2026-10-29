@@ -32,7 +32,7 @@ void main() {
       expect(person.sortOrder, isNull);
       expect(squad.sortOrder, isNull);
       expect(squad.timAdi, '7-B');
-      expect(sqliteDatabase.userVersion, 6);
+      expect(sqliteDatabase.userVersion, 7);
     });
 
     test(
@@ -49,7 +49,7 @@ void main() {
         "INSERT INTO personel_table VALUES (1, 'Ali', 'J.Er', 'Asayiş', '5321112233', 2, '2026-01-01'), (2, 'Veli', 'J.Er', 'Asayiş', NULL, 2, '2026-01-01')",
         "INSERT INTO gunluk_faaliyet_table VALUES (1, 'HEYBET', '2026-10-02', 'admin', '2026-10-02')",
         "INSERT INTO faaliyet_personel_atama_table VALUES (1, 1, 1, 'HEYBET', 'onaylandi', NULL), (2, 1, 2, 'HEYBET', 'onaylandi', NULL)",
-        "INSERT INTO tim_uyelik_gecmisi_table VALUES (1, 1, 1, '2026-01-01', 'eklendi'), (2, 1, 2, '2026-10-03', 'eklendi')",
+        "INSERT INTO tim_uyelik_gecmisi_table VALUES (1, 1, 1, '2026-01-01', 'eklendi'), (2, 1, 2, '2026-10-03', 'eklendi'), (3, 2, 1, '2026-10-01T08:00:00', 'eklendi'), (4, 2, 2, '2026-10-01T09:00:00', 'eklendi')",
         'PRAGMA user_version = 4',
       ]) {
         sqliteDatabase.execute(sql);
@@ -109,7 +109,7 @@ void main() {
           'toplu_aktarim_gecmisi_table',
         ],
       );
-      expect(sqliteDatabase.userVersion, 6);
+      expect(sqliteDatabase.userVersion, 7);
     });
 
     test('propagates migration failures instead of marking schema ready',
@@ -164,7 +164,7 @@ void main() {
 
       expect(
           columns.map((row) => row.read<String>('name')), contains('telefon'));
-      expect(sqliteDatabase.userVersion, 6);
+      expect(sqliteDatabase.userVersion, 7);
     });
   });
 }

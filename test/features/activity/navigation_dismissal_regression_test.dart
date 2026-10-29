@@ -21,6 +21,8 @@ import 'package:personelapp2/features/activity/presentation/dialogs/transfer_squ
 import 'package:personelapp2/features/personnel/presentation/dialogs/backup_restore_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../support/task_team_history_fixture.dart';
+
 const _source = GunlukFaaliyetTableData(
   id: 1,
   faaliyetAdi: 'Kaynak',
@@ -49,9 +51,7 @@ const _person = PersonelTableData(
 Future<AppDatabase> _database(WidgetTester tester) async {
   final db = AppDatabase(NativeDatabase.memory());
   await db.customSelect('SELECT 1').get();
-  await db
-      .into(db.timTable)
-      .insert(
+  await db.into(db.timTable).insert(
         const TimTableData(
           id: 1,
           timAdi: '1. Tim',
@@ -59,6 +59,7 @@ Future<AppDatabase> _database(WidgetTester tester) async {
         ).toCompanion(true),
       );
   await db.into(db.personelTable).insert(_person.toCompanion(true));
+  await seedTaskTeamHistory(db);
   await db.into(db.gunlukFaaliyetTable).insert(_source.toCompanion(true));
   await db.into(db.gunlukFaaliyetTable).insert(_target.toCompanion(true));
   addTearDown(db.close);
@@ -302,9 +303,7 @@ void main() {
       tester,
     ) async {
       final db = await _database(tester);
-      await db
-          .into(db.faaliyetPersonelAtamaTable)
-          .insert(
+      await db.into(db.faaliyetPersonelAtamaTable).insert(
             const FaaliyetPersonelAtamaTableData(
               id: 1,
               faaliyetId: 1,
@@ -470,8 +469,8 @@ void main() {
               surface == 'personnel'
                   ? PersonnelFormDialog
                   : surface == 'personnel-import'
-                  ? BulkPersonnelImportDialog
-                  : BulkImportDialog,
+                      ? BulkPersonnelImportDialog
+                      : BulkImportDialog,
             ),
             findsOneWidget,
           );
@@ -481,11 +480,10 @@ void main() {
           if (surface == 'activity-import') {
             // The import stays busy until its result dialog is acknowledged.
             // Settling an intentionally running progress indicator would hang.
-            for (
-              var frame = 0;
-              frame < 50 && find.text('Aktarım Tamamlandı').evaluate().isEmpty;
-              frame++
-            ) {
+            for (var frame = 0;
+                frame < 50 &&
+                    find.text('Aktarım Tamamlandı').evaluate().isEmpty;
+                frame++) {
               await tester.pump(const Duration(milliseconds: 20));
             }
           } else {

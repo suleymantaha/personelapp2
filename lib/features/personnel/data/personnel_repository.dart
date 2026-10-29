@@ -17,22 +17,26 @@ class PersonnelRepository {
 
   Stream<int?> watchCommanderTeam(String username) {
     final query = db.select(db.kullaniciTable).join([
-      innerJoin(db.timTable,
-        db.timTable.id.equalsExp(db.kullaniciTable.timId) &
-        db.timTable.timKomutaniId.equalsExp(db.kullaniciTable.id)),
-    ])..where(db.kullaniciTable.kullaniciAdi.equals(username) &
-      db.kullaniciTable.rol.equals('tim_komutani'));
-    return query.watch().map((rows) =>
-      rows.isEmpty ? null : rows.single.readTable(db.timTable).id);
+      innerJoin(
+          db.timTable,
+          db.timTable.id.equalsExp(db.kullaniciTable.timId) &
+              db.timTable.timKomutaniId.equalsExp(db.kullaniciTable.id)),
+    ])
+      ..where(db.kullaniciTable.kullaniciAdi.equals(username) &
+          db.kullaniciTable.rol.equals('tim_komutani'));
+    return query.watch().map(
+        (rows) => rows.isEmpty ? null : rows.single.readTable(db.timTable).id);
   }
 
   Future<int?> currentCommanderTeam(String username) async {
     final query = db.select(db.kullaniciTable).join([
-      innerJoin(db.timTable,
-        db.timTable.id.equalsExp(db.kullaniciTable.timId) &
-        db.timTable.timKomutaniId.equalsExp(db.kullaniciTable.id)),
-    ])..where(db.kullaniciTable.kullaniciAdi.equals(username) &
-      db.kullaniciTable.rol.equals('tim_komutani'));
+      innerJoin(
+          db.timTable,
+          db.timTable.id.equalsExp(db.kullaniciTable.timId) &
+              db.timTable.timKomutaniId.equalsExp(db.kullaniciTable.id)),
+    ])
+      ..where(db.kullaniciTable.kullaniciAdi.equals(username) &
+          db.kullaniciTable.rol.equals('tim_komutani'));
     final rows = await query.get();
     return rows.isEmpty ? null : rows.single.readTable(db.timTable).id;
   }
@@ -46,23 +50,28 @@ class PersonnelRepository {
     if (!includeInactive) query.where((p) => p.aktif.equals(true));
     if (!includeDemo) query.where((p) => p.isDemo.equals(false));
     return query.watch().map((list) {
-      return List<PersonelTableData>.from(list)..sort(
-        (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
-      );
+      return List<PersonelTableData>.from(list)
+        ..sort(
+          (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
+        );
     });
   }
 
   /// Return personnel belonging to a specific squad sorted by rank
   Stream<List<PersonelTableData>> watchPersonnelBySquad(int timId) {
-    return (db.select(db.personelTable)..where(
-      (tbl) =>
-          tbl.timId.equals(timId) &
-          tbl.aktif.equals(true) &
-          tbl.isDemo.equals(false),
-    )).watch().map((list) {
-      return List<PersonelTableData>.from(list)..sort(
-        (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
-      );
+    return (db.select(db.personelTable)
+          ..where(
+            (tbl) =>
+                tbl.timId.equals(timId) &
+                tbl.aktif.equals(true) &
+                tbl.isDemo.equals(false),
+          ))
+        .watch()
+        .map((list) {
+      return List<PersonelTableData>.from(list)
+        ..sort(
+          (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)),
+        );
     });
   }
 
@@ -75,9 +84,7 @@ class PersonnelRepository {
     String? telefon,
   }) async {
     return db.transaction(() async {
-      final newId = await db
-          .into(db.personelTable)
-          .insert(
+      final newId = await db.into(db.personelTable).insert(
             PersonelTableCompanion.insert(
               adSoyad: adSoyad,
               rutbe: rutbe,
@@ -88,18 +95,14 @@ class PersonnelRepository {
             ),
           );
 
-      if (timId != null) {
-        await db
-            .into(db.timUyelikGecmisiTable)
-            .insert(
-              TimUyelikGecmisiTableCompanion.insert(
-                personelId: newId,
-                timId: Value(timId),
-                tarih: kayitTarihi,
-                islem: 'eklendi',
-              ),
-            );
-      }
+      await db.into(db.timUyelikGecmisiTable).insert(
+            TimUyelikGecmisiTableCompanion.insert(
+              personelId: newId,
+              timId: Value(timId),
+              tarih: kayitTarihi,
+              islem: timId == null ? 'çıkarıldı' : 'eklendi',
+            ),
+          );
 
       return newId;
     });
@@ -110,20 +113,19 @@ class PersonnelRepository {
     required String kayitTarihi,
   }) async {
     return db.transaction(() async {
-      final existing =
-          await (db.select(db.personelTable)
-            ..where((p) => p.isDemo.equals(false))).get();
-      final knownKeys =
-          existing
-              .map(
-                (person) => personnelImportKey(
-                  name: person.adSoyad,
-                  rank: person.rutbe,
-                  unit: person.birlik,
-                  teamId: person.timId,
-                ),
-              )
-              .toSet();
+      final existing = await (db.select(db.personelTable)
+            ..where((p) => p.isDemo.equals(false)))
+          .get();
+      final knownKeys = existing
+          .map(
+            (person) => personnelImportKey(
+              name: person.adSoyad,
+              rank: person.rutbe,
+              unit: person.birlik,
+              teamId: person.timId,
+            ),
+          )
+          .toSet();
       var addedCount = 0;
       var skippedCount = 0;
       var updatedCount = 0;
@@ -142,10 +144,11 @@ class PersonnelRepository {
           continue;
         }
         if (entry.existingPersonnelId != null) {
-          final current =
-              await (db.select(db.personelTable)..where(
-                (p) => p.id.equals(entry.existingPersonnelId!),
-              )).getSingleOrNull();
+          final current = await (db.select(db.personelTable)
+                ..where(
+                  (p) => p.id.equals(entry.existingPersonnelId!),
+                ))
+              .getSingleOrNull();
           if (current == null || current.isDemo) {
             throw ArgumentError('Güncellenecek personel bulunamadı.');
           }
@@ -153,10 +156,9 @@ class PersonnelRepository {
             current.copyWith(
               adSoyad: name,
               rutbe: rank.isEmpty ? 'J.Er' : rank,
-              birlik:
-                  entry.birlik.trim().isEmpty
-                      ? 'Asayiş Timi'
-                      : entry.birlik.trim(),
+              birlik: entry.birlik.trim().isEmpty
+                  ? 'Asayiş Timi'
+                  : entry.birlik.trim(),
               timId: Value(entry.timId),
             ),
             tarih: kayitTarihi,
@@ -164,7 +166,8 @@ class PersonnelRepository {
           existing.removeWhere((p) => p.id == current.id);
           existing.add(
             (await (db.select(db.personelTable)
-              ..where((p) => p.id.equals(current.id))).getSingle()),
+                  ..where((p) => p.id.equals(current.id)))
+                .getSingle()),
           );
           knownKeys
             ..clear()
@@ -200,36 +203,29 @@ class PersonnelRepository {
           continue;
         }
 
-        final newId = await db
-            .into(db.personelTable)
-            .insert(
+        final newId = await db.into(db.personelTable).insert(
               PersonelTableCompanion.insert(
                 adSoyad: name,
                 rutbe: rank.isEmpty ? 'J.Er' : rank,
-                birlik:
-                    entry.birlik.trim().isEmpty
-                        ? 'Asayiş Timi'
-                        : entry.birlik.trim(),
+                birlik: entry.birlik.trim().isEmpty
+                    ? 'Asayiş Timi'
+                    : entry.birlik.trim(),
                 timId: Value(entry.timId),
                 kayitTarihi: kayitTarihi,
               ),
             );
-        if (entry.timId != null) {
-          await db
-              .into(db.timUyelikGecmisiTable)
-              .insert(
-                TimUyelikGecmisiTableCompanion.insert(
-                  personelId: newId,
-                  timId: Value(entry.timId),
-                  tarih: kayitTarihi,
-                  islem: 'eklendi',
-                ),
-              );
-        }
+        await db.into(db.timUyelikGecmisiTable).insert(
+              TimUyelikGecmisiTableCompanion.insert(
+                personelId: newId,
+                timId: Value(entry.timId),
+                tarih: kayitTarihi,
+                islem: entry.timId == null ? 'çıkarıldı' : 'eklendi',
+              ),
+            );
         knownKeys.add(key);
         existing.add(
-          await (db.select(db.personelTable)
-            ..where((p) => p.id.equals(newId))).getSingle(),
+          await (db.select(db.personelTable)..where((p) => p.id.equals(newId)))
+              .getSingle(),
         );
         addedCount++;
       }
@@ -244,21 +240,20 @@ class PersonnelRepository {
 
   Future<bool> updatePersonnel(PersonelTableData data, {String? tarih}) async {
     return db.transaction(() async {
-      final oldData =
-          await (db.select(db.personelTable)
-            ..where((tbl) => tbl.id.equals(data.id))).getSingleOrNull();
+      final oldData = await (db.select(db.personelTable)
+            ..where((tbl) => tbl.id.equals(data.id)))
+          .getSingleOrNull();
 
       if (oldData == null) return false;
       final updated = data.copyWith(
-        sortOrder: Value(oldData.timId == data.timId ? oldData.sortOrder : null),
+        sortOrder:
+            Value(oldData.timId == data.timId ? oldData.sortOrder : null),
       );
       final result = await db.update(db.personelTable).replace(updated);
 
       if (oldData.timId != data.timId) {
         final islemStr = data.timId == null ? 'çıkarıldı' : 'eklendi';
-        await db
-            .into(db.timUyelikGecmisiTable)
-            .insert(
+        await db.into(db.timUyelikGecmisiTable).insert(
               TimUyelikGecmisiTableCompanion.insert(
                 personelId: data.id,
                 timId: Value(data.timId),
@@ -276,22 +271,22 @@ class PersonnelRepository {
   /// Remembers the phone selected for a personnel record so future
   /// TEMGÜNDRAP forms can suggest it automatically.
   Future<int> updatePersonnelPhone(int personnelId, String phone) {
-    return (db.update(db.personelTable)..where(
-      (table) => table.id.equals(personnelId),
-    )).write(PersonelTableCompanion(telefon: Value(phone.trim())));
+    return (db.update(db.personelTable)
+          ..where(
+            (table) => table.id.equals(personnelId),
+          ))
+        .write(PersonelTableCompanion(telefon: Value(phone.trim())));
   }
 
   Future<int> deletePersonnel(int id, {String? tarih}) async {
     return db.transaction(() async {
-      final p =
-          await (db.select(db.personelTable)
-            ..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+      final p = await (db.select(db.personelTable)
+            ..where((tbl) => tbl.id.equals(id)))
+          .getSingleOrNull();
 
       if (p == null || !p.aktif) return 0;
       if (p.timId != null) {
-        await db
-            .into(db.timUyelikGecmisiTable)
-            .insert(
+        await db.into(db.timUyelikGecmisiTable).insert(
               TimUyelikGecmisiTableCompanion.insert(
                 personelId: id,
                 timId: Value(p.timId),
@@ -302,17 +297,21 @@ class PersonnelRepository {
             );
       }
 
-      return (db.update(db.personelTable)..where(
-        (p) => p.id.equals(id),
-      )).write(const PersonelTableCompanion(aktif: Value(false)));
+      return (db.update(db.personelTable)
+            ..where(
+              (p) => p.id.equals(id),
+            ))
+          .write(const PersonelTableCompanion(aktif: Value(false)));
     });
   }
 
   /// History Log Operations
   Stream<List<TimUyelikGecmisiTableData>> watchAllHistory() {
-    return (db.select(db.timUyelikGecmisiTable)..orderBy([
-      (tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.desc),
-    ])).watch();
+    return (db.select(db.timUyelikGecmisiTable)
+          ..orderBy([
+            (tbl) => OrderingTerm(expression: tbl.id, mode: OrderingMode.desc),
+          ]))
+        .watch();
   }
 
   Future<void> ensureDefaultSquads() => db.ensureSeeded();
@@ -328,9 +327,7 @@ class PersonnelRepository {
     required String olusturmaTarihi,
     int? timKomutaniId,
   }) {
-    return db
-        .into(db.timTable)
-        .insert(
+    return db.into(db.timTable).insert(
           TimTableCompanion.insert(
             timAdi: timAdi,
             olusturmaTarihi: olusturmaTarihi,
@@ -346,9 +343,7 @@ class PersonnelRepository {
   }) async {
     return db.transaction(() async {
       // 1. Create commander user account with pending password setup
-      final userId = await db
-          .into(db.kullaniciTable)
-          .insert(
+      final userId = await db.into(db.kullaniciTable).insert(
             KullaniciTableCompanion.insert(
               kullaniciAdi: komutanKullaniciAdi,
               sifre: const Value(''),
@@ -357,9 +352,7 @@ class PersonnelRepository {
           );
 
       // 2. Create squad linked to commander user
-      return db
-          .into(db.timTable)
-          .insert(
+      return db.into(db.timTable).insert(
             TimTableCompanion.insert(
               timAdi: timAdi,
               olusturmaTarihi: olusturmaTarihi,
@@ -375,9 +368,7 @@ class PersonnelRepository {
     required String rol,
     int? timId,
   }) {
-    return db
-        .into(db.kullaniciTable)
-        .insert(
+    return db.into(db.kullaniciTable).insert(
           KullaniciTableCompanion.insert(
             kullaniciAdi: kullaniciAdi,
             sifre: const Value(''),
@@ -394,15 +385,18 @@ class PersonnelRepository {
   }) async {
     PasswordPolicy.requireValid(newPassword);
     final hashedPassword = await PasswordHasher.hashPassword(newPassword);
-    return (db.update(db.kullaniciTable)..where(
-      (tbl) => tbl.kullaniciAdi.equals(kullaniciAdi),
-    )).write(KullaniciTableCompanion(sifre: Value(hashedPassword)));
+    return (db.update(db.kullaniciTable)
+          ..where(
+            (tbl) => tbl.kullaniciAdi.equals(kullaniciAdi),
+          ))
+        .write(KullaniciTableCompanion(sifre: Value(hashedPassword)));
   }
 
   /// List all Tim Komutanı accounts
   Stream<List<KullaniciTableData>> watchAllCommanders() {
     return (db.select(db.kullaniciTable)
-      ..where((tbl) => tbl.rol.equals('tim_komutani'))).watch();
+          ..where((tbl) => tbl.rol.equals('tim_komutani')))
+        .watch();
   }
 
   /// Reassign or revoke a Tim Komutanı's squad authority
@@ -411,36 +405,45 @@ class PersonnelRepository {
     required int? timId,
   }) async {
     await db.transaction(() async {
-      final user =
-          await (db.select(db.kullaniciTable)
-            ..where((table) => table.id.equals(userId))).getSingleOrNull();
+      final user = await (db.select(db.kullaniciTable)
+            ..where((table) => table.id.equals(userId)))
+          .getSingleOrNull();
       if (user == null || user.rol != 'tim_komutani') {
         throw ArgumentError('Tim komutanı hesabı bulunamadı.');
       }
-      final target =
-          timId == null
-              ? null
-              : await (db.select(db.timTable)
-                ..where((table) => table.id.equals(timId))).getSingleOrNull();
+      final target = timId == null
+          ? null
+          : await (db.select(db.timTable)
+                ..where((table) => table.id.equals(timId)))
+              .getSingleOrNull();
       if (timId != null && target == null) {
         throw ArgumentError('Tim bulunamadı.');
       }
-      await (db.update(db.timTable)..where(
-        (table) => table.timKomutaniId.equals(userId),
-      )).write(const TimTableCompanion(timKomutaniId: Value(null)));
+      await (db.update(db.timTable)
+            ..where(
+              (table) => table.timKomutaniId.equals(userId),
+            ))
+          .write(const TimTableCompanion(timKomutaniId: Value(null)));
       final previousId = target?.timKomutaniId;
       if (previousId != null && previousId != userId) {
-        await (db.update(db.kullaniciTable)..where(
-          (table) => table.id.equals(previousId) & table.timId.equals(timId!),
-        )).write(const KullaniciTableCompanion(timId: Value(null)));
+        await (db.update(db.kullaniciTable)
+              ..where(
+                (table) =>
+                    table.id.equals(previousId) & table.timId.equals(timId!),
+              ))
+            .write(const KullaniciTableCompanion(timId: Value(null)));
       }
-      await (db.update(db.kullaniciTable)..where(
-        (table) => table.id.equals(userId),
-      )).write(KullaniciTableCompanion(timId: Value(timId)));
+      await (db.update(db.kullaniciTable)
+            ..where(
+              (table) => table.id.equals(userId),
+            ))
+          .write(KullaniciTableCompanion(timId: Value(timId)));
       if (timId != null) {
-        await (db.update(db.timTable)..where(
-          (table) => table.id.equals(timId),
-        )).write(TimTableCompanion(timKomutaniId: Value(userId)));
+        await (db.update(db.timTable)
+              ..where(
+                (table) => table.id.equals(timId),
+              ))
+            .write(TimTableCompanion(timKomutaniId: Value(userId)));
       }
     });
   }
@@ -456,34 +459,34 @@ class PersonnelRepository {
     required int personnelId,
   }) async {
     await db.transaction(() async {
-      final person =
-          await (db.select(db.personelTable)
-            ..where((p) => p.id.equals(personnelId))).getSingle();
+      final person = await (db.select(db.personelTable)
+            ..where((p) => p.id.equals(personnelId)))
+          .getSingle();
       if (!person.aktif || person.isDemo) {
         throw ArgumentError('Aktif gerçek personel seçilmeli.');
       }
       await updatePersonnel(person.copyWith(timId: Value(timId)));
 
       // 2. Check if user already exists
-      final existingUser =
-          await (db.select(db.kullaniciTable)..where(
-            (tbl) => tbl.kullaniciAdi.equals(kullaniciAdi),
-          )).getSingleOrNull();
+      final existingUser = await (db.select(db.kullaniciTable)
+            ..where(
+              (tbl) => tbl.kullaniciAdi.equals(kullaniciAdi),
+            ))
+          .getSingleOrNull();
 
       int userId;
       if (existingUser != null) {
         userId = existingUser.id;
         await (db.update(db.kullaniciTable)
-          ..where((tbl) => tbl.id.equals(userId))).write(
+              ..where((tbl) => tbl.id.equals(userId)))
+            .write(
           KullaniciTableCompanion(
             rol: const Value('tim_komutani'),
             timId: Value(timId),
           ),
         );
       } else {
-        userId = await db
-            .into(db.kullaniciTable)
-            .insert(
+        userId = await db.into(db.kullaniciTable).insert(
               KullaniciTableCompanion.insert(
                 kullaniciAdi: kullaniciAdi,
                 sifre: const Value(''),
@@ -571,9 +574,9 @@ class PersonnelRepository {
     var insertedCount = 0;
 
     await db.transaction(() async {
-      final existingDemo =
-          await (db.select(db.personelTable)
-            ..where((p) => p.isDemo.equals(true))).get();
+      final existingDemo = await (db.select(db.personelTable)
+            ..where((p) => p.isDemo.equals(true)))
+          .get();
       final demoKeys =
           existingDemo.map((p) => '${p.timId}|${p.adSoyad}').toSet();
       var nameIdx = 0;
@@ -615,13 +618,14 @@ class PersonnelRepository {
       );
     }
     return db.transaction(() async {
-      final demo =
-          await (db.select(db.personelTable)
-            ..where((p) => p.isDemo.equals(true))).get();
+      final demo = await (db.select(db.personelTable)
+            ..where((p) => p.isDemo.equals(true)))
+          .get();
       final ids = demo.map((p) => p.id).toList();
       if (ids.isEmpty) return 0;
       await (db.delete(db.timUyelikGecmisiTable)
-        ..where((h) => h.personelId.isIn(ids))).go();
+            ..where((h) => h.personelId.isIn(ids)))
+          .go();
       return (db.delete(db.personelTable)..where((p) => p.id.isIn(ids))).go();
     });
   }

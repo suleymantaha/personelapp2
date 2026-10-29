@@ -1,3 +1,4 @@
+import '../support/task_team_history_fixture.dart';
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -47,6 +48,7 @@ void main() {
             kayitTarihi: '2026-01-01',
           ),
         );
+    await seedTaskTeamHistory(database);
   });
 
   tearDown(() => database.close());
@@ -96,7 +98,8 @@ void main() {
     expect(await learningService.countActiveAssignments([block]), 0);
   });
 
-  test('smart merge adds missing personnel without duplicating existing ones', () async {
+  test('smart merge adds missing personnel without duplicating existing ones',
+      () async {
     // Import person 1
     final request1 = ActivityCreateRequest(
       faaliyetAdi: 'Günlük Tüm Faaliyetler',
@@ -109,7 +112,8 @@ void main() {
         ),
       ],
     );
-    await repository.createActivitiesWithAssignments([request1], actor: adminActor);
+    await repository
+        .createActivitiesWithAssignments([request1], actor: adminActor);
 
     // Import person 1 AND person 2 into existing activity
     final request2 = ActivityCreateRequest(
@@ -127,7 +131,8 @@ void main() {
         ),
       ],
     );
-    final result = await repository.createActivitiesWithAssignments([request2], actor: adminActor);
+    final result = await repository
+        .createActivitiesWithAssignments([request2], actor: adminActor);
 
     expect(result.addedAssignmentCount, 1);
     expect(result.alreadyAssignedCount, 1);

@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/navigation/app_routes.dart';
+import 'package:personelapp2/core/navigation/missing_route_extra.dart';
+import 'package:personelapp2/core/navigation/session_extra_codec.dart';
 import 'package:personelapp2/core/notifications/app_notification_host.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/presentation/activity_archive_screen.dart';
@@ -34,6 +36,7 @@ GoRouter createAppRouter({UserSessionState? session}) {
   const adminOnlyRoutes = <String>{AppRoutes.pendingApprovals};
 
   return GoRouter(
+    extraCodec: SessionExtraCodec(),
     initialLocation: session != null ? AppRoutes.dashboard : AppRoutes.login,
     redirect: (context, state) {
       final location = state.matchedLocation;
@@ -65,13 +68,19 @@ GoRouter createAppRouter({UserSessionState? session}) {
           GoRoute(
             path: AppRoutes.activityAssignmentPreview,
             redirect: (context, state) {
-              if (state.extra is! ActivityAssignmentPreviewArgs) {
+              final args = state.extra;
+              if (args is! ActivityAssignmentPreviewArgs ||
+                  args.isActive?.call() == false) {
                 return AppRoutes.dashboard;
               }
               return null;
             },
             builder: (context, state) {
-              final args = state.extra as ActivityAssignmentPreviewArgs;
+              final args = state.extra;
+              if (args is! ActivityAssignmentPreviewArgs ||
+                  args.isActive?.call() == false) {
+                return const MissingRouteExtra(location: AppRoutes.dashboard);
+              }
               return ActivityAssignmentPreviewScreen(
                 activityName: args.activityName,
                 date: args.date,
@@ -103,7 +112,8 @@ GoRouter createAppRouter({UserSessionState? session}) {
                   : null;
               return WatchRosterScreen(
                   initialMonth: parsed != null &&
-                          parsed.year >= 1900 && parsed.year <= 9998
+                          parsed.year >= 1900 &&
+                          parsed.year <= 9998
                       ? parsed
                       : null);
             },
@@ -122,7 +132,8 @@ GoRouter createAppRouter({UserSessionState? session}) {
               final initialDate = state.uri.queryParameters['date'] ??
                   DateFormat('yyyy-MM-dd').format(DateTime.now());
               final squadIdStr = state.uri.queryParameters['squadId'];
-              final selectedSquadId = squadIdStr != null ? int.tryParse(squadIdStr) : null;
+              final selectedSquadId =
+                  squadIdStr != null ? int.tryParse(squadIdStr) : null;
               return RosterOutputScreen(
                 initialDate: initialDate,
                 selectedSquadId: selectedSquadId,
@@ -138,7 +149,11 @@ GoRouter createAppRouter({UserSessionState? session}) {
               return null;
             },
             builder: (context, state) {
-              final args = state.extra as RosterOutputPreviewArgs;
+              final args = state.extra;
+              if (args is! RosterOutputPreviewArgs) {
+                return const MissingRouteExtra(
+                    location: AppRoutes.rosterOutput);
+              }
               return RosterOutputPreviewScreen(
                 date: args.date,
                 sources: args.sources,
@@ -154,7 +169,9 @@ GoRouter createAppRouter({UserSessionState? session}) {
           GoRoute(
             path: AppRoutes.temgundrapForm,
             builder: (context, state) => TemgundrapFormScreen(
-              initialDocument: state.extra as TemgundrapDocument?,
+              initialDocument: state.extra is TemgundrapDocument
+                  ? state.extra as TemgundrapDocument
+                  : null,
               initialDate: DateTime.tryParse(
                 state.uri.queryParameters['date'] ?? '',
               ),
@@ -168,9 +185,13 @@ GoRouter createAppRouter({UserSessionState? session}) {
               }
               return null;
             },
-            builder: (context, state) => TemgundrapPreviewScreen(
-              document: state.extra as TemgundrapDocument,
-            ),
+            builder: (context, state) {
+              final document = state.extra;
+              if (document is! TemgundrapDocument) {
+                return const MissingRouteExtra(location: AppRoutes.temgundrap);
+              }
+              return TemgundrapPreviewScreen(document: document);
+            },
           ),
         ],
       ),

@@ -40,10 +40,11 @@ void main() {
       faaliyetAdi: 'Devriye 1',
       tarih: '2026-07-15',
       olusturanKullanici: 'admin',
-        personnelAssignments: [
-          PersonnelAssignmentInput(personnelId: pId, duty: 'GÖREVLİ'),
-        ],
-        actor: admin,
+      personnelAssignments: [
+        PersonnelAssignmentInput(
+            isOutsideTeam: true, personnelId: pId, duty: 'GÖREVLİ'),
+      ],
+      actor: admin,
     );
 
     final matrixMap = await matrixRepo.watchMonthlyMatrix('2026-07').first;
@@ -72,10 +73,11 @@ void main() {
         faaliyetAdi: 'Nöbet 1',
         tarih: '2026-07-20',
         olusturanKullanici: 'admin',
-          personnelAssignments: [
-            PersonnelAssignmentInput(personnelId: pId, duty: 'NÖBETÇİ'),
-          ],
-          actor: admin,
+        personnelAssignments: [
+          PersonnelAssignmentInput(
+              isOutsideTeam: true, personnelId: pId, duty: 'NÖBETÇİ'),
+        ],
+        actor: admin,
       );
 
       final updatedMap = await stream.first;
@@ -97,10 +99,11 @@ void main() {
       faaliyetAdi: 'Hazır Kıta',
       tarih: '2026-07-31',
       olusturanKullanici: 'admin',
-        personnelAssignments: [
-          PersonnelAssignmentInput(personnelId: pId, duty: 'HAZIR KITA'),
-        ],
-        actor: admin,
+      personnelAssignments: [
+        PersonnelAssignmentInput(
+            isOutsideTeam: true, personnelId: pId, duty: 'HAZIR KITA'),
+      ],
+      actor: admin,
     );
 
     final july = await matrixRepo.watchMonthlyMatrix('2026-07').first;

@@ -3,6 +3,13 @@ import 'package:flutter/material.dart';
 /// Görev isimlerinin kısa kodlarını (Badge text) ve görsel renk temasını yöneten utility sınıfı.
 class DutyAbbreviationMapper {
   static const Map<String, Map<String, dynamic>> _dutyConfig = {
+    'METİ': {
+      'code': 'METİ',
+      'lightBg': Color(0xFFE6F6EC),
+      'darkBg': Color(0xFF173A30),
+      'lightText': Color(0xFF1B6A44),
+      'darkText': Color(0xFF89DBB1),
+    },
     'HEYBET': {
       'code': 'HEY',
       'lightBg': Color(0xFFE3F2FD),
@@ -129,4 +136,3 @@ class DutyAbbreviationMapper {
     return isDark ? const Color(0xFFECEFF1) : const Color(0xFF37474F);
   }
 }
-

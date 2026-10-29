@@ -22,8 +22,8 @@ void main() {
           ),
         );
 
-    PersonnelAssignmentInput assignment(int id) =>
-        PersonnelAssignmentInput(personnelId: id, duty: 'GÖREVLİ');
+    PersonnelAssignmentInput assignment(int id) => PersonnelAssignmentInput(
+        isOutsideTeam: true, personnelId: id, duty: 'GÖREVLİ');
 
     await expectLater(
       repository.createActivitiesWithAssignments([
@@ -79,6 +79,7 @@ void main() {
         olusturanKullanici: 'admin',
         personnelAssignments: [
           PersonnelAssignmentInput(
+            isOutsideTeam: true,
             personnelId: firstPersonId,
             duty: 'HAZIR KITA',
           ),
@@ -90,6 +91,7 @@ void main() {
         olusturanKullanici: 'admin',
         personnelAssignments: [
           PersonnelAssignmentInput(
+            isOutsideTeam: true,
             personnelId: secondPersonId,
             duty: 'GULUSKUR',
           ),
@@ -97,7 +99,8 @@ void main() {
       ),
     ], actor: admin);
 
-    final activities = await database.select(database.gunlukFaaliyetTable).get();
+    final activities =
+        await database.select(database.gunlukFaaliyetTable).get();
     expect(activities.map((activity) => activity.faaliyetAdi).toSet(), {
       'HAZIR KITA',
       'GULUSKUR',
@@ -135,6 +138,7 @@ void main() {
         olusturanKullanici: 'admin',
         personnelAssignments: [
           PersonnelAssignmentInput(
+            isOutsideTeam: true,
             personnelId: firstPersonId,
             duty: 'HAZIR KITA',
           ),
@@ -146,6 +150,7 @@ void main() {
         olusturanKullanici: 'admin',
         personnelAssignments: [
           PersonnelAssignmentInput(
+            isOutsideTeam: true,
             personnelId: secondPersonId,
             duty: 'HAZIR KITA',
           ),
@@ -153,7 +158,8 @@ void main() {
       ),
     ], actor: admin);
 
-    final activities = await database.select(database.gunlukFaaliyetTable).get();
+    final activities =
+        await database.select(database.gunlukFaaliyetTable).get();
     final assignments =
         await database.select(database.faaliyetPersonelAtamaTable).get();
 

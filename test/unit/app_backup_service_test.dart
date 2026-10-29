@@ -127,6 +127,7 @@ void main() {
         'preferences': rawPayload['preferences'],
         'databaseSchemaVersion': rawPayload['databaseSchemaVersion'],
         'tables': rawPayload['tables'],
+        ...rawPayload,
       };
       decoded['payload'] = reorderedPayload;
 

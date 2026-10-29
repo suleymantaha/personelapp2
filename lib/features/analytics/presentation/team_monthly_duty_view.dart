@@ -29,9 +29,9 @@ class TeamMonthlyDutyView extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 6),
         Text(
-          'Katılım, timden en az bir kişinin yer aldığı faaliyet demektir. '
-          'Tam tim görevi anlamına gelmez. Kişi-görev sayısı gerçek '
-          'görevlendirme yükünü gösterir.',
+          'Tim bazında görev alan farklı kişiler ve görevlendirmeler gösterilir. '
+          'Bir kişinin atanması tam tim görevi anlamına gelmez. '
+          'Kişi-görev sayısı personel mevcudu değildir.',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 12),
@@ -41,8 +41,8 @@ class TeamMonthlyDutyView extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 10),
         for (final month in data.monthly.reversed)
-          _monthCard(context, month, teamIds,
-              month.month == data.monthly.last.month),
+          _monthCard(
+              context, month, teamIds, month.month == data.monthly.last.month),
       ],
     );
   }
@@ -56,8 +56,9 @@ class TeamMonthlyDutyView extends StatelessWidget {
       for (final duty in team.duties) duty: team.forDuty(duty).metrics,
     };
     final sortedDuties = dutyMetrics.keys.toList()
-      ..sort((a, b) =>
-          dutyMetrics[b]!.personnelTasks.compareTo(dutyMetrics[a]!.personnelTasks));
+      ..sort((a, b) => dutyMetrics[b]!
+          .personnelTasks
+          .compareTo(dutyMetrics[a]!.personnelTasks));
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -88,7 +89,8 @@ class TeamMonthlyDutyView extends StatelessWidget {
                 metrics: dutyMetrics[duty]!,
                 entries: team.forDuty(duty).entries,
                 maxPersonnelTasks: dutyMetrics.values.fold<int>(
-                    0, (max, item) =>
+                    0,
+                    (max, item) =>
                         item.personnelTasks > max ? item.personnelTasks : max),
               ),
           ],
@@ -111,7 +113,6 @@ class TeamMonthlyDutyView extends StatelessWidget {
         );
 
     return Wrap(spacing: 16, runSpacing: 8, children: [
-      stat(metrics.participations, 'görev katılımı'),
       stat(metrics.personnelTasks, 'kişi-görev'),
       stat(metrics.dutyDays, 'görev günü'),
       stat(metrics.uniquePersonnel, 'farklı kişi'),
@@ -157,7 +158,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
                           ?.copyWith(fontWeight: FontWeight.w600)),
                 ),
                 const SizedBox(width: 6),
-                Text('${metrics.participations} katılım',
+                Text('${metrics.personnelTasks} atama',
                     style: theme.textTheme.labelMedium),
                 const SizedBox(width: 8),
                 const Icon(Icons.chevron_right_rounded, size: 18),
@@ -192,8 +193,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
     final date = DateTime(int.parse(parts[0]), int.parse(parts[1]));
     final startOfMonth = '${month.month}-01';
     final lastDay = DateTime(date.year, date.month + 1, 0).day;
-    final endOfMonth =
-        '${month.month}-${lastDay.toString().padLeft(2, '0')}';
+    final endOfMonth = '${month.month}-${lastDay.toString().padLeft(2, '0')}';
     final start = startOfMonth.compareTo(data.filter.start) < 0
         ? data.filter.start
         : startOfMonth;
@@ -210,14 +210,12 @@ class TeamMonthlyDutyView extends StatelessWidget {
             style: theme.textTheme.titleSmall
                 ?.copyWith(fontWeight: FontWeight.w600)),
         subtitle: Text(
-          '${month.metrics.participations} katılım · '
           '${month.metrics.personnelTasks} kişi-görev · '
           '${month.metrics.dutyDays} gün',
           style: theme.textTheme.bodySmall,
         ),
         children: [
-          for (final id in teamIds)
-            _monthTeamRow(context, id, start, end),
+          for (final id in teamIds) _monthTeamRow(context, id, start, end),
         ],
       ),
     );
@@ -228,8 +226,8 @@ class TeamMonthlyDutyView extends StatelessWidget {
     final teamEntries = data.entries
         .where((entry) =>
             entry.teamId == teamId &&
-            entry.coveredDates.any(
-                (date) => date.compareTo(start) >= 0 && date.compareTo(end) <= 0))
+            entry.coveredDates.any((date) =>
+                date.compareTo(start) >= 0 && date.compareTo(end) <= 0))
         .toList();
     if (teamEntries.isEmpty) return const SizedBox.shrink();
 
@@ -253,7 +251,6 @@ class TeamMonthlyDutyView extends StatelessWidget {
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(fontWeight: FontWeight.bold)),
               Text(
-                '${metrics.participations} katılım · '
                 '${metrics.personnelTasks} kişi-görev · '
                 '${metrics.dutyDays} gün',
                 style: theme.textTheme.bodySmall,
@@ -273,7 +270,6 @@ class TeamMonthlyDutyView extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
                 title: Text(duty, style: theme.textTheme.bodySmall),
                 subtitle: Text(
-                  '${count.participations} katılım · '
                   '${count.personnelTasks} kişi-görev · '
                   '${count.uniquePersonnel} kişi · '
                   '${count.dutyDays} gün',
@@ -327,7 +323,6 @@ class TeamMonthlyDutyView extends StatelessWidget {
               Text('$teamName · $duty'),
               const SizedBox(height: 4),
               Text(
-                '${metrics.participations} faaliyet katılımı · '
                 '${metrics.personnelTasks} kişi-görev · '
                 '${metrics.uniquePersonnel} farklı kişi',
               ),
@@ -341,7 +336,7 @@ class TeamMonthlyDutyView extends StatelessWidget {
                   ),
                 ),
               if (ordered.isEmpty)
-                const Text('Bu dönemde yeni görev katılımı yok.'),
+                const Text('Bu dönemde başlayan yeni görevlendirme yok.'),
             ],
           ),
         ),

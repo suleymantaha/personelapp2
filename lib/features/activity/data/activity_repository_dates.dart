@@ -5,9 +5,9 @@ extension ActivityRepositoryDateOperations on ActivityRepository {
     required int activityId,
     required String newDate,
   }) async {
-    final activity =
-        await (db.select(db.gunlukFaaliyetTable)
-          ..where((tbl) => tbl.id.equals(activityId))).getSingleOrNull();
+    final activity = await (db.select(db.gunlukFaaliyetTable)
+          ..where((tbl) => tbl.id.equals(activityId)))
+        .getSingleOrNull();
     if (activity == null) {
       return ActivityDateChangePreview(
         status: ActivityDateChangeStatus.activityNotFound,
@@ -18,9 +18,9 @@ extension ActivityRepositoryDateOperations on ActivityRepository {
       );
     }
 
-    final assignments =
-        await (db.select(db.faaliyetPersonelAtamaTable)
-          ..where((tbl) => tbl.faaliyetId.equals(activityId))).get();
+    final assignments = await (db.select(db.faaliyetPersonelAtamaTable)
+          ..where((tbl) => tbl.faaliyetId.equals(activityId)))
+        .get();
     if (!_isValidIsoDate(newDate)) {
       return ActivityDateChangePreview(
         status: ActivityDateChangeStatus.invalidDate,
@@ -73,12 +73,12 @@ extension ActivityRepositoryDateOperations on ActivityRepository {
         );
       }
 
-      final activity =
-          await (db.select(db.gunlukFaaliyetTable)
-            ..where((tbl) => tbl.id.equals(activityId))).getSingle();
-      final assignments =
-          await (db.select(db.faaliyetPersonelAtamaTable)
-            ..where((tbl) => tbl.faaliyetId.equals(activityId))).get();
+      final activity = await (db.select(db.gunlukFaaliyetTable)
+            ..where((tbl) => tbl.id.equals(activityId)))
+          .getSingle();
+      final assignments = await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((tbl) => tbl.faaliyetId.equals(activityId)))
+          .get();
       final reports = await _loadDomainReports();
       final existingAssignments = await _loadExistingAssignments();
 
@@ -102,12 +102,23 @@ extension ActivityRepositoryDateOperations on ActivityRepository {
       }
 
       final automaticTitle = 'Günlük Faaliyet (${activity.tarih})';
-      final newTitle =
-          activity.faaliyetAdi == automaticTitle
-              ? 'Günlük Faaliyet ($newDate)'
-              : activity.faaliyetAdi;
+      // A changed date must not silently attach the old task team to a new day.
+      for (final assignment in assignments) {
+        final team =
+            await TaskTeamHistory(db).resolve(assignment.personelId, newDate);
+        if (team == null ||
+            team.teamId != assignment.gorevTimId ||
+            (assignment.gorevTimId == null &&
+                assignment.gorevTimAdi != 'Tim dışı')) {
+          throw TaskTeamRequiredException(assignment.personelId, newDate);
+        }
+      }
+      final newTitle = activity.faaliyetAdi == automaticTitle
+          ? 'Günlük Faaliyet ($newDate)'
+          : activity.faaliyetAdi;
       await (db.update(db.gunlukFaaliyetTable)
-        ..where((tbl) => tbl.id.equals(activityId))).write(
+            ..where((tbl) => tbl.id.equals(activityId)))
+          .write(
         GunlukFaaliyetTableCompanion(
           tarih: Value(newDate),
           faaliyetAdi: Value(newTitle),

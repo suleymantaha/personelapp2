@@ -44,6 +44,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
   late final TextEditingController _timeController;
   DateTime? _selectedDate;
   String? _selectedDuty;
+  bool _teamWasEdited = false;
 
   static const List<String> _quickDuties = [
     DutyOrLeaveType.heybet,
@@ -53,20 +54,9 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
     DutyOrLeaveType.heybetKomutani,
   ];
 
-  static const List<String> _standardDuties = [
-    DutyOrLeaveType.heybet,
-    DutyOrLeaveType.hazirKita,
-    DutyOrLeaveType.guluskur,
-    DutyOrLeaveType.gorevli,
-    DutyOrLeaveType.heybetKomutani,
-    DutyOrLeaveType.nobSb,
-    DutyOrLeaveType.mebsNob,
-    DutyOrLeaveType.garajNob,
-    DutyOrLeaveType.ttzaNob,
-    DutyOrLeaveType.kuleNob,
-    DutyOrLeaveType.nobetci,
-    DutyOrLeaveType.diger,
-  ];
+  static final List<String> _standardDuties = DutyOrLeaveType.allDuties
+      .where(DutyOrLeaveType.isOperationalDuty)
+      .toList(growable: false);
 
   late final List<String> _dropdownOptions;
 
@@ -134,6 +124,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
 
   void _selectTeam(String option) {
     setState(() {
+      _teamWasEdited = true;
       _selectedTeamOption = option;
       if (option == _defaultTeamOption) {
         _teamController.text = '';
@@ -209,7 +200,9 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
                         fontSize: 12,
                         fontWeight:
                             isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? context.onAccentOrOlive : context.textPrimary,
+                        color: isSelected
+                            ? context.onAccentOrOlive
+                            : context.textPrimary,
                       ),
                     ),
                     selected: isSelected,
@@ -246,8 +239,9 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
             items: _dropdownOptions.map((d) {
-              final label =
-                  d == DutyOrLeaveType.diger ? context.l10n.bulkImportCustomTeamOption : d;
+              final label = d == DutyOrLeaveType.diger
+                  ? context.l10n.bulkImportCustomTeamOption
+                  : d;
               return DropdownMenuItem(
                 value: d,
                 child: Text(label),
@@ -311,6 +305,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
           TextField(
             key: const Key('bulk-edit-team'),
             controller: _teamController,
+            onChanged: (_) => _teamWasEdited = true,
             decoration: InputDecoration(
               labelText: context.l10n.bulkImportCustomTeamName,
               prefixIcon: const Icon(Icons.edit_note_rounded),
@@ -388,23 +383,36 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
                       context,
                       widget.block.copyWith(
                         parsedTimName: team,
-                        taskTeamId: widget.availableSquads.where((squad) =>
-                          BulkImportLearningService.normalizeTeam(squad.timAdi) ==
-                          BulkImportLearningService.normalizeTeam(team)).singleOrNull?.id ??
-                          (BulkImportLearningService.normalizeTeam(team) ==
-                           BulkImportLearningService.normalizeTeam(widget.block.parsedTimName)
-                            ? widget.block.taskTeamId : null),
+                        taskTeamId: !_teamWasEdited
+                            ? widget.block.taskTeamId
+                            : widget.availableSquads
+                                    .where((squad) =>
+                                        BulkImportLearningService.normalizeTeam(
+                                            squad.timAdi) ==
+                                        BulkImportLearningService.normalizeTeam(
+                                            team))
+                                    .singleOrNull
+                                    ?.id ??
+                                (BulkImportLearningService.normalizeTeam(
+                                            team) ==
+                                        BulkImportLearningService.normalizeTeam(
+                                            widget.block.parsedTimName)
+                                    ? widget.block.taskTeamId
+                                    : null),
                         parsedActivityType: activity,
                         parsedDate:
                             '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
                         parsedTimeRange: time.isEmpty ? null : time,
                         clearParsedTimeRange: time.isEmpty,
-                        personnelList: widget.block.personnelList.map((person) =>
-                          person.copyWith(sourceTimeRanges: {
-                            for (final range in person.sourceTimeRanges)
-                              if (range != widget.block.parsedTimeRange) range,
-                            if (time.isNotEmpty) time,
-                          }.toList())).toList(),
+                        personnelList: widget.block.personnelList
+                            .map((person) => person.copyWith(
+                                    sourceTimeRanges: {
+                                  for (final range in person.sourceTimeRanges)
+                                    if (range != widget.block.parsedTimeRange)
+                                      range,
+                                  if (time.isNotEmpty) time,
+                                }.toList()))
+                            .toList(),
                       ),
                     );
                   }

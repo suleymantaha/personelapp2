@@ -1,4 +1,5 @@
 import 'package:drift/native.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
@@ -145,6 +146,9 @@ void main() {
   test('moves beside an existing target-date activity without merging',
       () async {
     final personnelId = await addPersonnel('Korunan Personel');
+    await db.into(db.timUyelikGecmisiTable).insert(
+        TimUyelikGecmisiTableCompanion.insert(
+            personelId: personnelId, tarih: '2026-07-01', islem: 'çıkarıldı'));
     final sourceId = await addActivity('2026-07-27');
     final targetId = await addActivity('2026-07-28');
     final assignmentId = await addAssignment(
@@ -152,6 +156,11 @@ void main() {
       personnelId: personnelId,
       status: AssignmentStatus.onaylandi,
     );
+
+    await (db.update(db.faaliyetPersonelAtamaTable)
+          ..where((a) => a.id.equals(assignmentId)))
+        .write(const FaaliyetPersonelAtamaTableCompanion(
+            gorevTimAdi: Value('Tim dışı')));
 
     final result = await repository.changeActivityDate(
       activityId: sourceId,

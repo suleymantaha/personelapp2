@@ -9,6 +9,8 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
 
+import '../../support/task_team_history_fixture.dart';
+
 void main() {
   for (final width in [320.0, 412.0]) {
     for (final existing in [false, true]) {
@@ -21,17 +23,13 @@ void main() {
         addTearDown(tester.view.resetDevicePixelRatio);
         final db = AppDatabase(NativeDatabase.memory());
         addTearDown(db.close);
-        final team = await db
-            .into(db.timTable)
-            .insert(
+        final team = await db.into(db.timTable).insert(
               TimTableCompanion.insert(
                 timAdi: '1. Tim',
                 olusturmaTarihi: '2026-10-03',
               ),
             );
-        final person = await db
-            .into(db.personelTable)
-            .insert(
+        final person = await db.into(db.personelTable).insert(
               PersonelTableCompanion.insert(
                 adSoyad: 'Ahmet Yılmaz',
                 rutbe: 'J.Asb.',
@@ -40,9 +38,7 @@ void main() {
                 kayitTarihi: '2026-10-03',
               ),
             );
-        final second = await db
-            .into(db.personelTable)
-            .insert(
+        final second = await db.into(db.personelTable).insert(
               PersonelTableCompanion.insert(
                 adSoyad: 'Mehmet Kaya',
                 rutbe: 'J.Asb.',
@@ -51,9 +47,8 @@ void main() {
                 kayitTarihi: '2026-10-03',
               ),
             );
-        final activityId = await db
-            .into(db.gunlukFaaliyetTable)
-            .insert(
+        await seedTaskTeamHistory(db);
+        final activityId = await db.into(db.gunlukFaaliyetTable).insert(
               GunlukFaaliyetTableCompanion.insert(
                 faaliyetAdi: 'Uzun isimli arşiv faaliyeti ve gece nöbeti',
                 tarih: '2026-10-03',
@@ -80,24 +75,20 @@ void main() {
             child: MaterialApp(
               theme: AppTheme.militaryTheme,
               home: Builder(
-                builder:
-                    (context) => Scaffold(
-                      body: TextButton(
-                        onPressed:
-                            () => Navigator.of(context).push(
-                              MaterialPageRoute<bool>(
-                                builder:
-                                    (_) => AddPersonnelToActivityDialog(
-                                      activity: activity,
-                                      isAdmin: true,
-                                      existingPersonnelIds:
-                                          existing ? {person} : const {},
-                                    ),
-                              ),
-                            ),
-                        child: const Text('Arşiv'),
+                builder: (context) => Scaffold(
+                  body: TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<bool>(
+                        builder: (_) => AddPersonnelToActivityDialog(
+                          activity: activity,
+                          isAdmin: true,
+                          existingPersonnelIds: existing ? {person} : const {},
+                        ),
                       ),
                     ),
+                    child: const Text('Arşiv'),
+                  ),
+                ),
               ),
             ),
           ),
@@ -193,9 +184,11 @@ void main() {
         await tester.tap(find.text('Not ekle veya düzenle'));
         await tester.pumpAndSettle();
         expect(
-          tester.widget<TextFormField>(
-            find.byKey(ValueKey('personnel-note-$person')),
-          ).initialValue,
+          tester
+              .widget<TextFormField>(
+                find.byKey(ValueKey('personnel-note-$person')),
+              )
+              .initialValue,
           'Kapı nöbeti',
         );
         await tester.tap(find.text('Vazgeç'));

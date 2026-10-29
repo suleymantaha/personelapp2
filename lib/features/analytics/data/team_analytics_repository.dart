@@ -5,6 +5,8 @@ import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/domain/duty_coverage.dart';
 import 'package:personelapp2/features/personnel/data/personnel_repository.dart';
 import '../domain/team_analytics.dart';
+import '../domain/monthly_analytics_rows.dart';
+import '../domain/analytics_duty_resolver.dart';
 
 /// Reads existing assignment snapshots. Never repairs or backfills source data.
 class TeamAnalyticsRepository {
@@ -27,8 +29,29 @@ class TeamAnalyticsRepository {
           .get();
       final names = {for (final t in teams) t.id: t.timAdi};
       final rows = await _rows(filter);
-      return _aggregate(rows, filter, names, scope, actor.isAdmin);
+      final personnel = db.personelTable;
+      final nameRows = await (db.selectOnly(personnel)
+            ..addColumns([personnel.adSoyad])
+            ..where(personnel.isDemo.equals(false)))
+          .get();
+      final dutyResolver = AnalyticsDutyResolver(
+          nameRows.map((r) => r.read(personnel.adSoyad)).whereType<String>());
+      final headcount = await _currentHeadcount(scope, filter.teamId);
+      return _aggregate(rows, filter, names, scope, actor.isAdmin,
+          headcount: headcount,
+          headcountAsOf: DateTime.now(),
+          dutyResolver: dutyResolver);
     });
+  }
+
+  Future<int> _currentHeadcount(int? scope, int? selectedTeam) async {
+    final personnel = db.personelTable;
+    final count = personnel.id.count();
+    final query = db.selectOnly(personnel)..addColumns([count]);
+    query.where(personnel.aktif.equals(true) & personnel.isDemo.equals(false));
+    if (scope != null) query.where(personnel.timId.equals(scope));
+    if (selectedTeam != null) query.where(personnel.timId.equals(selectedTeam));
+    return (await query.getSingle()).read(count) ?? 0;
   }
 
   Future<List<TypedResult>> _rows(AnalyticsFilter filter) {
@@ -54,7 +77,10 @@ class TeamAnalyticsRepository {
   }
 
   TeamAnalytics _aggregate(List<TypedResult> rows, AnalyticsFilter filter,
-      Map<int, String> names, int? scope, bool isAdmin) {
+      Map<int, String> names, int? scope, bool isAdmin,
+      {required int headcount,
+      required DateTime headcountAsOf,
+      required AnalyticsDutyResolver dutyResolver}) {
     final entries = <AnalyticsEntry>[];
     final unknown = <AnalyticsEntry>[];
     final availableDuties = <String>{};
@@ -65,7 +91,8 @@ class TeamAnalyticsRepository {
       final a = row.readTable(db.faaliyetPersonelAtamaTable);
       final f = row.readTable(db.gunlukFaaliyetTable);
       final p = row.readTable(db.personelTable);
-      final duty = a.gorevVeyaIzin.trim().toUpperCase();
+      final duty = dutyResolver.resolve(
+          duty: a.gorevVeyaIzin, activityName: f.faaliyetAdi);
       if (!DutyOrLeaveType.isOperationalDuty(duty)) continue;
       if (scope != null && a.gorevTimId != scope) continue;
       if (filter.teamId != null && a.gorevTimId != filter.teamId) continue;
@@ -75,7 +102,9 @@ class TeamAnalyticsRepository {
           .toList();
       if (dates.isEmpty) continue;
       availableDuties.add(duty);
-      if (filter.duty != null && duty != filter.duty) continue;
+      if (filter.duty != null && duty != analyticsDutyLabel(filter.duty!)) {
+        continue;
+      }
       if (!seen.add((f.id, p.id, a.gorevTimId, duty, a.durum))) {
         duplicates++;
         continue;
@@ -92,7 +121,7 @@ class TeamAnalyticsRepository {
           status: a.durum,
           coveredDates: dates);
       if (a.gorevTimId == null) {
-        if (isAdmin) unknown.add(entry);
+        if (isAdmin && a.gorevTimAdi != 'Tim dışı') unknown.add(entry);
         continue;
       }
       names.putIfAbsent(a.gorevTimId!, () => entry.teamName);
@@ -107,6 +136,8 @@ class TeamAnalyticsRepository {
         entries: entries,
         unknownEntries: unknown,
         teams: names,
+        currentHeadcount: headcount,
+        headcountAsOf: headcountAsOf,
         availableDuties: availableDuties,
         duplicateAssignments: duplicates,
         possibleDuplicateActivities:

@@ -32,10 +32,9 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
           'unknown_activity',
           'unmatched_personnel',
         };
-        _sourceParseIssues =
-            draft.issues
-                .where((issue) => !cardIssueCodes.contains(issue.code))
-                .toList();
+        _sourceParseIssues = draft.issues
+            .where((issue) => !cardIssueCodes.contains(issue.code))
+            .toList();
         _parseIssues = List<BulkParseIssue>.from(draft.issues);
         _deduplicatedPersonnelCount = draft.deduplicatedPersonnelCount;
         _ignoredLineCount = draft.ignoredLineCount;
@@ -65,10 +64,9 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         block.copyWith(
           parsedDate:
               block.parsedDate.trim().isEmpty ? target.tarih : block.parsedDate,
-          parsedActivityType:
-              block.parsedActivityType.trim().isEmpty
-                  ? target.faaliyetAdi
-                  : block.parsedActivityType,
+          parsedActivityType: block.parsedActivityType.trim().isEmpty
+              ? target.faaliyetAdi
+              : block.parsedActivityType,
         ),
     ];
   }
@@ -150,12 +148,11 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       throw StateError(context.l10n.authSessionFailed);
     }
 
-    final assignments = <PersonnelAssignmentInput>[];
+    var assignments = <PersonnelAssignmentInput>[];
     for (final block in _parsedBlocks) {
-      final duty =
-          block.parsedActivityType.trim().isEmpty
-              ? target.faaliyetAdi
-              : block.parsedActivityType.trim();
+      final duty = block.parsedActivityType.trim().isEmpty
+          ? target.faaliyetAdi
+          : block.parsedActivityType.trim();
       for (final person in block.personnelList) {
         final personnelId = person.matchedPersonnelId;
         if (personnelId == null || duty.isEmpty) continue;
@@ -167,9 +164,8 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
           PersonnelAssignmentInput(
             personnelId: personnelId,
             duty: duty,
-            note:
-                timeRanges.isEmpty ? null : 'Saat: ${timeRanges.join('; ')}',
-            teamId: block.taskTeamId ?? person.matchedTimId,
+            note: timeRanges.isEmpty ? null : 'Saat: ${timeRanges.join('; ')}',
+            teamId: block.taskTeamId,
           ),
         );
       }
@@ -179,6 +175,15 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       AppNotifications.warning(context.l10n.bulkImportNoPersonnelToAdd);
       return;
     }
+    _updateState(() => _isSaving = true);
+    final confirmed = await confirmTaskTeams(
+        context: context,
+        repository: widget.activityRepository,
+        date: target.tarih,
+        assignments: assignments,
+        actor: actor);
+    if (confirmed == null || !mounted) return;
+    assignments = confirmed;
 
     _updateState(() {
       _isSaving = true;
@@ -186,6 +191,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
     try {
       final result = await widget.activityRepository.addAssignmentsToActivity(
+        expectedDate: target.tarih,
         activityId: target.id,
         assignments: assignments,
         actor: actor,
@@ -197,30 +203,33 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
       if (!mounted) return;
       final summaryLines = <String>[
-        context.l10n.bulkImportSuccessNotification(target.faaliyetAdi, result.addedCount),
+        context.l10n.bulkImportSuccessNotification(
+            target.faaliyetAdi, result.addedCount),
         if (result.alreadyAssignedCount > 0)
-          context.l10n.bulkImportSummaryAlreadyAssigned(result.alreadyAssignedCount),
+          context.l10n
+              .bulkImportSummaryAlreadyAssigned(result.alreadyAssignedCount),
         if (result.conflictSkippedCount > 0)
-          context.l10n.bulkImportSummarySkippedConflict(result.conflictSkippedCount),
+          context.l10n
+              .bulkImportSummarySkippedConflict(result.conflictSkippedCount),
       ];
       await showDialog<void>(
         context: context,
-        builder:
-            (dialogContext) => AlertDialog(
-              title: Text(context.l10n.bulkImportCompletedTitle),
-              content: Text(summaryLines.join('\n')),
-              actions: [
-                FilledButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: Text(context.l10n.commonOk.toUpperCase()),
-                ),
-              ],
+        builder: (dialogContext) => AlertDialog(
+          title: Text(context.l10n.bulkImportCompletedTitle),
+          content: Text(summaryLines.join('\n')),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(context.l10n.commonOk.toUpperCase()),
             ),
+          ],
+        ),
       );
       if (!mounted) return;
       Navigator.pop(context, true);
       AppNotifications.success(
-        context.l10n.bulkImportSuccessNotification(target.faaliyetAdi, result.addedCount),
+        context.l10n.bulkImportSuccessNotification(
+            target.faaliyetAdi, result.addedCount),
       );
     } finally {
       if (mounted) {
@@ -235,11 +244,10 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     return BulkImportSaveHandler.findDuplicateAssignments(_parsedBlocks);
   }
 
-  int get _unresolvedPersonnelCount =>
-      _parsedBlocks
-          .expand((block) => block.personnelList)
-          .where((person) => !person.isMatched)
-          .length;
+  int get _unresolvedPersonnelCount => _parsedBlocks
+      .expand((block) => block.personnelList)
+      .where((person) => !person.isMatched)
+      .length;
 
   Future<void> _removePerson(int blockIndex, int personIndex) async {
     final block = _parsedBlocks[blockIndex];
@@ -313,23 +321,22 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
   Future<void> _confirmClearAll() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (dialogContext) => AlertDialog(
-            title: Text(context.l10n.bulkImportClearPreviewTitle),
-            content: Text(
-              context.l10n.bulkImportClearPreviewConfirmDesc,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: Text(context.l10n.commonDismiss.toUpperCase()),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(dialogContext, true),
-                child: Text(context.l10n.commonClear.toUpperCase()),
-              ),
-            ],
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.bulkImportClearPreviewTitle),
+        content: Text(
+          context.l10n.bulkImportClearPreviewConfirmDesc,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(context.l10n.commonDismiss.toUpperCase()),
           ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(context.l10n.commonClear.toUpperCase()),
+          ),
+        ],
+      ),
     );
     if (confirmed == true && mounted) {
       _updateState(() {
@@ -418,20 +425,18 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         .toLowerCase()
         .replaceAll('timi', '')
         .replaceAll(' ', '');
-    final timId =
-        _allSquads
-            .where(
-              (team) => team.timAdi
-                  .toLowerCase()
-                  .replaceAll('timi', '')
-                  .replaceAll(' ', '')
-                  .contains(normalizedTeam),
-            )
-            .map((team) => team.id)
-            .firstOrNull;
+    final timId = _allSquads
+        .where(
+          (team) => team.timAdi
+              .toLowerCase()
+              .replaceAll('timi', '')
+              .replaceAll(' ', '')
+              .contains(normalizedTeam),
+        )
+        .map((team) => team.id)
+        .firstOrNull;
 
-    final timName =
-        _allSquads
+    final timName = _allSquads
             .where((t) => t.id == timId)
             .map((t) => t.timAdi)
             .firstOrNull ??
@@ -439,17 +444,16 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
     final todayStr = DateTime.now().toIso8601String().split('T').first;
 
-    final newId = await widget.database
-        .into(widget.database.personelTable)
-        .insert(
-          PersonelTableCompanion.insert(
-            adSoyad: item.rawName,
-            rutbe: item.rawRank,
-            birlik: block.parsedTimName,
-            timId: Value(timId),
-            kayitTarihi: todayStr,
-          ),
-        );
+    final newId =
+        await widget.database.into(widget.database.personelTable).insert(
+              PersonelTableCompanion.insert(
+                adSoyad: item.rawName,
+                rutbe: item.rawRank,
+                birlik: block.parsedTimName,
+                timId: Value(timId),
+                kayitTarihi: todayStr,
+              ),
+            );
 
     await _loadPersonnel();
 
@@ -499,17 +503,16 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         .toLowerCase()
         .replaceAll('timi', '')
         .replaceAll(' ', '');
-    final preferredTeamId =
-        _allSquads
-            .where(
-              (team) => team.timAdi
-                  .toLowerCase()
-                  .replaceAll('timi', '')
-                  .replaceAll(' ', '')
-                  .contains(normalizedTeam),
-            )
-            .map((team) => team.id)
-            .firstOrNull;
+    final preferredTeamId = _allSquads
+        .where(
+          (team) => team.timAdi
+              .toLowerCase()
+              .replaceAll('timi', '')
+              .replaceAll(' ', '')
+              .contains(normalizedTeam),
+        )
+        .map((team) => team.id)
+        .firstOrNull;
     final disabledReasons = <int, String>{};
     for (final otherBlock in _parsedBlocks) {
       if (otherBlock.parsedDate != block.parsedDate) continue;

@@ -4,12 +4,16 @@ class PersonnelAssignmentInput {
     required this.duty,
     this.note,
     this.teamId,
+    this.isOutsideTeam = false,
   });
 
   final int personnelId;
   final String duty;
   final String? note;
   final int? teamId;
+
+  /// Explicitly confirmed task outside any team, distinct from missing evidence.
+  final bool isOutsideTeam;
 }
 
 class ActivityCreateRequest {

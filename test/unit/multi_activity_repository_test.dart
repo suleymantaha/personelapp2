@@ -1,3 +1,4 @@
+import '../support/task_team_history_fixture.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,9 +17,7 @@ void main() {
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
     repository = ActivityRepository(database);
-    final teamId = await database
-        .into(database.timTable)
-        .insert(
+    final teamId = await database.into(database.timTable).insert(
           TimTableCompanion.insert(
             timAdi: 'Test Takımı',
             olusturmaTarihi: '2026-07-28',
@@ -29,9 +28,7 @@ void main() {
       role: UserRole.teamCommander,
       timId: teamId,
     );
-    final commanderId = await database
-        .into(database.kullaniciTable)
-        .insert(
+    final commanderId = await database.into(database.kullaniciTable).insert(
           KullaniciTableCompanion.insert(
             kullaniciAdi: 'komutan',
             rol: 'tim_komutani',
@@ -41,9 +38,7 @@ void main() {
     await (database.update(database.timTable)
           ..where((t) => t.id.equals(teamId)))
         .write(TimTableCompanion(timKomutaniId: Value(commanderId)));
-    personId = await database
-        .into(database.personelTable)
-        .insert(
+    personId = await database.into(database.personelTable).insert(
           PersonelTableCompanion.insert(
             adSoyad: 'Ali Deneme',
             rutbe: 'J.Uzm.Çvş.',
@@ -52,6 +47,7 @@ void main() {
             kayitTarihi: '2026-07-28',
           ),
         );
+    await seedTaskTeamHistory(database);
   });
 
   tearDown(() => database.close());
@@ -78,13 +74,11 @@ void main() {
       );
 
       expect(secondId, isNot(firstId));
-      final activities = await database
-          .select(database.gunlukFaaliyetTable)
-          .get();
+      final activities =
+          await database.select(database.gunlukFaaliyetTable).get();
       expect(activities, hasLength(2));
-      final assignments = await database
-          .select(database.faaliyetPersonelAtamaTable)
-          .get();
+      final assignments =
+          await database.select(database.faaliyetPersonelAtamaTable).get();
       expect(assignments, hasLength(1));
       expect(assignments.single.faaliyetId, firstId);
       expect(assignments.single.durum, AssignmentStatus.onaylandi);
@@ -109,9 +103,8 @@ void main() {
         personnelAssignments: [assignment('GÖREVLİ')],
         actor: commander,
       );
-      final rows = await database
-          .select(database.faaliyetPersonelAtamaTable)
-          .get();
+      final rows =
+          await database.select(database.faaliyetPersonelAtamaTable).get();
       final first = rows.singleWhere((item) => item.faaliyetId == firstId);
       expect(rows, hasLength(1));
       expect(rows.any((item) => item.faaliyetId == secondId), isFalse);
@@ -199,30 +192,26 @@ void main() {
   });
 
   test('geçmiş çakışma denetimi kayıtları silmeden raporlar', () async {
-    final firstActivity = await database
-        .into(database.gunlukFaaliyetTable)
-        .insert(
-          GunlukFaaliyetTableCompanion.insert(
-            faaliyetAdi: 'Birinci',
-            tarih: '2026-07-28',
-            olusturanKullanici: 'admin',
-            olusturmaTarihi: '2026-07-28T08:00:00',
-          ),
-        );
-    final secondActivity = await database
-        .into(database.gunlukFaaliyetTable)
-        .insert(
-          GunlukFaaliyetTableCompanion.insert(
-            faaliyetAdi: 'İkinci',
-            tarih: '2026-07-28',
-            olusturanKullanici: 'admin',
-            olusturmaTarihi: '2026-07-28T09:00:00',
-          ),
-        );
+    final firstActivity =
+        await database.into(database.gunlukFaaliyetTable).insert(
+              GunlukFaaliyetTableCompanion.insert(
+                faaliyetAdi: 'Birinci',
+                tarih: '2026-07-28',
+                olusturanKullanici: 'admin',
+                olusturmaTarihi: '2026-07-28T08:00:00',
+              ),
+            );
+    final secondActivity =
+        await database.into(database.gunlukFaaliyetTable).insert(
+              GunlukFaaliyetTableCompanion.insert(
+                faaliyetAdi: 'İkinci',
+                tarih: '2026-07-28',
+                olusturanKullanici: 'admin',
+                olusturmaTarihi: '2026-07-28T09:00:00',
+              ),
+            );
     for (final activityId in [firstActivity, secondActivity]) {
-      await database
-          .into(database.faaliyetPersonelAtamaTable)
-          .insert(
+      await database.into(database.faaliyetPersonelAtamaTable).insert(
             FaaliyetPersonelAtamaTableCompanion.insert(
               faaliyetId: activityId,
               personelId: personId,
@@ -245,9 +234,7 @@ void main() {
   test(
     'aynı tarih ve normalize ad eşleşmesini bulup yalnız yenileri ekler',
     () async {
-      final secondPersonId = await database
-          .into(database.personelTable)
-          .insert(
+      final secondPersonId = await database.into(database.personelTable).insert(
             PersonelTableCompanion.insert(
               adSoyad: 'Veli Deneme',
               rutbe: 'J.Uzm.Çvş.',
@@ -266,6 +253,7 @@ void main() {
         assignment('HAZIR KITA'),
         PersonnelAssignmentInput(
           personnelId: secondPersonId,
+          isOutsideTeam: true,
           duty: 'HAZIR KITA',
         ),
       ];
@@ -288,12 +276,10 @@ void main() {
       );
       expect(result.addedCount, 1);
       expect(result.skippedCount, 1);
-      final activities = await database
-          .select(database.gunlukFaaliyetTable)
-          .get();
-      final assignments = await database
-          .select(database.faaliyetPersonelAtamaTable)
-          .get();
+      final activities =
+          await database.select(database.gunlukFaaliyetTable).get();
+      final assignments =
+          await database.select(database.faaliyetPersonelAtamaTable).get();
       expect(activities, hasLength(1));
       expect(assignments, hasLength(2));
     },
@@ -322,9 +308,8 @@ void main() {
       actor: admin,
     );
     expect(skipped.skippedCount, 1);
-    var row = await database
-        .select(database.faaliyetPersonelAtamaTable)
-        .getSingle();
+    var row =
+        await database.select(database.faaliyetPersonelAtamaTable).getSingle();
     expect(row.gorevVeyaIzin, 'GÖREVLİ');
 
     final updated = await repository.mergeAssignmentsIntoActivity(
@@ -334,9 +319,8 @@ void main() {
       actor: admin,
     );
     expect(updated.updatedCount, 1);
-    row = await database
-        .select(database.faaliyetPersonelAtamaTable)
-        .getSingle();
+    row =
+        await database.select(database.faaliyetPersonelAtamaTable).getSingle();
     expect(row.gorevVeyaIzin, 'NÖBETÇİ');
     expect(row.aciklama, 'Gece vardiyası');
   });

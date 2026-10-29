@@ -25,7 +25,7 @@ class TeamDutyReportView extends StatelessWidget {
               ?.copyWith(fontWeight: FontWeight.bold)),
       const SizedBox(height: 6),
       Text(
-          'Görev alan tim: ${activeIds.length} · '
+          'Personel görevlendirilen timler: ${activeIds.length} · '
           '${reportPeople(data.entries)} farklı kişi',
           style: theme.textTheme.bodyMedium),
       const SizedBox(height: 12),

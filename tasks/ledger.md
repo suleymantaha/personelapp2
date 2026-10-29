@@ -4,11 +4,15 @@ Tek yazıcı: koordinatör. Henüz bu paketle başlatılmış proje görevi yokt
 
 | Görev ID | Hedef | Durum | Aktif kayıt / kanıt |
 |---|---|---|---|
+| 2026-10-29-meti-duty | HEYBET/KULE sırası ve tek günlük METİ | DONE | [Kayıt](active/2026-10-29-meti-duty.md) |
 | team-duty-analytics | Salt-okunur tim görev analizi | IN_REVIEW | tasks/active/team-duty-analytics.md |
 | task-temgundrap-auto-generate | Faaliyetlerden Otomatik TEMGÜNDRAP Üretimi ve Düzenleme | COMPLETED | tasks/active/task-temgundrap-auto-generate.md |
 | task-temgundrap-fix-transfer | TEMGÜNDRAP düzeltmelerini F:/personelapp2 deposuna aktarma | DONE | tasks/active/task-temgundrap-fix-transfer.md |
 | task-temgundrap-import-export-stability | Import kimliği, overflow ve Excel/PDF çıktı düzeltmeleri | DONE | tasks/active/task-temgundrap-import-export-stability.md |
 | 2026-10-27-roster-ui-apk-drive | Çıktı Hazırla UI, güvenli APK güncellemesi ve Drive | DONE | [Kayıt](active/2026-10-27-roster-ui-apk-drive.md) |
+| 2026-10-27-rank-export-apk-drive | Rütbe sıralı çıktı APK ve özel Drive teslimi | DONE | [Kayıt](active/2026-10-27-rank-export-apk-drive.md) |
+| 2026-10-28-roster-matrix-x-exclusion | Birleşik çıktı modern ekran ve 21+ X hariç tutma | DONE | [Kayıt](active/2026-10-28-roster-matrix-x-exclusion.md) |
+| 2026-10-28-roster-rule-apk-drive | Kurallı çıktı APK 10320 ve özel Drive teslimi | DONE | [Kayıt](active/2026-10-28-roster-rule-apk-drive.md) |
 
 Tier 2/3 görevde [şablonu](../.agents/templates/task.md)
 `tasks/active/<task-id>.md` olarak doldur ve bu indekse gerçek kayıt ekle.
@@ -41,3 +45,19 @@ Bu boş tablo tamamlanmış görev veya uygulama kanıtı değildir.
 - 2026-10-24 | User-ordered workspace / APK10308 | DONE | tasks/active/2026-10-24-ordered-workspace.md | 42 tests/analyze/build/update PASS; private Drive delivered.
 
 - 2026-10-24 | Restore original dashboard / APK10309 | DONE | tasks/active/2026-10-24-restore-original-ui.md | 18 tests/analyze/build/update PASS; private Drive delivered; web fixes preserved.
+
+- 2026-10-28 | Rule output selected-day cutoff | DONE | [Task](active/2026-10-28-roster-rule-date-cutoff.md) | 769 tests + 1 skip, analyze, independent review PASS; no APK/CI/commit/push.
+
+- 2026-10-28 | Rule cutoff APK10321 private Drive | DONE | [Task](active/2026-10-28-roster-rule-cutoff-apk-drive.md) | 769 tests + 1 skip, analyze/build, same signer, data-safe AVD update, independent review and private upload PASS; no CI/commit/push.
+
+- 2026-10-28 | Birleşik Çıktı UI / APK10322 emülatör onayı | IN_REVIEW | [Task](active/2026-10-28-roster-preview-ui-emulator.md) | 775 tests + 1 skip, analiz/build/izole AVD PASS; dahil/hariç sayıları kişi listesini açıyor; kullanıcı görünüm onayı bekleniyor, Drive/CI/commit/push yok.
+- 2026-10-29 | Router extra history | DONE | [Task](active/2026-10-29-router-extra-history.md) | 782 PASS + 1 SKIP; analyze/format/diff and live browser back-forward/expired history PASS; no commit/push.
+- 2026-10-29 | Monthly analytics dashboard and XLSX charts | DONE | [Task](active/2026-10-29-monthly-analytics.md) | 54 focused / 797 full PASS + 1 skip; scoped analyze, read-only backup reconciliation, XLSX openpyxl and independent source review PASS; no APK/commit/push.
+
+- 2026-10-29-safe-team-history: DONE — Ayarlarda güvenli onarım ve tarihli snapshot koruması; tasks/active/2026-10-29-safe-team-history.md.
+- 2026-10-29 | Personnel count clarity / partial team assignments | DONE | [Task](active/2026-10-29-personnel-count-clarity.md) | 62 analytics / 860 full PASS + 1 skip; analyze, independent source review, latest backup reconciliation and XLSX cache readback PASS; no APK/commit/push.
+
+- 2026-10-29-analytics-personnel-label: IMPLEMENTED (scoped checks PASS; concurrent daily-detail tests still FAIL) — Tim Analizi personel satırı/görev etiketi düzeltmesi; görev verileri salt okunur korunur; tasks/active/2026-10-29-analytics-personnel-label.md.
+- 2026-10-30 | Fixed daily detail summary / scrollable task-team lists | DONE | [Task](active/2026-10-29-monthly-fixed-header.md) | 79 analytics PASS; 4 final sheet regressions PASS; scoped analyze and independent review clear; Android integration PASS + interactive emulator checked with synthetic data; separate QA package, no product release/commit/push.
+
+- 2026-10-30-main-release-10323: main integration and version1.0.8+10323 APK; verification in progress; see tasks/active/2026-10-30-main-release-10323.md.

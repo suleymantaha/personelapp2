@@ -41,7 +41,8 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Tim Görev Analizi'), findsOneWidget);
         expect(find.text('Tim Görev Raporu'), findsOneWidget);
-        expect(find.textContaining('Görev alan tim:'), findsOneWidget);
+        expect(find.textContaining('Personel görevlendirilen timler:'),
+            findsOneWidget);
         expect(find.text('Görev Karşılaştırması'), findsNothing);
         expect(tester.takeException(), isNull);
 
@@ -67,13 +68,23 @@ void main() {
         expect(find.text('Grafikler ve aylık eğilimler'), findsOneWidget);
         await tester.tap(graphToggle);
         await tester.pumpAndSettle();
-        expect(find.text('Görev Karşılaştırması'), findsOneWidget);
-        expect(find.text('Aylık Trend'), findsOneWidget);
+        expect(find.text('Aylık Görev Özeti'), findsOneWidget);
+        expect(find.text('Günlük görevlendirmeler'), findsOneWidget);
 
         // Tim Aylık Görevleri sekmesi testi
         final tabMonthly = find.byKey(const ValueKey('tab-monthly'));
         await tester.ensureVisible(tabMonthly);
         await tester.tap(tabMonthly);
+        await tester.pumpAndSettle();
+        final legacy = find.byKey(const ValueKey('monthly-legacy-detail'));
+        await tester.scrollUntilVisible(legacy, 400,
+            scrollable: find.byType(Scrollable).first);
+        await tester.pumpAndSettle();
+        final legacyHeader =
+            find.descendant(of: legacy, matching: find.byType(ListTile)).first;
+        await tester.ensureVisible(legacyHeader);
+        await tester.pumpAndSettle();
+        await tester.tap(legacyHeader);
         await tester.pumpAndSettle();
         expect(find.text('Timler Arası Görev Denge Analizi'), findsOneWidget);
         expect(find.text('Aylık Tim Görev Dağılım Tablosu'), findsOneWidget);
@@ -94,6 +105,8 @@ void main() {
 
         // Personel Detayı sekmesine geçiş ve drill down
         final tabDetails = find.byKey(const ValueKey('tab-details'));
+        await tester.scrollUntilVisible(tabDetails, -400,
+            scrollable: find.byType(Scrollable).first);
         await tester.ensureVisible(tabDetails);
         await tester.tap(tabDetails);
         await tester.pumpAndSettle();

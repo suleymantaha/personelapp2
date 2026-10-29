@@ -55,12 +55,12 @@ Sistem/geliştirici talimatları ve geçerli kullanıcı talebi önceliklidir.
 Bu blok bu projede ortak çalışma ve orkestrasyon disiplinini tanımlar.
 Mevcut mimari kuralları, DI ve state yapısı ile birlikte harmanlanarak uygulanır.
 
-## Hibrit Akıllı Orkestrasyon Karar Matrisi
-- **Tier 1 (`native_fast`):** Tek dosya, <30 dk, kök nedeni açık düzeltmelerde doğrudan yürütme.
-- **Tier 2 (`orchestrated_research_worker_verifier`):** Çoklu dosya, yeni özellik veya bağımsız işlerde
-  Orkestra Şefi olarak 5-rol ajan ordusunu (`researcher` -> `worker` -> `verifier`) görevlendir.
-- **Tier 3 (`full_army_with_security_audit`):** Yetki, güvenlik, ödeme veya canlı yayın işlerinde
-  `orchestra-security-auditor` denetimini zorunlu ekle.
+## Maliyet odaklı orkestrasyon
+- Global `C:/Users/baba/.codex/AGENTS.md` içindeki ortak maliyet odaklı ajan politikasını bu projenin yetki, güvenlik ve kabul koşullarıyla birlikte uygula. Bu bölüm, eski kit metinlerindeki zorunlu ajan ordusu ve varsayılan model mirası hükümlerini bu politika açısından günceller; diğer proje sınırları korunur.
+- Anlamlı bağımsız paketlerde alt ajan kullan; yüksek hacimli basit okumayı mevcut küçük/ucuz role, karmaşık uygulama ve kritik doğrulamayı uygun güçlü role ver. Modeli desteklenen araçla seç; istenen modeli gerçek backend kanıtı diye sunma.
+- Kısa görev bağlamı, kaynaklar, tek dosya sahibi ve kabul ölçütleri ver; kanıtlı kısa özeti kullan, aynı işi baştan araştırma. Bağımsız işleri paralel, bağımlı işleri sırayla yürüt. Küçük işte toplam maliyete göre doğrudan çöz; belirsizlikte gerekçeli yükselt, kör tekrar yapma.
+- Risk kademesi ajan sayısı veya sabit researcher→worker→verifier zinciri belirlemez. Yetki, güvenlik, ödeme veya canlı yayın işlerinde gerekli bağımsız güvenlik incelemesi ve Tier 3 yayın kapısı korunur.
+- Mevcut token/cache, süre, retry ve kalite kanıtını raporla; veri yoksa bilinmiyor de, ölçüm için yeni ücretli çağrı yapma. Güvenlik, veri bütünlüğü ve test gerekleri maliyet gerekçesiyle zayıflatılamaz.
 
 ## Hata Bağışıklık Muhafızları
 - **`root_cause_before_patch`:** Ham veri ve çağrı zincirini doğrulamadan tahmini yama yazma.

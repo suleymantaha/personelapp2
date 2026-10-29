@@ -12,6 +12,7 @@ import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
+import 'package:personelapp2/features/activity/presentation/dialogs/task_team_confirmation.dart';
 import 'package:personelapp2/features/activity/presentation/view_models/activity_form_draft.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_details_step.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_form_controls.dart';
@@ -35,6 +36,7 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
   PersonnelFilter _personnelFilter = PersonnelFilter.all;
   bool _showNameError = false;
   bool _allowPop = false;
+  bool _preparingTaskTeams = false;
 
   static const _activityTemplates = [
     'Heybet',
@@ -115,9 +117,10 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
         body: TurkishFlagWatermarkBackground(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final horizontalPadding = constraints.maxWidth >= 600 ? 24.0 : 0.0;
+              final horizontalPadding =
+                  constraints.maxWidth >= 600 ? 24.0 : 0.0;
               return Center(
-                 child: ConstrainedBox(
+                child: ConstrainedBox(
                   constraints: const BoxConstraints(
                     maxWidth: AppSpacing.readableContentWidth,
                   ),
@@ -139,13 +142,15 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
                             child: CircularProgressIndicator(),
                           ),
                           error: (error, _) => _ErrorState(
-                            message: context.l10n.activityFormSquadError(error.toString()),
+                            message: context.l10n
+                                .activityFormSquadError(error.toString()),
                           ),
                         ),
                         loading: () =>
                             const Center(child: CircularProgressIndicator()),
                         error: (error, _) => _ErrorState(
-                          message: context.l10n.activityFormPersonnelLoadError(error.toString()),
+                          message: context.l10n
+                              .activityFormPersonnelLoadError(error.toString()),
                         ),
                       ),
                     ),
@@ -206,8 +211,7 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
         .toList()
       ..sort(
           (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)));
-    final availableDuties =
-        DutyOrLeaveType.dutiesForRole(isAdmin: isAdmin);
+    final availableDuties = DutyOrLeaveType.dutiesForRole(isAdmin: isAdmin);
 
     return ActivityDetailsStep(
       draft: _draft,

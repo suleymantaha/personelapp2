@@ -21,6 +21,7 @@ class ActivityAssignmentPreviewArgs {
     required this.preview,
     required this.requiresAdminApproval,
     required this.onConfirm,
+    this.isActive,
   });
 
   final String activityName;
@@ -28,6 +29,7 @@ class ActivityAssignmentPreviewArgs {
   final ActivityAssignmentPreview preview;
   final bool requiresAdminApproval;
   final Future<bool> Function() onConfirm;
+  final bool Function()? isActive;
 }
 
 class RosterOutputPreviewArgs {
@@ -104,14 +106,19 @@ abstract final class AppNavigator {
     if (GoRouter.maybeOf(context) != null) {
       final params = <String, String>{};
       if (initialDate != null) params['date'] = initialDate;
-      if (selectedSquadId != null) params['squadId'] = selectedSquadId.toString();
-      final uri = Uri(path: AppRoutes.rosterOutput, queryParameters: params.isEmpty ? null : params);
+      if (selectedSquadId != null) {
+        params['squadId'] = selectedSquadId.toString();
+      }
+      final uri = Uri(
+          path: AppRoutes.rosterOutput,
+          queryParameters: params.isEmpty ? null : params);
       return context.push(uri.toString());
     }
     return Navigator.of(context).push<void>(
       MaterialPageRoute(
         builder: (_) => RosterOutputScreen(
-          initialDate: initialDate ?? DateFormat('yyyy-MM-dd').format(DateTime.now()),
+          initialDate:
+              initialDate ?? DateFormat('yyyy-MM-dd').format(DateTime.now()),
           selectedSquadId: selectedSquadId,
         ),
       ),
@@ -142,7 +149,8 @@ abstract final class AppNavigator {
     required ActivityAssignmentPreviewArgs args,
   }) {
     if (GoRouter.maybeOf(context) != null) {
-      return context.push<bool>(AppRoutes.activityAssignmentPreview, extra: args);
+      return context.push<bool>(AppRoutes.activityAssignmentPreview,
+          extra: args);
     }
     return Navigator.of(context).push<bool>(
       MaterialPageRoute(
@@ -218,7 +226,8 @@ abstract final class AppNavigator {
 }
 
 extension AppNavigationContextExtension on BuildContext {
-  void popOrDashboard<T>([T? result]) => AppNavigator.popOrDashboard<T>(this, result);
+  void popOrDashboard<T>([T? result]) =>
+      AppNavigator.popOrDashboard<T>(this, result);
 }
 
 class AppBackButton extends StatelessWidget {

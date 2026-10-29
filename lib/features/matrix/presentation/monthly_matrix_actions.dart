@@ -4,7 +4,7 @@ extension _MonthlyMatrixActions on _MonthlyMatrixScreenState {
   String _statusForColor(MatrixDayCell? cell) {
     if (cell == null) return '';
     if (cell.displayCode == 'B') return 'beklemede';
-    if (cell.displayCode == 'X') return 'GÖREVLİ';
+    if (cell.displayCode == 'X' || cell.displayCode == 'METİ') return 'GÖREVLİ';
     return switch (cell.displayCode) {
       'İZ' => 'İZİN',
       'İST' => 'İSTİRAHAT',
