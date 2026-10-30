@@ -26,7 +26,7 @@ void main() {
     result = null;
   });
   tearDown(() => db.close());
-  Future<void> open(WidgetTester tester) async {
+  Future<void> open(WidgetTester tester, {String date = '2001-01-02'}) async {
     await tester.pumpWidget(MaterialApp(
         home: Builder(
             builder: (context) => Scaffold(
@@ -35,7 +35,7 @@ void main() {
                       result = await confirmTaskTeams(
                           context: context,
                           repository: ActivityRepository(db),
-                          date: '2001-01-02',
+                          date: date,
                           actor: admin,
                           assignments: [
                             PersonnelAssignmentInput(
@@ -46,6 +46,37 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
   }
+
+  for (final daysAhead in [0, 1, 365]) {
+    testWidgets('assigned team needs no confirmation $daysAhead days ahead',
+        (tester) async {
+      final now = DateTime.now();
+      final date = DateTime(now.year, now.month, now.day + daysAhead)
+          .toIso8601String()
+          .split('T')
+          .first;
+      await open(tester, date: date);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(result, hasLength(1));
+      expect(result!.single.personnelId, person);
+      // Automatic resolution must still be rechecked when writing the record.
+      expect(result!.single.teamId, isNull);
+      expect(await db.select(db.faaliyetPersonelAtamaTable).get(), isEmpty);
+    });
+  }
+
+  testWidgets('known past team needs no confirmation', (tester) async {
+    final team = await db.select(db.timTable).getSingle();
+    await db.into(db.timUyelikGecmisiTable).insert(
+        TimUyelikGecmisiTableCompanion.insert(
+            personelId: person,
+            timId: Value(team.id),
+            tarih: '2000-01-01',
+            islem: 'eklendi'));
+    await open(tester);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(result, hasLength(1));
+  });
 
   testWidgets('missing dated team starts unselected and cancel writes nothing',
       (tester) async {

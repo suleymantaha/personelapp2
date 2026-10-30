@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:drift/native.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/matrix/data/matrix_repository.dart';
 
 void main() {
+  const admin = UserSessionState(username: 'admin', role: UserRole.admin);
   late AppDatabase db;
   late ActivityRepository repository;
   late MatrixRepository matrixRepository;
@@ -87,6 +89,7 @@ void main() {
           );
 
       final preview = await repository.previewActivityDateChange(
+        actor: admin,
         activityId: activityId,
         newDate: '2026-07-28',
       );
@@ -96,6 +99,7 @@ void main() {
 
       await expectLater(
         repository.changeActivityDate(
+          actor: admin,
           activityId: activityId,
           newDate: '2026-07-28',
         ),
@@ -163,6 +167,7 @@ void main() {
             gorevTimAdi: Value('Tim dışı')));
 
     final result = await repository.changeActivityDate(
+      actor: admin,
       activityId: sourceId,
       newDate: '2026-07-28',
     );
@@ -190,6 +195,7 @@ void main() {
     );
 
     final result = await repository.changeActivityDate(
+      actor: admin,
       activityId: activityId,
       newDate: '2026-08-01',
     );
@@ -206,10 +212,12 @@ void main() {
     final activityId = await addActivity('2026-07-27');
 
     final invalid = await repository.changeActivityDate(
+      actor: admin,
       activityId: activityId,
       newDate: '2026-02-30',
     );
     final unchanged = await repository.changeActivityDate(
+      actor: admin,
       activityId: activityId,
       newDate: '2026-07-27',
     );

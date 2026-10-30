@@ -60,7 +60,6 @@ class MatrixDayCell {
   static String _codeForEntry(MatrixDayEntry entry) {
     if (entry.isPending) return 'B';
     final duty = entry.duty.toUpperCase();
-    if (duty.trim() == DutyOrLeaveType.meti) return DutyOrLeaveType.meti;
     if (duty.contains('İZİN')) return 'İZ';
     if (duty.contains('İSTİRAHAT')) return 'İST';
     if (duty.contains('RAPOR')) return 'RAP';

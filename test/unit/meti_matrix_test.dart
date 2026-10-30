@@ -49,7 +49,8 @@ void main() {
     await assign('2026-10-12');
     final cells = (await matrix.watchMonthlyMatrix('2026-10').first)[person]!;
     expect(cells.keys, [12]);
-    expect(cells[12]!.displayCode, 'METİ');
+    expect(cells[12]!.displayCode, 'X');
+    expect(cells[12]!.entries.single.duty, 'METİ');
     expect(cells[12]!.entries.single.isContinuationDay, isFalse);
     final calendar = await matrix.getTeamMonthlyCalendar(
         timId: team, timAdi: 'Test Timi', year: 2026, month: 10);
@@ -63,7 +64,7 @@ void main() {
     expect(
         (await matrix.watchMonthlyMatrix('2026-10').first)[person]![31]!
             .displayCode,
-        'METİ');
+        'X');
     expect(await matrix.watchMonthlyMatrix('2026-11').first, isEmpty);
   });
 
@@ -83,7 +84,7 @@ void main() {
         actor: admin);
     final updated = (await matrix.watchMonthlyMatrix('2026-10').first)[person]!;
     expect(updated.keys, [12]);
-    expect(updated[12]!.displayCode, 'METİ');
+    expect(updated[12]!.displayCode, 'X');
     await activities.deleteAssignment(id, actor: admin);
     expect(await matrix.watchMonthlyMatrix('2026-10').first, isEmpty);
   });

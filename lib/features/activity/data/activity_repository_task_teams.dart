@@ -35,7 +35,11 @@ extension ActivityRepositoryTaskTeams on ActivityRepository {
           .getSingleOrNull();
       if (team == null) throw ArgumentError('Görev timi bulunamadı.');
       snapshot = TaskTeamSnapshot(team.id, team.timAdi);
-    } else if (date == DateTime.now().toIso8601String().split('T').first) {
+    } else if (date
+            .compareTo(DateTime.now().toIso8601String().split('T').first) >=
+        0) {
+      // Current membership is the task team for today's and planned duties.
+      // Past duties still require dated evidence or an explicit choice.
       final person = await (db.select(db.personelTable)
             ..where((p) => p.id.equals(personId)))
           .getSingle();

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
@@ -10,6 +9,7 @@ import 'package:personelapp2/core/widgets/app_card.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/activity_date_change_action.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 
 class ActivityCard extends ConsumerWidget {
@@ -84,7 +84,8 @@ class ActivityCard extends ConsumerWidget {
     if (confirm == true) {
       await (db.delete(
         db.gunlukFaaliyetTable,
-      )..where((tbl) => tbl.id.equals(activity.id))).go();
+      )..where((tbl) => tbl.id.equals(activity.id)))
+          .go();
     }
   }
 
@@ -136,7 +137,11 @@ class ActivityCard extends ConsumerWidget {
               await _renameActivity(context, ref);
               return;
             case _ActivityAdminAction.changeDate:
-              await _changeDate(context, ref, assignments.length);
+              await changeActivityDateFromCard(
+                  context: context,
+                  ref: ref,
+                  activity: activity,
+                  onDateChanged: onDateChanged);
               return;
             case _ActivityAdminAction.delete:
               await _deleteActivity(context, db);
@@ -212,7 +217,11 @@ class ActivityCard extends ConsumerWidget {
             color: context.accentOrOlive,
           ),
           tooltip: context.l10n.activityChangeDateOptionTitle,
-          onPressed: () => _changeDate(context, ref, assignments.length),
+          onPressed: () => changeActivityDateFromCard(
+              context: context,
+              ref: ref,
+              activity: activity,
+              onDateChanged: onDateChanged),
         ),
         IconButton(
           icon: Icon(Icons.delete_outline, color: context.rejectedColor),
@@ -266,9 +275,7 @@ class ActivityCard extends ConsumerWidget {
     final session = ref.read(userSessionProvider);
     if (session == null) return;
     try {
-      await ref
-          .read(activityRepositoryProvider)
-          .renameActivity(
+      await ref.read(activityRepositoryProvider).renameActivity(
             activityId: activity.id,
             newName: newName,
             actor: session,
@@ -277,103 +284,6 @@ class ActivityCard extends ConsumerWidget {
     } on Object catch (error) {
       AppNotifications.error(l10n.activityRenameFailed('$error'));
     }
-  }
-
-  Future<void> _changeDate(
-    BuildContext context,
-    WidgetRef ref,
-    int assignmentCount,
-  ) async {
-    final currentDate = DateTime.tryParse(activity.tarih) ?? DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: currentDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
-    );
-    if (picked == null || !context.mounted) return;
-    final newDate = DateFormat('yyyy-MM-dd').format(picked);
-    final repository = ref.read(activityRepositoryProvider);
-    final preview = await repository.previewActivityDateChange(
-      activityId: activity.id,
-      newDate: newDate,
-    );
-    if (!context.mounted) return;
-
-    if (preview.status == ActivityDateChangeStatus.unchanged) {
-      AppNotifications.info(context.l10n.activityChangeDateAlreadyOnDate);
-      return;
-    }
-    if (!preview.canChange) {
-      AppNotifications.error(context.l10n.activityChangeDatePrepareFailed);
-      return;
-    }
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(dialogContext.l10n.activityChangeDateTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${DateFormat('dd.MM.yyyy').format(currentDate)} → '
-              '${DateFormat('dd.MM.yyyy').format(picked)}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Text(dialogContext.l10n.activityChangeDatePersonnelCountNotice(assignmentCount)),
-            if (preview.pendingAssignmentCount > 0) ...[
-              const SizedBox(height: 8),
-              Text(
-                dialogContext.l10n.activityChangeDatePendingNotice(preview.pendingAssignmentCount),
-                style: TextStyle(color: context.pendingColor),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(dialogContext.l10n.commonCancel),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(dialogContext.l10n.activityChangeDateSubmit),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !context.mounted) return;
-
-    ActivityDateChangeResult result;
-    try {
-      result = await repository.changeActivityDate(
-        activityId: activity.id,
-        newDate: newDate,
-      );
-    } on AssignmentConflictException catch (error) {
-      if (context.mounted) {
-        AppNotifications.error(error.localizedMessage(context.l10n));
-      }
-      return;
-    }
-    if (!context.mounted) return;
-    if (result.status == ActivityDateChangeStatus.success) {
-      onDateChanged(result.newDate);
-      final pendingMessage = result.pendingAssignmentCount > 0
-          ? ' ${context.l10n.activityChangeDatePendingCountNotice(result.pendingAssignmentCount)}'
-          : '';
-      AppNotifications.success(
-        '${context.l10n.activityChangeDateMovedNotice(result.assignmentCount, DateFormat('dd.MM.yyyy').format(picked))}'
-        '$pendingMessage',
-      );
-      return;
-    }
-    AppNotifications.error(
-      context.l10n.activityChangeDateFailed,
-    );
   }
 
   @override
@@ -385,18 +295,14 @@ class ActivityCard extends ConsumerWidget {
     return StreamBuilder<List<FaaliyetPersonelAtamaTableData>>(
       stream: (db.select(
         db.faaliyetPersonelAtamaTable,
-      )..where((tbl) => tbl.faaliyetId.equals(activity.id))).watch(),
+      )..where((tbl) => tbl.faaliyetId.equals(activity.id)))
+          .watch(),
       builder: (context, snapshot) {
         final assignments = snapshot.data ?? [];
-        final personnel = ref.watch(allPersonnelProvider).value ?? [];
         if (selectedSquadId != null &&
             snapshot.hasData &&
             !assignments.any(
-              (assignment) => personnel.any(
-                (person) =>
-                    person.id == assignment.personelId &&
-                    person.timId == selectedSquadId,
-              ),
+              (assignment) => assignment.gorevTimId == selectedSquadId,
             )) {
           return const SizedBox.shrink();
         }

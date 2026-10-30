@@ -11,9 +11,14 @@ Future<List<PersonnelAssignmentInput>?> confirmTaskTeams({
   required String date,
   required List<PersonnelAssignmentInput> assignments,
   required UserSessionState actor,
+  Set<int> forceConfirmationFor = const {},
 }) async {
   final missing = <int>{};
   for (final assignment in assignments) {
+    if (forceConfirmationFor.contains(assignment.personnelId)) {
+      missing.add(assignment.personnelId);
+      continue;
+    }
     try {
       await repository.resolveAssignmentTeam(
           assignment: assignment, date: date, actor: actor);
@@ -77,8 +82,9 @@ class _TaskTeamConfirmationState extends State<_TaskTeamConfirmation> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${widget.date} tarihindeki tim bilgisi doğrulanamıyor. '
-                    'O tarihteki çizelgeye göre seçin. Bugünkü tim otomatik uygulanmaz.'),
+                Text('${widget.date} tarihindeki görev timini seçin. '
+                    'Bu seçim yalnızca görev kaydına uygulanır; '
+                    'personelin bağlı olduğu tim değişmez.'),
                 const SizedBox(height: 12),
                 for (final entry in widget.names.entries)
                   Padding(

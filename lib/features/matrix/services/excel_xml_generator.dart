@@ -127,8 +127,8 @@ class ExcelXmlGenerator {
         var cellText = '-';
         var styleToUse = cellNormalStyle;
 
-        if (status == 'X' || status == 'METİ') {
-          cellText = status;
+        if (status == 'X') {
+          cellText = 'X';
           styleToUse = cellGorevliStyle;
         } else if (status == 'İZ') {
           cellText = 'İZ';

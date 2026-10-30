@@ -15,6 +15,7 @@ export 'package:personelapp2/features/activity/domain/models/activity_create_req
 export 'package:personelapp2/features/activity/data/activity_repository_results.dart';
 
 part 'activity_repository_dates.dart';
+part 'activity_repository_date_teams.dart';
 part 'activity_repository_queries.dart';
 part 'activity_repository_conflicts.dart';
 part 'activity_repository_assignments.dart';

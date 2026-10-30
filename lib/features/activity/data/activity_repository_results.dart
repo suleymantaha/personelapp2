@@ -15,12 +15,16 @@ class ActivityDateChangePreview {
     required this.newDate,
     required this.assignmentCount,
     required this.pendingAssignmentCount,
+    this.teamConfirmationPersonnelIds = const {},
+    this.assignmentSnapshot = const [],
   });
   final ActivityDateChangeStatus status;
   final String oldDate;
   final String newDate;
   final int assignmentCount;
   final int pendingAssignmentCount;
+  final Set<int> teamConfirmationPersonnelIds;
+  final List<FaaliyetPersonelAtamaTableData> assignmentSnapshot;
   bool get canChange =>
       status == ActivityDateChangeStatus.success ||
       status == ActivityDateChangeStatus.unchanged;
@@ -33,6 +37,8 @@ class ActivityDateChangeResult extends ActivityDateChangePreview {
     required super.newDate,
     required super.assignmentCount,
     required super.pendingAssignmentCount,
+    super.teamConfirmationPersonnelIds,
+    super.assignmentSnapshot,
   });
 }
 

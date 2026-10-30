@@ -4,7 +4,9 @@ extension ActivityRepositoryDateOperations on ActivityRepository {
   Future<ActivityDateChangePreview> previewActivityDateChange({
     required int activityId,
     required String newDate,
+    required UserSessionState actor,
   }) async {
+    _requireAdmin(actor);
     final activity = await (db.select(db.gunlukFaaliyetTable)
           ..where((tbl) => tbl.id.equals(activityId)))
         .getSingleOrNull();
@@ -51,18 +53,30 @@ extension ActivityRepositoryDateOperations on ActivityRepository {
       newDate: newDate,
       assignmentCount: assignments.length,
       pendingAssignmentCount: pendingCount,
+      teamConfirmationPersonnelIds:
+          await _dateChangeConfirmationIds(assignments, newDate, actor),
+      assignmentSnapshot: List.unmodifiable(assignments),
     );
   }
 
   Future<ActivityDateChangeResult> changeActivityDate({
     required int activityId,
     required String newDate,
+    required UserSessionState actor,
+    String? expectedDate,
+    List<FaaliyetPersonelAtamaTableData>? expectedAssignments,
+    List<PersonnelAssignmentInput> teamConfirmations = const [],
   }) {
+    _requireAdmin(actor);
     return db.transaction(() async {
       final preview = await previewActivityDateChange(
         activityId: activityId,
         newDate: newDate,
+        actor: actor,
       );
+      if (expectedDate != null && preview.oldDate != expectedDate) {
+        throw StateError('Faaliyet tarihi değişti; kaydı yenileyin.');
+      }
       if (preview.status != ActivityDateChangeStatus.success) {
         return ActivityDateChangeResult(
           status: preview.status,
@@ -70,6 +84,7 @@ extension ActivityRepositoryDateOperations on ActivityRepository {
           newDate: preview.newDate,
           assignmentCount: preview.assignmentCount,
           pendingAssignmentCount: preview.pendingAssignmentCount,
+          teamConfirmationPersonnelIds: preview.teamConfirmationPersonnelIds,
         );
       }
 
@@ -79,6 +94,13 @@ extension ActivityRepositoryDateOperations on ActivityRepository {
       final assignments = await (db.select(db.faaliyetPersonelAtamaTable)
             ..where((tbl) => tbl.faaliyetId.equals(activityId)))
           .get();
+      if (expectedAssignments != null) {
+        final expected = {for (final row in expectedAssignments) row.id: row};
+        if (assignments.length != expected.length ||
+            assignments.any((row) => expected[row.id] != row)) {
+          throw StateError('Atama listesi değişti; kaydı yenileyin.');
+        }
+      }
       final reports = await _loadDomainReports();
       final existingAssignments = await _loadExistingAssignments();
 
@@ -102,20 +124,22 @@ extension ActivityRepositoryDateOperations on ActivityRepository {
       }
 
       final automaticTitle = 'Günlük Faaliyet (${activity.tarih})';
-      // A changed date must not silently attach the old task team to a new day.
-      for (final assignment in assignments) {
-        final team =
-            await TaskTeamHistory(db).resolve(assignment.personelId, newDate);
-        if (team == null ||
-            team.teamId != assignment.gorevTimId ||
-            (assignment.gorevTimId == null &&
-                assignment.gorevTimAdi != 'Tim dışı')) {
-          throw TaskTeamRequiredException(assignment.personelId, newDate);
-        }
-      }
+      final teamUpdates = await _dateChangeTeamUpdates(
+          assignments: assignments,
+          date: newDate,
+          actor: actor,
+          confirmations: teamConfirmations,
+          requiredIds: preview.teamConfirmationPersonnelIds);
       final newTitle = activity.faaliyetAdi == automaticTitle
           ? 'Günlük Faaliyet ($newDate)'
           : activity.faaliyetAdi;
+      for (final entry in teamUpdates.entries) {
+        await (db.update(db.faaliyetPersonelAtamaTable)
+              ..where((a) => a.id.equals(entry.key)))
+            .write(FaaliyetPersonelAtamaTableCompanion(
+                gorevTimId: Value(entry.value.teamId),
+                gorevTimAdi: Value(entry.value.teamName)));
+      }
       await (db.update(db.gunlukFaaliyetTable)
             ..where((tbl) => tbl.id.equals(activityId)))
           .write(

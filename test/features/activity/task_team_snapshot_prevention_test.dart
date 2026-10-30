@@ -152,7 +152,8 @@ void main() {
     await history(newTeam, '2002-01-01', 'eklendi');
     final id = await create('2001-01-02');
     await expectLater(
-        repo.changeActivityDate(activityId: id, newDate: '2002-01-02'),
+        repo.changeActivityDate(
+            actor: admin, activityId: id, newDate: '2002-01-02'),
         throwsStateError);
     expect((await db.select(db.gunlukFaaliyetTable).getSingle()).tarih,
         '2001-01-02');
