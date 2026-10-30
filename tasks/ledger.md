@@ -4,7 +4,7 @@ Tek yazıcı: koordinatör. Henüz bu paketle başlatılmış proje görevi yokt
 
 | Görev ID | Hedef | Durum | Aktif kayıt / kanıt |
 |---|---|---|---|
-| 2026-10-30-release-10324 | APK 1.0.9+10324, özel Drive ve CI'sız GitHub | IN_REVIEW | [Kayıt](active/2026-10-30-release-10324.md) |
+| 2026-10-30-release-10324 | APK 1.0.9+10324, özel Drive ve CI'sız GitHub | DONE | [Kayıt](active/2026-10-30-release-10324.md) |
 | 2026-10-30-task-team-flow-repair | Snapshot arşiv filtresi ve güvenli tarih değiştirme | DONE | [Kayıt](active/2026-10-30-task-team-flow-repair.md) |
 | 2026-10-30-future-task-team | Bugün/gelecekte otomatik görev timi, belirsiz geçmişte doğrulama | DONE | [Kayıt](active/2026-10-30-future-task-team.md) |
 | 2026-10-29-meti-duty | HEYBET/KULE sırası ve tek günlük METİ | DONE | [Kayıt](active/2026-10-29-meti-duty.md) |
