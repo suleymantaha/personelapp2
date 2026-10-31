@@ -10,6 +10,7 @@ import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_date_change_action.dart';
+import 'package:personelapp2/features/activity/presentation/widgets/activity_copy_action.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
 
 class ActivityCard extends ConsumerWidget {
@@ -143,6 +144,14 @@ class ActivityCard extends ConsumerWidget {
                   activity: activity,
                   onDateChanged: onDateChanged);
               return;
+            case _ActivityAdminAction.copy:
+              await copyActivityFromCard(
+                context: context,
+                ref: ref,
+                activity: activity,
+                onDateChanged: onDateChanged,
+              );
+              return;
             case _ActivityAdminAction.delete:
               await _deleteActivity(context, db);
               return;
@@ -178,6 +187,14 @@ class ActivityCard extends ConsumerWidget {
               title: context.l10n.activityChangeDateOptionTitle,
               subtitle: context.l10n.activityChangeDateOptionSubtitle,
               icon: Icons.edit_calendar_outlined,
+            ),
+          ),
+          ModernPopupMenuItem(
+            option: ModernActionOption(
+              value: _ActivityAdminAction.copy,
+              title: 'Başka Güne Kopyala',
+              subtitle: 'Aynı personelleri ve görevleri seçilen güne ekle',
+              icon: Icons.copy_outlined,
             ),
           ),
           const PopupMenuDivider(),
@@ -421,4 +438,4 @@ class ActivityCard extends ConsumerWidget {
   }
 }
 
-enum _ActivityAdminAction { approveAll, rename, changeDate, delete }
+enum _ActivityAdminAction { approveAll, rename, changeDate, copy, delete }

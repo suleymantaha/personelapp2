@@ -21,6 +21,7 @@ part 'activity_repository_conflicts.dart';
 part 'activity_repository_assignments.dart';
 part 'activity_repository_transfers.dart';
 part 'activity_repository_task_teams.dart';
+part 'activity_repository_copy.dart';
 
 class ActivityRepository {
   ActivityRepository(this.db);

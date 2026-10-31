@@ -65,3 +65,5 @@ Bu boş tablo tamamlanmış görev veya uygulama kanıtı değildir.
 
 - 2026-10-30-main-release-10323: main integration and version1.0.8+10323 APK; verification in progress; see tasks/active/2026-10-30-main-release-10323.md.
 - 2026-10-30-main-release-10323 DONE: main5bf4633, 887PASS/1skip, signed1.0.8+10323, retained-data upgrade PASS, private Drive upload/readback PASS; no push/CI.
+
+- 2026-11-01 archive-conveniences: tasks/active/2026-11-01-archive-conveniences.md — DONE (960 PASS/1 SKIP + 3 additional PASS; no commit/push)

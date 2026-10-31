@@ -15,9 +15,11 @@ class ReassignExistingPersonnelDialog extends ConsumerStatefulWidget {
     required this.activity,
     required this.assignments,
     required this.personnelById,
+    this.selectAllInitially = false,
     super.key,
   });
 
+  final bool selectAllInitially;
   final GunlukFaaliyetTableData activity;
   final List<FaaliyetPersonelAtamaTableData> assignments;
   final Map<int, PersonelTableData> personnelById;
@@ -32,6 +34,14 @@ class _ReassignExistingPersonnelDialogState
   final Set<int> _selectedIds = <int>{};
   String _duty = DutyOrLeaveType.gorevli;
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.selectAllInitially) {
+      _selectedIds.addAll(widget.assignments.map((row) => row.id));
+    }
+  }
 
   Future<void> _selectDuty() async {
     if (_saving) return;

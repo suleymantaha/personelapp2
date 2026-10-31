@@ -50,6 +50,28 @@ extension _ActivityDetailAssignments on ActivityAssignmentDetails {
                       squadName: squadName,
                     );
                   },
+          onReassignSelected: !isAdmin
+              ? null
+              : (selectedAssignments) async {
+                  if (selectedAssignments.isEmpty) return;
+                  final updated =
+                      await Navigator.of(context, rootNavigator: true)
+                          .push<bool>(
+                    MaterialPageRoute(
+                      fullscreenDialog: true,
+                      builder: (_) => ReassignExistingPersonnelDialog(
+                        activity: activity,
+                        assignments: selectedAssignments,
+                        personnelById: pMap,
+                        selectAllInitially: true,
+                      ),
+                    ),
+                  );
+                  if (updated == true && context.mounted) {
+                    ref.invalidate(filteredActivitiesProvider);
+                    ref.invalidate(pendingAssignmentsProvider);
+                  }
+                },
           onExportSelected: (selectedAssignments) async {
             final selectedRows = buildRosterRows(selectedAssignments);
             if (selectedRows.isEmpty) {
