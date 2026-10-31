@@ -147,6 +147,7 @@ List<int> _generateMasterDailyExcelBytes({
     sheet.setRowHeight(currentRow, 28);
     currentRow++;
 
+    final sectionDataStartRow = currentRow;
     var rowIndex = 0;
     while (rowIndex < act.rows.length) {
       final startRowIndex = currentRow;
@@ -162,11 +163,9 @@ List<int> _generateMasterDailyExcelBytes({
         groupLength++;
       }
       final isSpecialGroup =
-          (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
-              List.generate(
-                groupLength,
-                (offset) => act.rows[rowIndex + offset].groupCode,
-              ).every((groupCode) => groupCode == currentGroup);
+          currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
+      final isSpecialStart = isSpecialGroup &&
+          (rowIndex == 0 || act.rows[rowIndex - 1].groupCode != currentGroup);
 
       for (var offset = 0; offset < groupLength; offset++) {
         final r = act.rows[rowIndex + offset];
@@ -193,8 +192,9 @@ List<int> _generateMasterDailyExcelBytes({
         sheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRow),
         )
-          ..value =
-              !isSpecialGroup || offset == 0 ? TextCellValue(r.diger) : null
+          ..value = !isSpecialGroup || (isSpecialStart && offset == 0)
+              ? TextCellValue(r.diger)
+              : null
           ..cellStyle = isSpecialGroup ? cellCenterBoldStyle : cellLeftStyle;
         sheet.setRowHeight(
           currentRow,
@@ -212,18 +212,33 @@ List<int> _generateMasterDailyExcelBytes({
           endRow: startRowIndex + groupLength - 1,
           baseStyle: cellCenterBoldStyle,
         );
-        if (isSpecialGroup) {
+      }
+      rowIndex += groupLength;
+    }
+
+    var spIdx = 0;
+    while (spIdx < act.rows.length) {
+      final gCode = act.rows[spIdx].groupCode;
+      if (gCode == 'HAZIR_KITA' || gCode == 'GULUSKUR') {
+        var spEnd = spIdx;
+        while (spEnd + 1 < act.rows.length &&
+            act.rows[spEnd + 1].groupCode == gCode) {
+          spEnd++;
+        }
+        if (spEnd > spIdx) {
           _mergeAndSetOuterBorders(
             sheet,
             startCol: 4,
-            startRow: startRowIndex,
+            startRow: sectionDataStartRow + spIdx,
             endCol: 4,
-            endRow: startRowIndex + groupLength - 1,
+            endRow: sectionDataStartRow + spEnd,
             baseStyle: cellCenterBoldStyle,
           );
         }
+        spIdx = spEnd + 1;
+      } else {
+        spIdx++;
       }
-      rowIndex += groupLength;
     }
   }
 

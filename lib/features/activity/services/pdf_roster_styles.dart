@@ -194,11 +194,8 @@ pw.Widget pdfBuildTable(
     final gCode = rows[idx].groupCode;
     final isSpecial = gCode == 'HAZIR_KITA' || gCode == 'GULUSKUR';
     if (isSpecial) {
-      final bName = rows[idx].birligi;
       var endIdx = idx;
-      while (endIdx + 1 < n &&
-          rows[endIdx + 1].groupCode == gCode &&
-          _sameGroupLabel(rows[endIdx + 1].birligi, bName)) {
+      while (endIdx + 1 < n && rows[endIdx + 1].groupCode == gCode) {
         endIdx++;
       }
       for (var k = idx; k <= endIdx; k++) {

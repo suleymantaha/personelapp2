@@ -89,13 +89,20 @@ class ExcelHtmlGenerator {
         mergeCount++;
       }
       final isSpecialGroup =
-          (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
-              List.generate(
-                mergeCount + 1,
-                (offset) => rows[i + offset].groupCode,
-              ).every((groupCode) => groupCode == currentGroup);
+          currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
+      final isSpecialStart =
+          isSpecialGroup && (i == 0 || rows[i - 1].groupCode != currentGroup);
+      var specialMergeCount = 0;
+      if (isSpecialStart) {
+        while (i + specialMergeCount + 1 < n &&
+            rows[i + specialMergeCount + 1].groupCode == currentGroup) {
+          specialMergeCount++;
+        }
+      }
 
       final spanAttr = (mergeCount > 0) ? ' rowspan="${mergeCount + 1}"' : '';
+      final specialSpanAttr =
+          (specialMergeCount > 0) ? ' rowspan="${specialMergeCount + 1}"' : '';
 
       for (var j = 0; j <= mergeCount; j++) {
         final r = rows[i + j];
@@ -119,9 +126,9 @@ class ExcelHtmlGenerator {
 
         // Column E: DİĞER (Merged vertically for Hazır Kıta & Gülüşkür, normal for others)
         if (isSpecialGroup) {
-          if (j == 0) {
+          if (isSpecialStart && j == 0) {
             sb.writeln(
-              '    <td$spanAttr class="center bold">${MilitaryRosterExporter.escapeXml(r.diger)}</td>',
+              '    <td$specialSpanAttr class="center bold">${MilitaryRosterExporter.escapeXml(r.diger)}</td>',
             );
           }
         } else {

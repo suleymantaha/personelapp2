@@ -9,29 +9,37 @@ class MilitaryStructureHelper {
 
   /// Maps squad/tim name or raw birlik text to its parent Jandarma Bölük (Company) title
   static String getBolukName(String timOrBirlik) {
-    final s = timOrBirlik.toUpperCase().trim();
+    final s = timOrBirlik.toUpperCase().replaceAll('İ', 'I').trim();
 
-    // Check for Headquarters (Karargah) units first
-    if (s.contains("1'İNCİ BL. K.H") ||
+    // Check for Headquarters (Karargah) units first (company K.H maps to parent Bölük)
+    if (s.contains("1'INCI BL. K.H") ||
+        s.contains("1'INCI BÖLÜK K.H") ||
         s.contains('1. BL. K.H') ||
-        s.contains('1. BÖLÜK K.H')) {
-      return "1'inci Bl. K.H";
+        s.contains('1. BL K.H') ||
+        s.contains('1. BÖLÜK K.H') ||
+        s.contains('1.BL.K.H')) {
+      return "1'inci Bl.";
     }
-    if (s.contains("2'NCİ BL. K.H") ||
+    if (s.contains("2'NCI BL. K.H") ||
+        s.contains("2'NCI BÖLÜK K.H") ||
         s.contains('2. BL. K.H') ||
-        s.contains('2. BÖLÜK K.H')) {
-      return "2'nci Bl. K.H";
+        s.contains('2. BL K.H') ||
+        s.contains('2. BÖLÜK K.H') ||
+        s.contains('2.BL.K.H')) {
+      return "2'nci Bl.";
     }
     if (s.contains("3'ÜNCÜ BL. K.H") ||
+        s.contains("3'ÜNCÜ BÖLÜK K.H") ||
         s.contains('3. BL. K.H') ||
-        s.contains('3. BÖLÜK K.H')) {
-      return "3'üncü Bl. K.H";
+        s.contains('3. BL K.H') ||
+        s.contains('3. BÖLÜK K.H') ||
+        s.contains('3.BL.K.H')) {
+      return "3'üncü Bl.";
     }
     if (s == 'K.H' ||
         s == 'KH' ||
         s.contains('TABUR K.H') ||
         s.contains('KARARGAH') ||
-        s.contains('METİ') ||
         s.contains('METI')) {
       return 'K.H';
     }
@@ -49,14 +57,14 @@ class MilitaryStructureHelper {
         s.contains('3-B') ||
         s.contains('4-B') ||
         s.contains('1. BÖLÜK') ||
-        s.contains("1'İNCİ")) {
+        s.contains("1'INCI")) {
       return "1'inci Bl.";
     } else if (s.contains('5-B') ||
         s.contains('6-B') ||
         s.contains('7-B') ||
         s.contains('8-B') ||
         s.contains('2. BÖLÜK') ||
-        s.contains("2'NCİ")) {
+        s.contains("2'NCI")) {
       return "2'nci Bl.";
     } else if (s.contains('9-B') ||
         s.contains('10-B') ||
