@@ -193,6 +193,76 @@ void main() {
     expect(merges, isNot(contains('B3:B6')));
   });
 
+  test(
+      'Excel merges DİĞER across different companies for the same special duty while keeping BİRLİĞİ separate per company',
+      () {
+    final rows = [
+      MilitaryRosterRow(
+        sNu: 1,
+        birligi: "1'inci Bl.",
+        rutbe: 'Uzm.J.',
+        adSoyad: 'Recai KAYA',
+        diger: 'GÜLÜŞKÜR',
+        groupCode: 'GULUSKUR',
+      ),
+      MilitaryRosterRow(
+        sNu: 2,
+        birligi: "2'nci Bl.",
+        rutbe: 'J.Uzm.Çvş.',
+        adSoyad: 'İsmail KAYA',
+        diger: 'GÜLÜŞKÜR',
+        groupCode: 'GULUSKUR',
+      ),
+      MilitaryRosterRow(
+        sNu: 3,
+        birligi: "2'nci Bl.",
+        rutbe: 'J.Uzm.Çvş.',
+        adSoyad: 'Akın TABARA',
+        diger: 'GÜLÜŞKÜR',
+        groupCode: 'GULUSKUR',
+      ),
+      MilitaryRosterRow(
+        sNu: 4,
+        birligi: "3'üncü Bl.",
+        rutbe: 'J.Uzm.Çvş.',
+        adSoyad: 'Ufuk Erdem SEVİNÇ',
+        diger: 'GÜLÜŞKÜR',
+        groupCode: 'GULUSKUR',
+      ),
+    ];
+    final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
+      faaliyetAdi: 'Faaliyet',
+      tarih: '2026-07-29',
+      rows: rows,
+    );
+    final excel = Excel.decodeBytes(bytes);
+    final merges = excel.getMergedCells('İsim Listesi');
+
+    expect(merges, contains('B4:B5'));
+    expect(merges, contains('G3:G6'));
+    expect(merges, isNot(contains('B3:B6')));
+
+    final html = MilitaryRosterExporter.generateMilitaryHtmlExcel(
+      faaliyetAdi: 'Faaliyet',
+      tarih: '2026-07-29',
+      rows: rows,
+    );
+    expect(html, contains('<td rowspan="4" class="center bold">GÜLÜŞKÜR</td>'));
+    expect(html, contains('<td rowspan="2" class="center bold">2\'nci Bl.</td>'));
+
+    final xml = MilitaryRosterExporter.generateMilitaryXml(
+      faaliyetAdi: 'Faaliyet',
+      tarih: '2026-07-29',
+      rows: rows,
+    );
+    expect(
+      xml,
+      contains(
+        '<Cell ss:MergeDown="3" ss:StyleID="DataCellCenterBold"><Data ss:Type="String">GÜLÜŞKÜR</Data></Cell>',
+      ),
+    );
+  });
+
   test('combined archive Excel renders one continuous table like PDF', () {
     final rows = [
       ..._specialRows('HAZIR_KITA', 'HAZIR KITA'),

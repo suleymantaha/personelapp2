@@ -33,6 +33,41 @@ void main() {
       expect(result, "2'nci Bl.");
     });
 
+    test('uses parent company name for company K.H in Hazır Kıta and Gülüşkür', () {
+      expect(
+        MilitaryStructureHelper.getRosterBirlikName(
+          timName: "1'inci Bl. K.H",
+          birlik: '',
+          duty: 'GÜLÜŞKÜR',
+        ),
+        "1'inci Bl.",
+      );
+      expect(
+        MilitaryStructureHelper.getRosterBirlikName(
+          timName: "2'nci Bl. K.H",
+          birlik: '',
+          duty: 'HAZIR KITA',
+        ),
+        "2'nci Bl.",
+      );
+      expect(
+        MilitaryStructureHelper.getRosterBirlikName(
+          timName: "3'üncü Bl. K.H",
+          birlik: '',
+          duty: 'GÜLÜŞKÜR',
+        ),
+        "3'üncü Bl.",
+      );
+      expect(
+        MilitaryStructureHelper.getRosterBirlikName(
+          timName: "1'inci Bl. K.H",
+          birlik: '',
+          duty: 'DEVRİYE',
+        ),
+        "1'inci Bl. K.H",
+      );
+    });
+
     test('normalizes slash and spaced team variants', () {
       for (final team in ['6/B', '6 / B', '6-B', '6-B Timi']) {
         expect(

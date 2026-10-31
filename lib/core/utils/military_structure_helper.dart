@@ -11,21 +11,30 @@ class MilitaryStructureHelper {
   static String getBolukName(String timOrBirlik) {
     final s = timOrBirlik.toUpperCase().trim();
 
-    // Check for Headquarters (Karargah) units first
+    // Check for Headquarters (Karargah) units first (company K.H maps to parent Bölük)
     if (s.contains("1'İNCİ BL. K.H") ||
+        s.contains("1'İNCİ BÖLÜK K.H") ||
         s.contains('1. BL. K.H') ||
-        s.contains('1. BÖLÜK K.H')) {
-      return "1'inci Bl. K.H";
+        s.contains('1. BL K.H') ||
+        s.contains('1. BÖLÜK K.H') ||
+        s.contains('1.BL.K.H')) {
+      return "1'inci Bl.";
     }
     if (s.contains("2'NCİ BL. K.H") ||
+        s.contains("2'NCİ BÖLÜK K.H") ||
         s.contains('2. BL. K.H') ||
-        s.contains('2. BÖLÜK K.H')) {
-      return "2'nci Bl. K.H";
+        s.contains('2. BL K.H') ||
+        s.contains('2. BÖLÜK K.H') ||
+        s.contains('2.BL.K.H')) {
+      return "2'nci Bl.";
     }
     if (s.contains("3'ÜNCÜ BL. K.H") ||
+        s.contains("3'ÜNCÜ BÖLÜK K.H") ||
         s.contains('3. BL. K.H') ||
-        s.contains('3. BÖLÜK K.H')) {
-      return "3'üncü Bl. K.H";
+        s.contains('3. BL K.H') ||
+        s.contains('3. BÖLÜK K.H') ||
+        s.contains('3.BL.K.H')) {
+      return "3'üncü Bl.";
     }
     if (s == 'K.H' ||
         s == 'KH' ||

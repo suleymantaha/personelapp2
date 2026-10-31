@@ -126,6 +126,7 @@ List<int> _generateMilitaryExcelBytes({
 
   final signedRowHeights = rows.map(_signedRosterRowHeight).toList();
   var currentRow = 2;
+  final dataStartRow = currentRow;
   var i = 0;
   final n = rows.length;
 
@@ -140,11 +141,9 @@ List<int> _generateMilitaryExcelBytes({
       mergeCount++;
     }
     final isSpecialGroup =
-        (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
-            List.generate(
-              mergeCount + 1,
-              (offset) => rows[i + offset].groupCode,
-            ).every((groupCode) => groupCode == currentGroup);
+        currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
+    final isSpecialStart =
+        isSpecialGroup && (i == 0 || rows[i - 1].groupCode != currentGroup);
 
     final startRowIndex = currentRow;
 
@@ -174,7 +173,9 @@ List<int> _generateMilitaryExcelBytes({
 
       // Col 4: DİĞER
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: rIndex))
-        ..value = !isSpecialGroup || j == 0 ? TextCellValue(r.diger) : null
+        ..value = !isSpecialGroup || (isSpecialStart && j == 0)
+            ? TextCellValue(r.diger)
+            : null
         ..cellStyle = isSpecialGroup ? cellCenterBoldStyle : cellLeftStyle;
       sheet.setRowHeight(
         rIndex,
@@ -193,21 +194,34 @@ List<int> _generateMilitaryExcelBytes({
         endRow: startRowIndex + mergeCount,
         baseStyle: cellCenterBoldStyle,
       );
-
-      if (isSpecialGroup) {
-        _mergeAndSetOuterBorders(
-          sheet,
-          startCol: 4,
-          startRow: startRowIndex,
-          endCol: 4,
-          endRow: startRowIndex + mergeCount,
-          baseStyle: cellCenterBoldStyle,
-        );
-      }
     }
 
     currentRow += mergeCount + 1;
     i += mergeCount + 1;
+  }
+
+  var spIdx = 0;
+  while (spIdx < n) {
+    final gCode = rows[spIdx].groupCode;
+    if (gCode == 'HAZIR_KITA' || gCode == 'GULUSKUR') {
+      var spEnd = spIdx;
+      while (spEnd + 1 < n && rows[spEnd + 1].groupCode == gCode) {
+        spEnd++;
+      }
+      if (spEnd > spIdx) {
+        _mergeAndSetOuterBorders(
+          sheet,
+          startCol: 4,
+          startRow: dataStartRow + spIdx,
+          endCol: 4,
+          endRow: dataStartRow + spEnd,
+          baseStyle: cellCenterBoldStyle,
+        );
+      }
+      spIdx = spEnd + 1;
+    } else {
+      spIdx++;
+    }
   }
 
   var lastPrintRowNumber = currentRow;

@@ -162,11 +162,16 @@ class ExcelXmlGenerator {
         mergeCount++;
       }
       final isSpecialGroup =
-          (currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR') &&
-              List.generate(
-                mergeCount + 1,
-                (offset) => rows[i + offset].groupCode,
-              ).every((groupCode) => groupCode == currentGroup);
+          currentGroup == 'HAZIR_KITA' || currentGroup == 'GULUSKUR';
+      final isSpecialStart =
+          isSpecialGroup && (i == 0 || rows[i - 1].groupCode != currentGroup);
+      var specialMergeCount = 0;
+      if (isSpecialStart) {
+        while (i + specialMergeCount + 1 < n &&
+            rows[i + specialMergeCount + 1].groupCode == currentGroup) {
+          specialMergeCount++;
+        }
+      }
 
       for (var j = 0; j <= mergeCount; j++) {
         final r = rows[i + j];
@@ -192,9 +197,10 @@ class ExcelXmlGenerator {
           );
 
         if (isSpecialGroup) {
-          if (j == 0) {
-            final mergeAttr =
-                mergeCount > 0 ? ' ss:MergeDown="$mergeCount"' : '';
+          if (isSpecialStart && j == 0) {
+            final mergeAttr = specialMergeCount > 0
+                ? ' ss:MergeDown="$specialMergeCount"'
+                : '';
             buffer.writeln(
               '    <Cell$mergeAttr ss:StyleID="DataCellCenterBold"><Data ss:Type="String">${MilitaryRosterExporter.escapeXml(r.diger)}</Data></Cell>',
             );

@@ -100,6 +100,52 @@ void main() {
     expect(unitCells[2].decoration?.border?.bottom.width, greaterThan(0));
   });
 
+  test('PDF merges special duty DİĞER across different companies', () {
+    final table = PdfRosterExporter.buildPdfTable(
+      [
+        MilitaryRosterRow(
+          sNu: 1,
+          birligi: "1'inci Bl.",
+          rutbe: 'Uzm.J.',
+          adSoyad: 'Recai KAYA',
+          diger: 'GÜLÜŞKÜR',
+          groupCode: 'GULUSKUR',
+        ),
+        MilitaryRosterRow(
+          sNu: 2,
+          birligi: "2'nci Bl.",
+          rutbe: 'J.Uzm.Çvş.',
+          adSoyad: 'İsmail KAYA',
+          diger: 'GÜLÜŞKÜR',
+          groupCode: 'GULUSKUR',
+        ),
+        MilitaryRosterRow(
+          sNu: 3,
+          birligi: "3'üncü Bl.",
+          rutbe: 'J.Uzm.Çvş.',
+          adSoyad: 'Ufuk Erdem SEVİNÇ',
+          diger: 'GÜLÜŞKÜR',
+          groupCode: 'GULUSKUR',
+        ),
+      ],
+    ) as pw.Table;
+
+    final digerCells = table.children
+        .skip(1)
+        .map((row) => row.children[4] as pw.Container)
+        .toList();
+    final labels = digerCells
+        .map(
+          (cell) => ((cell.child as pw.Text).text as pw.TextSpan).text ?? '',
+        )
+        .toList();
+
+    expect(labels, ['', 'GÜLÜŞKÜR', '']);
+    expect(digerCells[0].decoration?.border?.bottom.width, 0);
+    expect(digerCells[1].decoration?.border?.bottom.width, 0);
+    expect(digerCells[2].decoration?.border?.bottom.width, greaterThan(0));
+  });
+
   testWidgets('long PDF roster spans pages without generation errors',
       (tester) async {
     final rows = List.generate(
