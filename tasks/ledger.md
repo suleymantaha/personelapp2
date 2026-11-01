@@ -4,7 +4,7 @@ Tek yazıcı: koordinatör. Henüz bu paketle başlatılmış proje görevi yokt
 
 | Görev ID | Hedef | Durum | Aktif kayıt / kanıt |
 |---|---|---|---|
-| 2026-11-01-audit-hardening-apk | Audit düzeltmeleri ve veri koruyan imzalı APK | RUNNING | [Kayıt](active/2026-11-01-audit-hardening-apk.md) |
+| 2026-11-01-audit-hardening-apk | Audit düzeltmeleri ve veri koruyan imzalı APK | DONE | [Kayıt](active/2026-11-01-audit-hardening-apk.md) |
 | 2026-11-01-codebase-audit | Kod değişmeden rapor/test ve Android audit | DONE | [Kayıt](active/2026-11-01-codebase-audit.md) |
 | 2026-10-30-release-10324 | APK 1.0.9+10324, özel Drive ve CI'sız GitHub | DONE | [Kayıt](active/2026-10-30-release-10324.md) |
 | 2026-10-30-task-team-flow-repair | Snapshot arşiv filtresi ve güvenli tarih değiştirme | DONE | [Kayıt](active/2026-10-30-task-team-flow-repair.md) |

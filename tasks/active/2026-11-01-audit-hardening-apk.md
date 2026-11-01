@@ -7,7 +7,8 @@
 | Tier | 3 — kalıcı yetki, yedek snapshot ve native I/O |
 | Base | c16a7e5d4b4cb803d8ec9448d045d08d6a3b9acf |
 | Cwd/dal | F:/personelapp2 / fix/audit-hardening-apk-2026-11-01 |
-| Durum | IN_REVIEW — uygulama/kanıt tamam, Git teslimi hazırlanıyor |
+| Durum | DONE |
+| Git | 0dc6ad61a1297b83380f8aef921a1a135657d270 kaynak commit'i push edildi; remote hash eşleşti |
 | Yetki | Kullanıcının düzeltme ve APK talebi; main merge/store/deploy yok |
 | Sahiplik | Root backup/UI/release/defter; auth worker auth/personnel/activity ve atanmış UI; native worker Kotlin |
 | İnceleme | Bağımsız reviewer, salt okunur kaynak/artifact incelemesi |
@@ -50,6 +51,7 @@
 - Bağımsız source/artifact reviewer final594 dosya manifestinde0 uyuşmazlık ve
   artifact/signature/alignment/upgrade kanıtlarında blocker olmadığını doğruladı.
 - [Teslim raporu](../../docs/verification/audit-hardening-2026-11-01/REPORT.md).
+- [Git/artifact teslim kaydı](../../docs/verification/audit-hardening-2026-11-01/DELIVERY.md).
 - Ham log ve çalışma çıktıları build/audit-hardening altında; teslim kaydı docs/verification altında.
 
 ## Kalan kapsam

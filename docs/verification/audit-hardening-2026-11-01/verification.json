@@ -92,5 +92,7 @@
     "Android driver captured screenshots under NIZAM_AUDIT_SCREENSHOTS=build/audit-hardening/screenshots",
     "initial release --no-pub failed on stale integration plugin registrant; normal pub-get/build regenerated it",
     "all integration tests completed before final signed10327 baseline preparation; no uninstall/clear/downgrade during final upgrade"
-  ]
+  ],
+  "sourceCommit": "0dc6ad61a1297b83380f8aef921a1a135657d270",
+  "nativeUiEvidence": "native-ui-verification.json"
 }
