@@ -1,0 +1,4 @@
+versionCode=10327 minSdk=24 targetSdk=36
+versionName=1.0.12
+lastUpdateTime=2026-11-01 07:02:47
+firstInstallTime=2026-11-01 07:02:47

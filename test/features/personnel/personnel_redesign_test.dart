@@ -54,6 +54,8 @@ void main() {
     await tester.enterText(
         find.byKey(const ValueKey('personnel-search-field')), 'bulunamayan');
     await tester.pumpAndSettle();
+    expect(find.text('Kayıt bulunamadı'), findsOneWidget);
+    expect(find.text('Ara...'), findsNothing);
     await tester.tap(find.byKey(const ValueKey('personnel-search-toggle')));
     await tester.pumpAndSettle();
     expect(find.text(fullName), findsOneWidget);

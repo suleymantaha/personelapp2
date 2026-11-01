@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:personelapp2/core/providers/providers.dart';
@@ -9,6 +10,10 @@ void main() {
   for (final actor in [admin, commander]) {
     testWidgets('settings entry follows current ${actor.role.name} session',
         (tester) async {
+      tester.view.physicalSize = const Size(320, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(ProviderScope(
         overrides: [userSessionProvider.overrideWith((ref) => actor)],
         child: MaterialApp(
@@ -23,6 +28,12 @@ void main() {
       ));
       await tester.tap(find.text('settings'));
       await tester.pumpAndSettle();
+      for (final label in ['Açık', 'Koyu', 'Sistem']) {
+        final paragraph =
+            tester.renderObject<RenderParagraph>(find.text(label));
+        expect(paragraph.size.height, lessThan(25), reason: label);
+        expect(paragraph.didExceedMaxLines, isFalse, reason: label);
+      }
       expect(find.text('Görev timi geçmişini onar'),
           actor.isAdmin ? findsOneWidget : findsNothing);
     });

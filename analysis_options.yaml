@@ -20,6 +20,8 @@ analyzer:
     - "**/*.g.dart"
     - "lib/generated/**"
     - build/**
+    # Local QA captures contain copied harnesses, not application source.
+    - output/**
     - android/**
     - ios/**
     - web/**

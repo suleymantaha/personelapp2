@@ -13,6 +13,9 @@ import 'package:personelapp2/features/personnel/presentation/personnel_managemen
 import '../test/support/archive_flow_scenario.dart';
 import '../test/audit/codebase_risk_characterization_test.dart' as risks;
 import '../test/core/services/task_team_history_test.dart' as history;
+import '../test/core/services/backup_snapshot_concurrency_test.dart' as backup;
+import '../test/audit/auth_hardening_regression_test.dart' as auth;
+import '../test/audit/commander_scope_regression_test.dart' as commander;
 import 'monthly_visual_android_test.dart' as monthly;
 
 /// Audit-only entry point: synthetic memory databases, never the user's database.
@@ -106,5 +109,8 @@ Future<void> main() async {
     });
   }
   group('Android task team history', history.main);
-  group('Android observed risks (not fixes)', risks.main);
+  group('Android hardening regressions', risks.main);
+  group('Android backup snapshot', backup.main);
+  group('Android authority and legacy regression', auth.main);
+  group('Android commander scope regression', commander.main);
 }

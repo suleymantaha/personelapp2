@@ -15,8 +15,10 @@ void main() {
     role: UserRole.admin,
   );
 
-  setUp(() {
+  setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     repo = ActivityRepository(db);
   });
 

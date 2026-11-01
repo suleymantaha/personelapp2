@@ -16,6 +16,7 @@ extension ActivityRepositoryCopyOperations on ActivityRepository {
       throw ArgumentError.value(newDate, 'newDate', 'Invalid activity date');
     }
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       final source = await (db.select(db.gunlukFaaliyetTable)
             ..where((t) => t.id.equals(activityId)))
           .getSingleOrNull();

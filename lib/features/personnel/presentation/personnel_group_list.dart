@@ -50,7 +50,7 @@ extension _PersonnelGroupList on _PersonnelManagementScreenState {
     if (ids.isEmpty) {
       return AppEmptyState(
           icon: Icons.person_search_rounded,
-          title: context.l10n.commonSearch,
+          title: context.l10n.commonNoData,
           description: context.l10n.personnelNoCriteriaMatches);
     }
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [

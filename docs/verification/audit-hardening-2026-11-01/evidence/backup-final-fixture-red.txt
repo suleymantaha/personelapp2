@@ -1,0 +1,13 @@
+00:00 +0: loading F:/personelapp2/test/core/services/backup_snapshot_concurrency_test.dart
+00:00 +0: backup stays consistent when another connection attempts a commit
+00:00 +0 -1: backup stays consistent when another connection attempts a commit [E]
+  FormatException: Faaliyet-atama bağlantısı yedekte eksik bir kayda işaret ediyor.
+  package:personelapp2/core/services/app_backup_service.dart 653:7   AppBackupService._requireReferences
+  package:personelapp2/core/services/app_backup_service.dart 304:5   AppBackupService._parseAndValidate
+  package:personelapp2/core/services/app_backup_service.dart 180:20  AppBackupService.inspectBackupJson
+  test\core\services\backup_snapshot_concurrency_test.dart 88:19     main.<fn>
+
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  F:/personelapp2/test/core/services/backup_snapshot_concurrency_test.dart: backup stays consistent when another connection attempts a commit

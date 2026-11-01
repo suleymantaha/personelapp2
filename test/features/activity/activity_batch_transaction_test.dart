@@ -11,6 +11,8 @@ void main() {
   );
   test('batch creation rolls back all dates when one request fails', () async {
     final database = AppDatabase(NativeDatabase.memory());
+    await database.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     addTearDown(database.close);
     final repository = ActivityRepository(database);
     final personId = await database.into(database.personelTable).insert(
@@ -53,6 +55,8 @@ void main() {
   test('batch creation keeps same-day duty requests as separate cards',
       () async {
     final database = AppDatabase(NativeDatabase.memory());
+    await database.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     addTearDown(database.close);
     final repository = ActivityRepository(database);
     final firstPersonId = await database.into(database.personelTable).insert(
@@ -112,6 +116,8 @@ void main() {
 
   test('batch creation merges normalized same-day activity names', () async {
     final database = AppDatabase(NativeDatabase.memory());
+    await database.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     addTearDown(database.close);
     final repository = ActivityRepository(database);
     final firstPersonId = await database.into(database.personelTable).insert(

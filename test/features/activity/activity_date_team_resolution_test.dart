@@ -20,6 +20,8 @@ void main() {
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     repo = ActivityRepository(db);
     team = await db.into(db.timTable).insert(TimTableCompanion.insert(
         timAdi: 'Saved team', olusturmaTarihi: '2000-01-01'));

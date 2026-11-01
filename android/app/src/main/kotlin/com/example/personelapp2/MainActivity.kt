@@ -6,6 +6,9 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.CancellationSignal
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -14,6 +17,9 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.lang.ref.WeakReference
 
 class MainActivity : FlutterActivity() {
     companion object {
@@ -28,6 +34,9 @@ class MainActivity : FlutterActivity() {
 
     private var pendingResult: MethodChannel.Result? = null
     private var pendingBytes: ByteArray? = null
+    private val backupReaderExecutor = Executors.newSingleThreadExecutor()
+    private var backupReadFuture: Future<*>? = null
+    private var backupReadOperation: BackupReadOperation? = null
     private var ocrProgressDialog: ProgressDialog? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -138,7 +147,7 @@ class MainActivity : FlutterActivity() {
                 stream.write(bytesToWrite)
                 stream.flush()
             }
-            Log.d(TAG, "Wrote ${bytesToWrite.size} backup bytes to ${data.data}")
+            Log.d(TAG, "Wrote ${bytesToWrite.size} backup bytes")
             clearPending()
             result?.success(true)
         } catch (error: Exception) {
@@ -148,25 +157,67 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun handleOpenBackupResult(resultCode: Int, data: Intent?) {
-        val result = pendingResult
+        if (backupReadFuture != null) return
+        val result = pendingResult ?: return
         if (resultCode != Activity.RESULT_OK || data?.data == null) {
             clearPending()
-            result?.success(null)
+            result.success(null)
             return
         }
-        try {
-            val uri = data.data!!
-            val content = contentResolver.openInputStream(uri).use { stream ->
-                requireNotNull(stream) { "Secilen dosya okunamadi." }
-                stream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+        val uri = data.data!!
+        val resolver = applicationContext.contentResolver
+        val cancellation = CancellationSignal()
+        val operation = BackupReadOperation(
+            open = {
+                val descriptor = requireNotNull(resolver.openAssetFileDescriptor(uri, "r", cancellation)) {
+                    "Secilen dosya okunamadi."
+                }
+                try {
+                    descriptor.createInputStream()
+                } catch (error: Exception) {
+                    descriptor.close()
+                    throw error
+                }
+            },
+            cancelOpen = { cancellation.cancel() },
+        )
+        backupReadOperation = operation
+        val activity = WeakReference(this)
+        val mainHandler = Handler(Looper.getMainLooper())
+        val completion: (Result<String>) -> Unit = { content ->
+            val owner = activity.get()
+            if (owner != null) {
+                // Destruction/cancellation invalidates this completion. Keep the
+                // operation pending until here so a second call cannot race it.
+                if (owner.pendingResult === result && !owner.isDestroyed) {
+                    owner.backupReadFuture = null
+                    owner.backupReadOperation = null
+                    owner.clearPending()
+                    content.fold(
+                        onSuccess = { result.success(it) },
+                        onFailure = { result.error("READ_FAILED", it.message, null) },
+                    )
+                }
             }
-            Log.d(TAG, "Read ${content.length} backup characters from $uri")
-            clearPending()
-            result?.success(content)
-        } catch (error: Exception) {
-            clearPending()
-            result?.error("READ_FAILED", error.message, null)
         }
+        backupReadFuture = backupReaderExecutor.submit {
+            val content = runCatching { operation.read() }
+            mainHandler.post { completion(content) }
+        }
+    }
+
+    override fun onDestroy() {
+        if (backupReadFuture != null) {
+            runCatching { backupReadOperation?.cancel() }
+            backupReadOperation = null
+            backupReadFuture?.cancel(true)
+            backupReadFuture = null
+            val result = pendingResult
+            clearPending()
+            result?.error("READ_FAILED", "Yedek okuma iptal edildi.", null)
+        }
+        backupReaderExecutor.shutdownNow()
+        super.onDestroy()
     }
 
     private fun handleOcrImageResult(resultCode: Int, data: Intent?) {

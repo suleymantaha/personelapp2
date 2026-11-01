@@ -1,0 +1,21 @@
+UTC: 2026-11-01T06:51:27.7042442Z
+
+Algorithm Hash                                                             Path
+--------- ----                                                             ----
+SHA256    05B510AD16CBA590C4E9B934016363A788AFFD4895AB12AC95E6CC4F85196379 F:\personelapp2\android\app\src\main\kotlin\…
+SHA256    A83814F7150002D85DECFE9A9F0E40B26013EF992D74BE33F545BC0EE6117693 F:\personelapp2\android\app\src\test\kotlin\…
+
+PASS: empty
+PASS: UTF-8
+PASS: malformed UTF-8 replacement
+PASS: exact 50 MiB accepted and closed
+PASS: 50 MiB plus one rejected and closed
+PASS: unending stream stops at one overflow byte
+PASS: UTF-8 limit counts bytes rather than characters
+PASS: read error closes stream
+PASS: interrupt cancels read and closes stream
+PASS: slow read on worker can be interrupted
+PASS: cancel closes a provider read that ignores interruption
+PASS: cancel during open closes returned stream before reading
+PASS: cancel before open prevents provider access
+13 tests passed

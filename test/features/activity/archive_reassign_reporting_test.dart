@@ -17,6 +17,8 @@ void main() {
       'selected team reassign updates archive matrix analytics and Excel together',
       () async {
     final db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     addTearDown(db.close);
     const actor = UserSessionState(username: 'admin', role: UserRole.admin);
     final repo = ActivityRepository(db);

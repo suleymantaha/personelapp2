@@ -35,18 +35,22 @@ class SessionStorage {
     )..where((table) => table.kullaniciAdi.equals(username)))
         .getSingleOrNull();
     final role = user == null ? null : UserRole.fromStorageValue(user.rol);
-    if (user == null || role == null) {
+    if (user == null || role == null || user.sifre.trim().isEmpty) {
       await clearSession();
       return null;
     }
 
     var teamId = user.timId;
     if (role == UserRole.teamCommander && teamId == null) {
-      final squad = await (database.select(
+      final squads = await (database.select(
         database.timTable,
       )..where((table) => table.timKomutaniId.equals(user.id)))
-          .getSingleOrNull();
-      teamId = squad?.id;
+          .get();
+      if (squads.length > 1) {
+        await clearSession();
+        return null;
+      }
+      teamId = squads.isEmpty ? null : squads.single.id;
     }
 
     return UserSessionState(

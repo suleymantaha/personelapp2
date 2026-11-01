@@ -1,29 +1,10 @@
 @echo off
-echo ===================================================
-echo   FLUTTER SUITE RUNNER: Shopping & Debt Modules
-echo ===================================================
-
-echo [1/5] Running Flutter Static Analysis...
+setlocal
+echo Nizam host quality checks
 call flutter analyze
-if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Static analysis failed!
-    exit /b %ERRORLEVEL%
-)
-
-echo [2/5] Running Unit & Widget Tests with Coverage...
-call flutter test --coverage test/unit test/widget
-if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Unit/Widget tests failed!
-    exit /b %ERRORLEVEL%
-)
-
-echo [3/5] Running Integration User Journey Tests...
-call flutter test integration_test
-if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Integration tests failed!
-    exit /b %ERRORLEVEL%
-)
-
-echo ===================================================
-echo   TEST SUITE EXECUTED SUCCESSFULLY (%Coverage Target: 95%+)
-echo ===================================================
+if errorlevel 1 exit /b %ERRORLEVEL%
+call flutter test --coverage --reporter expanded --timeout 2m
+if errorlevel 1 exit /b %ERRORLEVEL%
+echo Host checks passed. See coverage/lcov.info for measured coverage.
+echo Android integration requires an explicitly verified nizam-nobet-test serial.
+exit /b 0

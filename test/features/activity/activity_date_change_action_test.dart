@@ -16,6 +16,8 @@ void main() {
   ]) {
     testWidgets('date change: $mode', (tester) async {
       final db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('synthetic-admin', 'synthetic-test-hash', 'yönetici')");
       addTearDown(db.close);
       final now = DateTime.now();
       final tomorrow = DateTime(now.year, now.month, now.day + 1);

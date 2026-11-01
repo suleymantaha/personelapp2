@@ -33,13 +33,7 @@ class ActivityRepository {
       {required int activityId, required UserSessionState actor}) {
     _requireAdmin(actor);
     return db.transaction(() async {
-      final account = await (db.select(db.kullaniciTable)
-            ..where((u) => u.kullaniciAdi.equals(actor.username)))
-          .getSingleOrNull();
-      if (account?.rol != UserRole.admin.storageValue) {
-        throw const AuthorizationException(
-            'Yönetici yetkisi artık geçerli değil.');
-      }
+      await requireOutputAuthority(actor);
       return (db.delete(db.gunlukFaaliyetTable)
             ..where((t) => t.id.equals(activityId)))
           .go();
@@ -58,6 +52,7 @@ class ActivityRepository {
     UserSessionState actor,
     List<PersonnelAssignmentInput> assignments,
   ) async {
+    final teamId = await requireOutputAuthority(actor);
     final personnelIds = assignments.map((item) => item.personnelId).toSet();
     if (personnelIds.isEmpty) return;
 
@@ -76,23 +71,7 @@ class ActivityRepository {
     }
     if (actor.isAdmin) return;
 
-    final account = await (db.select(db.kullaniciTable)
-          ..where(
-            (table) => table.kullaniciAdi.equals(actor.username),
-          ))
-        .getSingleOrNull();
-    final teamId = account?.timId;
-    final team = teamId == null
-        ? null
-        : await (db.select(db.timTable)
-              ..where((table) => table.id.equals(teamId)))
-            .getSingleOrNull();
-    if (account == null ||
-        account.rol != UserRole.teamCommander.storageValue ||
-        teamId == null ||
-        teamId != actor.timId ||
-        team?.timKomutaniId != account.id ||
-        personnel.any((person) => person.timId != teamId) ||
+    if (personnel.any((person) => person.timId != teamId) ||
         assignments.any((a) =>
             a.isOutsideTeam || (a.teamId != null && a.teamId != teamId))) {
       throw const AuthorizationException(

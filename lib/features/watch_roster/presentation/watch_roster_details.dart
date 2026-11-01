@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import '../domain/watch_roster.dart';
 
 class WatchRosterDetails extends StatelessWidget {
@@ -22,7 +23,7 @@ class WatchRosterDetails extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleLarge))),
               IconButton(
                   key: const ValueKey('watch-day-close'),
-                  tooltip: 'Kapat',
+                  tooltip: context.l10n.commonClose,
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.close)),
             ]),

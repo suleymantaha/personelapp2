@@ -7,7 +7,10 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
     required int visiblePersonnelCount,
     required VoidCallback? onExport,
   }) {
-    final monthLabel = DateFormat('MMM yyyy', 'tr_TR').format(_selectedMonth);
+    final compactMonth = MediaQuery.sizeOf(context).width < 360;
+    final monthLabel =
+        DateFormat(compactMonth ? 'MM\nyyyy' : 'MMM yyyy', 'tr_TR')
+            .format(_selectedMonth);
 
     return SliverAppBar(
       floating: true,
@@ -70,15 +73,20 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.calendar_month_outlined, size: 18),
-                          const SizedBox(width: 6),
+                          if (!compactMonth) ...[
+                            const Icon(Icons.calendar_month_outlined, size: 18),
+                            const SizedBox(width: 6),
+                          ],
                           Flexible(
                             child: Text(
                               monthLabel,
-                              maxLines: 1,
+                              semanticsLabel: DateFormat('MMMM yyyy', 'tr_TR')
+                                  .format(_selectedMonth),
+                              maxLines: compactMonth ? 2 : 1,
+                              textAlign: TextAlign.center,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 15,
+                              style: TextStyle(
+                                fontSize: compactMonth ? 12 : 15,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -98,7 +106,9 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
       actions: [
         IconButton(
           key: const ValueKey('matrix-mobile-search-button'),
-          tooltip: _isMobileSearchOpen ? context.l10n.matrixCloseSearchTooltip : context.l10n.matrixSearchPersonnelTooltip,
+          tooltip: _isMobileSearchOpen
+              ? context.l10n.matrixCloseSearchTooltip
+              : context.l10n.matrixSearchPersonnelTooltip,
           onPressed: () {
             FocusScope.of(context).unfocus();
             _updateState(() => _isMobileSearchOpen = !_isMobileSearchOpen);
@@ -147,7 +157,8 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
                   children: [
                     Expanded(
                       child: Text(
-                        context.l10n.matrixSearchPersonnelResult(_searchQuery, visiblePersonnelCount, totalPersonnelCount),
+                        context.l10n.matrixSearchPersonnelResult(_searchQuery,
+                            visiblePersonnelCount, totalPersonnelCount),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(

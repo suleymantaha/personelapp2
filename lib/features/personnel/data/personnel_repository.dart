@@ -19,26 +19,28 @@ class PersonnelRepository {
     final query = db.select(db.kullaniciTable).join([
       innerJoin(
           db.timTable,
-          db.timTable.id.equalsExp(db.kullaniciTable.timId) &
+          (db.timTable.id.equalsExp(db.kullaniciTable.timId) |
+                  db.kullaniciTable.timId.isNull()) &
               db.timTable.timKomutaniId.equalsExp(db.kullaniciTable.id)),
     ])
       ..where(db.kullaniciTable.kullaniciAdi.equals(username) &
           db.kullaniciTable.rol.equals('tim_komutani'));
-    return query.watch().map(
-        (rows) => rows.isEmpty ? null : rows.single.readTable(db.timTable).id);
+    return query.watch().map((rows) =>
+        rows.length != 1 ? null : rows.single.readTable(db.timTable).id);
   }
 
   Future<int?> currentCommanderTeam(String username) async {
     final query = db.select(db.kullaniciTable).join([
       innerJoin(
           db.timTable,
-          db.timTable.id.equalsExp(db.kullaniciTable.timId) &
+          (db.timTable.id.equalsExp(db.kullaniciTable.timId) |
+                  db.kullaniciTable.timId.isNull()) &
               db.timTable.timKomutaniId.equalsExp(db.kullaniciTable.id)),
     ])
       ..where(db.kullaniciTable.kullaniciAdi.equals(username) &
           db.kullaniciTable.rol.equals('tim_komutani'));
     final rows = await query.get();
-    return rows.isEmpty ? null : rows.single.readTable(db.timTable).id;
+    return rows.length != 1 ? null : rows.single.readTable(db.timTable).id;
   }
 
   /// Return all personnel sorted by rank weight (seniority)
@@ -351,14 +353,17 @@ class PersonnelRepository {
             ),
           );
 
-      // 2. Create squad linked to commander user
-      return db.into(db.timTable).insert(
+      // 2. Create both links atomically.
+      final teamId = await db.into(db.timTable).insert(
             TimTableCompanion.insert(
               timAdi: timAdi,
               olusturmaTarihi: olusturmaTarihi,
               timKomutaniId: Value(userId),
             ),
           );
+      await (db.update(db.kullaniciTable)..where((u) => u.id.equals(userId)))
+          .write(KullaniciTableCompanion(timId: Value(teamId)));
+      return teamId;
     });
   }
 

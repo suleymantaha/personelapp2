@@ -13,6 +13,8 @@ void main() {
       'admin card menu and selected team shortcut save only chosen rows',
       (tester) async {
     final db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     addTearDown(db.close);
     const admin = UserSessionState(username: 'admin', role: UserRole.admin);
     final repo = ActivityRepository(db);

@@ -28,11 +28,13 @@ extension ActivityOutputQueries on ActivityRepository {
       throw const AuthorizationException('Oturum yetkisi artık geçerli değil.');
     }
     if (actor.isAdmin) return null;
-    final teamId = account.timId;
-    final team = teamId == null
-        ? null
-        : await (db.select(db.timTable)..where((t) => t.id.equals(teamId)))
-            .getSingleOrNull();
+    final teams = await (db.select(db.timTable)
+          ..where((t) => t.timKomutaniId.equals(account.id)))
+        .get();
+    final team = account.timId == null
+        ? (teams.length == 1 ? teams.single : null)
+        : teams.where((t) => t.id == account.timId).firstOrNull;
+    final teamId = team?.id;
     if (teamId == null ||
         teamId != actor.timId ||
         team?.timKomutaniId != account.id) {

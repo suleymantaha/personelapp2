@@ -69,6 +69,7 @@ extension ActivityRepositoryDateOperations on ActivityRepository {
   }) {
     _requireAdmin(actor);
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       final preview = await previewActivityDateChange(
         activityId: activityId,
         newDate: newDate,

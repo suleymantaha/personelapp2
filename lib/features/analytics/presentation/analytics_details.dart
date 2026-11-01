@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../domain/team_analytics.dart';
+import 'analytics_colors.dart';
 
 class AnalyticsDetails extends StatelessWidget {
   const AnalyticsDetails({super.key, required this.data});
@@ -192,7 +193,7 @@ class AnalyticsDetails extends StatelessWidget {
           child: ExpansionTile(
             key: ValueKey('analytics-date-$team-$duty-$date'),
             dense: true,
-            leading: const Icon(Icons.event_outlined, size: 18, color: Color(0xFF2563EB)),
+            leading: const Icon(Icons.event_outlined, size: 18, color: AnalyticsColors.days),
             title: Text(
               formattedDate,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
@@ -280,7 +281,7 @@ class AnalyticsDetails extends StatelessWidget {
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4A5D36).withValues(alpha: 0.12),
+                      color: AnalyticsColors.teamParticipation.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -288,7 +289,7 @@ class AnalyticsDetails extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF4A5D36),
+                        color: AnalyticsColors.teamParticipation,
                       ),
                     ),
                   ),

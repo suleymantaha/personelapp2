@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../domain/team_analytics.dart';
+import 'analytics_colors.dart';
 
 class AnalyticsMetricsView extends StatelessWidget {
   const AnalyticsMetricsView({super.key, required this.metrics});
   final AnalyticsMetrics metrics;
 
   static const List<Color> _metricColors = [
-    Color(0xFF4A5D36), // Askeri Haki / Zeytin
+    AnalyticsColors.teamParticipation, // Askeri Haki / Zeytin
     Color(0xFF1D4ED8), // Görev Çeliği / Mavi
     Color(0xFF047857), // Zümrüt Yeşili
     Color(0xFFB45309), // Kehribar / Bronz
@@ -171,8 +172,8 @@ class AnalyticsCharts extends StatelessWidget {
   final TeamAnalytics data;
 
   static const List<Color> _palette = [
-    Color(0xFF4A5D36),
-    Color(0xFF2563EB),
+    AnalyticsColors.teamParticipation,
+    AnalyticsColors.days,
     Color(0xFF0D9488),
     Color(0xFFD97706),
     Color(0xFF8B5CF6),
@@ -397,8 +398,8 @@ class AnalyticsCharts extends StatelessWidget {
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     )),
-                _legendChip('Tim katılımı', const Color(0xFF4A5D36)),
-                _legendChip('Gün', const Color(0xFF2563EB)),
+                _legendChip('Tim katılımı', AnalyticsColors.teamParticipation),
+                _legendChip('Gün', AnalyticsColors.days),
               ],
             ),
             const SizedBox(height: 16),
@@ -475,7 +476,7 @@ class AnalyticsCharts extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4A5D36).withValues(alpha: 0.12),
+                  color: AnalyticsColors.teamParticipation.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -483,7 +484,7 @@ class AnalyticsCharts extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF4A5D36),
+                    color: AnalyticsColors.teamParticipation,
                   ),
                 ),
               ),
@@ -491,7 +492,7 @@ class AnalyticsCharts extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2563EB).withValues(alpha: 0.12),
+                  color: AnalyticsColors.days.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -499,7 +500,7 @@ class AnalyticsCharts extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2563EB),
+                    color: AnalyticsColors.days,
                   ),
                 ),
               ),
@@ -514,7 +515,7 @@ class AnalyticsCharts extends StatelessWidget {
               backgroundColor:
                   theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
               valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF4A5D36)),
+                  const AlwaysStoppedAnimation<Color>(AnalyticsColors.teamParticipation),
             ),
           ),
         ],

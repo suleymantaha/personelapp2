@@ -10,6 +10,8 @@ import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 void main() {
   test('preview reports groups and conflicts without writing data', () async {
     final database = AppDatabase(NativeDatabase.memory());
+    await database.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     addTearDown(database.close);
     final repository = ActivityRepository(database);
     final squadId = await database.into(database.timTable).insert(

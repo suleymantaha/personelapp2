@@ -1,0 +1,24 @@
+{
+  "utc": "2026-11-01T07:08:59.149980+00:00",
+  "avd": "nizam-nobet-test",
+  "serial": "emulator-5554",
+  "baselineCode": 10327,
+  "candidateCode": 10328,
+  "applicationId": "com.example.personelapp2",
+  "firstInstallTime": "2026-11-01 07:02:47",
+  "install": "adb install -r",
+  "sameSignerSha256": "afa692e51779950a263e6320220a7738d5c3fe5549c8c4b3eeda062a85ede63c",
+  "apkSha256": "f4219bea03f0ad4739a8a6d11452353ab16aa898221df7dae527cd2970f26f8a",
+  "assertions": {
+    "personName": true,
+    "rank": true,
+    "team": true,
+    "activity": true,
+    "duty": true,
+    "darkTheme": true,
+    "adminSession": true,
+    "firstInstallTimeRetained": true,
+    "installedBytesMatchArtifact": true
+  },
+  "scope": "synthetic UI records and settings; not a byte-for-byte database comparison"
+}

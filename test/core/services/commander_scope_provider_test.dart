@@ -11,14 +11,14 @@ void main() {
     'an old commander session no longer reads the squad after handover',
     () async {
       final db = AppDatabase(NativeDatabase.memory());
+      await db.customStatement(
+          "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
       final repo = PersonnelRepository(db);
       final team = await repo.addSquad(
         timAdi: '1-B',
         olusturmaTarihi: '2026-01-01',
       );
-      final user = await db
-          .into(db.kullaniciTable)
-          .insert(
+      final user = await db.into(db.kullaniciTable).insert(
             KullaniciTableCompanion.insert(
               kullaniciAdi: 'old',
               rol: 'tim_komutani',

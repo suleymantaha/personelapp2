@@ -11,8 +11,10 @@ void main() {
   late AppDatabase db;
   late PersonnelRepository people;
   late ActivityRepository activities;
-  setUp(() {
+  setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     people = PersonnelRepository(db);
     activities = ActivityRepository(db);
   });

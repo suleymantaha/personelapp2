@@ -45,6 +45,12 @@ class AppBackupService {
 
   Future<String> exportBackupJson() async {
     final prefs = await _preferences();
+    // Every table, repair audit and sequence must describe the same revision.
+    // Drift also supports the existing repair preview's outer transaction.
+    return db.transaction(() => _exportSnapshot(prefs));
+  }
+
+  Future<String> _exportSnapshot(SharedPreferences prefs) async {
     final usersList = await db.select(db.kullaniciTable).get();
     final squadsList = await db.select(db.timTable).get();
     final personnelList = await db.select(db.personelTable).get();

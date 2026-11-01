@@ -1,0 +1,17 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Personel App, OU=Mobile, O=Personel App, L=Istanbul, ST=Istanbul, C=TR
+Signer #1 certificate SHA-256 digest: afa692e51779950a263e6320220a7738d5c3fe5549c8c4b3eeda062a85ede63c
+Signer #1 certificate SHA-1 digest: 2944915e80549dd46ad2737a4ae93cca4dc3b05a
+Signer #1 certificate MD5 digest: 090d6946cb35e448c8e8c80f56b8ec8d
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: 6f15db50b1c94eaebb82b06d86037ef4569b5357b5e476bb8430d7d09a857950
+Signer #1 public key SHA-1 digest: a774998b50623b68ce1e36f451faab80973f9e5a
+Signer #1 public key MD5 digest: ee8f0d34564211f935a7ec20eb29fe86

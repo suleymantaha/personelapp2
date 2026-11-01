@@ -146,6 +146,7 @@ class DashboardSettings {
           return Consumer(
             builder: (ctx, ref, _) {
               final themeMode = ref.watch(themeModeProvider);
+              final compactTheme = MediaQuery.sizeOf(ctx).width < 360;
 
               return SafeArea(
                 child: ResponsiveCenter(
@@ -214,26 +215,39 @@ class DashboardSettings {
                               SizedBox(
                                 width: double.infinity,
                                 child: SegmentedButton<ThemeMode>(
+                                  showSelectedIcon: !compactTheme,
                                   segments: [
                                     ButtonSegment<ThemeMode>(
                                       value: ThemeMode.light,
-                                      label:
-                                          Text(context.l10n.settingsThemeLight),
-                                      icon:
-                                          const Icon(Icons.light_mode_outlined),
+                                      label: Text(
+                                          context.l10n.settingsThemeLight,
+                                          maxLines: 1,
+                                          softWrap: false),
+                                      icon: compactTheme
+                                          ? null
+                                          : const Icon(
+                                              Icons.light_mode_outlined),
                                     ),
                                     ButtonSegment<ThemeMode>(
                                       value: ThemeMode.dark,
-                                      label:
-                                          Text(context.l10n.settingsThemeDark),
-                                      icon:
-                                          const Icon(Icons.dark_mode_outlined),
+                                      label: Text(
+                                          context.l10n.settingsThemeDark,
+                                          maxLines: 1,
+                                          softWrap: false),
+                                      icon: compactTheme
+                                          ? null
+                                          : const Icon(
+                                              Icons.dark_mode_outlined),
                                     ),
                                     ButtonSegment<ThemeMode>(
                                       value: ThemeMode.system,
                                       label: Text(
-                                          context.l10n.settingsThemeSystem),
-                                      icon: const Icon(Icons.brightness_auto),
+                                          context.l10n.settingsThemeSystem,
+                                          maxLines: 1,
+                                          softWrap: false),
+                                      icon: compactTheme
+                                          ? null
+                                          : const Icon(Icons.brightness_auto),
                                     ),
                                   ],
                                   selected: {themeMode},

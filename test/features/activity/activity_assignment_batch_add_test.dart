@@ -25,6 +25,8 @@ void main() {
 
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
+    await database.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     repository = ActivityRepository(database);
     for (final name in ['1. Tim', '2. Tim']) {
       await database.into(database.timTable).insert(

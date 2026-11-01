@@ -9,6 +9,7 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
   }) {
     _requireAdmin(actor);
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       // Load both activities
       final sourceActivity = await (db.select(
         db.gunlukFaaliyetTable,
@@ -121,6 +122,7 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
       throw ArgumentError.value(activityName, 'activityName', 'Boş olamaz.');
     }
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       final source = await (db.select(db.gunlukFaaliyetTable)
             ..where(
               (table) => table.id.equals(sourceActivityId),
@@ -170,6 +172,7 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
   }) {
     _requireAdmin(actor);
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       // 1. Kaynak atamayı yükle
       final assignment = await (db.select(db.faaliyetPersonelAtamaTable)
             ..where((tbl) => tbl.id.equals(assignmentId)))
@@ -249,6 +252,7 @@ extension ActivityRepositoryTransferOperations on ActivityRepository {
       throw ArgumentError.value(activityName, 'activityName', 'Boş olamaz.');
     }
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       final assignment = await (db.select(
         db.faaliyetPersonelAtamaTable,
       )..where((table) => table.id.equals(assignmentId)))

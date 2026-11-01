@@ -1,0 +1,96 @@
+{
+  "base": "c16a7e5d4b4cb803d8ec9448d045d08d6a3b9acf",
+  "observedUtc": "2026-11-01T07:18:17.792300+00:00",
+  "sourceManifestSha256": "b0ecdc17a64abb232dad5496ce09fe81e01f10a187dd827cc08b1e86b5186d25",
+  "sourceFiles": 594,
+  "apk": {
+    "path": "F:\\personelapp2\\build\\releases\\Nizam-1.0.13+10328.apk",
+    "bytes": 118931171,
+    "sha256": "f4219bea03f0ad4739a8a6d11452353ab16aa898221df7dae527cd2970f26f8a",
+    "applicationId": "com.example.personelapp2",
+    "versionName": "1.0.13",
+    "versionCode": 10328,
+    "signatureVerificationExit": 0,
+    "alignment16KiBExit": 0,
+    "abis": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "x86_64"
+    ]
+  },
+  "sourceAndArtifactReview": "independent hardening_review accepted; root ran tests and upgrade, reviewer verified files/artifact read-only",
+  "records": [
+    {
+      "id": "host",
+      "command": "flutter test --no-pub --reporter expanded --timeout 2m",
+      "cwd": "F:\\personelapp2",
+      "status": "PASS",
+      "exitCode": 0,
+      "tests": 1026,
+      "skipped": 1,
+      "completedUtc": "2026-11-01T06:56:58.094318+00:00",
+      "evidence": "evidence/full-tests.txt"
+    },
+    {
+      "id": "analyze",
+      "command": "flutter analyze --no-pub",
+      "cwd": "F:\\personelapp2",
+      "status": "PASS",
+      "exitCode": 0,
+      "tests": null,
+      "skipped": null,
+      "completedUtc": "2026-11-01T06:57:19.340178+00:00",
+      "evidence": "evidence/analyze.txt"
+    },
+    {
+      "id": "native",
+      "command": "./android/app/src/test/run-bounded-backup-tests.ps1",
+      "cwd": "F:\\personelapp2",
+      "status": "PASS",
+      "exitCode": 0,
+      "tests": 13,
+      "skipped": 0,
+      "completedUtc": "2026-11-01T06:51:31.767978+00:00",
+      "evidence": "evidence/native-tests.txt"
+    },
+    {
+      "id": "android-regression",
+      "command": "flutter drive --driver=test_driver/codebase_audit.dart --target=integration_test/codebase_audit_android_test.dart -d emulator-5554 --no-pub",
+      "cwd": "F:\\personelapp2",
+      "status": "PASS",
+      "exitCode": 0,
+      "tests": 20,
+      "skipped": 0,
+      "completedUtc": "2026-11-01T06:59:18.472284+00:00",
+      "evidence": "evidence/android-regression.txt"
+    },
+    {
+      "id": "android-surfaces",
+      "command": "flutter drive --driver=test_driver/codebase_audit.dart --target=integration_test/audit_surfaces_android_test.dart -d emulator-5554 --no-pub",
+      "cwd": "F:\\personelapp2",
+      "status": "PASS",
+      "exitCode": 0,
+      "tests": 4,
+      "skipped": 0,
+      "completedUtc": "2026-11-01T07:00:54.492026+00:00",
+      "evidence": "evidence/android-surfaces.txt"
+    },
+    {
+      "id": "release",
+      "command": "flutter build apk --release --build-name=1.0.13 --build-number=10328",
+      "cwd": "F:\\personelapp2",
+      "status": "PASS",
+      "exitCode": 0,
+      "tests": null,
+      "skipped": null,
+      "completedUtc": "2026-11-01T07:03:55.743417+00:00",
+      "evidence": "evidence/release-build-2.txt"
+    }
+  ],
+  "notes": [
+    "one redundant test import removed after initial full-suite input; final Android snapshot test/analyze passed on final manifest",
+    "Android driver captured screenshots under NIZAM_AUDIT_SCREENSHOTS=build/audit-hardening/screenshots",
+    "initial release --no-pub failed on stale integration plugin registrant; normal pub-get/build regenerated it",
+    "all integration tests completed before final signed10327 baseline preparation; no uninstall/clear/downgrade during final upgrade"
+  ]
+}

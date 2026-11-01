@@ -1,0 +1,180 @@
+Running Gradle task 'assembleDebug'...
+WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): flutter_contacts, google_mlkit_commons, google_mlkit_text_recognition
+Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
+
+Please check the changelogs of these plugins and upgrade to a version that supports Built-in Kotlin.
+If no such version exists, report the issue to the plugin. If necessary, here is a guide on filing
+an issue against a plugin: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-developers#report-incompatible-kotlin-gradle-plugin-usage-to-plugin-authors
+
+If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
+Warning: SDK processing. This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered. This can happen if you use versions of Android Studio and the command-line tools that were released at different times.
+Running Gradle task 'assembleDebug'...                             60,6s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...        1.142ms
+I/personelapp2.qa(11843): Compiler allocated 5559KB to compile void android.view.ViewRootImpl.performTraversals(long)
+I/Choreographer(11843): Skipped 33 frames!  The application may be doing too much work on its main thread.
+D/WindowLayoutComponentImpl(11843): Register WindowLayoutInfoListener on Context=com.example.personelapp2.MainActivity@425f61c, of which baseContext=android.app.ContextImpl@190ecb4
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+I/HWUI    (11843): Using FreeType backend (prop=Auto)
+VMServiceFlutterDriver: Connecting to Flutter application at <redacted-vm-service-url>
+VMServiceFlutterDriver: Isolate found with number: 1054031729001003
+VMServiceFlutterDriver: Isolate 1054031729001003 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+I/flutter (11843): 00:00 +0: archive to selected-team export and day export preserves records
+VMServiceFlutterDriver: Connected to Flutter application.
+D/InsetsController(11843): hide(ime())
+I/ImeTracker(11843): com.example.personelapp2.qa:c81dabca: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/ProfileInstaller(11843): Installing profile for com.example.personelapp2.qa
+I/Surface (11843): Creating surface for consumer unnamed-11843-2 with slotExpansion=1 for 64 slots
+I/Surface (11843): Creating surface for consumer ImageReader-320x640f1m3-11843-0 with slotExpansion=1 for 64 slots
+D/WindowOnBackDispatcher(11843): setTopOnBackInvokedCallback (unwrapped): io.flutter.embedding.android.FlutterActivity$1@c4e3d62
+D/WindowOnBackDispatcher(11843): setOnBackInvokedCallbackInfo: io.flutter.embedding.android.FlutterActivity$1@c4e3d62
+VMServiceFlutterDriver: request_data message is taking a long time to complete...
+D/WindowOnBackDispatcher(11843): setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@d04f353
+D/WindowOnBackDispatcher(11843): setOnBackInvokedCallbackInfo: android.app.Activity$$ExternalSyntheticLambda0@d04f353
+D/WindowOnBackDispatcher(11843): setTopOnBackInvokedCallback (unwrapped): io.flutter.embedding.android.FlutterActivity$1@c4e3d62
+D/WindowOnBackDispatcher(11843): setOnBackInvokedCallbackInfo: io.flutter.embedding.android.FlutterActivity$1@c4e3d62
+I/ImeTracker(11843): com.example.personelapp2.qa:05aee7b4: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController(11843): show(ime())
+D/InsetsController(11843): Setting requestedVisibleTypes to 511 (was 503)
+I/ImeTracker(11843): com.example.personelapp2.qa:3d11e1f5: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController(11843): show(ime())
+I/ImeTracker(11843): com.example.personelapp2.qa:3d11e1f5: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(11843): The input method toggled cursor monitoring on
+I/AssistStructure(11843): Flattened final assist data: 544 bytes, containing 1 windows, 3 views
+I/ImeTracker(11843): com.example.personelapp2.qa:1b046d98: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController(11843): hide(ime())
+D/InsetsController(11843): Setting requestedVisibleTypes to 503 (was 511)
+D/CompatChangeReporter(11843): Compat change id reported: 395521150; UID 10242; state: ENABLED
+D/WindowOnBackDispatcher(11843): setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@d04f353
+D/WindowOnBackDispatcher(11843): setOnBackInvokedCallbackInfo: android.app.Activity$$ExternalSyntheticLambda0@d04f353
+E/ConsumerBase(11843): [ImageReader-320x640f1m3-11843-0] abandonLocked: ConsumerBase is abandoned!
+I/flutter (11843): 00:09 +1: monthly summary, modern day detail and matrix on Android
+I/Surface (11843): Creating surface for consumer unnamed-11843-3 with slotExpansion=1 for 64 slots
+I/Surface (11843): Creating surface for consumer ImageReader-320x640f1m3-11843-1 with slotExpansion=1 for 64 slots
+E/ConsumerBase(11843): [ImageReader-320x640f1m3-11843-1] abandonLocked: ConsumerBase is abandoned!
+I/flutter (11843): 00:14 +2: audit personnel search and cancel preserve rows (dark=false)
+I/ImeTracker(11843): com.example.personelapp2.qa:1bde023f: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController(11843): show(ime())
+D/InsetsController(11843): Setting requestedVisibleTypes to 511 (was 503)
+I/ImeTracker(11843): com.example.personelapp2.qa:47c384b8: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController(11843): show(ime())
+I/ImeTracker(11843): com.example.personelapp2.qa:47c384b8: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(11843): The input method toggled cursor monitoring on
+I/AssistStructure(11843): Flattened final assist data: 536 bytes, containing 1 windows, 3 views
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+W/InteractionJankMonitor(11843): Initializing without READ_DEVICE_CONFIG permission. enabled=false, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.example.personelapp2.qa
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+I/ImeTracker(11843): com.example.personelapp2.qa:1bde023f: onShown
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+I/ImeTracker(11843): com.example.personelapp2.qa:7f380811: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController(11843): show(ime())
+I/ImeTracker(11843): com.example.personelapp2.qa:7f380811: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+I/Surface (11843): Creating surface for consumer unnamed-11843-4 with slotExpansion=1 for 64 slots
+I/Surface (11843): Creating surface for consumer ImageReader-320x640f1m3-11843-2 with slotExpansion=1 for 64 slots
+I/ImeTracker(11843): com.example.personelapp2.qa:fc489c8c: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController(11843): hide(ime())
+D/InsetsController(11843): Setting requestedVisibleTypes to 503 (was 511)
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+E/ConsumerBase(11843): [ImageReader-320x640f1m3-11843-2] abandonLocked: ConsumerBase is abandoned!
+I/flutter (11843): 00:19 +3: audit personnel search and cancel preserve rows (dark=true)
+I/ImeTracker(11843): com.example.personelapp2.qa:bdf051ad: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController(11843): show(ime())
+D/InsetsController(11843): Setting requestedVisibleTypes to 511 (was 503)
+I/ImeTracker(11843): com.example.personelapp2.qa:ff5defee: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController(11843): show(ime())
+I/ImeTracker(11843): com.example.personelapp2.qa:ff5defee: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(11843): The input method toggled cursor monitoring on
+I/AssistStructure(11843): Flattened final assist data: 536 bytes, containing 1 windows, 3 views
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+I/ImeTracker(11843): com.example.personelapp2.qa:bdf051ad: onShown
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+I/ImeTracker(11843): com.example.personelapp2.qa:baf935fe: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController(11843): show(ime())
+I/ImeTracker(11843): com.example.personelapp2.qa:baf935fe: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+I/Surface (11843): Creating surface for consumer unnamed-11843-5 with slotExpansion=1 for 64 slots
+I/Surface (11843): Creating surface for consumer ImageReader-320x640f1m3-11843-3 with slotExpansion=1 for 64 slots
+I/ImeTracker(11843): com.example.personelapp2.qa:0843a5d9: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController(11843): hide(ime())
+D/InsetsController(11843): Setting requestedVisibleTypes to 503 (was 511)
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+D/FlutterJNI(11843): Sending viewport metrics to the engine.
+E/ConsumerBase(11843): [ImageReader-320x640f1m3-11843-3] abandonLocked: ConsumerBase is abandoned!
+I/flutter (11843): 00:25 +4: Android task team history dated history uses latest calendar day, ignores valid future changes
+I/flutter (11843): 00:25 +5: Android task team history same day identical states are certain but distinct teams ambiguous
+I/flutter (11843): 00:25 +6: Android task team history invalid event dates and invalid later actions never infer a snapshot
+I/flutter (11843): 00:25 +7: Android task team history add without team and deleted team references are unknown
+I/flutter (11843): 00:25 +8: Android hardening regressions F01 regression: new squad commander resolves the created team
+I/flutter (11843): 00:25 +9: Android hardening regressions F02 regression: demoted admin cannot approve assignment
+I/flutter (11843): 00:25 +10: Android hardening regressions F04 regression: password reset invalidates saved session
+I/flutter (11843): 00:25 +11: Android backup snapshot backup stays consistent when another connection attempts a commit
+I/flutter (11843): WARNING (drift): It looks like you've created the database class AppDatabase multiple times. When these two databases use the same QueryExecutor, race conditions will occur and might corrupt the database.
+I/flutter (11843): Try to follow the advice at https://drift.simonbinder.eu/faq/#using-the-database or, if you know what you're doing, set driftRuntimeOptions.dontWarnAboutMultipleDatabases = true
+I/flutter (11843): Here is the stacktrace from when the database was opened a second time:
+I/flutter (11843): #0      GeneratedDatabase._handleInstantiated (package:drift/src/runtime/api/db_base.dart:96:30)
+I/flutter (11843): #1      GeneratedDatabase._whenConstructed (package:drift/src/runtime/api/db_base.dart:73:12)
+I/flutter (11843): #2      new GeneratedDatabase (package:drift/src/runtime/api/db_base.dart:64:5)
+I/flutter (11843): #3      new _$AppDatabase (package:personelapp2/core/database/database.g.dart:3284:36)
+I/flutter (11843): #4      new AppDatabase (package:personelapp2/core/database/database.dart:24:37)
+I/flutter (11843): #5      main.<anonymous closure> (file:///F:/personelapp2/test/core/services/backup_snapshot_concurrency_test.dart:60:20)
+I/flutter (11843): <asynchronous suspension>
+I/flutter (11843): #6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)
+I/flutter (11843): <asynchronous suspension>
+I/flutter (11843): #7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+I/flutter (11843): <asynchronous suspension>
+I/flutter (11843): #8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+I/flutter (11843): <asynchronous suspension>
+I/flutter (11843): This warning will only appear on debug builds.
+I/flutter (11843): 00:25 +12: Android authority and legacy regression F01 new and legacy commanders resolve and assign their own team
+I/flutter (11843): 00:26 +13: Android authority and legacy regression F02 demoted admin cannot mutate through stale actor
+I/flutter (11843): 00:26 +14: Android authority and legacy regression F02 deleted admin cannot mutate through stale actor
+I/flutter (11843): 00:26 +15: Android authority and legacy regression F02 forged admin cannot mutate through stale actor
+I/flutter (11843): 00:26 +16: Android authority and legacy regression F04 legacy password reset clears saved session until password setup
+I/flutter (11843): 00:26 +17: Android commander scope regression legacy activity watcher requires unique ownership even without tasks in second team
+I/flutter (11843): 00:26 +18: Android commander scope regression ambiguous legacy saved session is cleared without startup exception
+I/flutter (11843): 00:26 +19: Android commander scope regression revoked commander cannot create or add assignments using old session
+I/flutter (11843): 00:26 +20: (tearDownAll)
+I/flutter (11843): 00:26 +21: All tests passed!
+All tests passed.

@@ -139,6 +139,8 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final database = AppDatabase(NativeDatabase.memory());
+    await database.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     addTearDown(database.close);
     await database.into(database.timTable).insert(
           TimTableCompanion.insert(

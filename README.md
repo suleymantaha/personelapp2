@@ -1,64 +1,59 @@
-# PersonelApp2 - Personel, Nöbet, Alışveriş ve Borç Yönetim Sistemi
+# Nizam / PersonelApp2
 
-Proje, personel takibi, nöbet matrisi, günlük raporlama, **Alışveriş (Kantin/Sepet)** ve **Borç Yönetimi (Taksitlendirme & Çevrimdışı Senkronizasyon)** modüllerini içeren modern bir Flutter uygulamasıdır.
+Flutter tabanlı, yerel SQLite ile çalışan personel ve görev yönetim uygulaması.
 
----
+## Modüller
 
-## 🌟 Öne Çıkan Özellikler ve Modüller
+- Personel ve tim yönetimi, komutan kapsamı ve kalıcı sıralama.
+- Faaliyet oluşturma, onay, arşiv, görev timi snapshot ve çıktı hazırlama.
+- Tim görev analizi, aylık özet ve günlük ayrıntılar.
+- Aylık personel/görev matrisi ve nöbet takvimi.
+- TEMGÜNDRAP taslakları ve belge çıktıları.
+- Yerel hesap/parola, tema, tam yedekleme ve geri yükleme.
 
-1. **Alışveriş & Kantin Modülü (`lib/features/shopping`)**:
-   - Ürün kataloğu, stok kontrolleri, indirim uygulama.
-   - Sepet yönetimi (`CartNotifier` - Riverpod) ve ödeme (checkout) süreçleri.
-   - Tip güvenli immutable veri modelleri (`ShoppingProduct`, `CartItem`).
+`lib/features/` sekiz feature içerir: activity, analytics, auth, dashboard,
+matrix, personnel, temgundrap ve watch_roster. Shopping/debt veya cloud sync modülü yoktur.
 
-2. **Borç Yönetimi & Taksitlendirme Modülü (`lib/features/debt`)**:
-   - Borç kaydı oluşturma, otomatik taksit planlama.
-   - Taksit ödemeleri, kalan bakiye ve durum takibi (`active`, `paid`, `overdue`).
-   - **Çevrimdışı Senkronizasyon (`OfflineSyncService`)**: İnternet bağlantısı koptuğunda işlemleri yerelde kuyruklama, bağlantı sağlandığında arka planda otomatik senkronizasyon ve race-condition kilit mekanizması.
+## Yerel kontroller
 
-3. **Personel & Nöbet Matrisi**:
-   - Personel liste yönetimi, arama, filtreleme, yedekleme.
-   - Aylık nöbet matrisi, Vardiya & Temgundrap çizelgeleri.
-
----
-
-## 🧪 Kapsamlı Test Mimarısı (%95+ Target Coverage)
-
-Proje; Unit, Widget, Flutter Driver / Integration Test ve Mocking katmanlarına ayrılmıştır.
-
-```
-test/
-├── mocks/                      # Mockito ile otomatik üretilen bağımlılık izolasyonları
-│   ├── mock_annotations.dart
-│   └── mock_annotations.mocks.dart
-├── unit/                       # Birim testleri (Stok, Taksit, Sync, Race Condition)
-│   └── features/
-│       ├── debt/
-│       └── shopping/
-└── widget/                     # Widget rendering ve arayüz etkileşim testleri
-    └── features/
-
-integration_test/              # Canlı Cihaz / Emülatör Uçtan Uca (E2E) Testleri
-├── shopping_user_journey_test.dart
-├── debt_user_journey_test.dart
-└── offline_sync_user_journey_test.dart
+```powershell
+flutter pub get
+flutter analyze
+flutter test --reporter expanded --timeout 2m
 ```
 
-### Testleri Çalıştırma:
-- **Tüm Statik Analiz & Testler**: `.\scripts\test_runner.bat`
-- **Birim & Widget Testleri (Coverage ile)**: `flutter test --coverage test/unit test/widget`
-- **Cihaz Üzerinde Entegrasyon Testleri**: `flutter test integration_test`
-- **Çalışma Alanı Temizliği**: `.\scripts\clean_workspace.bat`
+`test/core`, `test/features`, `test/unit`, `test/widget` ve `test/audit` aynı tam
+komutla keşfedilir. `scripts/test_runner.bat` host analiz/test sarmalayıcısıdır;
+cihaza otomatik kurulum yapmaz. Coverage yüzde hedefi ile ölçülmüş coverage ayrıdır.
 
----
+Android integration testlerini yalnız ayrı `nizam-nobet-test` AVD'sinde ve her
+çalışmada yeniden doğrulanan seri ile çalıştırın. Örnek:
 
-## ⚙️ CI/CD Pipeline (GitHub Actions)
+```powershell
+flutter drive --keep-app-running --driver=test_driver/codebase_audit.dart --target=integration_test/codebase_audit_android_test.dart -d <verified-test-serial>
+```
 
-Workflow dosyası: [.github/workflows/flutter_test_ci.yml](file:///c:/Users/baba/personelapp2/.github/workflows/flutter_test_ci.yml)
+Integration debug target'ları `.qa` applicationId suffix'i kullanır. Flutter
+driver'ın test sonu uninstall adımından kaçınmak için `--keep-app-running` kullanın.
+Signed upgrade baseline'ını integration testleri bittikten sonra kurup hazırlayın;
+gerçek kullanıcı cihazında test veya veri temizleme yapılmaz.
+Native bounded backup testleri için mevcut cached Kotlin compiler ile:
 
-`main` dalına push yapıldığında CI pipeline'ı otomatik olarak:
-1. `flutter analyze` ile statik analizi doğrular.
-2. 127+ birim ve widget testini kapsama oranıyla çalıştırır.
-3. Entegrasyon test suite'ini doğrular.
-4. Release APK (`app-release.apk`) paketini derler.
-5. Derlenen APK ve test raporlarını **3 gün otomatik saklama süresi (retention-days: 3)** ile çıktı verir ve çalışma alanını temizler.
+```powershell
+./android/app/src/test/run-bounded-backup-tests.ps1
+```
+
+## Yapı ve veri sınırları
+
+Flutter/Riverpod/GoRouter, Drift/SQLite ve SharedPreferences kullanılır.
+DB standart SQLite'tır; uygulama düzeyinde DB encryption yoktur. JSON yedek
+checksum'u bozulmayı denetler, encryption/authentication sağlamaz. Yedek dosyalarını
+hassas veri olarak koruyun. Parolalar Argon2id ile hash'lenir.
+
+Release hazırlığı, sürüm/signer devamlılığı ve veri koruyan güncelleme kuralları
+[AGENTS.md](AGENTS.md) içindedir. Aynı applicationId ve signer korunmalı; yeni
+versionCode dağıtılmış ve CI paketlerinden daha büyük olmalıdır.
+
+[CI workflow](.github/workflows/android-release.yml), [kontroller](CHECKS.md),
+[kod audit raporu](docs/audits/2026-11-01/RAPOR.md),
+[düzeltme/APK raporu](docs/verification/audit-hardening-2026-11-01/REPORT.md).

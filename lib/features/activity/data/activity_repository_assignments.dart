@@ -10,6 +10,7 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
   }) {
     _requireAdmin(actor);
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       final assignment = await (db.select(db.faaliyetPersonelAtamaTable)
             ..where((table) => table.id.equals(assignmentId)))
           .getSingle();
@@ -69,6 +70,7 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
     if (ids.isEmpty) return Future.value(0);
 
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       final activity = await (db.select(db.gunlukFaaliyetTable)
             ..where((t) => t.id.equals(activityId)))
           .getSingleOrNull();
@@ -135,6 +137,7 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
     required UserSessionState actor,
   }) async {
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       await _requirePersonnelScope(actor, [
         PersonnelAssignmentInput(
           personnelId: personelId,
@@ -203,6 +206,7 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
     required UserSessionState actor,
   }) {
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       await _requirePersonnelScope(actor, assignments);
       final activity = await (db.select(db.gunlukFaaliyetTable)
             ..where((table) => table.id.equals(activityId)))

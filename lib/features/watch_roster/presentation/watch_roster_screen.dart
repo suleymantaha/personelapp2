@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import '../../analytics/domain/team_analytics.dart';
 import '../../analytics/presentation/team_analytics_provider.dart';
 import '../domain/watch_roster.dart';
@@ -74,11 +75,11 @@ class _WatchRosterScreenState extends ConsumerState<WatchRosterScreen> {
                     actions: [
                       TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('İptal')),
+                          child: Text(context.l10n.commonCancel)),
                       FilledButton(
                           onPressed: () =>
                               Navigator.pop(context, DateTime(year, month)),
-                          child: const Text('Seç')),
+                          child: Text(context.l10n.commonSelect)),
                     ])));
     if (chosen != null && mounted) setState(() => _month = chosen);
   }
@@ -99,7 +100,7 @@ class _WatchRosterScreenState extends ConsumerState<WatchRosterScreen> {
               child: Row(children: [
                 IconButton(
                     key: const ValueKey('watch-previous-month'),
-                    tooltip: 'Önceki ay',
+                    tooltip: context.l10n.matrixPreviousMonth,
                     onPressed: _month.year <= 1900 && _month.month == 1
                         ? null
                         : () => setState(() =>
@@ -114,7 +115,7 @@ class _WatchRosterScreenState extends ConsumerState<WatchRosterScreen> {
                             textAlign: TextAlign.center))),
                 IconButton(
                     key: const ValueKey('watch-next-month'),
-                    tooltip: 'Sonraki ay',
+                    tooltip: context.l10n.matrixNextMonth,
                     onPressed: _month.year >= 9998 && _month.month == 12
                         ? null
                         : () => setState(() =>

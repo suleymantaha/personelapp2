@@ -13,6 +13,8 @@ void main() {
   const admin = UserSessionState(username: 'admin', role: UserRole.admin);
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     repo = ActivityRepository(db);
     oldTeam = await db.into(db.timTable).insert(
         TimTableCompanion.insert(timAdi: 'Old', olusturmaTarihi: '2000-01-01'));

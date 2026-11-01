@@ -17,6 +17,8 @@ void main() {
   ]) {
     testWidgets('copy card action: $mode', (tester) async {
       final db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('synthetic-user', 'synthetic-test-hash', 'yönetici')");
       addTearDown(db.close);
       final now = DateTime.now();
       final sourceDate = DateTime(now.year, now.month, now.day + 1);

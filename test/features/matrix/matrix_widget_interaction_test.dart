@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/native.dart';
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
@@ -46,7 +48,31 @@ void main() {
   }
 
   group('Monthly Matrix Widget Data Exchange & Interaction Tests', () {
-    testWidgets('renders monthly matrix screen with calendar grid and squad controls', (WidgetTester tester) async {
+    testWidgets('320px month identity remains readable with navigation actions',
+        (tester) async {
+      tester.view.physicalSize = const Size(320, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+      final label = DateFormat('MM\nyyyy', 'tr_TR').format(DateTime.now());
+      expect(find.text(label), findsOneWidget);
+      final paragraph = tester.renderObject<RenderParagraph>(find.descendant(
+          of: find.text(label), matching: find.byType(RichText)));
+      expect(paragraph.didExceedMaxLines, isFalse,
+          reason: paragraph.size.toString());
+      expect(find.byIcon(Icons.chevron_left_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.chevron_right_rounded), findsOneWidget);
+      expect(find.byKey(const ValueKey('matrix-mobile-search-button')),
+          findsOneWidget);
+      expect(find.byKey(const ValueKey('matrix-export-menu')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+        'renders monthly matrix screen with calendar grid and squad controls',
+        (WidgetTester tester) async {
       tester.view.physicalSize = const Size(500, 1000);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
@@ -59,7 +85,8 @@ void main() {
       expect(find.byType(MonthlyMatrixScreen), findsOneWidget);
     });
 
-    testWidgets('month navigation updates matrix grid state', (WidgetTester tester) async {
+    testWidgets('month navigation updates matrix grid state',
+        (WidgetTester tester) async {
       tester.view.physicalSize = const Size(500, 1000);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);

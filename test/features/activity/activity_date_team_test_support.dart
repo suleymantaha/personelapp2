@@ -21,6 +21,8 @@ class DateTeamFixture {
   }
 
   Future<void> initialize() async {
+    await db.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     team = await db.into(db.timTable).insert(TimTableCompanion.insert(
         timAdi: 'Saved team', olusturmaTarihi: '2000-01-01'));
     otherTeam = await db.into(db.timTable).insert(TimTableCompanion.insert(

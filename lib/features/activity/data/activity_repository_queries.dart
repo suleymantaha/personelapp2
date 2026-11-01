@@ -11,12 +11,15 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
     if (normalizedName.isEmpty) {
       throw ArgumentError.value(newName, 'newName', 'Faaliyet adı boş olamaz.');
     }
-    return (db.update(db.gunlukFaaliyetTable)
-          ..where(
-            (table) => table.id.equals(activityId),
-          ))
-        .write(
-            GunlukFaaliyetTableCompanion(faaliyetAdi: Value(normalizedName)));
+    return db.transaction(() async {
+      await requireOutputAuthority(actor);
+      return (db.update(db.gunlukFaaliyetTable)
+            ..where(
+              (table) => table.id.equals(activityId),
+            ))
+          .write(
+              GunlukFaaliyetTableCompanion(faaliyetAdi: Value(normalizedName)));
+    });
   }
 
   Stream<List<GunlukFaaliyetTableData>> watchAllActivities({
@@ -105,6 +108,11 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
 
   Stream<List<GunlukFaaliyetTableData>> watchActivitiesForCommander(
       String username) {
+    final otherTeams = db.alias(db.timTable, 'other_commander_teams');
+    final hasNoOtherOwnedTeam = notExistsQuery(db.select(otherTeams)
+      ..where((team) =>
+          team.timKomutaniId.equalsExp(db.kullaniciTable.id) &
+          team.id.equalsExp(db.timTable.id).not()));
     final query = db.select(db.gunlukFaaliyetTable).join([
       innerJoin(
           db.faaliyetPersonelAtamaTable,
@@ -115,7 +123,8 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
       innerJoin(
           db.kullaniciTable,
           db.kullaniciTable.id.equalsExp(db.timTable.timKomutaniId) &
-              db.kullaniciTable.timId.equalsExp(db.timTable.id)),
+              (db.kullaniciTable.timId.equalsExp(db.timTable.id) |
+                  (db.kullaniciTable.timId.isNull() & hasNoOtherOwnedTeam))),
     ])
       ..where(db.kullaniciTable.kullaniciAdi.equals(username) &
           db.kullaniciTable.rol.equals('tim_komutani'));
@@ -138,6 +147,7 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
     required UserSessionState actor,
   }) {
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       await _requirePersonnelScope(actor, personnelAssignments);
       return _createActivityWithinTransaction(
         ActivityCreateRequest(
@@ -282,6 +292,7 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
     required UserSessionState actor,
   }) {
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       await _requirePersonnelScope(actor, personnelAssignments);
       final activity = await (db.select(db.gunlukFaaliyetTable)
             ..where((table) => table.id.equals(activityId)))
@@ -406,6 +417,7 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
     required UserSessionState actor,
   }) {
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       if (!actor.isAdmin) {
         throw const AuthorizationException(
           'Toplu faaliyet içe aktarma yalnızca yöneticilere açıktır.',

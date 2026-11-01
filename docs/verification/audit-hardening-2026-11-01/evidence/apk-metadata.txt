@@ -1,0 +1,1 @@
+package: name='com.example.personelapp2' versionCode='10328' versionName='1.0.13' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'

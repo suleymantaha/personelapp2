@@ -201,9 +201,10 @@ extension ActivityRepositoryConflictOperations on ActivityRepository {
     required UserSessionState actor,
   }) {
     _requireAdmin(actor);
-    return db.transaction(
-      () => _approveAssignmentWithinTransaction(assignmentId),
-    );
+    return db.transaction(() async {
+      await requireOutputAuthority(actor);
+      return _approveAssignmentWithinTransaction(assignmentId);
+    });
   }
 
   Future<ApprovalResult> approveAllAssignmentsForActivity(
@@ -212,6 +213,7 @@ extension ActivityRepositoryConflictOperations on ActivityRepository {
   }) {
     _requireAdmin(actor);
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       final pending = await (db.select(db.faaliyetPersonelAtamaTable)
             ..where(
               (tbl) =>
@@ -366,17 +368,20 @@ extension ActivityRepositoryConflictOperations on ActivityRepository {
     required UserSessionState actor,
   }) async {
     _requireAdmin(actor);
-    return (db.update(db.faaliyetPersonelAtamaTable)
-          ..where(
-            (tbl) =>
-                tbl.faaliyetId.equals(activityId) &
-                tbl.durum.equals(AssignmentStatus.beklemede),
-          ))
-        .write(
-      const FaaliyetPersonelAtamaTableCompanion(
-        durum: Value(AssignmentStatus.reddedildi),
-      ),
-    );
+    return db.transaction(() async {
+      await requireOutputAuthority(actor);
+      return (db.update(db.faaliyetPersonelAtamaTable)
+            ..where(
+              (tbl) =>
+                  tbl.faaliyetId.equals(activityId) &
+                  tbl.durum.equals(AssignmentStatus.beklemede),
+            ))
+          .write(
+        const FaaliyetPersonelAtamaTableCompanion(
+          durum: Value(AssignmentStatus.reddedildi),
+        ),
+      );
+    });
   }
 
   /// Approve or Reject a pending assignment
@@ -390,11 +395,14 @@ extension ActivityRepositoryConflictOperations on ActivityRepository {
       final result = await approveAssignment(assignmentId, actor: actor);
       return result.approvedCount;
     }
-    return (db.update(db.faaliyetPersonelAtamaTable)
-          ..where(
-            (tbl) => tbl.id.equals(assignmentId),
-          ))
-        .write(FaaliyetPersonelAtamaTableCompanion(durum: Value(newStatus)));
+    return db.transaction(() async {
+      await requireOutputAuthority(actor);
+      return (db.update(db.faaliyetPersonelAtamaTable)
+            ..where(
+              (tbl) => tbl.id.equals(assignmentId),
+            ))
+          .write(FaaliyetPersonelAtamaTableCompanion(durum: Value(newStatus)));
+    });
   }
 
   /// Delete a single personnel assignment from an activity

@@ -1,0 +1,14 @@
+{
+  "utc": "2026-11-01T07:16:32.415150+00:00",
+  "avd": "nizam-nobet-test",
+  "serial": "emulator-5554",
+  "package": "com.example.personelapp2",
+  "versionCode": 10328,
+  "oversizeBytes": 52428801,
+  "oversizeReadErrorVisible": true,
+  "exactLimitBytes": 52428800,
+  "exactLimitReachedDartFormatValidation": true,
+  "smallControlReachedDartFormatValidation": true,
+  "activityPersonDutyRetainedAfterErrors": true,
+  "scope": "real signed APK local DocumentsUI provider; all fixtures intentionally invalid backup formats; no restore executed; lifecycle cancellation not tested"
+}

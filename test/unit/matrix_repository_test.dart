@@ -14,8 +14,10 @@ void main() {
   late ActivityRepository actRepo;
   late MatrixRepository matrixRepo;
 
-  setUp(() {
+  setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement(
+        "INSERT INTO kullanici_table (kullanici_adi, sifre, rol) VALUES ('admin', 'synthetic-test-hash', 'yönetici')");
     actRepo = ActivityRepository(db);
     matrixRepo = MatrixRepository(db);
   });
