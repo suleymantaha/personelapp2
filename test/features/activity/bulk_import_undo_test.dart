@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +28,10 @@ Future<void> pumpBulkImport(
   addTearDown(tester.view.resetDevicePixelRatio);
   await tester.pumpWidget(
     ProviderScope(
+      overrides: [
+        userSessionProvider.overrideWith((ref) =>
+            const UserSessionState(username: 'admin', role: UserRole.admin))
+      ],
       child: MaterialApp(
         home: AppNotificationHost(
           child: Scaffold(
@@ -63,9 +68,11 @@ Future<void> performQueuedUndo(WidgetTester tester) async {
 void main() {
   late AppDatabase database;
 
-  setUp(() {
+  setUp(() async {
     clearNotifications();
     database = AppDatabase(NativeDatabase.memory());
+    await database.into(database.kullaniciTable).insert(
+        KullaniciTableCompanion.insert(kullaniciAdi: 'admin', rol: 'yönetici'));
   });
 
   tearDown(() async {

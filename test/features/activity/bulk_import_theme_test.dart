@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -59,6 +61,8 @@ void main() {
       (tester) async {
     final database = AppDatabase(NativeDatabase.memory());
     addTearDown(database.close);
+    await database.into(database.kullaniciTable).insert(
+        KullaniciTableCompanion.insert(kullaniciAdi: 'admin', rol: 'yönetici'));
     final id = await database.into(database.personelTable).insert(
         PersonelTableCompanion.insert(
             adSoyad: 'Ahmet',
@@ -68,14 +72,19 @@ void main() {
     await BulkImportLearningService(database)
         .rememberAlias(rawName: 'Ahmt', personnelId: id);
     final theme = AppTheme.darkMilitaryTheme;
-    await tester.pumpWidget(MaterialApp(
-        theme: theme,
-        home: Scaffold(
-            body: Builder(
-                builder: (context) => FilledButton(
-                    onPressed: () =>
-                        LearnedAliasesDialog.show(context, database),
-                    child: const Text('Aç'))))));
+    await tester.pumpWidget(ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
+        child: MaterialApp(
+            theme: theme,
+            home: Scaffold(
+                body: Builder(
+                    builder: (context) => FilledButton(
+                        onPressed: () =>
+                            LearnedAliasesDialog.show(context, database),
+                        child: const Text('Aç')))))));
     await tester.tap(find.text('Aç'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Timsiz / Diğer Personeller'));

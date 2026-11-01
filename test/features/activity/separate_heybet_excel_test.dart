@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io';
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 
 import 'package:excel/excel.dart' hide Border;
 import 'package:drift/drift.dart' show Value;
@@ -20,6 +22,10 @@ void main() {
     (tester) async {
       final db = AppDatabase(NativeDatabase.memory());
       addTearDown(db.close);
+      await db.into(db.kullaniciTable).insert(
+            KullaniciTableCompanion.insert(
+                kullaniciAdi: 'admin', rol: 'yönetici'),
+          );
       for (final name in ['Bugünün personeli', 'Önceki gün personeli']) {
         await db.into(db.personelTable).insert(
               PersonelTableCompanion.insert(
@@ -132,6 +138,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Önceki gün personeli'), findsNothing);
+      expect(find.text('Kartları birleştir'), findsNothing);
       Future<void> choose(
         String label, {
         Future<void> Function()? afterPreview,
@@ -139,15 +146,26 @@ void main() {
         while (AppNotifications.controller.current != null) {
           AppNotifications.controller.dismiss();
         }
-        await tester.tap(find.byTooltip('Bu Faaliyeti Dışa Aktar'));
-        await tester.pumpAndSettle();
+        if (label != 'Kartları birleştir') {
+          await tester.tap(find.byKey(const Key('activity-detail-export')));
+          await tester.pumpAndSettle();
+        }
         debugPrint(
           'Heybet flow start: $label, mutation=${afterPreview != null}',
         );
         final expectedShares = shares.length + 1;
-        await tester.tap(find.text(label));
+        if (label == 'Kartları birleştir') {
+          // Exercise the combined-output route independently of detail actions.
+          // The archive entry point is covered by archive_router_flow_test.
+          unawaited(AppNavigator.toRosterOutput(
+            tester.element(find.byType(ActivityAssignmentDetails)),
+            initialDate: activity.tarih,
+          ));
+        } else {
+          await tester.tap(find.text(label));
+        }
         await tester.pumpAndSettle();
-        if (label == 'Kartları Birleştir ve Çıktı Al') {
+        if (label == 'Kartları birleştir') {
           Future<void> selectCard(String key) async {
             final target = find.byKey(ValueKey(key));
             await tester.ensureVisible(target);
@@ -194,18 +212,19 @@ void main() {
           await selectCard('current-activity-4');
           await tester.tap(find.byKey(const Key('roster-preview')));
           for (var wait = 0;
-              wait < 100 && find.text('Birleşik Çıktı').evaluate().isEmpty;
+              wait < 100 && find.text('Çıktı Hazırlığı').evaluate().isEmpty;
               wait++) {
             await tester.runAsync(
               () => Future<void>.delayed(const Duration(milliseconds: 10)),
             );
             await tester.pump();
           }
-          expect(find.text('Birleşik Çıktı'), findsOneWidget);
+          expect(find.text('Çıktı Hazırlığı'), findsOneWidget);
           final showAll = find.byKey(const Key('roster-preview-people-toggle'));
           if (showAll.evaluate().isNotEmpty) {
             await tester.ensureVisible(showAll);
-            await tester.drag(find.byType(ListView).last, const Offset(0, -220));
+            await tester.drag(
+                find.byType(ListView).last, const Offset(0, -220));
             await tester.pumpAndSettle();
             await tester.tap(showAll);
             await tester.pumpAndSettle();
@@ -245,7 +264,7 @@ void main() {
             contains('Önizlemeyi yeniden açın'),
           );
         }
-        if (label == 'Kartları Birleştir ve Çıktı Al') {
+        if (label == 'Kartları birleştir') {
           while (find.byType(AppBar).evaluate().isNotEmpty) {
             await tester.pageBack();
             await tester.pumpAndSettle();
@@ -255,7 +274,7 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      await choose('Metin olarak paylaş');
+      await choose('Metin Listesi Paylaş');
       expect(shares.single['text'], contains('Bugünün personeli'));
       expect(shares.single['text'], isNot(contains('Önceki gün personeli')));
       expect(shares.single['text'], contains('Eski birlik'));
@@ -269,14 +288,14 @@ void main() {
             .toList();
       }
 
-      await choose('Excel’e aktar');
+      await choose('Excel Olarak Aktar (.xlsx)');
       final normalExcel = excelValues(shares.last);
       expect(normalExcel, isNot(contains('Önceki gün personeli')));
       expect(normalExcel, contains('Eski birlik'));
       expect(normalExcel, contains('HAZIR KITA'));
       final combinedPaths = <String>[];
       for (var repeat = 0; repeat < 2; repeat++) {
-        await choose('Kartları Birleştir ve Çıktı Al');
+        await choose('Kartları birleştir');
         final path = (shares.last['paths'] as List).single as String;
         combinedPaths.add(path);
         final workbook = Excel.decodeBytes(File(path).readAsBytesSync());
@@ -365,13 +384,13 @@ void main() {
         expect(shares.last['text'], contains('Seçilen Kartlar'));
       }
       expect(combinedPaths.first, isNot(combinedPaths.last));
-      await choose('Excel’e aktar');
+      await choose('Excel Olarak Aktar (.xlsx)');
       expect(excelValues(shares.last), normalExcel);
-      await choose('Metin olarak paylaş');
+      await choose('Metin Listesi Paylaş');
       expect(shares.last['text'], shares.first['text']);
       expect(await db.select(db.faaliyetPersonelAtamaTable).get(), assignments);
       await choose(
-        'Kartları Birleştir ve Çıktı Al',
+        'Kartları birleştir',
         afterPreview: () async {
           final id = await db.into(db.personelTable).insert(
                 PersonelTableCompanion.insert(
@@ -392,7 +411,7 @@ void main() {
         },
       );
       await choose(
-        'Kartları Birleştir ve Çıktı Al',
+        'Kartları birleştir',
         afterPreview: () async {
           // This card only supplies duplicate people: row fingerprints alone
           // cannot detect its disappearance after the preview.

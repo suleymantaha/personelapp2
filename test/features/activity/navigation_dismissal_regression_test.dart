@@ -51,6 +51,8 @@ const _person = PersonelTableData(
 Future<AppDatabase> _database(WidgetTester tester) async {
   final db = AppDatabase(NativeDatabase.memory());
   await db.customSelect('SELECT 1').get();
+  await db.into(db.kullaniciTable).insert(KullaniciTableCompanion.insert(
+      kullaniciAdi: 'admin', rol: UserRole.admin.storageValue));
   await db.into(db.timTable).insert(
         const TimTableData(
           id: 1,

@@ -22,11 +22,29 @@ part 'activity_repository_assignments.dart';
 part 'activity_repository_transfers.dart';
 part 'activity_repository_task_teams.dart';
 part 'activity_repository_copy.dart';
+part 'activity_repository_output.dart';
 
 class ActivityRepository {
   ActivityRepository(this.db);
 
   final AppDatabase db;
+
+  Future<int> deleteActivity(
+      {required int activityId, required UserSessionState actor}) {
+    _requireAdmin(actor);
+    return db.transaction(() async {
+      final account = await (db.select(db.kullaniciTable)
+            ..where((u) => u.kullaniciAdi.equals(actor.username)))
+          .getSingleOrNull();
+      if (account?.rol != UserRole.admin.storageValue) {
+        throw const AuthorizationException(
+            'Yönetici yetkisi artık geçerli değil.');
+      }
+      return (db.delete(db.gunlukFaaliyetTable)
+            ..where((t) => t.id.equals(activityId)))
+          .go();
+    });
+  }
 
   void _requireAdmin(UserSessionState actor) {
     if (!actor.isAdmin) {

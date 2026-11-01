@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,8 @@ void main() {
 
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
+    await database.into(database.kullaniciTable).insert(
+        KullaniciTableCompanion.insert(kullaniciAdi: 'admin', rol: 'yönetici'));
     final teamId = await database.into(database.timTable).insert(
           TimTableCompanion.insert(
             timAdi: '6/B',
@@ -82,6 +85,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(
@@ -125,6 +132,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(
@@ -171,6 +182,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(
@@ -223,6 +238,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(
@@ -267,6 +286,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(
@@ -308,6 +331,10 @@ HEYBET
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(
@@ -361,6 +388,10 @@ HEYBET
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(

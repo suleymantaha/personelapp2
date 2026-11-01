@@ -9,6 +9,7 @@ class CollapsibleSquadCard extends StatelessWidget {
     required this.cardKey,
     required this.headerKey,
     required this.title,
+    this.expandKey,
     required this.expanded,
     required this.onToggle,
     required this.children,
@@ -24,10 +25,12 @@ class CollapsibleSquadCard extends StatelessWidget {
 
   final Key cardKey;
   final Key headerKey;
+  final Key? expandKey;
   final String title;
   final bool expanded;
   final VoidCallback onToggle;
   final List<Widget> children;
+
   /// Displays the count separately from the squad name.
   final int? personCount;
   final int warningCount;
@@ -68,13 +71,9 @@ class CollapsibleSquadCard extends StatelessWidget {
       );
     } else {
       leadingIcon = Icon(
-        warningCount > 0
-            ? Icons.warning_amber_rounded
-            : Icons.shield_outlined,
+        warningCount > 0 ? Icons.warning_amber_rounded : Icons.shield_outlined,
         size: 19,
-        color: warningCount > 0
-            ? context.pendingColor
-            : context.accentOrOlive,
+        color: warningCount > 0 ? context.pendingColor : context.accentOrOlive,
       );
     }
 
@@ -110,7 +109,8 @@ class CollapsibleSquadCard extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: Text(
-                      context.l10n.collapsibleSquadCardWarningCount(warningCount),
+                      context.l10n
+                          .collapsibleSquadCardWarningCount(warningCount),
                       style: TextStyle(
                         color: context.pendingColor,
                         fontSize: 11,
@@ -120,7 +120,8 @@ class CollapsibleSquadCard extends StatelessWidget {
                   ),
                 if (personCount != null) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: context.accentOrOlive.withValues(alpha: 0.09),
                       borderRadius: BorderRadius.circular(20),
@@ -137,7 +138,12 @@ class CollapsibleSquadCard extends StatelessWidget {
                   const SizedBox(width: 4),
                 ],
                 ...actions,
-                Icon(expanded ? Icons.expand_less : Icons.expand_more),
+                IconButton(
+                    key: expandKey,
+                    onPressed: onToggle,
+                    tooltip: expanded ? 'Personeli gizle' : 'Personeli göster',
+                    icon:
+                        Icon(expanded ? Icons.expand_less : Icons.expand_more)),
               ],
             ),
             onTap: onTap ?? onToggle,

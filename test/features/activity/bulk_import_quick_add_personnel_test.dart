@@ -1,4 +1,5 @@
 import 'package:drift/native.dart';
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +13,8 @@ void main() {
 
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
+    await database.into(database.kullaniciTable).insert(
+        KullaniciTableCompanion.insert(kullaniciAdi: 'admin', rol: 'yönetici'));
     await database.into(database.timTable).insert(
           TimTableCompanion.insert(
             timAdi: '6-B Timi',
@@ -23,7 +26,7 @@ void main() {
   tearDown(() => database.close());
 
   testWidgets(
-      'Eşleşmeyen personel için "+ 6-B Timine Ekle" tıklandığında veritabanına eklenir',
+      'Eşleşmeyen personel için "+ 6-B Timine Ekle" tıklandığında Save öncesi yalnız taslakta tutulur',
       (tester) async {
     tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;
@@ -32,13 +35,17 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: AppNotificationHost(
             child: Scaffold(
               body: BulkImportDialog(
                 database: database,
                 activityRepository: ActivityRepository(database),
-            ),
+              ),
             ),
           ),
         ),
@@ -67,18 +74,17 @@ void main() {
 
     // Veritabanına eklenmiş olmalı
     final dbPersonnel = await database.select(database.personelTable).get();
-    expect(dbPersonnel.length, equals(1));
-    expect(dbPersonnel.first.adSoyad, equals('Hakan KAYA'));
-    expect(dbPersonnel.first.rutbe, equals('J.Uzm.Çvş.'));
+    expect(dbPersonnel, isEmpty);
+    expect(await database.select(database.personelIsimTakmaAdTable).get(),
+        isEmpty);
 
     // Kart üzerinde eşleştiği görünmeli
     expect(find.byKey(const Key('bulk-person-add-new')), findsNothing);
     expect(find.textContaining('Hakan KAYA'), findsWidgets);
-    expect(
-      find.textContaining('eklendi ve eşleştirildi.'),
-      findsOneWidget,
-    );
-    await tester.tap(find.byTooltip('Bildirimi kapat'));
+    await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
+    expect(await database.select(database.personelTable).get(), isEmpty);
+    expect(await database.select(database.personelIsimTakmaAdTable).get(),
+        isEmpty);
   });
 }

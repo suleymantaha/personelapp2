@@ -15,6 +15,8 @@ void main() {
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
     await db.customSelect('SELECT 1').get();
+    await db.into(db.kullaniciTable).insert(KullaniciTableCompanion.insert(
+        kullaniciAdi: 'admin', rol: UserRole.admin.storageValue));
   });
   tearDown(() => db.close());
   testWidgets('activity bulk option opens the full bulk import dialog', (

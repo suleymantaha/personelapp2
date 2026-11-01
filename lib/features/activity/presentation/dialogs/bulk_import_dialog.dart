@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'bulk_import/staged_bulk_import.dart';
 
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
@@ -8,7 +9,7 @@ import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
-import 'task_team_confirmation.dart';
+import 'bulk_import/staged_task_team_confirmation.dart';
 import 'package:personelapp2/features/activity/domain/bulk_activity_import_preparer.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
@@ -58,6 +59,10 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   final TextEditingController _textController = TextEditingController();
   final FocusNode _textFocusNode =
       FocusNode(debugLabel: 'bulkImportSourceText');
+  final _staged = StagedBulkImport();
+  StreamSubscription<dynamic>? _authoritySubscription;
+  Object? _authorityKey;
+  bool _personnelPickerOpen = false;
   List<ParsedActivityBlock> _parsedBlocks = [];
   List<BulkParseIssue> _parseIssues = [];
   // Preserve source rows that never became editable card fields until reparse.
@@ -185,11 +190,16 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       });
     }
     unawaited(_loadPersonnel());
+    _authoritySubscription = widget.database.tableUpdates().listen((_) {
+      if (_personnelPickerOpen && mounted) Navigator.pop(context);
+      if (mounted) unawaited(_loadPersonnel());
+    });
     unawaited(_loadPreferences());
   }
 
   @override
   void dispose() {
+    unawaited(_authoritySubscription?.cancel());
     _textController.dispose();
     _textFocusNode.dispose();
     _previewScrollController.dispose();
@@ -360,13 +370,50 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   }
 
   Future<void> _loadPersonnel() async {
-    final list =
-        await widget.database.select(widget.database.personelTable).get();
+    final actor = ref.read(userSessionProvider);
+    var canRead = actor != null;
+    if (actor?.isAdmin == true) {
+      try {
+        await StagedBulkImport.requireActor(widget.database, actor);
+      } on StateError {
+        canRead = false;
+      }
+    }
+    final teamId =
+        await StagedBulkImport.authorizedTeam(widget.database, actor);
+    final list = await (widget.database.select(widget.database.personelTable)
+          ..where((p) => p.aktif.equals(true))
+          ..where((p) => p.isDemo.equals(false)))
+        .get();
     final squads = await widget.database.select(widget.database.timTable).get();
+    if (actor != ref.read(userSessionProvider)) return;
     if (!mounted) return;
+    final authorizedPersonnel = list
+        .where((p) =>
+            canRead &&
+            actor != null &&
+            (actor.isAdmin || (teamId != null && p.timId == teamId)))
+        .toList();
+    final authorizedIds = authorizedPersonnel.map((p) => p.id).toSet();
+    final hasRevokedPerson = _parsedBlocks.expand((b) => b.personnelList).any(
+        (p) =>
+            p.matchedPersonnelId != null &&
+            p.matchedPersonnelId! > 0 &&
+            !authorizedIds.contains(p.matchedPersonnelId));
+    final key = (actor, teamId, canRead);
+    if ((_authorityKey != null && _authorityKey != key) || hasRevokedPerson) {
+      if (_personnelPickerOpen) Navigator.pop(context);
+      _parsedBlocks.clear();
+      _staged.people.clear();
+      _currentStep = 0;
+    }
+    _authorityKey = key;
     setState(() {
-      _allPersonnel = list;
-      _allSquads = squads;
+      _allPersonnel = authorizedPersonnel;
+      _allSquads = squads
+          .where((t) =>
+              canRead && actor != null && (actor.isAdmin || t.id == teamId))
+          .toList();
     });
   }
 
@@ -388,6 +435,18 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(userSessionProvider, (previous, next) {
+      if (previous == next) return;
+      if (_personnelPickerOpen) Navigator.pop(context);
+      setState(() {
+        _parsedBlocks.clear();
+        _allPersonnel.clear();
+        _allSquads.clear();
+        _staged.people.clear();
+        _currentStep = 0;
+      });
+      unawaited(_loadPersonnel());
+    });
     final mediaQuery = MediaQuery.of(context);
     final isKeyboardVisible = mediaQuery.viewInsets.bottom > 0;
 
@@ -575,12 +634,6 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
         personnelList: updatedList,
       );
     });
-
-    await BulkImportLearningService(widget.database).rememberAlias(
-      rawName: item.rawName,
-      teamName: currentBlock.parsedTimName,
-      personnelId: item.matchedPersonnelId!,
-    );
   }
 
   Widget _buildPreviewSection({required bool isMobile}) {

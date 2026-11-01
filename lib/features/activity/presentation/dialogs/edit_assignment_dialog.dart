@@ -59,6 +59,7 @@ class EditAssignmentDialog extends ConsumerStatefulWidget {
 }
 
 class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
+  bool _saving = false;
   late String _selectedDuty;
   late TextEditingController _noteController;
 
@@ -85,127 +86,135 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
     final filteredDuties =
         DutyOrLeaveType.dutiesForRole(isAdmin: widget.isAdmin);
 
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: Row(
-        children: [
-          Icon(Icons.edit_note, color: context.accentOrOlive),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              context.l10n.activityDutyChange,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.personnelName,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: context.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 14),
-            InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () async {
-                final duty = await showActivityDutyPicker(
-                  context,
-                  title: context.l10n.activityDutyForPersonnel(widget.personnelName),
-                  duties: filteredDuties,
-                  keyPrefix: 'edit-assignment-duty',
-                  selectedDuty: _selectedDuty,
-                );
-                if (duty != null && mounted) {
-                  setState(() => _selectedDuty = duty);
-                }
-              },
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: context.l10n.activityDutyOrLeaveType,
-                  suffixIcon: const Icon(Icons.arrow_drop_down),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.assignment_ind_outlined,
-                      size: 20,
-                      color: context.accentOrOlive,
+    return PopScope(
+        canPop: !_saving,
+        child: AbsorbPointer(
+            absorbing: _saving,
+            child: AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  Icon(Icons.edit_note, color: context.accentOrOlive),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      context.l10n.activityDutyChange,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _selectedDuty,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                  ),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.personnelName,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: context.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () async {
+                        final duty = await showActivityDutyPicker(
+                          context,
+                          title: context.l10n
+                              .activityDutyForPersonnel(widget.personnelName),
+                          duties: filteredDuties,
+                          keyPrefix: 'edit-assignment-duty',
+                          selectedDuty: _selectedDuty,
+                        );
+                        if (duty != null && mounted) {
+                          setState(() => _selectedDuty = duty);
+                        }
+                      },
+                      child: InputDecorator(
+                        decoration: InputDecoration(
+                          labelText: context.l10n.activityDutyOrLeaveType,
+                          suffixIcon: const Icon(Icons.arrow_drop_down),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.assignment_ind_outlined,
+                              size: 20,
+                              color: context.accentOrOlive,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _selectedDuty,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: _noteController,
+                      decoration: InputDecoration(
+                        labelText: context.l10n.activityDutyNoteOptional,
+                        hintText: context.l10n.activityDutyNoteHint,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: _noteController,
-              decoration: InputDecoration(
-                labelText: context.l10n.activityDutyNoteOptional,
-                hintText: context.l10n.activityDutyNoteHint,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(context.l10n.commonCancel.toUpperCase()),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.accentOrOlive,
+                    foregroundColor: context.onAccentOrOlive,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: _saving ? null : _saveAssignment,
+                  child: Text(context.l10n.commonSave.toUpperCase()),
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(context.l10n.commonCancel.toUpperCase()),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: context.accentOrOlive,
-            foregroundColor: context.onAccentOrOlive,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          onPressed: _saveAssignment,
-          child: Text(context.l10n.commonSave.toUpperCase()),
-        ),
-      ],
-    );
+              ],
+            )));
   }
 
   Future<void> _saveAssignment() async {
+    if (_saving) return;
     final actor = ref.read(userSessionProvider);
     if (actor == null) return;
     final repo = ref.read(activityRepositoryProvider);
     final note = _noteController.text.trim();
-    final newStatus = widget.isAdmin
-        ? AssignmentStatus.onaylandi
-        : AssignmentStatus.beklemede;
+    final newStatus =
+        actor.isAdmin ? AssignmentStatus.onaylandi : AssignmentStatus.beklemede;
+    setState(() => _saving = true);
     try {
       await repo.updateAssignmentDetails(
         assignmentId: widget.assignment.id,
@@ -221,6 +230,12 @@ class _EditAssignmentDialogState extends ConsumerState<EditAssignmentDialog> {
       if (mounted) {
         AppNotifications.error(error.localizedMessage(context.l10n));
       }
+    } catch (error) {
+      if (mounted) {
+        AppNotifications.error(context.l10n.rosterOutputExportError('$error'));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 }
@@ -312,7 +327,8 @@ class _EditAssignmentSheetState extends ConsumerState<_EditAssignmentSheet> {
               onTap: () async {
                 final duty = await showActivityDutyPicker(
                   context,
-                  title: context.l10n.activityDutyForPersonnel(widget.personnelName),
+                  title: context.l10n
+                      .activityDutyForPersonnel(widget.personnelName),
                   duties: filteredDuties,
                   keyPrefix: 'sheet-edit-duty',
                   selectedDuty: _selectedDuty,
@@ -418,13 +434,13 @@ class _EditAssignmentSheetState extends ConsumerState<_EditAssignmentSheet> {
   }
 
   Future<void> _saveAssignment() async {
+    if (_saving) return;
     final actor = ref.read(userSessionProvider);
     if (actor == null) return;
     final repo = ref.read(activityRepositoryProvider);
     final note = _noteController.text.trim();
-    final newStatus = widget.isAdmin
-        ? AssignmentStatus.onaylandi
-        : AssignmentStatus.beklemede;
+    final newStatus =
+        actor.isAdmin ? AssignmentStatus.onaylandi : AssignmentStatus.beklemede;
     setState(() => _saving = true);
     try {
       await repo.updateAssignmentDetails(
@@ -442,9 +458,10 @@ class _EditAssignmentSheetState extends ConsumerState<_EditAssignmentSheet> {
         setState(() => _saving = false);
         AppNotifications.error(error.localizedMessage(context.l10n));
       }
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         setState(() => _saving = false);
+        AppNotifications.error('$error');
       }
     }
   }

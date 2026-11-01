@@ -69,3 +69,11 @@ Bu boş tablo tamamlanmış görev veya uygulama kanıtı değildir.
 - 2026-11-01 archive-conveniences: tasks/active/2026-11-01-archive-conveniences.md — DONE (960 PASS/1 SKIP + 3 additional PASS; no commit/push)
 
 - 2026-11-01 integrated-release-10325: tasks/active/2026-11-01-integrated-release-10325.md — DONE (963 PASS/1 SKIP, signed APK and retained-data upgrade PASS; local main, no push)
+
+- 2026-11-01-archive-flow: DONE — [task](active/2026-11-01-archive-flow.md), codex/archive-flow-redesign, isolated F:/personelapp2-archive-flow; no push.
+
+- 2026-11-01-release-10326: BLOCKED — signed1.0.11+10326 built; artifact checks/independent artifact review PASS; retained-data upgrade blocked by native QEMU crashes; no delivery/commit/push/upload.
+
+- 2026-11-01-archive-compact-selection: DONE — compact cards, reorder X, select-before-output;1013PASS/1SKIP/analyzePASS; tasks/active/2026-11-01-archive-compact-selection.md; no APK/commit/push.
+
+- 2026-11-01-release-10327: DONE — signed1.0.12+10327, retained-data upgrade and independent acceptance PASS, verified local Downloads copy; no commit/push/upload.

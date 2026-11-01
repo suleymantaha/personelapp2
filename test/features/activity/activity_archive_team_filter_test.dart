@@ -100,6 +100,8 @@ void main() {
       await tester.pumpWidget(ProviderScope(
         overrides: [
           databaseProvider.overrideWithValue(db),
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin)),
           allPersonnelProvider.overrideWith(
             (ref) => Stream.value(scenario.activePerson ? people : []),
           ),

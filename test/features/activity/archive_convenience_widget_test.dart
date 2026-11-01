@@ -90,6 +90,9 @@ void main() {
     await tester.pump();
     expect(find.byKey(const Key('reassign-selected-teams')), findsOneWidget);
     expect(find.byKey(const Key('export-selected-teams')), findsOneWidget);
+    expect(find.byKey(const Key('delete-selected-teams')), findsNothing);
+    await tester.tap(find.byKey(const Key('selected-teams-more')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('delete-selected-teams')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

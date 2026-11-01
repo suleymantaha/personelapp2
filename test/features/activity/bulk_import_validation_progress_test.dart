@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -167,18 +168,16 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     database = AppDatabase(NativeDatabase.memory());
+    await database.into(database.kullaniciTable).insert(
+        KullaniciTableCompanion.insert(kullaniciAdi: 'admin', rol: 'yönetici'));
     addTearDown(database.close);
-    final team = await database
-        .into(database.timTable)
-        .insert(
+    final team = await database.into(database.timTable).insert(
           TimTableCompanion.insert(
             timAdi: '6-B Timi',
             olusturmaTarihi: '2026-01-01',
           ),
         );
-    await database
-        .into(database.personelTable)
-        .insert(
+    await database.into(database.personelTable).insert(
           PersonelTableCompanion.insert(
             adSoyad: 'Ali DENEME',
             rutbe: 'J.Uzm.Çvş.',
@@ -189,6 +188,10 @@ void main() {
         );
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(

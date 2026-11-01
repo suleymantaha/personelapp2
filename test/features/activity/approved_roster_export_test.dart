@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:excel/excel.dart' hide Border;
 import 'package:drift/native.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter/material.dart';
@@ -16,10 +18,19 @@ void main() {
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
     await db.customSelect('SELECT 1').get();
+    await db.into(db.kullaniciTable).insert(
+        KullaniciTableCompanion.insert(kullaniciAdi: 'admin', rol: 'yönetici'));
   });
   tearDown(() => db.close());
-  for (final scenario in ['admin', 'commander', 'selected-reassigned', 'pdf-revoked']) {
-    final commander = scenario != 'admin';
+  for (final scenario in [
+    'admin',
+    'commander',
+    'selected-reassigned',
+    'pdf-revoked',
+    'master-time',
+    'master-excel-time'
+  ]) {
+    final commander = scenario != 'admin' && !scenario.startsWith('master-');
     testWidgets(
       'archive text export approval and team scope scenario=$scenario',
       (tester) async {
@@ -28,33 +39,27 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
         final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-        final team = await db
-            .into(db.timTable)
-            .insert(
+        final team = await db.into(db.timTable).insert(
               TimTableCompanion.insert(timAdi: '1-B', olusturmaTarihi: today),
             );
-        final otherTeam = await db
-            .into(db.timTable)
-            .insert(
+        final otherTeam = await db.into(db.timTable).insert(
               TimTableCompanion.insert(timAdi: '2-B', olusturmaTarihi: today),
             );
         if (commander) {
-          final user = await db
-              .into(db.kullaniciTable)
-              .insert(
+          final user = await db.into(db.kullaniciTable).insert(
                 KullaniciTableCompanion.insert(
                   kullaniciAdi: 'komutan',
                   rol: 'tim_komutani',
                   timId: Value(team),
                 ),
               );
-          await (db.update(db.timTable)..where(
-            (t) => t.id.equals(team),
-          )).write(TimTableCompanion(timKomutaniId: Value(user)));
+          await (db.update(db.timTable)
+                ..where(
+                  (t) => t.id.equals(team),
+                ))
+              .write(TimTableCompanion(timKomutaniId: Value(user)));
         }
-        final activity = await db
-            .into(db.gunlukFaaliyetTable)
-            .insert(
+        final activity = await db.into(db.gunlukFaaliyetTable).insert(
               GunlukFaaliyetTableCompanion.insert(
                 faaliyetAdi: 'Heybet',
                 tarih: today,
@@ -69,9 +74,7 @@ void main() {
           ('İzinli KİŞİ', AssignmentStatus.onaylandi, 'İZİNLİ'),
           ('Diğer Tim KİŞİ', AssignmentStatus.onaylandi, 'HEYBET'),
         ]) {
-          final person = await db
-              .into(db.personelTable)
-              .insert(
+          final person = await db.into(db.personelTable).insert(
                 PersonelTableCompanion.insert(
                   adSoyad: entry.$1,
                   rutbe: 'J.Er',
@@ -79,9 +82,7 @@ void main() {
                   kayitTarihi: today,
                 ),
               );
-          await db
-              .into(db.faaliyetPersonelAtamaTable)
-              .insert(
+          await db.into(db.faaliyetPersonelAtamaTable).insert(
                 FaaliyetPersonelAtamaTableCompanion.insert(
                   faaliyetId: activity,
                   personelId: person,
@@ -96,13 +97,50 @@ void main() {
                 ),
               );
         }
+        final excludedActivity = await db.into(db.gunlukFaaliyetTable).insert(
+            GunlukFaaliyetTableCompanion.insert(
+                faaliyetAdi: 'SEÇİLMEYEN FAALİYET',
+                tarih: today,
+                olusturanKullanici: 'admin',
+                olusturmaTarihi: today));
+        final excludedPerson = await db.into(db.personelTable).insert(
+            PersonelTableCompanion.insert(
+                adSoyad: 'Seçilmeyen KİŞİ',
+                rutbe: 'J.Er',
+                birlik: '1/B',
+                kayitTarihi: today));
+        await db.into(db.faaliyetPersonelAtamaTable).insert(
+            FaaliyetPersonelAtamaTableCompanion.insert(
+                faaliyetId: excludedActivity,
+                personelId: excludedPerson,
+                gorevVeyaIzin: 'HEYBET',
+                durum: AssignmentStatus.onaylandi,
+                gorevTimId: Value(team),
+                gorevTimAdi: const Value('1-B')));
         final sharedTexts = <String>[];
         const share = MethodChannel('dev.fluttercommunity.plus/share');
         final messenger =
             TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+        final dir = Directory.systemTemp.createTempSync('master_time_');
+        const paths = MethodChannel('plugins.flutter.io/path_provider');
+        messenger.setMockMethodCallHandler(paths, (_) async => dir.path);
+        addTearDown(() {
+          messenger.setMockMethodCallHandler(paths, null);
+          dir.deleteSync(recursive: true);
+        });
         messenger.setMockMethodCallHandler(share, (call) async {
           final args = call.arguments as Map<dynamic, dynamic>;
-          sharedTexts.add(args['text'] as String);
+          if (args['paths'] == null) {
+            sharedTexts.add(args['text'] as String);
+          } else {
+            final path = (args['paths'] as List).single as String;
+            final workbook = Excel.decodeBytes(File(path).readAsBytesSync());
+            sharedTexts.add(workbook.tables.values
+                .expand((sheet) => sheet.rows)
+                .expand((row) => row)
+                .map((cell) => cell?.value?.toString() ?? '')
+                .join(' '));
+          }
           return 'test.viewer';
         });
         addTearDown(() => messenger.setMockMethodCallHandler(share, null));
@@ -129,11 +167,14 @@ void main() {
           await tester.pumpAndSettle();
           await tester.tap(find.byKey(const Key('export-selected-teams')));
           await tester.pumpAndSettle();
-          await (db.update(db.kullaniciTable)..where((u) => u.kullaniciAdi.equals('komutan')))
+          await (db.update(db.kullaniciTable)
+                ..where((u) => u.kullaniciAdi.equals('komutan')))
               .write(KullaniciTableCompanion(timId: Value(otherTeam)));
           await (db.update(db.timTable)..where((t) => t.id.equals(team)))
               .write(const TimTableCompanion(timKomutaniId: Value(null)));
-          final account = await (db.select(db.kullaniciTable)..where((u) => u.kullaniciAdi.equals('komutan'))).getSingle();
+          final account = await (db.select(db.kullaniciTable)
+                ..where((u) => u.kullaniciAdi.equals('komutan')))
+              .getSingle();
           await (db.update(db.timTable)..where((t) => t.id.equals(otherTeam)))
               .write(TimTableCompanion(timKomutaniId: Value(account.id)));
           await tester.pumpAndSettle();
@@ -146,6 +187,11 @@ void main() {
           await tester.pumpAndSettle();
           await tester.tap(find.text('Dışa Aktar / Yazdır'));
           await tester.pumpAndSettle();
+          expect(find.text('PDF Belgesi Paylaş'), findsNothing);
+          await tester.tap(find.byKey(Key('activity-card-$activity')));
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('archive-export-selected')));
+          await tester.pumpAndSettle();
           if (scenario == 'pdf-revoked') {
             await tester.tap(find.text('PDF Belgesi Paylaş'));
             await tester.pumpAndSettle();
@@ -155,25 +201,50 @@ void main() {
             while (AppNotifications.controller.current != null) {
               AppNotifications.controller.dismiss();
             }
-            await tester.tap(find.text('Stil 1: Dikey Blok Mimarisi (VIP Format)'));
+            await tester
+                .tap(find.text('Stil 1: Dikey Blok Mimarisi (VIP Format)'));
             await tester.pumpAndSettle();
-            expect(AppNotifications.controller.current?.message, contains('Tim yetkiniz sona erdi'));
+            expect(AppNotifications.controller.current?.message,
+                contains('yetkisi artık geçerli değil'));
             expect(sharedTexts, isEmpty);
             expect(tester.takeException(), isNull);
           } else {
-            await tester.tap(find.text('Metin Listesi Paylaş'));
+            if (scenario.startsWith('master-')) {
+              await tester
+                  .tap(find.byKey(const Key('archive-export-time-options')));
+              await tester.pumpAndSettle();
+              await tester.tap(find.text('06.00-08.00'));
+              await tester.pumpAndSettle();
+            }
+            final option = find.byKey(Key(scenario == 'master-excel-time'
+                ? 'export-option-excel'
+                : 'export-option-text'));
+            await tester.ensureVisible(option);
+            await tester.tap(option);
+            if (scenario == 'master-excel-time') {
+              await tester.runAsync(() async {
+                for (var i = 0; i < 100 && sharedTexts.isEmpty; i++) {
+                  await tester.pump();
+                  await Future<void>.delayed(const Duration(milliseconds: 20));
+                }
+              });
+            }
             await tester.pumpAndSettle();
-        expect(sharedTexts, hasLength(1));
-        expect(sharedTexts.single, contains('Onaylı KİŞİ'));
-        expect(
-          sharedTexts.single,
-          commander
-              ? isNot(contains('Diğer Tim KİŞİ'))
-              : contains('Diğer Tim KİŞİ'),
-        );
-        expect(sharedTexts.single, isNot(contains('Bekleyen KİŞİ')));
-        expect(sharedTexts.single, isNot(contains('Reddedilen KİŞİ')));
-        expect(sharedTexts.single, isNot(contains('İzinli KİŞİ')));
+            expect(sharedTexts, hasLength(1));
+            expect(sharedTexts.single, contains('Onaylı KİŞİ'));
+            expect(sharedTexts.single, isNot(contains('Seçilmeyen KİŞİ')));
+            if (scenario.startsWith('master-')) {
+              expect(sharedTexts.single, contains('06.00-08.00'));
+            }
+            expect(
+              sharedTexts.single,
+              commander
+                  ? isNot(contains('Diğer Tim KİŞİ'))
+                  : contains('Diğer Tim KİŞİ'),
+            );
+            expect(sharedTexts.single, isNot(contains('Bekleyen KİŞİ')));
+            expect(sharedTexts.single, isNot(contains('Reddedilen KİŞİ')));
+            expect(sharedTexts.single, isNot(contains('İzinli KİŞİ')));
           }
         }
         while (AppNotifications.controller.current != null) {

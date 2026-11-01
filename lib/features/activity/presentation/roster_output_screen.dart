@@ -5,23 +5,19 @@ import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/roster_selected_cards.dart';
 import 'package:personelapp2/features/activity/services/combined_heybet_excel_service.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 
 class _SessionException implements Exception {}
 
-class _TeamRevokedException implements Exception {}
-
 Future<int?> _authorizedTeam(ProviderContainer container) async {
   final session = container.read(userSessionProvider);
   if (session == null) throw _SessionException();
-  if (session.isAdmin) return null;
-  final team = await container
-      .read(personnelRepositoryProvider)
-      .currentCommanderTeam(session.username);
-  if (team == null) throw _TeamRevokedException();
-  return team;
+  return container
+      .read(activityRepositoryProvider)
+      .requireOutputAuthority(session);
 }
 
 Future<List<MilitaryRosterRow>> _loadRosterRows(
@@ -30,18 +26,20 @@ Future<List<MilitaryRosterRow>> _loadRosterRows(
   List<GunlukFaaliyetTableData> sources,
   int? selectedSquadId,
 ) async {
-  final team = await _authorizedTeam(container);
   final db = container.read(databaseProvider);
-  final people = await db.select(db.personelTable).get();
-  final squads = await db.select(db.timTable).get();
-  return CombinedHeybetExcelService(db).buildSelected(
-    date: date,
-    sources: sources,
-    personnelById: {for (final person in people) person.id: person},
-    squadNames: {for (final squad in squads) squad.id: squad.timAdi},
-    authorizedTeamId: team,
-    selectedSquadId: selectedSquadId,
-  );
+  return db.transaction(() async {
+    final team = await _authorizedTeam(container);
+    final people = await db.select(db.personelTable).get();
+    final squads = await db.select(db.timTable).get();
+    return CombinedHeybetExcelService(db).buildSelected(
+      date: date,
+      sources: sources,
+      personnelById: {for (final person in people) person.id: person},
+      squadNames: {for (final squad in squads) squad.id: squad.timAdi},
+      authorizedTeamId: team,
+      selectedSquadId: selectedSquadId,
+    );
+  });
 }
 
 class RosterOutputScreen extends ConsumerStatefulWidget {
@@ -81,25 +79,28 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
     final date = _date;
     final generation = ++_loadGeneration;
     try {
-      final service = CombinedHeybetExcelService(ref.read(databaseProvider));
-      final team = await _authorizedTeam(
-        ProviderScope.containerOf(context, listen: false),
-      );
-      final day = DateFormat('yyyy-MM-dd').parseStrict(date);
-      final previous = DateFormat('yyyy-MM-dd')
-          .format(DateTime(day.year, day.month, day.day - 1));
-      final lists = await Future.wait([
-        service.listActivitiesForDate(
-          date,
-          authorizedTeamId: team,
-          selectedSquadId: widget.selectedSquadId,
-        ),
-        service.listActivitiesForDate(
-          previous,
-          authorizedTeamId: team,
-          selectedSquadId: widget.selectedSquadId,
-        ),
-      ]);
+      final db = ref.read(databaseProvider);
+      final lists = await db.transaction(() async {
+        final service = CombinedHeybetExcelService(db);
+        final team = await _authorizedTeam(
+          ProviderScope.containerOf(context, listen: false),
+        );
+        final day = DateFormat('yyyy-MM-dd').parseStrict(date);
+        final previous = DateFormat('yyyy-MM-dd')
+            .format(DateTime(day.year, day.month, day.day - 1));
+        return Future.wait([
+          service.listActivitiesForDate(
+            date,
+            authorizedTeamId: team,
+            selectedSquadId: widget.selectedSquadId,
+          ),
+          service.listActivitiesForDate(
+            previous,
+            authorizedTeamId: team,
+            selectedSquadId: widget.selectedSquadId,
+          ),
+        ]);
+      });
       if (!mounted || date != _date || generation != _loadGeneration) return;
       setState(() {
         _current = lists[0];
@@ -117,8 +118,6 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
       if (mounted && date == _date && generation == _loadGeneration) {
         final message = switch (error) {
           _SessionException() => context.l10n.authSessionUnverified,
-          _TeamRevokedException() =>
-            context.l10n.rosterOutputCommanderTeamRevoked,
           _ => '$error',
         };
         setState(() {
@@ -262,98 +261,46 @@ class _RosterOutputScreenState extends ConsumerState<RosterOutputScreen> {
   String _shortDate(DateTime day) => DateFormat('d MMM', 'tr').format(day);
 
   Widget _metric(String label, int count, bool ready) => Expanded(
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label,
-                  style:
-                      const TextStyle(fontSize: 11, color: Color(0xFFBDD4D7))),
-              const SizedBox(height: 3),
-              Text(
-                ready ? '$count kişi' : '—',
-                style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-      );
+      child: Text('$label: ${ready ? '$count kişi' : '—'}',
+          style: Theme.of(context).textTheme.bodySmall));
 
   Widget _summary(bool ready) {
     final today = _peopleFor(_currentIds);
     final yesterday = _peopleFor(_previousIds);
     final unique = {...today, ...yesterday}.length;
     final common = today.intersection(yesterday).length;
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF173547), Color(0xFF0E4F4C)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border: Border.all(color: const Color(0xFF34716F)),
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('ÇIKTI ÖZETİ',
-              style: TextStyle(
-                  fontSize: 11, letterSpacing: 1.2, color: Color(0xFF9CC6CC))),
-          const SizedBox(height: 4),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+          padding: const EdgeInsets.all(12),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
               Text(ready ? '$unique' : '—',
                   key: const Key('roster-total-people'),
-                  style: const TextStyle(
-                      fontSize: 48,
-                      height: 1,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white)),
+                  style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(width: 8),
-              const Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 5),
-                  child: Text('benzersiz kişi',
-                      maxLines: 2,
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w600)),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Row(children: [
-            _metric('Bugün', today.length, ready),
-            const SizedBox(width: 8),
-            _metric('Önceki gün', yesterday.length, ready),
-          ]),
-          const SizedBox(height: 10),
-          Text(
-            ready
-                ? _currentIds.isEmpty && _previousIds.isEmpty
-                    ? 'Kart seçtikçe kişi sayısı güncellenir'
-                    : common == 0
-                        ? '✓ Ortak kişi yok'
-                        : '✓ $common ortak kişi çıktıda bir kez yer alır'
-                : _countsLoading
-                    ? 'Kişi sayıları hesaplanıyor…'
-                    : 'Kişi sayıları alınamadı',
-            style: const TextStyle(fontSize: 11, color: Color(0xFFB3DAD5)),
-          ),
-        ],
-      ),
+              const Expanded(child: Text('benzersiz kişi')),
+              Text('${_currentIds.length + _previousIds.length} kart'),
+            ]),
+            const SizedBox(height: 8),
+            Row(children: [
+              _metric('Bugün', today.length, ready),
+              _metric('Önceki gün', yesterday.length, ready)
+            ]),
+            const SizedBox(height: 6),
+            Text(
+                ready
+                    ? _currentIds.isEmpty && _previousIds.isEmpty
+                        ? 'Kart seçtikçe kişi sayısı güncellenir'
+                        : common == 0
+                            ? '✓ Ortak kişi yok'
+                            : '✓ $common ortak kişi çıktıda bir kez yer alır'
+                    : _countsLoading
+                        ? 'Kişi sayıları hesaplanıyor…'
+                        : 'Kişi sayıları alınamadı',
+                style: Theme.of(context).textTheme.bodySmall),
+          ])),
     );
   }
 

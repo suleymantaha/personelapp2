@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +14,8 @@ void main() {
 
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
+    await database.into(database.kullaniciTable).insert(
+        KullaniciTableCompanion.insert(kullaniciAdi: 'admin', rol: 'yönetici'));
     personnelId = await database.into(database.personelTable).insert(
           PersonelTableCompanion.insert(
             adSoyad: 'Hüseyin ORUÇTUTAN',
@@ -34,18 +38,24 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: AppNotificationHost(
-          child: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () => LearnedAliasesDialog.show(context, database),
-              child: const Text('Open Dialog'),
+      ProviderScope(
+          overrides: [
+            userSessionProvider.overrideWith((ref) =>
+                const UserSessionState(username: 'admin', role: UserRole.admin))
+          ],
+          child: MaterialApp(
+            home: AppNotificationHost(
+              child: Scaffold(
+                body: Builder(
+                  builder: (context) => ElevatedButton(
+                    onPressed: () =>
+                        LearnedAliasesDialog.show(context, database),
+                    child: const Text('Open Dialog'),
+                  ),
+                ),
+              ),
             ),
-            ),
-          ),
-        ),
-      ),
+          )),
     );
 
     await tester.tap(find.text('Open Dialog'));
@@ -71,7 +81,6 @@ void main() {
     await tester.tap(find.byIcon(Icons.clear));
     await tester.pumpAndSettle();
     expect(find.text('Hüseyin ORUCTUTAN'), findsOneWidget);
-
 
     // Test delete dialog opening
     await tester.tap(find.byIcon(Icons.delete_outline_rounded));
@@ -130,22 +139,28 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: const TextScaler.linear(1.5),
-            ),
-            child: child!,
-          ),
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => FilledButton(
-                onPressed: () => LearnedAliasesDialog.show(context, database),
-                child: const Text('Aç'),
+        ProviderScope(
+            overrides: [
+              userSessionProvider.overrideWith((ref) => const UserSessionState(
+                  username: 'admin', role: UserRole.admin))
+            ],
+            child: MaterialApp(
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: const TextScaler.linear(1.5),
+                ),
+                child: child!,
               ),
-            ),
-          ),
-        ),
+              home: Scaffold(
+                body: Builder(
+                  builder: (context) => FilledButton(
+                    onPressed: () =>
+                        LearnedAliasesDialog.show(context, database),
+                    child: const Text('Aç'),
+                  ),
+                ),
+              ),
+            )),
       );
 
       await tester.tap(find.text('Aç'));

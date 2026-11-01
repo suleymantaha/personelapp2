@@ -5,7 +5,8 @@ import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/personnel_match_card.dart';
 
 void main() {
-  testWidgets('PersonnelMatchCard shows "Onayla" button when needsReview is true',
+  testWidgets(
+      'PersonnelMatchCard shows "Onayla" button when needsReview is true',
       (tester) async {
     var confirmed = false;
     await tester.pumpWidget(
@@ -43,7 +44,8 @@ void main() {
     expect(confirmed, isTrue);
   });
 
-  testWidgets('CompactErrorSummary shows "Tümünü Onayla" button when callback provided',
+  testWidgets(
+      'CompactErrorSummary shows "Tümünü Onayla" button when callback provided',
       (tester) async {
     var allConfirmed = false;
     await tester.pumpWidget(

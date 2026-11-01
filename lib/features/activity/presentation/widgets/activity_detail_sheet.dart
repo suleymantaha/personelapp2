@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' hide Column;
+import 'roster_format_actions.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,10 +20,7 @@ import 'package:personelapp2/features/activity/presentation/dialogs/transfer_per
 import 'package:personelapp2/features/activity/presentation/dialogs/transfer_squad_dialog.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_assignment_groups.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
-import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
-import 'package:personelapp2/features/activity/services/roster_image_exporter.dart';
-import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/roster_image_import_service.dart';
 import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/services/temgundrap_activity_converter.dart';
@@ -37,12 +34,16 @@ class ActivityAssignmentDetails extends ConsumerWidget {
     required this.activity,
     required this.assignments,
     this.selectedSquadId,
+    this.usePersistentToolbar = false,
+    this.selectionActive = false,
     super.key,
   });
 
   final GunlukFaaliyetTableData activity;
   final List<FaaliyetPersonelAtamaTableData> assignments;
   final int? selectedSquadId;
+  final bool usePersistentToolbar;
+  final bool selectionActive;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -70,9 +71,8 @@ class ActivityAssignmentDetails extends ConsumerWidget {
       }).toList();
     }
 
-    final existingPersonnelIds = filteredAssignments
-        .map((a) => a.personelId)
-        .toSet();
+    final existingPersonnelIds =
+        filteredAssignments.map((a) => a.personelId).toSet();
     final allSquadsAsync = ref.watch(allSquadsProvider);
     final squadsList = allSquadsAsync.value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
@@ -99,8 +99,7 @@ class ActivityAssignmentDetails extends ConsumerWidget {
           () {
             final atama = operationalAssignments[i];
             final p = rosterPersonnel[atama.personelId];
-            final timName =
-                atama.gorevTimAdi ??
+            final timName = atama.gorevTimAdi ??
                 context.l10n.activityDetailUnknownSquadHistory;
             return MilitaryRosterRow(
               sNu: i + 1,
@@ -112,7 +111,8 @@ class ActivityAssignmentDetails extends ConsumerWidget {
               ),
               rutbe: p?.rutbe ?? '',
               adSoyad: p?.adSoyad ??
-                  context.l10n.activityDetailPersonnelFallback(atama.personelId),
+                  context.l10n
+                      .activityDetailPersonnelFallback(atama.personelId),
               diger: MilitaryStructureHelper.getDigerCellText(
                 atama.gorevVeyaIzin,
                 aciklama: atama.aciklama,
@@ -126,51 +126,225 @@ class ActivityAssignmentDetails extends ConsumerWidget {
     }
 
     Future<List<MilitaryRosterRow>> loadCurrentRows(
-      Iterable<FaaliyetPersonelAtamaTableData> selected, {
-      bool allCurrentAssignments = false,
-    }) async {
-      final currentSession = ref.read(userSessionProvider);
-      if (currentSession == null) {
-        throw StateError(context.l10n.authSessionFailed);
-      }
-      final expiredMsg = context.l10n.authTeamPermissionExpired;
-      final team = currentSession.isAdmin
-          ? null
-          : await ref
-                .read(personnelRepositoryProvider)
-                .currentCommanderTeam(currentSession.username);
-      if (!currentSession.isAdmin && team == null) {
-        throw StateError(expiredMsg);
-      }
-      final ids = selected.map((a) => a.id).toSet();
-      final db = ref.read(databaseProvider);
-      final current =
-          await (db.select(db.faaliyetPersonelAtamaTable)..where(
-                (a) =>
-                    a.faaliyetId.equals(activity.id) &
-                    (allCurrentAssignments
-                        ? const Constant(true)
-                        : a.id.isIn(ids)),
-              ))
-              .get();
-      final people = await db.select(db.personelTable).get();
-      return buildRosterRows(
-        current.where(
-          (a) =>
-              (currentSession.isAdmin || a.gorevTimId == team) &&
-              (selectedSquadId == null || a.gorevTimId == selectedSquadId),
-        ),
-        freshPersonnel: {for (final person in people) person.id: person},
-      );
+      Iterable<FaaliyetPersonelAtamaTableData> selected,
+    ) async {
+      final actor = ref.read(userSessionProvider);
+      if (actor == null) throw StateError(context.l10n.authSessionFailed);
+      final snapshot =
+          await ref.read(activityRepositoryProvider).loadOutputSnapshot(
+                actor: actor,
+                sources: [activity],
+                selectedAssignmentIds: selected.map((a) => a.id),
+                selectedSquadId: selectedSquadId,
+              );
+      return buildRosterRows(snapshot.assignments,
+          freshPersonnel: snapshot.personnelMap);
     }
 
-    Future<void> shareSeparateCombinedExcel() async {
-      await AppNavigator.toRosterOutput(
-        context,
-        initialDate: activity.tarih,
-        selectedSquadId: selectedSquadId,
-      );
+    Future<void> exportActivity() async {
+      final selection = List<FaaliyetPersonelAtamaTableData>.unmodifiable(
+          filteredAssignments);
+      try {
+        await showRosterFormatActions(context,
+            name: activity.faaliyetAdi,
+            date: activity.tarih,
+            subtitle: '${activity.tarih} · ${activity.faaliyetAdi} · '
+                '${buildRosterRows(selection).length} onaylı görev personeli',
+            loadRows: () => loadCurrentRows(selection));
+      } catch (error) {
+        if (context.mounted) {
+          AppNotifications.error(
+              context.l10n.rosterOutputExportError('$error'));
+        }
+      }
     }
+
+    final personnelAction = session == null
+        ? null
+        : TextButton.icon(
+            style: TextButton.styleFrom(
+              foregroundColor: context.accentOrOlive,
+              backgroundColor: context.accentOrOlive.withValues(alpha: 0.07),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              minimumSize: const Size(0, 44),
+            ),
+            icon: const Icon(Icons.person_add_alt_1_rounded, size: 19),
+            label: Text(
+              context.l10n.activityDetailAddPersonnelButton,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+            ),
+            onPressed: () async {
+              final action = await showModalBottomSheet<String>(
+                context: context,
+                showDragHandle: true,
+                builder: (sheetContext) => SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        key: const Key(
+                          'activity-add-single-personnel-option',
+                        ),
+                        leading: const Icon(
+                          Icons.person_add_alt_1_rounded,
+                        ),
+                        title: Text(context.l10n.activityDetailAddSingleOption),
+                        subtitle: Text(
+                          context.l10n.activityDetailAddSingleOptionSubtitle,
+                        ),
+                        onTap: () => Navigator.of(sheetContext).pop('single'),
+                      ),
+                      if (isAdmin && filteredAssignments.isNotEmpty)
+                        ListTile(
+                          key: const Key('activity-reassign-existing-option'),
+                          leading: const Icon(Icons.assignment_ind_outlined),
+                          title: const Text('Mevcut personele görev ata'),
+                          subtitle: const Text(
+                            'Eklenmiş personeli seçerek görevini değiştir',
+                          ),
+                          onTap: () =>
+                              Navigator.of(sheetContext).pop('reassign'),
+                        ),
+                      ListTile(
+                        key: const Key(
+                          'activity-add-bulk-personnel-option',
+                        ),
+                        leading: const Icon(
+                          Icons.content_paste_go_rounded,
+                        ),
+                        title: Text(context.l10n.activityDetailAddBulkOption),
+                        subtitle: Text(
+                          context.l10n.activityDetailAddBulkOptionSubtitle,
+                        ),
+                        onTap: () => Navigator.of(sheetContext).pop('bulk'),
+                      ),
+                      ListTile(
+                        key: const Key(
+                          'activity-add-image-personnel-option',
+                        ),
+                        leading: const Icon(Icons.image_search_rounded),
+                        title: Text(context.l10n.activityDetailAddImageOption),
+                        subtitle: Text(
+                          context.l10n.activityDetailAddImageOptionSubtitle,
+                        ),
+                        onTap: () => Navigator.of(sheetContext).pop('image'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+              if (!context.mounted || action == null) return;
+              if (action == 'reassign') {
+                if (!isAdmin || filteredAssignments.isEmpty) return;
+                final updated = await Navigator.of(
+                  context,
+                  rootNavigator: true,
+                ).push<bool>(
+                  MaterialPageRoute(
+                    fullscreenDialog: true,
+                    builder: (_) => ReassignExistingPersonnelDialog(
+                      activity: activity,
+                      assignments: filteredAssignments,
+                      personnelById: pMap,
+                    ),
+                  ),
+                );
+                if (updated == true && context.mounted) {
+                  ref.invalidate(filteredActivitiesProvider);
+                  ref.invalidate(pendingAssignmentsProvider);
+                }
+                return;
+              }
+              if (action == 'image') {
+                final service = RosterImageImportService();
+                if (!service.isSupportedPlatform) {
+                  AppNotifications.warning(
+                    context.l10n.activityDetailImagePlatformWarning,
+                  );
+                  return;
+                }
+                try {
+                  final imageResult = await service.pickAndExtract();
+                  if (imageResult == null || !context.mounted) return;
+
+                  final db = ref.read(databaseProvider);
+                  final activityRepo = ref.read(
+                    activityRepositoryProvider,
+                  );
+                  final result = await showDialog<bool>(
+                    context: context,
+                    builder: (dialogContext) => BulkImportDialog(
+                      database: db,
+                      activityRepository: activityRepo,
+                      initialText: imageResult.bulkImportText,
+                      isImageImport: true,
+                      targetActivity: activity,
+                    ),
+                  );
+                  if (result == true && context.mounted) {
+                    ref.invalidate(activityRepositoryProvider);
+                    ref.invalidate(filteredActivitiesProvider);
+                    ref.invalidate(pendingAssignmentsProvider);
+                  }
+                } on RosterImageImportUnsupportedException catch (error) {
+                  AppNotifications.warning(error.toString());
+                } on RosterImageImportNoNamesException catch (error) {
+                  AppNotifications.warning(error.toString());
+                } on Object catch (error) {
+                  if (context.mounted) {
+                    AppNotifications.error(
+                      context.l10n.activityDetailImageReadError(
+                        error.toString(),
+                      ),
+                    );
+                  }
+                }
+                return;
+              }
+              if (action == 'bulk') {
+                final db = ref.read(databaseProvider);
+                final activityRepo = ref.read(activityRepositoryProvider);
+                final result = await showDialog<bool>(
+                  context: context,
+                  builder: (dialogContext) => BulkImportDialog(
+                    database: db,
+                    activityRepository: activityRepo,
+                    targetActivity: activity,
+                  ),
+                );
+                if (result == true && context.mounted) {
+                  ref.invalidate(activityRepositoryProvider);
+                  ref.invalidate(filteredActivitiesProvider);
+                  ref.invalidate(pendingAssignmentsProvider);
+                }
+                return;
+              }
+
+              final added = await Navigator.of(
+                context,
+                rootNavigator: true,
+              ).push<bool>(
+                MaterialPageRoute(
+                  fullscreenDialog: true,
+                  builder: (ctx) => AddPersonnelToActivityDialog(
+                    activity: activity,
+                    isAdmin: isAdmin,
+                    existingPersonnelIds: existingPersonnelIds,
+                  ),
+                ),
+              );
+              if (added == true && context.mounted) {
+                AppNotifications.approvalResult(
+                  isAdmin
+                      ? context.l10n.activityDetailPersonnelAdded
+                      : context.l10n.activityDetailPersonnelAddedAdminPending,
+                  pendingApproval: !isAdmin,
+                );
+              }
+            },
+          );
 
     return Container(
       decoration: BoxDecoration(
@@ -181,308 +355,15 @@ class ActivityAssignmentDetails extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row: Add Personnel & Single Activity Quick Export Menu
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (session != null)
-                TextButton.icon(
-                  style: TextButton.styleFrom(
-                    foregroundColor: context.accentOrOlive,
-                    backgroundColor: context.accentOrOlive.withValues(alpha: 0.07),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    minimumSize: const Size(0, 44),
-                  ),
-                  icon: const Icon(Icons.person_add_alt_1_rounded, size: 19),
-                  label: Text(
-                    context.l10n.activityDetailAddPersonnelButton,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                  ),
-                  onPressed: () async {
-                    final action = await showModalBottomSheet<String>(
-                      context: context,
-                      showDragHandle: true,
-                      builder: (sheetContext) => SafeArea(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              key: const Key(
-                                'activity-add-single-personnel-option',
-                              ),
-                              leading: const Icon(
-                                Icons.person_add_alt_1_rounded,
-                              ),
-                              title: Text(context.l10n.activityDetailAddSingleOption),
-                              subtitle: Text(
-                                context.l10n.activityDetailAddSingleOptionSubtitle,
-                              ),
-                              onTap: () =>
-                                  Navigator.of(sheetContext).pop('single'),
-                            ),
-                            if (isAdmin && filteredAssignments.isNotEmpty)
-                              ListTile(
-                                key: const Key('activity-reassign-existing-option'),
-                                leading: const Icon(Icons.assignment_ind_outlined),
-                                title: const Text('Mevcut personele görev ata'),
-                                subtitle: const Text(
-                                  'Eklenmiş personeli seçerek görevini değiştir',
-                                ),
-                                onTap: () => Navigator.of(sheetContext).pop('reassign'),
-                              ),
-                            ListTile(
-                              key: const Key(
-                                'activity-add-bulk-personnel-option',
-                              ),
-                              leading: const Icon(
-                                Icons.content_paste_go_rounded,
-                              ),
-                              title: Text(context.l10n.activityDetailAddBulkOption),
-                              subtitle: Text(
-                                context.l10n.activityDetailAddBulkOptionSubtitle,
-                              ),
-                              onTap: () =>
-                                  Navigator.of(sheetContext).pop('bulk'),
-                            ),
-                            ListTile(
-                              key: const Key(
-                                'activity-add-image-personnel-option',
-                              ),
-                              leading: const Icon(Icons.image_search_rounded),
-                              title: Text(context.l10n.activityDetailAddImageOption),
-                              subtitle: Text(
-                                context.l10n.activityDetailAddImageOptionSubtitle,
-                              ),
-                              onTap: () =>
-                                  Navigator.of(sheetContext).pop('image'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                    if (!context.mounted || action == null) return;
-                    if (action == 'reassign') {
-                      if (!isAdmin || filteredAssignments.isEmpty) return;
-                      final updated = await Navigator.of(
-                        context,
-                        rootNavigator: true,
-                      ).push<bool>(
-                        MaterialPageRoute(
-                          fullscreenDialog: true,
-                          builder: (_) => ReassignExistingPersonnelDialog(
-                            activity: activity,
-                            assignments: filteredAssignments,
-                            personnelById: pMap,
-                          ),
-                        ),
-                      );
-                      if (updated == true && context.mounted) {
-                        ref.invalidate(filteredActivitiesProvider);
-                        ref.invalidate(pendingAssignmentsProvider);
-                      }
-                      return;
-                    }
-                    if (action == 'image') {
-                      final service = RosterImageImportService();
-                      if (!service.isSupportedPlatform) {
-                        AppNotifications.warning(
-                          context.l10n.activityDetailImagePlatformWarning,
-                        );
-                        return;
-                      }
-                      try {
-                        final imageResult = await service.pickAndExtract();
-                        if (imageResult == null || !context.mounted) return;
-
-                        final db = ref.read(databaseProvider);
-                        final activityRepo = ref.read(
-                          activityRepositoryProvider,
-                        );
-                        final result = await showDialog<bool>(
-                          context: context,
-                          builder: (dialogContext) => BulkImportDialog(
-                            database: db,
-                            activityRepository: activityRepo,
-                            initialText: imageResult.bulkImportText,
-                            isImageImport: true,
-                            targetActivity: activity,
-                          ),
-                        );
-                        if (result == true && context.mounted) {
-                          ref.invalidate(activityRepositoryProvider);
-                          ref.invalidate(filteredActivitiesProvider);
-                          ref.invalidate(pendingAssignmentsProvider);
-                        }
-                      } on RosterImageImportUnsupportedException catch (error) {
-                        AppNotifications.warning(error.toString());
-                      } on RosterImageImportNoNamesException catch (error) {
-                        AppNotifications.warning(error.toString());
-                      } on Object catch (error) {
-                        if (context.mounted) {
-                          AppNotifications.error(
-                            context.l10n.activityDetailImageReadError(
-                              error.toString(),
-                            ),
-                          );
-                        }
-                      }
-                      return;
-                    }
-                    if (action == 'bulk') {
-                      final db = ref.read(databaseProvider);
-                      final activityRepo = ref.read(activityRepositoryProvider);
-                      final result = await showDialog<bool>(
-                        context: context,
-                        builder: (dialogContext) => BulkImportDialog(
-                          database: db,
-                          activityRepository: activityRepo,
-                          targetActivity: activity,
-                        ),
-                      );
-                      if (result == true && context.mounted) {
-                        ref.invalidate(activityRepositoryProvider);
-                        ref.invalidate(filteredActivitiesProvider);
-                        ref.invalidate(pendingAssignmentsProvider);
-                      }
-                      return;
-                    }
-
-                    final added =
-                        await Navigator.of(
-                          context,
-                          rootNavigator: true,
-                        ).push<bool>(
-                          MaterialPageRoute(
-                            fullscreenDialog: true,
-                            builder: (ctx) => AddPersonnelToActivityDialog(
-                              activity: activity,
-                              isAdmin: isAdmin,
-                              existingPersonnelIds: existingPersonnelIds,
-                            ),
-                          ),
-                        );
-                    if (added == true && context.mounted) {
-                      AppNotifications.approvalResult(
-                        isAdmin
-                            ? context.l10n.activityDetailPersonnelAdded
-                            : context.l10n.activityDetailPersonnelAddedAdminPending,
-                        pendingApproval: !isAdmin,
-                      );
-                    }
-                  },
-                )
-              else
-                const SizedBox.shrink(),
-              PopupMenuButton<String>(
-                icon: Icon(
-                  Icons.more_horiz,
-                  color: context.textSecondary,
-                  size: 20,
-                ),
-                tooltip: context.l10n.activityDetailExportTooltip,
-                elevation: 5,
-                shadowColor: context.shadowColor,
-                surfaceTintColor: context.colorScheme.surface,
-                shape: modernPopupShape(context),
-                constraints: const BoxConstraints(minWidth: 290, maxWidth: 330),
-                onSelected: (val) async {
-                  try {
-                    if (val == 'combinedExcel') {
-                      await shareSeparateCombinedExcel();
-                      return;
-                    }
-                    final rows = await loadCurrentRows(filteredAssignments);
-                    if (!context.mounted || rows.isEmpty) return;
-                    if (val == 'excel') {
-                      await MilitaryRosterExporter.shareExcelRoster(
-                        faaliyetAdi: activity.faaliyetAdi,
-                        tarih: activity.tarih,
-                        rows: rows,
-                      );
-                    } else if (val == 'image') {
-                      await saveRosterImage(context,
-                        faaliyetAdi: activity.faaliyetAdi,
-                        tarih: activity.tarih, rows: rows);
-                    } else if (val == 'pdf') {
-                      await PdfRosterExporter.showStylePickerAndSharePdf(
-                        context,
-                        faaliyetAdi: activity.faaliyetAdi,
-                        tarih: activity.tarih,
-                        rows: rows,
-                        loadRows: () => loadCurrentRows(filteredAssignments),
-                      );
-                    } else if (val == 'text') {
-                      await MilitaryRosterExporter.shareTextRoster(
-                        faaliyetAdi: activity.faaliyetAdi,
-                        tarih: activity.tarih,
-                        rows: rows,
-                      );
-                    }
-                  } catch (error) {
-                    if (context.mounted) {
-                      AppNotifications.error(
-                        context.l10n.rosterOutputExportError(error.toString()),
-                      );
-                    }
-                  }
-                },
-                itemBuilder: (ctx) => [
-                  ModernMenuHeader<String>(
-                    title: context.l10n.activityDetailExportTitle,
-                    subtitle: context.l10n.activityDetailExportSubtitle,
-                    icon: Icons.ios_share_rounded,
-                  ),
-                  const PopupMenuDivider(),
-                  ModernPopupMenuItem(
-                    option: ModernActionOption(
-                      value: 'combinedExcel',
-                      title: context.l10n.activityDetailCombineOutputTitle,
-                      subtitle: context.l10n.activityDetailCombineOutputSubtitle,
-                      icon: Icons.table_chart_outlined,
-                    ),
-                  ),
-                  ModernPopupMenuItem(
-                    option: ModernActionOption(
-                      value: 'excel',
-                      title: context.l10n.activityDetailExportExcel,
-                      subtitle: context.l10n.activityDetailExportExcelSubtitle,
-                      icon: Icons.table_chart_outlined,
-                    ),
-                  ),
-                  ModernPopupMenuItem(
-                    option: ModernActionOption(
-                      value: 'image',
-                      title: context.l10n.rosterImageAction,
-                      subtitle: context.l10n.rosterImageSubtitle,
-                      icon: Icons.image_outlined,
-                    ),
-                  ),
-                  ModernPopupMenuItem(
-                    option: ModernActionOption(
-                      value: 'pdf',
-                      title: context.l10n.activityDetailExportPdf,
-                      subtitle: context.l10n.activityDetailExportPdfSubtitle,
-                      icon: Icons.picture_as_pdf_outlined,
-                    ),
-                  ),
-                  ModernPopupMenuItem(
-                    option: ModernActionOption(
-                      value: 'text',
-                      title: context.l10n.activityDetailExportText,
-                      subtitle: context.l10n.activityDetailExportTextSubtitle,
-                      icon: Icons.share_outlined,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
+          Text(
+              '${filteredAssignments.map((a) => a.gorevTimId).toSet().length} tim · '
+              '${filteredAssignments.map((a) => a.personelId).toSet().length} personel',
+              style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 8),
           ..._buildAssignmentContent(
             context: context,
             ref: ref,
+            personnelAction: personnelAction,
             session: session,
             isAdmin: isAdmin,
             filteredAssignments: filteredAssignments,
@@ -492,6 +373,28 @@ class ActivityAssignmentDetails extends ConsumerWidget {
             buildRosterRows: buildRosterRows,
             loadCurrentRows: loadCurrentRows,
           ),
+          if (!selectionActive) ...[
+            const SizedBox(height: 12),
+            FilledButton.icon(
+                key: const Key('activity-detail-export'),
+                onPressed: filteredAssignments.isEmpty ? null : exportActivity,
+                icon: const Icon(Icons.ios_share),
+                label: const Text('Faaliyetin çıktısını al')),
+            TextButton.icon(
+                key: const Key('activity-detail-report'),
+                onPressed: filteredAssignments.isEmpty
+                    ? null
+                    : () async {
+                        try {
+                          await _exportSelectedTemgundrap(
+                              context, ref, filteredAssignments);
+                        } catch (error) {
+                          if (context.mounted) AppNotifications.error('$error');
+                        }
+                      },
+                icon: const Icon(Icons.assignment_outlined),
+                label: const Text('TEMGÜNDRAP taslağı oluştur')),
+          ],
         ],
       ),
     );

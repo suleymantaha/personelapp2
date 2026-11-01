@@ -21,7 +21,7 @@ void main() {
       ),
     );
 
-    expect(find.text('27 Ağustos'), findsOneWidget);
+    expect(find.text('27 Ağustos 2026'), findsOneWidget);
     expect(find.text('5 faaliyet'), findsOneWidget);
     expect(
       tester.getSize(find.byType(ArchiveDateNavigator)).height,

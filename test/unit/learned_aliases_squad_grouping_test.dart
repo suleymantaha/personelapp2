@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +11,11 @@ import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/
 void main() {
   late AppDatabase database;
 
-  setUp(() => database = AppDatabase(NativeDatabase.memory()));
+  setUp(() async {
+    database = AppDatabase(NativeDatabase.memory());
+    await database.into(database.kullaniciTable).insert(
+        KullaniciTableCompanion.insert(kullaniciAdi: 'admin', rol: 'yönetici'));
+  });
   tearDown(() => database.close());
 
   Future<int> addSquad(String name) {
@@ -72,16 +78,21 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => FilledButton(
-              onPressed: () => LearnedAliasesDialog.show(context, database),
-              child: const Text('Aç'),
+      ProviderScope(
+          overrides: [
+            userSessionProvider.overrideWith((ref) =>
+                const UserSessionState(username: 'admin', role: UserRole.admin))
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => FilledButton(
+                  onPressed: () => LearnedAliasesDialog.show(context, database),
+                  child: const Text('Aç'),
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
+          )),
     );
     await tester.tap(find.text('Aç'));
     await tester.pumpAndSettle();

@@ -68,6 +68,7 @@ void main() {
   ];
 
   Widget buildSubject({
+    List<FaaliyetPersonelAtamaTableData> visibleAssignments = assignments,
     int? selectedSquadId,
     Map<int, int?> squadOrders = const {},
     Map<int, String> squadNames = const {1: 'K.H', 2: '7-B Timi'},
@@ -80,7 +81,7 @@ void main() {
     return MaterialApp(
       home: Scaffold(
         body: ActivityAssignmentGroups(
-          assignments: assignments,
+          assignments: visibleAssignments,
           personnelById: personnel,
           squadNames: squadNames,
           squadOrders: squadOrders,
@@ -189,8 +190,16 @@ void main() {
       MediaQuery(
         data: const MediaQueryData(textScaler: TextScaler.linear(1.3)),
         child: buildSubject(
+          visibleAssignments: [
+            for (final row in assignments)
+              row.gorevTimId == 1
+                  ? row.copyWith(
+                      gorevTimAdi:
+                          const Value('Çok Uzun Karargâh Hizmet Destek Timi'))
+                  : row,
+          ],
           squadNames: const {
-            1: 'Çok Uzun Karargâh Hizmet Destek Timi',
+            1: 'Renamed current team',
             2: '7-B Timi',
           },
           onTransferSquad: (_, __) async {},
@@ -200,6 +209,8 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byKey(const Key('activity-team-header-1')), findsOneWidget);
+    expect(find.text('Çok Uzun Karargâh Hizmet Destek Timi'), findsOneWidget);
+    expect(find.text('Renamed current team'), findsNothing);
     expect(find.byType(Checkbox), findsNothing);
     await tester.tap(find.byKey(const Key('activity-team-header-1')));
     await tester.pump();
@@ -238,9 +249,14 @@ void main() {
     await tester.pump();
     expect(exportedIds, [1, 2, 3]);
 
+    await tester.tap(find.byKey(const Key('selected-teams-more')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('delete-selected-teams')));
     await tester.pump();
     expect(deletedIds, [1, 2, 3]);
+    // The repository stream removes deleted rows; prune selection on refresh.
+    await tester.pumpWidget(buildSubject(visibleAssignments: const []));
+    await tester.pump();
     expect(find.text('2 tim seçildi'), findsNothing);
   });
 }
