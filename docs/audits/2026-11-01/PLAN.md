@@ -15,7 +15,7 @@ Dal: `audit/codebase-2026-11-01`. Çalışma: `F:/personelapp2`.
 - [x] Ekran görüntülerini kaydet ve görsel olarak incele.
 - [x] Bulguları önem, kanıt, test ve güvenli düzeltme önerisiyle raporla.
 - [x] Diff, kaynak değişmezliği, test hash'leri ve staged dosyaları doğrula.
-- [ ] Yalnız rapor/test/görev kayıtlarını Conventional Commit ile push et.
+- [x] Yalnız rapor/test/görev kayıtlarını Conventional Commit ile push et.
 
 Kapsam dışı: production düzeltmesi, refactor, dependency yükseltmesi, migration,
 release/deploy, merge, gerçek kullanıcı verisiyle test ve fiziksel cihaz testi.

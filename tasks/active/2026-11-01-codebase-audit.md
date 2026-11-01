@@ -12,8 +12,9 @@
 | Kapsam dışı | Production fix/refactor, dependency, release/deploy, merge, gerçek veri |
 | Başlangıç değişiklikleri | Untracked .playwright-cli/, .serena/, output/ korundu |
 | Başlangıç UTC | 2026-11-01 00:28 civarı; kesin başlangıç timestamp'i kaydedilmedi |
-| Durum | IN_REVIEW |
-| Push | PENDING |
+| Durum | DONE |
+| Push | COMPLETED — 3ac52ba70b7019c4d433d2a1673576184a330885 remote ile eşleşti |
+| Son doğrulama UTC | 2026-11-01T00:50:45Z |
 | Sözleşme | N/A; uygulama veri/public API değişikliği yok |
 | Aktif ajan sınırı | 3 toplam; her alt ajan salt okunur, yeniden delegasyon yok |
 
@@ -55,6 +56,9 @@
 
 - [x] Son Android koşuları/format/analiz/kanıt bağlantıları doğrulandı.
 - [x] Production diff, staged dosyalar ve secret/token maskelemesi doğrulandı.
-- [ ] Rapor/test commit'i yetkili yeni dala push edildi; remote hash kontrol edildi.
+- [x] Rapor/test commit'i yetkili yeni dala push edildi; remote hash kontrol edildi.
 - Release/deploy/merge N/A; kullanıcı bunları istemedi.
 - Geri dönüş: audit commit'i ayrı dalda; production kod/veri migration etkisi yok.
+- İlk audit commit'i: `3ac52ba70b7019c4d433d2a1673576184a330885`.
+  Bu kayıt kapatması ayrı docs commit'iyle aynı dala gönderilir.
+  `main` ve `origin/main` hâlâ base revision'da; merge/release/deploy yapılmadı.
