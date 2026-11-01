@@ -1,0 +1,178 @@
+Running Gradle task 'assembleDebug'...
+WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): flutter_contacts, google_mlkit_commons, google_mlkit_text_recognition
+Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
+
+Please check the changelogs of these plugins and upgrade to a version that supports Built-in Kotlin.
+If no such version exists, report the issue to the plugin. If necessary, here is a guide on filing
+an issue against a plugin: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-developers#report-incompatible-kotlin-gradle-plugin-usage-to-plugin-authors
+
+If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
+Running Gradle task 'assembleDebug'...                             14,2s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...          911ms
+D/WindowLayoutComponentImpl( 9562): Register WindowLayoutInfoListener on Context=com.example.personelapp2.MainActivity@425f61c, of which baseContext=android.app.ContextImpl@38a1ba1
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+I/HWUI    ( 9562): Using FreeType backend (prop=Auto)
+VMServiceFlutterDriver: Connecting to Flutter application at <redacted-vm-service-url>
+VMServiceFlutterDriver: Isolate found with number: 7021637824027831
+VMServiceFlutterDriver: Isolate 7021637824027831 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+I/flutter ( 9562): 00:00 +0: archive to selected-team export and day export preserves records
+VMServiceFlutterDriver: Connected to Flutter application.
+D/InsetsController( 9562): hide(ime())
+I/ImeTracker( 9562): com.example.personelapp2:09c55cef: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+I/Surface ( 9562): Creating surface for consumer unnamed-9562-2 with slotExpansion=1 for 64 slots
+I/Surface ( 9562): Creating surface for consumer ImageReader-320x640f1m3-9562-0 with slotExpansion=1 for 64 slots
+D/WindowOnBackDispatcher( 9562): setTopOnBackInvokedCallback (unwrapped): io.flutter.embedding.android.FlutterActivity$1@91e89f1
+D/WindowOnBackDispatcher( 9562): setOnBackInvokedCallbackInfo: io.flutter.embedding.android.FlutterActivity$1@91e89f1
+D/ProfileInstaller( 9562): Installing profile for com.example.personelapp2
+D/WindowOnBackDispatcher( 9562): setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@d04f353
+D/WindowOnBackDispatcher( 9562): setOnBackInvokedCallbackInfo: android.app.Activity$$ExternalSyntheticLambda0@d04f353
+VMServiceFlutterDriver: request_data message is taking a long time to complete...
+D/WindowOnBackDispatcher( 9562): setTopOnBackInvokedCallback (unwrapped): io.flutter.embedding.android.FlutterActivity$1@91e89f1
+D/WindowOnBackDispatcher( 9562): setOnBackInvokedCallbackInfo: io.flutter.embedding.android.FlutterActivity$1@91e89f1
+I/ImeTracker( 9562): com.example.personelapp2:cb5dd189: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 9562): show(ime())
+D/InsetsController( 9562): Setting requestedVisibleTypes to 511 (was 503)
+I/ImeTracker( 9562): com.example.personelapp2:c42cc5bf: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 9562): show(ime())
+I/ImeTracker( 9562): com.example.personelapp2:c42cc5bf: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/AssistStructure( 9562): Flattened final assist data: 540 bytes, containing 1 windows, 3 views
+D/InputConnectionAdaptor( 9562): The input method toggled cursor monitoring on
+I/ImeTracker( 9562): com.example.personelapp2:dfda0221: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 9562): hide(ime())
+D/InsetsController( 9562): Setting requestedVisibleTypes to 503 (was 511)
+I/ImeTracker( 9562): com.example.personelapp2:cb5dd189: onCancelled at PHASE_CLIENT_ANIMATION_CANCEL
+D/CompatChangeReporter( 9562): Compat change id reported: 395521150; UID 10238; state: ENABLED
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+W/InteractionJankMonitor( 9562): Initializing without READ_DEVICE_CONFIG permission. enabled=false, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.example.personelapp2
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/WindowOnBackDispatcher( 9562): setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@d04f353
+D/WindowOnBackDispatcher( 9562): setOnBackInvokedCallbackInfo: android.app.Activity$$ExternalSyntheticLambda0@d04f353
+E/ConsumerBase( 9562): [ImageReader-320x640f1m3-9562-0] abandonLocked: ConsumerBase is abandoned!
+I/flutter ( 9562): 00:08 +1: monthly summary, modern day detail and matrix on Android
+I/Surface ( 9562): Creating surface for consumer unnamed-9562-3 with slotExpansion=1 for 64 slots
+I/Surface ( 9562): Creating surface for consumer ImageReader-320x640f1m3-9562-1 with slotExpansion=1 for 64 slots
+E/ConsumerBase( 9562): [ImageReader-320x640f1m3-9562-1] abandonLocked: ConsumerBase is abandoned!
+I/flutter ( 9562): 00:12 +2: audit personnel search and cancel preserve rows (dark=false)
+I/ImeTracker( 9562): com.example.personelapp2:ad5c0056: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 9562): show(ime())
+D/InsetsController( 9562): Setting requestedVisibleTypes to 511 (was 503)
+I/ImeTracker( 9562): com.example.personelapp2:51f5bb06: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 9562): show(ime())
+I/ImeTracker( 9562): com.example.personelapp2:51f5bb06: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor( 9562): The input method toggled cursor monitoring on
+I/AssistStructure( 9562): Flattened final assist data: 532 bytes, containing 1 windows, 3 views
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+I/ImeTracker( 9562): com.example.personelapp2:ad5c0056: onShown
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+I/ImeTracker( 9562): com.example.personelapp2:cad93a71: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 9562): show(ime())
+I/ImeTracker( 9562): com.example.personelapp2:cad93a71: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+I/Surface ( 9562): Creating surface for consumer unnamed-9562-4 with slotExpansion=1 for 64 slots
+I/Surface ( 9562): Creating surface for consumer ImageReader-320x640f1m3-9562-2 with slotExpansion=1 for 64 slots
+I/ImeTracker( 9562): com.example.personelapp2:d91f7409: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 9562): hide(ime())
+D/InsetsController( 9562): Setting requestedVisibleTypes to 503 (was 511)
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+E/ConsumerBase( 9562): [ImageReader-320x640f1m3-9562-2] abandonLocked: ConsumerBase is abandoned!
+I/flutter ( 9562): 00:18 +3: audit personnel search and cancel preserve rows (dark=true)
+I/ImeTracker( 9562): com.example.personelapp2:2dc648b1: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 9562): show(ime())
+D/InsetsController( 9562): Setting requestedVisibleTypes to 511 (was 503)
+I/ImeTracker( 9562): com.example.personelapp2:ec27e1db: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 9562): show(ime())
+I/ImeTracker( 9562): com.example.personelapp2:ec27e1db: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor( 9562): The input method toggled cursor monitoring on
+I/AssistStructure( 9562): Flattened final assist data: 532 bytes, containing 1 windows, 3 views
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+I/ImeTracker( 9562): com.example.personelapp2:2dc648b1: onShown
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+I/ImeTracker( 9562): com.example.personelapp2:e4a9d61f: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 9562): show(ime())
+I/ImeTracker( 9562): com.example.personelapp2:e4a9d61f: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+I/Surface ( 9562): Creating surface for consumer unnamed-9562-5 with slotExpansion=1 for 64 slots
+I/Surface ( 9562): Creating surface for consumer ImageReader-320x640f1m3-9562-3 with slotExpansion=1 for 64 slots
+I/ImeTracker( 9562): com.example.personelapp2:0496dfff: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 9562): hide(ime())
+D/InsetsController( 9562): Setting requestedVisibleTypes to 503 (was 511)
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+D/FlutterJNI( 9562): Sending viewport metrics to the engine.
+E/ConsumerBase( 9562): [ImageReader-320x640f1m3-9562-3] abandonLocked: ConsumerBase is abandoned!
+I/flutter ( 9562): 00:24 +4: Android task team history dated history uses latest calendar day, ignores valid future changes
+I/flutter ( 9562): 00:24 +5: Android task team history same day identical states are certain but distinct teams ambiguous
+I/flutter ( 9562): 00:24 +6: Android task team history invalid event dates and invalid later actions never infer a snapshot
+I/flutter ( 9562): 00:24 +7: Android task team history add without team and deleted team references are unknown
+I/flutter ( 9562): 00:24 +8: Android observed risks (not fixes) AUDIT F01: new squad commander has no resolvable team
+I/flutter ( 9562): 00:24 +9: Android observed risks (not fixes) AUDIT F02: demoted admin session still approves assignment
+I/flutter ( 9562): 00:24 +10: Android observed risks (not fixes) AUDIT F03: concurrent table write creates a rejected backup
+I/flutter ( 9562): 00:24 +11: Android observed risks (not fixes) AUDIT F04: password reset does not invalidate saved session
+I/flutter ( 9562): 00:24 +12: (tearDownAll)
+I/flutter ( 9562): 00:24 +13: All tests passed!
+All tests passed.

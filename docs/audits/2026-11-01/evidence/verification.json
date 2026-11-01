@@ -1,0 +1,87 @@
+{
+  "base": "9517d9464b702a22407be7c515e38e418bdb7032",
+  "cwd": "F:\\personelapp2",
+  "observedUtc": "2026-11-01T00:49:01.585380+00:00",
+  "avd": "nizam-nobet-test",
+  "serial": "emulator-5554",
+  "android": "17/API37",
+  "screenshots": 38,
+  "rejectedScreenshots": [
+    "monthly-matrix-android.png"
+  ],
+  "productionDiffExit": 0,
+  "records": [
+    {
+      "id": "baseline",
+      "status": "PASS",
+      "exitCode": 0,
+      "tests": 1013,
+      "skipped": 1,
+      "log": "unit-widget.txt",
+      "logCompletedUtc": "2026-11-01T00:33:11.300615+00:00"
+    },
+    {
+      "id": "host-final",
+      "status": "PASS",
+      "exitCode": 0,
+      "tests": 1017,
+      "skipped": 1,
+      "log": "final-unit-widget.txt",
+      "logCompletedUtc": "2026-11-01T00:39:25.649604+00:00"
+    },
+    {
+      "id": "risks",
+      "status": "PASS_CURRENT_DEFECTS",
+      "exitCode": 0,
+      "tests": 4,
+      "skipped": 0,
+      "log": "risks.txt",
+      "logCompletedUtc": "2026-11-01T00:34:45.869438+00:00"
+    },
+    {
+      "id": "root-analysis",
+      "status": "FAIL_PREEXISTING_OUTPUT",
+      "exitCode": 1,
+      "tests": null,
+      "skipped": null,
+      "log": "analyze.txt",
+      "logCompletedUtc": "2026-11-01T00:32:11.833076+00:00"
+    },
+    {
+      "id": "source-analysis",
+      "status": "PASS",
+      "exitCode": 0,
+      "tests": null,
+      "skipped": null,
+      "log": "source-analyze.txt",
+      "logCompletedUtc": "2026-11-01T00:48:49.961422+00:00"
+    },
+    {
+      "id": "format",
+      "status": "PASS",
+      "exitCode": 0,
+      "tests": null,
+      "skipped": null,
+      "log": "format.txt",
+      "logCompletedUtc": "2026-11-01T00:48:44.163977+00:00"
+    },
+    {
+      "id": "android-flow",
+      "status": "PASS",
+      "exitCode": 0,
+      "tests": 12,
+      "skipped": 0,
+      "log": "android.txt",
+      "logCompletedUtc": "2026-11-01T00:46:34.982299+00:00"
+    },
+    {
+      "id": "android-surfaces",
+      "status": "PASS",
+      "exitCode": 0,
+      "tests": 4,
+      "skipped": 0,
+      "log": "android-surfaces.txt",
+      "logCompletedUtc": "2026-11-01T00:48:39.808802+00:00"
+    }
+  ]
+}

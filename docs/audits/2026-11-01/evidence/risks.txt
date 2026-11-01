@@ -1,0 +1,6 @@
+00:00 +0: loading F:/personelapp2/test/audit/codebase_risk_characterization_test.dart
+00:00 +0: AUDIT F01: new squad commander has no resolvable team
+00:00 +1: AUDIT F02: demoted admin session still approves assignment
+00:00 +2: AUDIT F03: concurrent table write creates a rejected backup
+00:00 +3: AUDIT F04: password reset does not invalidate saved session
+00:00 +4: All tests passed!

@@ -1,0 +1,258 @@
+Running Gradle task 'assembleDebug'...
+WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): flutter_contacts, google_mlkit_commons, google_mlkit_text_recognition
+Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
+
+Please check the changelogs of these plugins and upgrade to a version that supports Built-in Kotlin.
+If no such version exists, report the issue to the plugin. If necessary, here is a guide on filing
+an issue against a plugin: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-developers#report-incompatible-kotlin-gradle-plugin-usage-to-plugin-authors
+
+If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
+Warning: SDK processing. This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered. This can happen if you use versions of Android Studio and the command-line tools that were released at different times.
+Running Gradle task 'assembleDebug'...                             38,7s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...        1.843ms
+Error: ADB exited with exit code 1
+Performing Streamed Install
+
+adb.exe: failed to install F:\personelapp2\build\app\outputs\flutter-apk\app-debug.apk: Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package com.example.personelapp2 signatures do not match newer version; ignoring!]
+Uninstalling old version...
+Installing build\app\outputs\flutter-apk\app-debug.apk...        2.638ms
+I/le.personelapp2( 7720): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityNodeInfo;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported,test-api) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app, TargetSdkVersion=36) using reflection: allowed
+I/le.personelapp2( 7720): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityRecord;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app, TargetSdkVersion=36) using reflection: allowed
+I/le.personelapp2( 7720): hiddenapi: Accessing hidden field Landroid/view/accessibility/AccessibilityNodeInfo;->mChildNodeIds:Landroid/util/LongArray; (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app, TargetSdkVersion=36) using reflection: allowed
+I/le.personelapp2( 7720): hiddenapi: Accessing hidden method Landroid/util/LongArray;->get(I)J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app, TargetSdkVersion=36) using reflection: allowed
+D/AccessibilityBridge( 7720): Setting not found: accessibility_display_inversion_enabled, using default: 0
+D/FlutterRenderer( 7720): Width is zero. 0,0
+D/CompatChangeReporter( 7720): Compat change id reported: 377864165; UID 10231; state: ENABLED
+W/HWUI    ( 7720): Unknown dataspace 0
+D/WindowOnBackDispatcher( 7720): setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@207298d
+D/WindowOnBackDispatcher( 7720): setOnBackInvokedCallbackInfo: android.app.Activity$$ExternalSyntheticLambda0@207298d
+W/libc    ( 7720): Access denied finding property "vendor.mesa.virtgpu.kumquat"
+I/WindowExtensionsImpl( 7720): Initializing Window Extensions, vendor API level=10, activity embedding enabled=true
+W/UiContextUtils( 7720): Requested context is a non-UI Context. Creating a UI-Context with display: 0. Context: Context=android.app.Application@bd22122, of which baseContext=android.app.ContextImpl@970c431
+D/VRI[MainActivity]( 7720): WindowInsets changed: 320x640 statusBars:[0,24,0,0] mandatorySystemGestures:[0,24,0,0]
+D/FlutterRenderer( 7720): Width is zero. 0,0
+I/Surface ( 7720): Creating surface for consumer unnamed-7720-0 with slotExpansion=1 for 64 slots
+I/Surface ( 7720): Creating surface for consumer VRI[MainActivity]#0(BLAST Consumer)0 with slotExpansion=1 for 64 slots
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+I/Surface ( 7720): Creating surface for consumer unnamed-7720-1 with slotExpansion=1 for 64 slots
+I/Surface ( 7720): Creating surface for consumer 969733 SurfaceView[com.example.personelapp2/com.example.personelapp2.MainActivity]#1(BLAST Consumer)1 with slotExpansion=1 for 64 slots
+I/le.personelapp2( 7720): Compiler allocated 5559KB to compile void android.view.ViewRootImpl.performTraversals(long)
+D/WindowLayoutComponentImpl( 7720): Register WindowLayoutInfoListener on Context=com.example.personelapp2.MainActivity@c6d82ee, of which baseContext=android.app.ContextImpl@5bf01c6
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+I/HWUI    ( 7720): Using FreeType backend (prop=Auto)
+VMServiceFlutterDriver: Connecting to Flutter application at <redacted-vm-service-url>
+VMServiceFlutterDriver: Isolate found with number: 5768643934495923
+VMServiceFlutterDriver: Isolate 5768643934495923 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+I/flutter ( 7720): 00:00 +0: archive to selected-team export and day export preserves records
+VMServiceFlutterDriver: Connected to Flutter application.
+D/InsetsController( 7720): hide(ime())
+I/ImeTracker( 7720): com.example.personelapp2:10d87f9b: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/ProfileInstaller( 7720): Installing profile for com.example.personelapp2
+I/Surface ( 7720): Creating surface for consumer unnamed-7720-2 with slotExpansion=1 for 64 slots
+I/Surface ( 7720): Creating surface for consumer ImageReader-320x640f1m3-7720-0 with slotExpansion=1 for 64 slots
+D/WindowOnBackDispatcher( 7720): setTopOnBackInvokedCallback (unwrapped): io.flutter.embedding.android.FlutterActivity$1@195ab44
+D/WindowOnBackDispatcher( 7720): setOnBackInvokedCallbackInfo: io.flutter.embedding.android.FlutterActivity$1@195ab44
+VMServiceFlutterDriver: request_data message is taking a long time to complete...
+D/WindowOnBackDispatcher( 7720): setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@207298d
+D/WindowOnBackDispatcher( 7720): setOnBackInvokedCallbackInfo: android.app.Activity$$ExternalSyntheticLambda0@207298d
+I/le.personelapp2( 7720): Background concurrent mark compact GC freed 2854KB AllocSpace bytes, 24(928KB) LOS objects, 49% free, 3508KB/7016KB, paused 1.082ms,7.450ms total 20.985ms
+D/WindowOnBackDispatcher( 7720): setTopOnBackInvokedCallback (unwrapped): io.flutter.embedding.android.FlutterActivity$1@195ab44
+D/WindowOnBackDispatcher( 7720): setOnBackInvokedCallbackInfo: io.flutter.embedding.android.FlutterActivity$1@195ab44
+I/ImeTracker( 7720): com.example.personelapp2:eaa56d51: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 7720): show(ime())
+D/InsetsController( 7720): Setting requestedVisibleTypes to 511 (was 503)
+I/ImeTracker( 7720): com.example.personelapp2:80f2ae3e: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 7720): show(ime())
+I/ImeTracker( 7720): com.example.personelapp2:80f2ae3e: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/AssistStructure( 7720): Flattened final assist data: 540 bytes, containing 1 windows, 3 views
+D/InputConnectionAdaptor( 7720): The input method toggled cursor monitoring on
+I/ImeTracker( 7720): com.example.personelapp2:cc8cae3a: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 7720): hide(ime())
+D/InsetsController( 7720): Setting requestedVisibleTypes to 503 (was 511)
+D/CompatChangeReporter( 7720): Compat change id reported: 395521150; UID 10231; state: ENABLED
+D/WindowOnBackDispatcher( 7720): setTopOnBackInvokedCallback (unwrapped): android.app.Activity$$ExternalSyntheticLambda0@207298d
+D/WindowOnBackDispatcher( 7720): setOnBackInvokedCallbackInfo: android.app.Activity$$ExternalSyntheticLambda0@207298d
+E/ConsumerBase( 7720): [ImageReader-320x640f1m3-7720-0] abandonLocked: ConsumerBase is abandoned!
+I/flutter ( 7720): 00:09 +1: monthly summary, modern day detail and matrix on Android
+I/Surface ( 7720): Creating surface for consumer unnamed-7720-3 with slotExpansion=1 for 64 slots
+I/Surface ( 7720): Creating surface for consumer ImageReader-320x640f1m3-7720-1 with slotExpansion=1 for 64 slots
+E/ConsumerBase( 7720): [ImageReader-320x640f1m3-7720-1] abandonLocked: ConsumerBase is abandoned!
+I/flutter ( 7720): 00:13 +2: audit personnel search and cancel preserve rows (dark=false)
+I/ImeTracker( 7720): com.example.personelapp2:8a0278a7: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 7720): show(ime())
+D/InsetsController( 7720): Setting requestedVisibleTypes to 511 (was 503)
+I/ImeTracker( 7720): com.example.personelapp2:22a1e818: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 7720): show(ime())
+I/ImeTracker( 7720): com.example.personelapp2:22a1e818: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor( 7720): The input method toggled cursor monitoring on
+I/AssistStructure( 7720): Flattened final assist data: 532 bytes, containing 1 windows, 3 views
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+W/InteractionJankMonitor( 7720): Initializing without READ_DEVICE_CONFIG permission. enabled=false, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.example.personelapp2
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+I/ImeTracker( 7720): com.example.personelapp2:8a0278a7: onShown
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+I/ImeTracker( 7720): com.example.personelapp2:5e440ecb: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 7720): show(ime())
+I/ImeTracker( 7720): com.example.personelapp2:5e440ecb: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+I/flutter ( 7720): ══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+I/flutter ( 7720): The following StateError was thrown running a test:
+I/flutter ( 7720): Bad state: Call convertFlutterSurfaceToImage() before taking a screenshot
+I/flutter ( 7720):
+I/flutter ( 7720): When the exception was thrown, this was the stack:
+I/flutter ( 7720): #0      _IOCallbackManager.takeScreenshot (package:integration_test/src/_callback_io.dart:88:7)
+I/flutter ( 7720): #1      IntegrationTestWidgetsFlutterBinding.takeScreenshot (package:integration_test/integration_test.dart:190:61)
+I/flutter ( 7720): #2      main.capture (file:///F:/personelapp2/integration_test/codebase_audit_android_test.dart:27:19)
+I/flutter ( 7720): #3      main.<anonymous closure> (file:///F:/personelapp2/integration_test/codebase_audit_android_test.dart:68:13)
+I/flutter ( 7720): <asynchronous suspension>
+I/flutter ( 7720): #4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+I/flutter ( 7720): <asynchronous suspension>
+I/flutter ( 7720): #5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+I/flutter ( 7720): <asynchronous suspension>
+I/flutter ( 7720): #6      TestWidgetsFlutterBinding._createTestCompletionHandler.<anonymous closure> (package:flutter_test/src/binding.dart:1707:12)
+I/flutter ( 7720): <asynchronous suspension>
+I/flutter ( 7720):
+I/flutter ( 7720): The test description was:
+I/flutter ( 7720):   audit personnel search and cancel preserve rows (dark=false)
+I/flutter ( 7720): ════════════════════════════════════════════════════════════════════════════════════════════════════
+I/flutter ( 7720): 00:15 +2: audit personnel search and cancel preserve rows (dark=false) [E]
+I/flutter ( 7720):   Test failed. See exception logs above.
+I/flutter ( 7720):   The test description was: audit personnel search and cancel preserve rows (dark=false)
+I/flutter ( 7720):
+I/flutter ( 7720): 00:15 +2 -1: audit personnel search and cancel preserve rows (dark=true)
+I/ImeTracker( 7720): com.example.personelapp2:21b1a3aa: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 7720): hide(ime())
+D/InsetsController( 7720): Setting requestedVisibleTypes to 503 (was 511)
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+I/ImeTracker( 7720): com.example.personelapp2:58074baf: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 7720): show(ime())
+D/InsetsController( 7720): Setting requestedVisibleTypes to 511 (was 503)
+I/ImeTracker( 7720): com.example.personelapp2:2f923032: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 7720): show(ime())
+I/ImeTracker( 7720): com.example.personelapp2:2f923032: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/AssistStructure( 7720): Flattened final assist data: 532 bytes, containing 1 windows, 3 views
+D/InputConnectionAdaptor( 7720): The input method toggled cursor monitoring on
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+I/ImeTracker( 7720): com.example.personelapp2:58074baf: onShown
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+D/FlutterJNI( 7720): Sending viewport metrics to the engine.
+I/ImeTracker( 7720): com.example.personelapp2:938a9888: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false userId 0 displayId 0
+D/InsetsController( 7720): show(ime())
+I/ImeTracker( 7720): com.example.personelapp2:938a9888: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+I/flutter ( 7720): ══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+I/flutter ( 7720): The following StateError was thrown running a test:
+I/flutter ( 7720): Bad state: Call convertFlutterSurfaceToImage() before taking a screenshot
+I/flutter ( 7720):
+I/flutter ( 7720): When the exception was thrown, this was the stack:
+I/flutter ( 7720): #0      _IOCallbackManager.takeScreenshot (package:integration_test/src/_callback_io.dart:88:7)
+I/flutter ( 7720): #1      IntegrationTestWidgetsFlutterBinding.takeScreenshot (package:integration_test/integration_test.dart:190:61)
+I/flutter ( 7720): #2      main.capture (file:///F:/personelapp2/integration_test/codebase_audit_android_test.dart:27:19)
+I/flutter ( 7720): #3      main.<anonymous closure> (file:///F:/personelapp2/integration_test/codebase_audit_android_test.dart:68:13)
+I/flutter ( 7720): <asynchronous suspension>
+I/flutter ( 7720): #4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+I/flutter ( 7720): <asynchronous suspension>
+I/flutter ( 7720): #5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+I/flutter ( 7720): <asynchronous suspension>
+I/flutter ( 7720): #6      TestWidgetsFlutterBinding._createTestCompletionHandler.<anonymous closure> (package:flutter_test/src/binding.dart:1707:12)
+I/flutter ( 7720): <asynchronous suspension>
+I/flutter ( 7720):
+I/flutter ( 7720): The test description was:
+I/flutter ( 7720):   audit personnel search and cancel preserve rows (dark=true)
+I/flutter ( 7720): ════════════════════════════════════════════════════════════════════════════════════════════════════
+I/flutter ( 7720): 00:18 +2 -1: audit personnel search and cancel preserve rows (dark=true) [E]
+I/flutter ( 7720):   Test failed. See exception logs above.
+I/flutter ( 7720):   The test description was: audit personnel search and cancel preserve rows (dark=true)
+I/flutter ( 7720):
+I/flutter ( 7720): 00:18 +2 -2: (tearDownAll)
+I/flutter ( 7720): 00:18 +3 -2: Some tests failed.
+Failure Details:
+Failure in method: audit personnel search and cancel preserve rows (dark=false)
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞═════════════════
+The following StateError was thrown running a test:
+Bad state: Call convertFlutterSurfaceToImage() before taking a
+screenshot
+
+When the exception was thrown, this was the stack:
+#0      _IOCallbackManager.takeScreenshot (package:integration_test/src/_callback_io.dart:88:7)
+#1      IntegrationTestWidgetsFlutterBinding.takeScreenshot (package:integration_test/integration_test.dart:190:61)
+#2      main.capture (file:///F:/personelapp2/integration_test/codebase_audit_android_test.dart:27:19)
+#3      main.<anonymous closure> (file:///F:/personelapp2/integration_test/codebase_audit_android_test.dart:68:13)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._createTestCompletionHandler.<anonymous closure> (package:flutter_test/src/binding.dart:1707:12)
+<asynchronous suspension>
+
+The test description was:
+  audit personnel search and cancel preserve rows (dark=false)
+═════════════════════════════════════════════════════════════════
+
+end of failure 1
+
+
+Failure in method: audit personnel search and cancel preserve rows (dark=true)
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞═════════════════
+The following StateError was thrown running a test:
+Bad state: Call convertFlutterSurfaceToImage() before taking a
+screenshot
+
+When the exception was thrown, this was the stack:
+#0      _IOCallbackManager.takeScreenshot (package:integration_test/src/_callback_io.dart:88:7)
+#1      IntegrationTestWidgetsFlutterBinding.takeScreenshot (package:integration_test/integration_test.dart:190:61)
+#2      main.capture (file:///F:/personelapp2/integration_test/codebase_audit_android_test.dart:27:19)
+#3      main.<anonymous closure> (file:///F:/personelapp2/integration_test/codebase_audit_android_test.dart:68:13)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._createTestCompletionHandler.<anonymous closure> (package:flutter_test/src/binding.dart:1707:12)
+<asynchronous suspension>
+
+The test description was:
+  audit personnel search and cancel preserve rows (dark=true)
+═════════════════════════════════════════════════════════════════
+
+end of failure 2

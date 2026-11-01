@@ -1,0 +1,1290 @@
+00:00 +0: loading F:/personelapp2/test/audit/codebase_risk_characterization_test.dart
+00:00 +0: F:/personelapp2/test/core/database/database_migration_test.dart: AppDatabase migration v5 migration adds order without changing existing records
+00:00 +1: F:/personelapp2/test/audit/codebase_risk_characterization_test.dart: AUDIT F01: new squad commander has no resolvable team
+00:00 +2: F:/personelapp2/test/audit/codebase_risk_characterization_test.dart: AUDIT F01: new squad commander has no resolvable team
+00:00 +3: F:/personelapp2/test/audit/codebase_risk_characterization_test.dart: AUDIT F01: new squad commander has no resolvable team
+00:00 +4: F:/personelapp2/test/core/database/startup_database_test.dart: failed open and failed close still return the startup failure
+00:00 +5: F:/personelapp2/test/core/database/database_seed_test.dart: AppDatabase.ensureSeeded adds METİ Timi to existing database if missing
+00:00 +6: F:/personelapp2/test/core/database/database_migration_test.dart: AppDatabase migration upgrades schema version 1 by creating import support tables
+00:00 +7: F:/personelapp2/test/audit/codebase_risk_characterization_test.dart: AUDIT F02: demoted admin session still approves assignment
+00:00 +8: F:/personelapp2/test/audit/codebase_risk_characterization_test.dart: AUDIT F02: demoted admin session still approves assignment
+00:00 +9: F:/personelapp2/test/audit/codebase_risk_characterization_test.dart: AUDIT F02: demoted admin session still approves assignment
+00:00 +10: F:/personelapp2/test/audit/codebase_risk_characterization_test.dart: AUDIT F03: concurrent table write creates a rejected backup
+00:00 +11: F:/personelapp2/test/audit/codebase_risk_characterization_test.dart: AUDIT F04: password reset does not invalidate saved session
+00:00 +12: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: restoring confirmation after its form closes safely returns home
+00:00 +13: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: restoring confirmation after its form closes safely returns home
+00:00 +14: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: restoring confirmation after its form closes safely returns home
+00:01 +15: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: restoring confirmation after its form closes safely returns home
+00:01 +16: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: restoring confirmation after its form closes safely returns home
+00:01 +17: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: restoring confirmation after its form closes safely returns home
+00:01 +18: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: restoring confirmation after its form closes safely returns home
+00:01 +19: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: restoring confirmation after its form closes safely returns home
+00:01 +20: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: restoring confirmation after its form closes safely returns home
+00:01 +21: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: restoring confirmation after its form closes safely returns home
+00:01 +22: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: restoring confirmation after its form closes safely returns home
+00:01 +23: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: restoring confirmation after its form closes safely returns home
+00:01 +24: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: router codec retains callbacks across JSON history round trips
+00:01 +25: F:/personelapp2/test/core/navigation/route_extra_history_test.dart: history restore with expired=false never casts null
+00:01 +26: F:/personelapp2/test/core/notifications/app_notification_host_test.dart: mobile notification is top centered
+00:01 +27: F:/personelapp2/test/core/notifications/app_notification_host_test.dart: mobile notification is top centered
+00:01 +28: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:01 +29: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +30: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +31: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +32: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +33: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +34: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +35: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +36: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +37: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +38: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +39: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +40: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +41: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +42: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +43: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +44: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +45: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +46: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +47: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +48: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +49: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +50: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +51: F:/personelapp2/test/core/notifications/app_notification_router_test.dart: router notifications have an Overlay for their tooltip
+00:02 +52: F:/personelapp2/test/core/notifications/app_notification_host_test.dart: host safely replaces its controller
+00:02 +53: F:/personelapp2/test/core/notifications/app_notification_host_test.dart: text scale 2.0 produces no overflow exception
+00:02 +54: F:/personelapp2/test/core/services/session_storage_test.dart: resolves role and team from the database, not preferences
+00:02 +55: F:/personelapp2/test/core/services/session_storage_test.dart: clears a session whose account no longer exists
+00:02 +56: F:/personelapp2/test/core/services/session_storage_test.dart: clears a session with an unsupported database role
+00:02 +57: F:/personelapp2/test/core/services/task_team_history_test.dart: dated history uses latest calendar day, ignores valid future changes
+00:02 +58: F:/personelapp2/test/core/services/task_team_history_test.dart: dated history uses latest calendar day, ignores valid future changes
+00:02 +59: F:/personelapp2/test/core/services/task_team_backup_integrity_test.dart: signer preferences roundtrip and changes invalidate repair preview
+00:02 +60: F:/personelapp2/test/core/services/task_team_backup_integrity_test.dart: signer preferences roundtrip and changes invalidate repair preview
+00:02 +61: F:/personelapp2/test/core/services/task_team_backup_integrity_test.dart: signer preferences roundtrip and changes invalidate repair preview
+00:02 +62: F:/personelapp2/test/core/services/task_team_backup_integrity_test.dart: signer preferences roundtrip and changes invalidate repair preview
+00:02 +63: F:/personelapp2/test/core/services/task_team_backup_integrity_test.dart: invalid signer preference is rejected before writes
+00:02 +64: F:/personelapp2/test/core/services/task_team_backup_integrity_test.dart: deleted row high-water survives restoring into fresh database
+00:02 +65: F:/personelapp2/test/core/services/task_team_backup_integrity_test.dart: legacy audit backup reserves deleted assignment IDs
+00:02 +66: F:/personelapp2/test/core/services/task_team_backup_integrity_test.dart: sequence validation rejects unknown, negative and below-row counters
+00:02 +67: F:/personelapp2/test/core/services/task_team_backup_integrity_test.dart: restoring an older backup never lowers existing high-water
+00:02 +68: F:/personelapp2/test/core/services/task_team_repair_safety_test.dart: non-admin and fake admin are rejected by persisted authorization
+00:02 +69: F:/personelapp2/test/core/services/task_team_repair_safety_test.dart: filled snapshots, unknown and verified outside remain unchanged
+00:03 +70: F:/personelapp2/test/core/services/task_team_repair_service_test.dart: current membership is not historical proof
+00:03 +71: F:/personelapp2/test/core/services/task_team_repair_service_test.dart: current membership is not historical proof
+00:03 +72: F:/personelapp2/test/core/services/task_team_repair_safety_test.dart: audit failure rolls assignment back atomically
+00:03 +73: F:/personelapp2/test/core/services/task_team_repair_service_test.dart: same day conflicting states remain unknown; invalid dates rejected
+00:03 +74: F:/personelapp2/test/core/services/task_team_sequence_limits_test.dart: sequence limits preserve exact integers on native and JavaScript
+00:03 +75: F:/personelapp2/test/core/services/task_team_sequence_limits_test.dart: sequence limits preserve exact integers on native and JavaScript
+00:03 +76: F:/personelapp2/test/core/services/task_team_repair_service_test.dart: verified removal is explicit outside
+00:03 +77: F:/personelapp2/test/core/services/task_team_repair_safety_test.dart: backup audit roundtrip and old optional-field compatibility preserve snapshots
+00:03 +78: F:/personelapp2/test/core/services/task_team_repair_service_test.dart: prepare read-only, apply audited, repeat preparation idempotent
+00:03 +79: F:/personelapp2/test/core/services/task_team_repair_service_test.dart: mismatch, stale raw data and revoked admin fail without writes
+00:03 +80: F:/personelapp2/test/core/theme/app_theme_palette_test.dart: warning text remains readable on its status background (Instance of 'AppCustomColors')
+00:03 +81: F:/personelapp2/test/core/theme/app_theme_palette_test.dart: warning text remains readable on its status background (Instance of 'AppCustomColors')
+00:03 +82: F:/personelapp2/test/core/theme/app_theme_palette_test.dart: light theme uses the slate and emerald palette
+00:03 +83: F:/personelapp2/test/core/theme/app_theme_palette_test.dart: dark theme uses deep slate surfaces and a bright emerald accent
+00:03 +84: F:/personelapp2/test/core/utils/military_structure_helper_test.dart: MilitaryStructureHelper.getRosterBirlikName uses the team name for a regular duty
+00:03 +85: F:/personelapp2/test/core/utils/military_structure_helper_test.dart: MilitaryStructureHelper.getRosterBirlikName uses the company name for Hazır Kıta
+00:03 +86: F:/personelapp2/test/core/utils/military_structure_helper_test.dart: MilitaryStructureHelper.getRosterBirlikName uses the company name for Gülüşkür
+00:03 +87: F:/personelapp2/test/core/utils/military_structure_helper_test.dart: MilitaryStructureHelper.getRosterBirlikName uses parent company name for company K.H in Hazır Kıta and Gülüşkür
+00:03 +88: F:/personelapp2/test/core/utils/military_structure_helper_test.dart: MilitaryStructureHelper.getRosterBirlikName normalizes slash and spaced team variants
+00:03 +89: F:/personelapp2/test/core/utils/military_structure_helper_test.dart: MilitaryStructureHelper.getRosterBirlikName uses Nöbet Heyeti instead of a KH fallback unit
+00:03 +90: F:/personelapp2/test/core/utils/military_structure_helper_test.dart: roster duty rules classifies special and guard duty groups consistently
+00:03 +91: F:/personelapp2/test/core/utils/military_structure_helper_test.dart: roster duty rules keeps guard description and falls back to duty when it is empty
+00:03 +92: F:/personelapp2/test/core/utils/military_structure_helper_test.dart: roster duty rules orders parent companies separately for contiguous special rows
+00:03 +93: F:/personelapp2/test/core/utils/military_structure_helper_test.dart: roster duty rules recognizes METİ Timi under K.H and gives it official order
+00:03 +94: F:/personelapp2/test/core/utils/password_hasher_test.dart: PasswordHasher creates a salted Argon2id hash and verifies the password
+00:03 +95: F:/personelapp2/test/core/utils/password_hasher_test.dart: PasswordHasher creates a salted Argon2id hash and verifies the password
+00:03 +96: F:/personelapp2/test/core/utils/password_hasher_test.dart: PasswordHasher creates a salted Argon2id hash and verifies the password
+00:03 +97: F:/personelapp2/test/core/utils/password_hasher_test.dart: PasswordHasher creates a salted Argon2id hash and verifies the password
+00:03 +98: F:/personelapp2/test/core/utils/password_hasher_test.dart: PasswordHasher creates a salted Argon2id hash and verifies the password
+00:03 +99: F:/personelapp2/test/core/utils/password_hasher_test.dart: PasswordHasher creates a salted Argon2id hash and verifies the password
+00:03 +100: F:/personelapp2/test/core/utils/password_hasher_test.dart: PasswordHasher creates a salted Argon2id hash and verifies the password
+00:03 +101: F:/personelapp2/test/core/utils/password_hasher_test.dart: PasswordHasher creates a salted Argon2id hash and verifies the password
+00:03 +102: F:/personelapp2/test/core/utils/password_hasher_test.dart: PasswordHasher creates a salted Argon2id hash and verifies the password
+00:03 +103: F:/personelapp2/test/core/widgets/modern_action_sheet_test.dart: ortak işlem paneli seçilen değeri döndürür
+00:03 +104: F:/personelapp2/test/core/widgets/modern_action_sheet_test.dart: ortak işlem paneli seçilen değeri döndürür
+00:04 +105: F:/personelapp2/test/core/widgets/modern_action_sheet_test.dart: ortak işlem paneli seçilen değeri döndürür
+00:04 +106: F:/personelapp2/test/core/widgets/modern_action_sheet_test.dart: ortak işlem paneli seçilen değeri döndürür
+00:04 +107: F:/personelapp2/test/core/widgets/modern_action_sheet_test.dart: ortak işlem paneli seçilen değeri döndürür
+00:04 +108: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +109: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +110: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +111: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +112: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +113: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +114: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +115: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +116: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +117: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +118: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +119: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +120: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +121: F:/personelapp2/test/features/activity/activity_archive_reorder_test.dart: saved order decides how archive cards are stacked
+00:04 +122: F:/personelapp2/test/features/activity/activity_archive_selection_test.dart: long press enables multi-select and opens export options
+00:04 +123: F:/personelapp2/test/features/activity/activity_archive_selection_test.dart: long press enables multi-select and opens export options
+00:04 +124: F:/personelapp2/test/features/activity/activity_archive_selection_test.dart: long press enables multi-select and opens export options
+00:04 +125: F:/personelapp2/test/features/activity/activity_archive_selection_test.dart: long press enables multi-select and opens export options
+00:04 +126: F:/personelapp2/test/features/activity/activity_archive_selection_test.dart: long press enables multi-select and opens export options
+00:05 +127: F:/personelapp2/test/features/activity/activity_archive_selection_test.dart: long press enables multi-select and opens export options
+00:05 +128: F:/personelapp2/test/features/activity/activity_archive_selection_test.dart: long press enables multi-select and opens export options
+00:05 +129: F:/personelapp2/test/features/activity/activity_archive_selection_test.dart: long press enables multi-select and opens export options
+00:05 +130: F:/personelapp2/test/features/activity/activity_archive_selection_test.dart: long press enables multi-select and opens export options
+00:05 +131: F:/personelapp2/test/features/activity/activity_archive_selection_test.dart: long press enables multi-select and opens export options
+00:05 +132: F:/personelapp2/test/features/activity/activity_archive_selection_test.dart: long press enables multi-select and opens export options
+00:05 +133: F:/personelapp2/test/features/activity/activity_card_selection_test.dart: long press starts selection and selected-mode tap toggles
+00:05 +134: F:/personelapp2/test/features/activity/activity_card_selection_test.dart: long press starts selection and selected-mode tap toggles
+00:05 +135: F:/personelapp2/test/features/activity/activity_card_selection_test.dart: long press starts selection and selected-mode tap toggles
+00:05 +136: F:/personelapp2/test/features/activity/activity_card_selection_test.dart: long press starts selection and selected-mode tap toggles
+00:05 +137: F:/personelapp2/test/features/activity/activity_card_selection_test.dart: long press starts selection and selected-mode tap toggles
+00:05 +138: F:/personelapp2/test/features/activity/activity_card_selection_test.dart: long press starts selection and selected-mode tap toggles
+00:05 +139: F:/personelapp2/test/features/activity/activity_copy_consumers_test.dart: mixed duties copy exact source people into analytics matrix and Excel
+00:05 +140: F:/personelapp2/test/features/activity/activity_copy_test.dart: copies exact personnel duty and note across month using target team
+00:05 +141: F:/personelapp2/test/features/activity/activity_copy_test.dart: copies exact personnel duty and note across month using target team
+00:05 +142: F:/personelapp2/test/features/activity/activity_copy_test.dart: copies exact personnel duty and note across month using target team
+00:05 +143: F:/personelapp2/test/features/activity/activity_copy_test.dart: copies exact personnel duty and note across month using target team
+00:05 +144: F:/personelapp2/test/features/activity/activity_card_selection_test.dart: approved activity keeps status icon but hides redundant badge
+00:05 +145: F:/personelapp2/test/features/activity/activity_card_selection_test.dart: approved activity keeps status icon but hides redundant badge
+00:05 +146: F:/personelapp2/test/features/activity/activity_card_selection_test.dart: approved activity keeps status icon but hides redundant badge
+00:05 +147: F:/personelapp2/test/features/activity/activity_copy_test.dart: unknown past team rolls back destination then accepts confirmation
+00:05 +148: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:05 +149: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:05 +150: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +151: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +152: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +153: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +154: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +155: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +156: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +157: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +158: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +159: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +160: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +161: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +162: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +163: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +164: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +165: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +166: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +167: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +168: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +169: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +170: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +171: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +172: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +173: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +174: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +175: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +176: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +177: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +178: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +179: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +180: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +181: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +182: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +183: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +184: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +185: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +186: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +187: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:06 +188: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: same team
+00:07 +189: F:/personelapp2/test/features/activity/activity_form_modern_ui_test.dart: modern form stays usable on a narrow phone
+00:07 +190: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: cancel changed team
+00:07 +191: F:/personelapp2/test/features/activity/activity_form_two_stage_test.dart: starts with personnel-only first stage
+00:08 +192: F:/personelapp2/test/features/activity/activity_modern_action_menus_test.dart: duty dropdown uses a constrained modern menu
+00:08 +193: F:/personelapp2/test/features/activity/activity_modern_action_menus_test.dart: duty dropdown uses a constrained modern menu
+00:08 +194: F:/personelapp2/test/features/activity/activity_modern_action_menus_test.dart: duty dropdown uses a constrained modern menu
+00:08 +195: F:/personelapp2/test/features/activity/activity_modern_action_menus_test.dart: duty dropdown uses a constrained modern menu
+00:08 +196: F:/personelapp2/test/features/activity/activity_modern_action_menus_test.dart: duty dropdown uses a constrained modern menu
+00:08 +197: F:/personelapp2/test/features/activity/activity_modern_action_menus_test.dart: duty dropdown uses a constrained modern menu
+00:08 +198: F:/personelapp2/test/features/activity/activity_modern_action_menus_test.dart: duty dropdown uses a constrained modern menu
+00:08 +199: F:/personelapp2/test/features/activity/activity_modern_action_menus_test.dart: duty dropdown uses a constrained modern menu
+00:08 +200: F:/personelapp2/test/features/activity/activity_modern_action_menus_test.dart: duty dropdown uses a constrained modern menu
+00:08 +201: F:/personelapp2/test/features/activity/activity_modern_action_menus_test.dart: duty dropdown uses a constrained modern menu
+00:08 +202: F:/personelapp2/test/features/activity/activity_modern_action_menus_test.dart: duty dropdown uses a constrained modern menu
+00:08 +203: F:/personelapp2/test/features/activity/activity_modern_action_menus_test.dart: duty dropdown uses a constrained modern menu
+00:08 +204: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: confirm changed team
+00:08 +205: F:/personelapp2/test/features/activity/activity_date_change_action_test.dart: date change: confirm changed team
+00:08 +206: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:08 +207: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:09 +208: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:09 +209: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:09 +210: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:09 +211: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:09 +212: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:09 +213: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:09 +214: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:09 +215: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:09 +216: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:10 +217: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:10 +218: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:10 +219: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:10 +220: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:10 +221: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:10 +222: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:10 +223: F:/personelapp2/test/features/activity/add_personnel_flow_test.dart: multi assignment existing=false at width 320.0
+00:10 +224: F:/personelapp2/test/features/activity/archive_copy_action_widget_test.dart: copy card action: copy
+00:10 +225: F:/personelapp2/test/features/activity/archive_copy_action_widget_test.dart: copy card action: copy
+00:10 +226: F:/personelapp2/test/features/activity/archive_copy_action_widget_test.dart: copy card action: copy
+00:10 +227: F:/personelapp2/test/features/activity/archive_copy_action_widget_test.dart: copy card action: copy
+00:10 +228: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:10 +229: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:10 +230: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +231: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +232: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +233: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +234: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +235: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +236: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +237: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +238: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +239: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +240: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +241: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +242: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +243: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:11 +244: F:/personelapp2/test/features/activity/archive_end_to_end_test.dart: archive to selected-team export and day export preserves records
+00:12 +245: F:/personelapp2/test/features/activity/approved_roster_export_test.dart: archive text export approval and team scope scenario=master-excel-time
+00:12 +246: F:/personelapp2/test/features/activity/approved_roster_export_test.dart: archive text export approval and team scope scenario=master-excel-time
+00:12 +247: F:/personelapp2/test/features/activity/approved_roster_export_test.dart: archive text export approval and team scope scenario=master-excel-time
+00:12 +248: F:/personelapp2/test/features/activity/approved_roster_export_test.dart: archive text export approval and team scope scenario=master-excel-time
+00:12 +249: F:/personelapp2/test/features/activity/archive_mutation_safety_test.dart: desktop edit single flight and visible generic error=false
+00:12 +250: F:/personelapp2/test/features/activity/archive_mutation_safety_test.dart: desktop edit single flight and visible generic error=false
+00:12 +251: F:/personelapp2/test/features/activity/archive_mutation_safety_test.dart: desktop edit single flight and visible generic error=false
+00:12 +252: F:/personelapp2/test/features/activity/archive_mutation_safety_test.dart: desktop edit single flight and visible generic error=false
+00:12 +253: F:/personelapp2/test/features/activity/archive_mutation_safety_test.dart: desktop edit single flight and visible generic error=false
+00:12 +254: F:/personelapp2/test/features/activity/archive_mutation_safety_test.dart: desktop edit single flight and visible generic error=false
+00:12 +255: F:/personelapp2/test/features/activity/archive_mutation_safety_test.dart: desktop edit single flight and visible generic error=false
+00:12 +256: F:/personelapp2/test/features/activity/archive_reassign_reporting_test.dart: selected team reassign updates archive matrix analytics and Excel together
+00:12 +257: F:/personelapp2/test/features/activity/archive_reassign_reporting_test.dart: selected team reassign updates archive matrix analytics and Excel together
+00:12 +258: F:/personelapp2/test/features/activity/archive_reassign_reporting_test.dart: selected team reassign updates archive matrix analytics and Excel together
+00:12 +259: F:/personelapp2/test/features/activity/archive_reassign_reporting_test.dart: selected team reassign updates archive matrix analytics and Excel together
+00:12 +260: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:12 +261: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:12 +262: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:12 +263: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:12 +264: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:12 +265: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:12 +266: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:12 +267: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:12 +268: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:12 +269: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:12 +270: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:13 +271: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:13 +272: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:13 +273: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:13 +274: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:13 +275: F:/personelapp2/test/features/activity/archive_router_flow_test.dart: detail actions share a row and combined output stays in archive
+00:14 +276: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:14 +277: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:14 +278: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:14 +279: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:14 +280: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:14 +281: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:14 +282: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:14 +283: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:14 +284: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:14 +285: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:14 +286: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:15 +287: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:15 +288: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:15 +289: F:/personelapp2/test/features/activity/bulk_add_personnel_to_activity_test.dart: activity bulk option opens the full bulk import dialog
+00:15 +290: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:15 +291: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:15 +292: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:15 +293: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +294: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +295: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +296: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +297: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +298: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +299: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +300: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +301: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +302: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +303: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +304: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +305: F:/personelapp2/test/features/activity/bulk_import_issue_sync_test.dart: editing a card reduces the issue count incrementally card-by-card
+00:16 +306: F:/personelapp2/test/features/activity/bulk_import_save_button_test.dart: critical parse issue disables save
+00:16 +307: F:/personelapp2/test/features/activity/bulk_import_source_header_test.dart: OCR uses image-specific title in shared import header
+00:16 +308: F:/personelapp2/test/features/activity/bulk_import_source_header_test.dart: OCR uses image-specific title in shared import header
+00:16 +309: F:/personelapp2/test/features/activity/bulk_import_source_header_test.dart: OCR uses image-specific title in shared import header
+00:16 +310: F:/personelapp2/test/features/activity/bulk_import_source_header_test.dart: OCR uses image-specific title in shared import header
+00:16 +311: F:/personelapp2/test/features/activity/bulk_import_source_header_test.dart: OCR uses image-specific title in shared import header
+00:16 +312: F:/personelapp2/test/features/activity/bulk_import_source_header_test.dart: OCR uses image-specific title in shared import header
+00:17 +313: F:/personelapp2/test/features/activity/bulk_import_suggestion_confirmation_test.dart: PersonnelMatchCard shows "Onayla" button when needsReview is true
+00:17 +314: F:/personelapp2/test/features/activity/bulk_import_suggestion_confirmation_test.dart: PersonnelMatchCard shows "Onayla" button when needsReview is true
+00:17 +315: F:/personelapp2/test/features/activity/bulk_import_suggestion_confirmation_test.dart: PersonnelMatchCard shows "Onayla" button when needsReview is true
+00:17 +316: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:17 +317: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:17 +318: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:17 +319: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:17 +320: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:17 +321: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +322: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +323: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +324: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +325: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +326: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +327: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +328: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +329: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +330: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +331: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +332: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +333: F:/personelapp2/test/features/activity/bulk_import_team_fallback_test.dart: missing team header does not block save when personnel are matched
+00:18 +334: F:/personelapp2/test/features/activity/bulk_import_undo_test.dart: restores two same-type cards in their original order
+00:18 +335: F:/personelapp2/test/features/activity/bulk_import_undo_test.dart: restores two same-type cards in their original order
+00:18 +336: F:/personelapp2/test/features/activity/bulk_import_undo_test.dart: restores two same-type cards in their original order
+00:19 +337: F:/personelapp2/test/features/activity/bulk_import_undo_test.dart: restores two same-type cards in their original order
+00:19 +338: F:/personelapp2/test/features/activity/bulk_import_undo_test.dart: restores two same-type cards in their original order
+00:19 +339: F:/personelapp2/test/features/activity/edit_activity_block_dialog_test.dart: EditActivityBlockDialog allows selecting duty via chips and dropdown
+00:19 +340: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +341: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +342: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +343: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +344: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +345: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +346: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +347: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +348: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +349: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +350: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +351: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +352: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +353: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +354: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:19 +355: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:20 +356: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:20 +357: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:20 +358: F:/personelapp2/test/features/activity/edit_inferred_task_team_test.dart: editing time does not confirm a team inferred from current personnel
+00:20 +359: F:/personelapp2/test/features/activity/heybet_card_picker_test.dart: same-day and previous-day choices return independent card IDs
+00:20 +360: F:/personelapp2/test/features/activity/heybet_card_picker_test.dart: same-day and previous-day choices return independent card IDs
+00:20 +361: F:/personelapp2/test/features/activity/meti_bulk_edit_duty_test.dart: bulk edit uses shared duty order and saves METİ
+00:20 +362: F:/personelapp2/test/features/activity/meti_bulk_edit_duty_test.dart: bulk edit uses shared duty order and saves METİ
+00:20 +363: F:/personelapp2/test/features/activity/meti_bulk_edit_duty_test.dart: bulk edit uses shared duty order and saves METİ
+00:20 +364: F:/personelapp2/test/features/activity/meti_bulk_edit_duty_test.dart: bulk edit uses shared duty order and saves METİ
+00:20 +365: F:/personelapp2/test/features/activity/meti_bulk_edit_duty_test.dart: bulk edit uses shared duty order and saves METİ
+00:21 +366: F:/personelapp2/test/features/activity/meti_duty_picker_test.dart: mobile duty picker orders Heybet/Kule/METİ and returns METİ
+00:21 +367: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +368: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +369: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +370: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +371: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +372: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +373: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +374: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +374: F:/personelapp2/test/features/activity/raw_user_text_import_test.dart: Raw User Text Import Test should parse complex multi-date text without critical errors
+Total blocks parsed: 13
+Issues count: 73
+Block 1: Date="2026-08-03", Duty="", PersonnelCount=2
+   - Person: Hüseyin Ermumcu
+   - Person: dal Karataş
+Block 2: Date="2026-08-03", Duty="HEYBET", PersonnelCount=7
+   - Person: AHMET MUSTAFA ÇALIŞKAN
+   - Person: OĞUZHAN AYAZ
+   - Person: Nuri demir
+   - Person: Recep göral
+   - Person: Ferhat Ayyıldız
+   - Person: İlyas Tekşan
+   - Person: Serdar AÇIKGÖZ
+Block 3: Date="2026-08-03", Duty="", PersonnelCount=1
+   - Person: Hasan akbaş
+Block 4: Date="2026-08-04", Duty="HEYBET", PersonnelCount=12
+   - Person: AHMET MUSTAFA ÇALIŞKAN
+   - Person: OĞUZHAN AYAZ
+   - Person: Muhammet GÜRDEN
+   - Person: Recep göral
+   - Person: Ferhat Ayyıldız
+   - Person: İlyas Tekşan
+   - Person: Mahmut DEMİRBAŞ
+   - Person: Mehmet AKDOĞAN
+   - Person: Serdar AÇIKGÖZ
+   - Person: Penah Can İŞLEK
+   - Person: Hüseyin Ermumcu
+   - Person: dal Karataş
+Block 5: Date="2026-08-05", Duty="HEYBET", PersonnelCount=3
+   - Person: Mahmut DEMİRBAŞ
+   - Person: Serdar AÇIKGÖZ
+   - Person: Mehmet AKDOĞAN
+Block 6: Date="2026-08-05", Duty="HEYBET", PersonnelCount=10
+   - Person: AHMET MUSTAFA ÇALIŞKAN
+   - Person: OĞUZHAN AYAZ
+   - Person: Recep göral
+   - Person: Ferhat Ayyıldız
+   - Person: Hasan Akbaş
+   - Person: Muhammet GÜRDEN
+   - Person: Penah Can İŞLEK
+   - Person: Hüseyin Ermumcu
+   - Person: dal Karataş
+   - Person: Nuri demir
+Block 7: Date="2026-08-06", Duty="HEYBET", PersonnelCount=4
+   - Person: Muhammed Ali Yakar
+   - Person: Recep göral
+   - Person: Ferhat Ayyıldız
+   - Person: İlyas Teksan
+Block 8: Date="2026-08-06", Duty="", PersonnelCount=2
+   - Person: AHMET MUSTAFA ÇALIŞKAN
+   - Person: OĞUZHAN AYAZ
+Block 9: Date="2026-08-06", Duty="HEYBET", PersonnelCount=4
+   - Person: Ferhat AKKEŞ
+   - Person: Serdar AÇIKGÖZ
+   - Person: Mehmet AKDOĞAN
+   - Person: Hasan Akbaş
+Block 10: Date="2026-08-06", Duty="", PersonnelCount=1
+   - Person: Recai KAYA
+Block 11: Date="2026-08-07", Duty="HEYBET", PersonnelCount=3
+   - Person: Muhammed Ali YAKAR
+   - Person: Serdar AÇIKGÖZ
+   - Person: Mehmet AKDOĞAN
+Block 12: Date="2026-08-07", Duty="HEYBET", PersonnelCount=8
+   - Person: AHMET MUSTAFA ÇALIŞKAN
+   - Person: OĞUZHAN AYAZ
+   - Person: Hasan Akbaş
+   - Person: Atilla Çeliker
+   - Person: Recep Göral
+   - Person: İlyas Teksan
+   - Person: Ferhat Ayyıldız
+   - Person: Nuri demir
+Block 13: Date="2026-08-07", Duty="", PersonnelCount=1
+   - Person: Ferhat AKKEŞ
+Issue L1: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L1: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L1: [unknown_activity] Görev türü tanınamadı.
+Issue L5: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L6: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L7: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L9: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L10: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L11: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L13: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L1: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L15: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L1: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L1: [unknown_activity] Görev türü tanınamadı.
+Issue L18: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L19: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L21: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L23: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L24: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L25: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L27: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L28: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L30: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L32: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L33: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L1: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L36: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L37: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L38: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L35: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L41: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L42: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L44: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L45: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L46: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L47: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L48: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L50: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L52: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L35: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L55: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L57: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L58: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L59: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L35: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L62: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L63: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L35: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L35: [unknown_activity] Görev türü tanınamadı.
+Issue L67: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L72: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L73: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L77: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L35: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L79: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L35: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L35: [unknown_activity] Görev türü tanınamadı.
+Issue L83: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L84: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L85: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L81: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L90: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L91: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L93: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L95: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L96: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L97: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L98: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L99: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L81: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L101: [unknown_rank] Rütbe tanınamadı; ham personel adı korundu.
+Issue L81: [unknown_team] Takım/tim bilgisi tanınamadı.
+Issue L81: [unknown_activity] Görev türü tanınamadı.
+00:21 +375: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +376: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +377: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +378: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +379: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:21 +380: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:22 +381: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:22 +382: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:22 +383: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:22 +384: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:22 +385: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:22 +386: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:22 +387: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:22 +388: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:22 +389: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: real router returns from details and closes form: system=false
+00:22 +390: F:/personelapp2/test/features/activity/roster_image_preview_test.dart: preview image save reloads rows, changed=false
+00:22 +391: F:/personelapp2/test/features/activity/roster_image_preview_test.dart: preview image save reloads rows, changed=false
+00:22 +392: F:/personelapp2/test/features/activity/roster_image_preview_test.dart: preview image save reloads rows, changed=false
+00:22 +393: F:/personelapp2/test/features/activity/roster_image_preview_test.dart: preview image save reloads rows, changed=false
+00:22 +394: F:/personelapp2/test/features/activity/roster_image_preview_test.dart: preview image save reloads rows, changed=false
+00:22 +395: F:/personelapp2/test/features/activity/roster_image_preview_test.dart: preview image save reloads rows, changed=false
+00:23 +396: F:/personelapp2/test/features/activity/roster_output_admin_authority_test.dart: combined output validates live admin for valid
+00:23 +397: F:/personelapp2/test/features/activity/roster_output_admin_authority_test.dart: combined output validates live admin for valid
+00:23 +398: F:/personelapp2/test/features/activity/roster_output_admin_authority_test.dart: combined output validates live admin for valid
+00:23 +399: F:/personelapp2/test/features/activity/roster_output_admin_authority_test.dart: combined output validates live admin for valid
+00:23 +400: F:/personelapp2/test/features/activity/roster_output_admin_authority_test.dart: combined output validates live admin for valid
+00:23 +401: F:/personelapp2/test/features/activity/roster_output_admin_authority_test.dart: combined output validates live admin for valid
+00:23 +402: F:/personelapp2/test/features/activity/roster_output_admin_authority_test.dart: combined output validates live admin for valid
+00:23 +403: F:/personelapp2/test/features/activity/roster_output_admin_authority_test.dart: combined output validates live admin for valid
+00:23 +404: F:/personelapp2/test/features/activity/roster_output_screen_test.dart: preview reload survives disposal and rechecks the session
+00:23 +405: F:/personelapp2/test/features/activity/roster_output_screen_test.dart: preview reload survives disposal and rechecks the session
+00:23 +406: F:/personelapp2/test/features/activity/roster_output_screen_test.dart: preview reload survives disposal and rechecks the session
+00:23 +407: F:/personelapp2/test/features/activity/roster_matrix_x_preview_test.dart: rule preview removes 21 X and exports remaining in rank order
+00:24 +408: F:/personelapp2/test/features/activity/roster_matrix_x_preview_test.dart: rule preview removes 21 X and exports remaining in rank order
+00:24 +409: F:/personelapp2/test/features/activity/roster_matrix_x_preview_test.dart: rule preview removes 21 X and exports remaining in rank order
+00:24 +410: F:/personelapp2/test/features/activity/roster_matrix_x_preview_test.dart: rule preview removes 21 X and exports remaining in rank order
+00:24 +411: F:/personelapp2/test/features/activity/roster_preview_design_test.dart: signature retry remains available after rule preview
+00:24 +411: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: personnel protects pending save from button
+
+Warning: A call to tap() with finder "Found 1 widget with text "İPTAL": [
+  Text("İPTAL", dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery]),
+]" derived an Offset (Offset(449.4, 516.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderParagraph#e0514 relayoutBoundary=up22
+The hit test result at that offset is: HitTestResult(RenderPadding#2128c@Offset(449.4, 516.0), RenderSemanticsAnnotations#3d03d@Offset(449.4, 516.0), RenderPadding#38b51@Offset(449.4, 516.0), RenderSemanticsAnnotations#d3f87@Offset(449.4, 516.0), RenderRepaintBoundary#9f776@Offset(449.4, 516.0), RenderIgnorePointer#1868e@Offset(449.4, 516.0), RenderAnimatedOpacity#43a7a@Offset(449.4, 516.0), RenderRepaintBoundary#3353c@Offset(449.4, 516.0), RenderSemanticsAnnotations#f518b@Offset(449.4, 516.0), RenderOffstage#26283@Offset(449.4, 516.0), RenderSemanticsAnnotations#a081f@Offset(449.4, 516.0), _RenderTheater#5bc68@Offset(449.4, 516.0), RenderAbsorbPointer#d4ee5@Offset(449.4, 516.0), RenderPointerListener#0d923@Offset(449.4, 516.0), RenderSemanticsAnnotations#36a2a@Offset(449.4, 516.0), RenderCustomPaint#047ef@Offset(449.4, 516.0), RenderSemanticsAnnotations#095e4@Offset(449.4, 516.0), RenderSemanticsAnnotations#cc862@Offset(449.4, 516.0), RenderSemanticsAnnotations#21334@Offset(449.4, 516.0), RenderTapRegionSurface#73e96@Offset(449.4, 516.0), RenderSemanticsAnnotations#37b9f@Offset(449.4, 516.0), RenderSemanticsAnnotations#769cc@Offset(449.4, 516.0), HitTestEntry<HitTestTarget>#edd35(_ReusableRenderView#e1da4), HitTestEntry<HitTestTarget>#e8b21(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      main.<anonymous closure> (file:///F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart:462:26)
+<asynchronous suspension>
+#4      _navigationTest.<anonymous closure> (file:///F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart:123:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#7      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:24 +412: F:/personelapp2/test/features/activity/roster_preview_design_test.dart: signature retry remains available after rule preview
+00:24 +413: F:/personelapp2/test/features/activity/roster_preview_design_test.dart: signature retry remains available after rule preview
+00:24 +414: F:/personelapp2/test/features/activity/roster_preview_design_test.dart: signature retry remains available after rule preview
+00:24 +415: F:/personelapp2/test/features/activity/roster_preview_design_test.dart: signature retry remains available after rule preview
+00:24 +416: F:/personelapp2/test/features/activity/roster_preview_design_test.dart: signature retry remains available after rule preview
+00:24 +417: F:/personelapp2/test/features/activity/roster_preview_design_test.dart: signature retry remains available after rule preview
+00:24 +418: F:/personelapp2/test/features/activity/roster_preview_design_test.dart: signature retry remains available after rule preview
+00:24 +419: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank option stays in this preview and fits a narrow phone
+00:24 +420: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank option stays in this preview and fits a narrow phone
+00:24 +421: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank option stays in this preview and fits a narrow phone
+00:24 +422: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank option stays in this preview and fits a narrow phone
+00:24 +423: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank option stays in this preview and fits a narrow phone
+00:24 +424: F:/personelapp2/test/features/activity/roster_output_screen_test.dart: starts unselected, preserves card order and selection after preview back
+00:24 +425: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: personnel-import protects pending save from button
+00:24 +426: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: personnel-import protects pending save from button
+
+Warning: A call to tap() with finder "Found 1 widget with text "İptal": [
+  Text("İptal", dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery]),
+]" derived an Offset (Offset(419.5, 525.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderParagraph#4b101 relayoutBoundary=up22
+The hit test result at that offset is: HitTestResult(RenderPadding#0a79b@Offset(419.5, 525.0), RenderSemanticsAnnotations#d15fe@Offset(419.5, 525.0), RenderPadding#45dad@Offset(419.5, 525.0), RenderSemanticsAnnotations#ccdcf@Offset(419.5, 525.0), RenderRepaintBoundary#13b98@Offset(419.5, 525.0), RenderIgnorePointer#8372b@Offset(419.5, 525.0), RenderAnimatedOpacity#f7bc0@Offset(419.5, 525.0), RenderRepaintBoundary#573da@Offset(419.5, 525.0), RenderSemanticsAnnotations#195f1@Offset(419.5, 525.0), RenderOffstage#a9a1e@Offset(419.5, 525.0), RenderSemanticsAnnotations#0a0a6@Offset(419.5, 525.0), _RenderTheater#627a0@Offset(419.5, 525.0), RenderAbsorbPointer#2cd8b@Offset(419.5, 525.0), RenderPointerListener#e985d@Offset(419.5, 525.0), RenderSemanticsAnnotations#ad1fa@Offset(419.5, 525.0), RenderCustomPaint#bd8b1@Offset(419.5, 525.0), RenderSemanticsAnnotations#7cf74@Offset(419.5, 525.0), RenderSemanticsAnnotations#d8d32@Offset(419.5, 525.0), RenderSemanticsAnnotations#ca259@Offset(419.5, 525.0), RenderTapRegionSurface#dbdc3@Offset(419.5, 525.0), RenderSemanticsAnnotations#b8401@Offset(419.5, 525.0), RenderSemanticsAnnotations#d3ff7@Offset(419.5, 525.0), HitTestEntry<HitTestTarget>#804ab(_ReusableRenderView#e1da4), HitTestEntry<HitTestTarget>#b8ac6(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      main.<anonymous closure> (file:///F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart:464:26)
+<asynchronous suspension>
+#4      _navigationTest.<anonymous closure> (file:///F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart:123:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#7      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:24 +427: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank Excel changes only exported order
+00:24 +428: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank Excel changes only exported order
+00:24 +429: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank Excel changes only exported order
+00:24 +430: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank Excel changes only exported order
+00:25 +431: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank Excel changes only exported order
+00:25 +432: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank Excel changes only exported order
+00:25 +433: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank Excel changes only exported order
+00:25 +434: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank Excel changes only exported order
+00:25 +435: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank Excel changes only exported order
+00:25 +435: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: activity-import protects pending save from button
+
+Warning: A call to tap() with finder "Found 1 widget with icon "IconData(U+0E16A)": [
+  Icon(IconData(U+0E16A), dependencies: [Directionality, IconTheme]),
+]" derived an Offset (Offset(708.0, 60.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderSemanticsAnnotations#7850c relayoutBoundary=up24
+The hit test result at that offset is: HitTestResult(RenderPadding#31d53@Offset(708.0, 60.0), RenderSemanticsAnnotations#5a1e2@Offset(708.0, 60.0), RenderPadding#6459f@Offset(708.0, 60.0), RenderSemanticsAnnotations#d11ef@Offset(708.0, 60.0), RenderRepaintBoundary#55971@Offset(708.0, 60.0), RenderIgnorePointer#be651@Offset(708.0, 60.0), RenderAnimatedOpacity#bcf49@Offset(708.0, 60.0), RenderRepaintBoundary#e961c@Offset(708.0, 60.0), RenderSemanticsAnnotations#76842@Offset(708.0, 60.0), RenderOffstage#82b77@Offset(708.0, 60.0), RenderSemanticsAnnotations#13410@Offset(708.0, 60.0), _RenderTheater#86614@Offset(708.0, 60.0), RenderAbsorbPointer#5f630@Offset(708.0, 60.0), RenderPointerListener#94b66@Offset(708.0, 60.0), RenderSemanticsAnnotations#f6348@Offset(708.0, 60.0), RenderCustomPaint#3fad1@Offset(708.0, 60.0), RenderSemanticsAnnotations#f3c53@Offset(708.0, 60.0), RenderSemanticsAnnotations#08eca@Offset(708.0, 60.0), RenderSemanticsAnnotations#b38e5@Offset(708.0, 60.0), RenderTapRegionSurface#0d65c@Offset(708.0, 60.0), RenderSemanticsAnnotations#a6093@Offset(708.0, 60.0), RenderSemanticsAnnotations#aa74e@Offset(708.0, 60.0), HitTestEntry<HitTestTarget>#3e311(_ReusableRenderView#e1da4), HitTestEntry<HitTestTarget>#7fc22(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      main.<anonymous closure> (file:///F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart:460:26)
+<asynchronous suspension>
+#4      _navigationTest.<anonymous closure> (file:///F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart:123:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#7      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:25 +436: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank Excel changes only exported order
+00:25 +437: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank Excel changes only exported order
+00:25 +438: F:/personelapp2/test/features/activity/roster_rank_export_test.dart: rank Excel changes only exported order
+00:26 +439: F:/personelapp2/test/features/activity/roster_signature_editor_test.dart: failed saving keeps the editor open and allows retry
+00:26 +440: F:/personelapp2/test/features/activity/roster_signature_editor_test.dart: failed saving keeps the editor open and allows retry
+00:26 +441: F:/personelapp2/test/features/activity/roster_signature_editor_test.dart: failed saving keeps the editor open and allows retry
+00:26 +442: F:/personelapp2/test/features/activity/roster_signature_editor_test.dart: failed saving keeps the editor open and allows retry
+00:26 +443: F:/personelapp2/test/features/activity/roster_signature_editor_test.dart: failed saving keeps the editor open and allows retry
+00:26 +444: F:/personelapp2/test/features/activity/roster_signature_editor_test.dart: failed saving keeps the editor open and allows retry
+00:26 +445: F:/personelapp2/test/features/activity/roster_signature_editor_test.dart: failed saving keeps the editor open and allows retry
+00:26 +446: F:/personelapp2/test/features/activity/roster_signature_editor_test.dart: failed saving keeps the editor open and allows retry
+00:26 +447: F:/personelapp2/test/features/activity/roster_signature_editor_test.dart: failed saving keeps the editor open and allows retry
+00:26 +448: F:/personelapp2/test/features/activity/roster_signature_editor_test.dart: failed saving keeps the editor open and allows retry
+00:26 +449: F:/personelapp2/test/features/activity/roster_signature_editor_test.dart: failed saving keeps the editor open and allows retry
+00:26 +450: F:/personelapp2/test/features/activity/roster_signature_editor_test.dart: failed saving keeps the editor open and allows retry
+00:26 +451: F:/personelapp2/test/features/activity/roster_summary_geometry_test.dart: equal summary geometry merged=true signed=true
+00:26 +451: F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart: backup stays open during file save: close
+
+Warning: A call to tap() with finder "Found 1 widget with icon "IconData(U+0F647)": [
+  Icon(IconData(U+0F647), dependencies: [Directionality, IconTheme]),
+]" derived an Offset (Offset(674.0, 85.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderSemanticsAnnotations#f95fd relayoutBoundary=up16
+The hit test result at that offset is: HitTestResult(_RenderInkFeatures#606ab@Offset(584.0, 49.0), RenderCustomPaint#bf29c@Offset(584.0, 49.0), RenderPhysicalShape#bea68@Offset(584.0, 49.0), RenderConstrainedBox#4ced2@Offset(584.0, 49.0), RenderPositionedBox#036f5@Offset(658.0, 61.0), RenderPadding#fa79e@Offset(674.0, 85.0), RenderSemanticsAnnotations#32c3c@Offset(674.0, 85.0), RenderPadding#f8f10@Offset(674.0, 85.0), RenderSemanticsAnnotations#c30b6@Offset(674.0, 85.0), RenderPadding#60ef5@Offset(674.0, 85.0), RenderSemanticsAnnotations#3b794@Offset(674.0, 85.0), RenderRepaintBoundary#75f43@Offset(674.0, 85.0), RenderIgnorePointer#667fd@Offset(674.0, 85.0), RenderAnimatedOpacity#e08b5@Offset(674.0, 85.0), RenderRepaintBoundary#32d03@Offset(674.0, 85.0), RenderSemanticsAnnotations#2fbaa@Offset(674.0, 85.0), RenderOffstage#d20e8@Offset(674.0, 85.0), RenderSemanticsAnnotations#4ce77@Offset(674.0, 85.0), _RenderTheater#5f22e@Offset(674.0, 85.0), RenderAbsorbPointer#566b1@Offset(674.0, 85.0), RenderPointerListener#186e4@Offset(674.0, 85.0), RenderSemanticsAnnotations#20d22@Offset(674.0, 85.0), RenderCustomPaint#2df23@Offset(674.0, 85.0), RenderSemanticsAnnotations#68765@Offset(674.0, 85.0), RenderSemanticsAnnotations#69564@Offset(674.0, 85.0), RenderSemanticsAnnotations#01556@Offset(674.0, 85.0), RenderTapRegionSurface#0a2bf@Offset(674.0, 85.0), RenderSemanticsAnnotations#cc2d8@Offset(674.0, 85.0), RenderSemanticsAnnotations#7cc00@Offset(674.0, 85.0), HitTestEntry<HitTestTarget>#5edef(_ReusableRenderView#e1da4), HitTestEntry<HitTestTarget>#ed673(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      main.<anonymous closure> (file:///F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart:540:22)
+<asynchronous suspension>
+#4      _navigationTest.<anonymous closure> (file:///F:/personelapp2/test/features/activity/navigation_dismissal_regression_test.dart:123:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#7      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:26 +452: F:/personelapp2/test/features/activity/roster_summary_geometry_test.dart: equal summary geometry merged=true signed=true
+00:26 +453: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +454: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +455: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +456: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +457: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +458: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +459: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +460: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +461: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +462: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +463: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +464: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +465: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +466: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +467: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +468: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +469: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +470: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +471: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +472: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +473: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +474: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +475: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +476: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +477: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +478: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:26 +479: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +480: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +481: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +482: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +483: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +484: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +485: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +486: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+Heybet flow start: Metin Listesi Paylaş, mutation=false
+Heybet flow complete: Metin Listesi Paylaş, shares=1
+Heybet flow start: Excel Olarak Aktar (.xlsx), mutation=false
+00:27 +487: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +488: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +489: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +490: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +491: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +492: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +493: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +494: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +495: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+Heybet flow complete: Excel Olarak Aktar (.xlsx), shares=2
+Heybet flow start: Kartları birleştir, mutation=false
+00:27 +496: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +497: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +498: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +499: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +500: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +501: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +502: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +503: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +504: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +505: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +506: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:27 +507: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +508: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +509: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +510: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +511: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +512: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +513: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+Heybet flow complete: Kartları birleştir, shares=3
+00:28 +514: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +515: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+Heybet flow start: Kartları birleştir, mutation=false
+00:28 +516: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +517: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +518: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+Heybet flow complete: Kartları birleştir, shares=4
+Heybet flow start: Excel Olarak Aktar (.xlsx), mutation=false
+00:28 +519: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +520: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +521: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +522: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +523: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +524: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +525: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +526: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:28 +527: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+Heybet flow complete: Excel Olarak Aktar (.xlsx), shares=5
+00:29 +528: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +529: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +530: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +531: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +532: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +533: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +534: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +535: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+Heybet flow start: Metin Listesi Paylaş, mutation=false
+00:29 +536: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +537: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +538: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +539: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +540: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +541: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +542: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +543: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +544: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +545: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+Heybet flow complete: Metin Listesi Paylaş, shares=6
+00:29 +546: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+Heybet flow start: Kartları birleştir, mutation=true
+Heybet preview mutation start
+Heybet preview mutation complete
+00:29 +547: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +548: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +549: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +550: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +551: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +552: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +553: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +554: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:29 +555: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:30 +556: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:30 +557: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:30 +558: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:30 +559: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+Heybet flow complete: Kartları birleştir, shares=6
+Heybet flow start: Kartları birleştir, mutation=true
+00:30 +560: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+Heybet preview mutation start
+Heybet preview mutation complete
+00:30 +561: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:31 +562: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:31 +563: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:31 +564: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:31 +565: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:31 +566: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:31 +567: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:31 +568: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:31 +569: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:31 +570: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:31 +571: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:32 +572: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+00:32 +573: F:/personelapp2/test/features/activity/separate_heybet_excel_test.dart: only separate Excel action adds previous day; normal text stays unchanged
+Heybet flow complete: Kartları birleştir, shares=6
+00:32 +574: F:/personelapp2/test/features/analytics/team_analytics_screen_test.dart: analytics 320.0 Brightness.light filters and drill down
+00:32 +575: F:/personelapp2/test/features/analytics/team_analytics_screen_test.dart: analytics 320.0 Brightness.light filters and drill down
+00:32 +576: F:/personelapp2/test/features/analytics/team_analytics_screen_test.dart: analytics 320.0 Brightness.light filters and drill down
+00:32 +577: F:/personelapp2/test/features/analytics/team_analytics_screen_test.dart: analytics 320.0 Brightness.light filters and drill down
+00:32 +578: F:/personelapp2/test/features/analytics/team_analytics_screen_test.dart: analytics 320.0 Brightness.light filters and drill down
+00:32 +579: F:/personelapp2/test/features/analytics/team_daily_screen_test.dart: monthly filters survive returning to the selected day
+00:32 +580: F:/personelapp2/test/features/analytics/team_daily_screen_test.dart: monthly filters survive returning to the selected day
+00:32 +581: F:/personelapp2/test/features/analytics/team_daily_screen_test.dart: monthly filters survive returning to the selected day
+00:32 +582: F:/personelapp2/test/features/analytics/team_analytics_screen_test.dart: analytics 1280.0 Brightness.dark filters and drill down
+00:32 +583: F:/personelapp2/test/features/analytics/team_analytics_screen_test.dart: analytics 1280.0 Brightness.dark filters and drill down
+00:32 +584: F:/personelapp2/test/features/analytics/team_analytics_screen_test.dart: analytics 1280.0 Brightness.dark filters and drill down
+00:32 +584 ~1: F:/personelapp2/test/features/analytics/team_analytics_screen_test.dart: analytics 1280.0 Brightness.dark filters and drill down
+00:32 +585 ~1: F:/personelapp2/test/features/dashboard/dashboard_personnel_menu_test.dart: admin sees OCR import instead of pending approvals grid action
+00:33 +586 ~1: F:/personelapp2/test/features/dashboard/dashboard_personnel_menu_test.dart: admin sees OCR import instead of pending approvals grid action
+00:33 +587 ~1: F:/personelapp2/test/features/dashboard/dashboard_personnel_menu_test.dart: admin sees OCR import instead of pending approvals grid action
+00:33 +588 ~1: F:/personelapp2/test/features/dashboard/dashboard_personnel_menu_test.dart: admin sees OCR import instead of pending approvals grid action
+00:33 +589 ~1: F:/personelapp2/test/features/dashboard/dashboard_watch_roster_test.dart: NÖBET belongs inside analytics, not the dashboard
+00:33 +590 ~1: F:/personelapp2/test/features/dashboard/dashboard_watch_roster_test.dart: NÖBET belongs inside analytics, not the dashboard
+00:33 +591 ~1: F:/personelapp2/test/features/dashboard/dashboard_watch_roster_test.dart: NÖBET belongs inside analytics, not the dashboard
+00:33 +592 ~1: F:/personelapp2/test/features/dashboard/dashboard_watch_roster_test.dart: NÖBET belongs inside analytics, not the dashboard
+00:33 +593 ~1: F:/personelapp2/test/features/dashboard/dashboard_watch_roster_test.dart: NÖBET belongs inside analytics, not the dashboard
+00:33 +594 ~1: F:/personelapp2/test/features/dashboard/dashboard_watch_roster_test.dart: NÖBET belongs inside analytics, not the dashboard
+00:33 +595 ~1: F:/personelapp2/test/features/dashboard/dashboard_watch_roster_test.dart: NÖBET belongs inside analytics, not the dashboard
+00:33 +596 ~1: F:/personelapp2/test/features/analytics/team_analytics_screen_test.dart: analytics 1280.0 Brightness.light filters and drill down
+00:33 +597 ~1: F:/personelapp2/test/features/dashboard/dashboard_widget_interaction_test.dart: Dashboard Widget Interaction Tests renders dashboard cards and handles user clicks
+00:33 +598 ~1: F:/personelapp2/test/features/dashboard/dashboard_widget_interaction_test.dart: Dashboard Widget Interaction Tests renders dashboard cards and handles user clicks
+00:33 +599 ~1: F:/personelapp2/test/features/dashboard/dashboard_widget_interaction_test.dart: Dashboard Widget Interaction Tests renders dashboard cards and handles user clicks
+00:33 +600 ~1: F:/personelapp2/test/features/matrix/matrix_widget_interaction_test.dart: Monthly Matrix Widget Data Exchange & Interaction Tests renders monthly matrix screen with calendar grid and squad controls
+00:34 +601 ~1: F:/personelapp2/test/features/matrix/monthly_matrix_team_groups_test.dart: historical matrix retains an inactive person with monthly tasks
+00:34 +602 ~1: F:/personelapp2/test/features/matrix/monthly_matrix_team_groups_test.dart: historical matrix retains an inactive person with monthly tasks
+00:34 +603 ~1: F:/personelapp2/test/features/matrix/monthly_matrix_team_groups_test.dart: historical matrix retains an inactive person with monthly tasks
+00:34 +604 ~1: F:/personelapp2/test/features/personnel/backup_restore_dialog_test.dart: backup surface uses bottom sheet at 320 px
+00:34 +605 ~1: F:/personelapp2/test/features/personnel/inline_order_editor_test.dart: drag saves complete personnel order and cancel does not write
+00:34 +606 ~1: F:/personelapp2/test/features/personnel/inline_order_editor_test.dart: drag saves complete personnel order and cancel does not write
+00:34 +607 ~1: F:/personelapp2/test/features/personnel/inline_order_editor_test.dart: drag saves complete personnel order and cancel does not write
+00:34 +608 ~1: F:/personelapp2/test/features/personnel/inline_order_editor_test.dart: drag saves complete personnel order and cancel does not write
+00:34 +609 ~1: F:/personelapp2/test/features/personnel/inline_order_editor_test.dart: drag saves complete personnel order and cancel does not write
+00:35 +610 ~1: F:/personelapp2/test/features/personnel/inline_order_editor_test.dart: drag saves complete personnel order and cancel does not write
+00:35 +611 ~1: F:/personelapp2/test/features/personnel/inline_order_editor_test.dart: drag saves complete personnel order and cancel does not write
+00:35 +612 ~1: F:/personelapp2/test/features/personnel/inline_order_editor_test.dart: drag saves complete personnel order and cancel does not write
+00:35 +613 ~1: F:/personelapp2/test/features/personnel/inline_order_editor_test.dart: drag saves complete personnel order and cancel does not write
+00:35 +614 ~1: F:/personelapp2/test/features/personnel/inline_order_editor_test.dart: drag saves complete personnel order and cancel does not write
+00:35 +615 ~1: F:/personelapp2/test/features/personnel/inline_order_editor_test.dart: drag saves complete personnel order and cancel does not write
+00:35 +616 ~1: F:/personelapp2/test/features/personnel/personnel_management_modern_ui_test.dart: personnel and squad UI stays compact on a narrow phone
+00:35 +617 ~1: F:/personelapp2/test/features/personnel/personnel_management_modern_ui_test.dart: personnel and squad UI stays compact on a narrow phone
+00:35 +618 ~1: F:/personelapp2/test/features/personnel/personnel_management_modern_ui_test.dart: personnel and squad UI stays compact on a narrow phone
+00:35 +619 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:35 +620 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:35 +621 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:35 +622 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:35 +623 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:35 +624 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:35 +625 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:35 +626 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:35 +627 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:35 +628 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:36 +629 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:36 +630 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:36 +631 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:36 +632 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:36 +633 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:36 +634 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:36 +635 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:36 +636 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:36 +637 ~1: F:/personelapp2/test/features/personnel/personnel_order_flow_test.dart: filtered screen edits full team and persists order
+00:36 +638 ~1: F:/personelapp2/test/features/personnel/personnel_widget_interaction_test.dart: Personnel Management Widget Data Exchange & Interaction Tests renders personnel screen with seeded personnel and app bar interaction
+00:36 +639 ~1: F:/personelapp2/test/features/personnel/personnel_widget_interaction_test.dart: Personnel Management Widget Data Exchange & Interaction Tests renders personnel screen with seeded personnel and app bar interaction
+00:36 +640 ~1: F:/personelapp2/test/features/personnel/personnel_widget_interaction_test.dart: Personnel Management Widget Data Exchange & Interaction Tests renders personnel screen with seeded personnel and app bar interaction
+00:36 +641 ~1: F:/personelapp2/test/features/personnel/personnel_widget_interaction_test.dart: Personnel Management Widget Data Exchange & Interaction Tests renders personnel screen with seeded personnel and app bar interaction
+00:36 +642 ~1: F:/personelapp2/test/features/personnel/personnel_widget_interaction_test.dart: Personnel Management Widget Data Exchange & Interaction Tests renders personnel screen with seeded personnel and app bar interaction
+00:36 +643 ~1: F:/personelapp2/test/features/personnel/personnel_widget_interaction_test.dart: Personnel Management Widget Data Exchange & Interaction Tests renders personnel screen with seeded personnel and app bar interaction
+00:36 +644 ~1: F:/personelapp2/test/features/personnel/personnel_widget_interaction_test.dart: Personnel Management Widget Data Exchange & Interaction Tests renders personnel screen with seeded personnel and app bar interaction
+00:37 +645 ~1: F:/personelapp2/test/features/personnel/personnel_widget_interaction_test.dart: Personnel Management Widget Data Exchange & Interaction Tests renders personnel screen with seeded personnel and app bar interaction
+00:37 +646 ~1: F:/personelapp2/test/features/personnel/personnel_widget_interaction_test.dart: Personnel Management Widget Data Exchange & Interaction Tests renders personnel screen with seeded personnel and app bar interaction
+00:37 +647 ~1: F:/personelapp2/test/features/personnel/personnel_widget_interaction_test.dart: Personnel Management Widget Data Exchange & Interaction Tests renders personnel screen with seeded personnel and app bar interaction
+00:37 +648 ~1: F:/personelapp2/test/features/personnel/task_team_repair_guard_test.dart: session loss after preview prevents file save
+00:37 +649 ~1: F:/personelapp2/test/features/personnel/task_team_repair_guard_test.dart: session loss after preview prevents file save
+00:37 +650 ~1: F:/personelapp2/test/features/personnel/task_team_repair_guard_test.dart: session loss after preview prevents file save
+00:37 +651 ~1: F:/personelapp2/test/features/personnel/task_team_repair_guard_test.dart: session loss after preview prevents file save
+00:37 +652 ~1: F:/personelapp2/test/features/personnel/task_team_repair_guard_test.dart: session loss after preview prevents file save
+00:37 +653 ~1: F:/personelapp2/test/features/personnel/task_team_repair_guard_test.dart: session loss after preview prevents file save
+00:37 +654 ~1: F:/personelapp2/test/features/personnel/task_team_repair_guard_test.dart: session loss after preview prevents file save
+00:37 +655 ~1: F:/personelapp2/test/features/personnel/task_team_repair_guard_test.dart: session loss after preview prevents file save
+00:37 +656 ~1: F:/personelapp2/test/features/personnel/task_team_repair_guard_test.dart: session loss after preview prevents file save
+00:37 +657 ~1: F:/personelapp2/test/features/personnel/task_team_repair_settings_test.dart: settings entry follows current admin session
+00:37 +658 ~1: F:/personelapp2/test/features/personnel/task_team_repair_settings_test.dart: settings entry follows current admin session
+00:37 +659 ~1: F:/personelapp2/test/features/personnel/task_team_repair_settings_test.dart: settings entry follows current admin session
+00:37 +660 ~1: F:/personelapp2/test/features/personnel/task_team_repair_settings_test.dart: settings entry follows current admin session
+00:37 +661 ~1: F:/personelapp2/test/features/personnel/task_team_repair_settings_test.dart: settings entry follows current admin session
+00:37 +662 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_commander_picker_test.dart: komutan seçilince kayıtlı telefonu getirir ve anlık görüntü üretir
+00:37 +663 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_commander_picker_test.dart: komutan seçilince kayıtlı telefonu getirir ve anlık görüntü üretir
+00:37 +664 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_commander_picker_test.dart: komutan seçilince kayıtlı telefonu getirir ve anlık görüntü üretir
+00:37 +665 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_commander_picker_test.dart: komutan seçilince kayıtlı telefonu getirir ve anlık görüntü üretir
+00:37 +666 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_commander_picker_test.dart: komutan seçilince kayıtlı telefonu getirir ve anlık görüntü üretir
+00:37 +667 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_commander_picker_test.dart: komutan seçilince kayıtlı telefonu getirir ve anlık görüntü üretir
+00:37 +668 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_commander_picker_test.dart: komutan seçilince kayıtlı telefonu getirir ve anlık görüntü üretir
+00:37 +669 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_commander_picker_test.dart: komutan seçilince kayıtlı telefonu getirir ve anlık görüntü üretir
+00:37 +670 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_commander_picker_test.dart: komutan seçilince kayıtlı telefonu getirir ve anlık görüntü üretir
+00:37 +671 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_commander_picker_test.dart: komutan seçilince kayıtlı telefonu getirir ve anlık görüntü üretir
+00:37 +672 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_commander_picker_test.dart: komutan seçilince kayıtlı telefonu getirir ve anlık görüntü üretir
+00:37 +673 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_import_activities_dialog_test.dart: select all skips imported source but keeps same-name activity
+00:38 +674 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_import_activities_dialog_test.dart: select all skips imported source but keeps same-name activity
+00:38 +675 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_import_activities_dialog_test.dart: select all skips imported source but keeps same-name activity
+00:38 +676 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_import_activities_dialog_test.dart: select all skips imported source but keeps same-name activity
+00:38 +677 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_import_activities_dialog_test.dart: select all skips imported source but keeps same-name activity
+00:38 +678 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_import_scope_test.dart: TEM import refreshes selected scope on submit: fresh
+00:38 +679 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_import_scope_test.dart: TEM import refreshes selected scope on submit: fresh
+00:39 +680 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_area_picker_test.dart: listeden seçilen bölgeyi bildirir
+00:39 +681 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_area_picker_test.dart: listeden seçilen bölgeyi bildirir
+00:39 +682 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_area_picker_test.dart: listeden seçilen bölgeyi bildirir
+00:39 +683 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_area_picker_test.dart: listeden seçilen bölgeyi bildirir
+00:39 +684 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_area_picker_test.dart: listeden seçilen bölgeyi bildirir
+00:39 +685 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_area_picker_test.dart: listeden seçilen bölgeyi bildirir
+00:39 +686 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_area_picker_test.dart: listeden seçilen bölgeyi bildirir
+00:39 +687 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_area_picker_test.dart: listeden seçilen bölgeyi bildirir
+00:39 +688 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_area_picker_test.dart: listeden seçilen bölgeyi bildirir
+00:39 +689 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_area_picker_test.dart: listeden seçilen bölgeyi bildirir
+00:39 +690 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_editor_dialog_test.dart: operasyon formunu bağımsız bölümlerle gösterir
+00:39 +691 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_editor_dialog_test.dart: operasyon formunu bağımsız bölümlerle gösterir
+00:39 +692 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_editor_dialog_test.dart: operasyon formunu bağımsız bölümlerle gösterir
+00:39 +693 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_editor_dialog_test.dart: operasyon formunu bağımsız bölümlerle gösterir
+00:39 +694 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_editor_dialog_test.dart: operasyon formunu bağımsız bölümlerle gösterir
+00:39 +695 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_editor_dialog_test.dart: operasyon formunu bağımsız bölümlerle gösterir
+00:39 +696 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_operation_editor_dialog_test.dart: operasyon formunu bağımsız bölümlerle gösterir
+00:39 +697 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_screen_test.dart: formdan dönünce setState hatası vermeden listeyi yeniler
+00:40 +698 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_screen_test.dart: formdan dönünce setState hatası vermeden listeyi yeniler
+00:40 +699 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_stability_test.dart: back asks before discarding an edited document
+00:40 +700 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_stability_test.dart: back asks before discarding an edited document
+00:40 +701 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_stability_test.dart: back asks before discarding an edited document
+00:40 +702 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_stability_test.dart: back asks before discarding an edited document
+00:40 +703 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_stability_test.dart: back asks before discarding an edited document
+00:40 +704 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_stability_test.dart: back asks before discarding an edited document
+00:40 +705 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_vehicle_editor_test.dart: model seçilip plaka elle girilince aracı ekler
+00:40 +706 ~1: F:/personelapp2/test/features/temgundrap/temgundrap_vehicle_editor_test.dart: model seçilip plaka elle girilince aracı ekler
+00:40 +707 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:40 +708 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +709 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +710 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +711 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +712 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +713 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +714 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +715 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +716 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +717 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +718 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +719 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +720 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_accessibility_test.dart: small screen large text month and personnel dark=false
+00:41 +721 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +722 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +723 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +724 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +725 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +726 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +727 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +728 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +729 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +730 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +731 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +732 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +733 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +734 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +735 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +736 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +737 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +738 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +739 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:41 +740 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:42 +741 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:42 +742 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:42 +743 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:42 +744 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:42 +745 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:42 +746 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:42 +747 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: month navigation, explicit month selection and authorized personnel details
+00:42 +748 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: loading and error retry remain usable
+00:42 +749 ~1: F:/personelapp2/test/features/watch_roster/watch_roster_screen_test.dart: loading and error retry remain usable
+00:42 +750 ~1: F:/personelapp2/test/unit/bulk_text_parser_real_roster_test.dart: parses full user prompt with Turkish text months and unranked personnel names
+00:42 +751 ~1: F:/personelapp2/test/unit/bulk_text_parser_real_roster_test.dart: ignores invisible unicode format chars around the first date line
+00:42 +752 ~1: F:/personelapp2/test/unit/bulk_text_parser_real_roster_test.dart: parses chaotic date, shift and unranked-name combinations safely
+00:42 +753 ~1: F:/personelapp2/test/unit/bulk_text_parser_real_roster_test.dart: preserves Turkish dates while extracting names from inline date and shift text
+00:42 +754 ~1: F:/personelapp2/test/unit/bulk_text_parser_test.dart: BulkTextParser parses dated headers and multiple shifts without leaking state
+00:42 +755 ~1: F:/personelapp2/test/unit/bulk_text_parser_test.dart: BulkTextParser normalizes common message, team, time and list variants
+00:42 +756 ~1: F:/personelapp2/test/unit/bulk_text_parser_test.dart: BulkTextParser date change closes the previous personnel block
+00:42 +757 ~1: F:/personelapp2/test/unit/bulk_text_parser_test.dart: BulkTextParser reports invalid date and time as blocking issues
+00:42 +758 ~1: F:/personelapp2/test/unit/bulk_text_parser_test.dart: BulkTextParser does not invent missing date, team, activity or rank
+00:42 +759 ~1: F:/personelapp2/test/unit/bulk_text_parser_test.dart: BulkTextParser returns an explanatory error for empty and unrelated input
+00:42 +760 ~1: F:/personelapp2/test/unit/bulk_text_parser_test.dart: BulkTextParser uses an explicit valid default date only
+00:42 +761 ~1: F:/personelapp2/test/unit/bulk_text_parser_test.dart: BulkTextParser parses METİ Timi header correctly
+00:42 +762 ~1: F:/personelapp2/test/unit/combined_heybet_excel_service_test.dart: separate Excel derives yesterday rows without altering normal rows or X history
+00:42 +763 ~1: F:/personelapp2/test/unit/combined_heybet_excel_service_test.dart: option only accepts Heybet activities
+00:42 +764 ~1: F:/personelapp2/test/unit/combined_heybet_identity_test.dart: repeated person across selected previous cards is exported only once
+00:42 +765 ~1: F:/personelapp2/test/unit/combined_heybet_selection_test.dart: previous cards keep selection order rather than sorting people across cards
+00:42 +766 ~1: F:/personelapp2/test/unit/combined_heybet_selection_test.dart: same-day picker excludes anchor and handles year boundary
+00:42 +767 ~1: F:/personelapp2/test/unit/combined_heybet_selection_test.dart: deduplicates by person ID with main then current then previous priority
+00:42 +768 ~1: F:/personelapp2/test/unit/commander_delegation_test.dart: Reassigning commander to squad should update user and squad table
+00:42 +769 ~1: F:/personelapp2/test/unit/commander_delegation_test.dart: Reassigning commander to squad should update user and squad table
+00:42 +770 ~1: F:/personelapp2/test/unit/commander_delegation_test.dart: Reassigning commander to squad should update user and squad table
+00:42 +771 ~1: F:/personelapp2/test/unit/commander_delegation_test.dart: Reassigning commander to squad should update user and squad table
+00:42 +772 ~1: F:/personelapp2/test/unit/commander_delegation_test.dart: Reassigning commander to squad should update user and squad table
+00:42 +773 ~1: F:/personelapp2/test/unit/commander_delegation_test.dart: Reassigning commander to squad should update user and squad table
+00:42 +774 ~1: F:/personelapp2/test/unit/database_test.dart: Database tables insert and query test
+00:42 +775 ~1: F:/personelapp2/test/unit/database_test.dart: Database tables insert and query test
+00:42 +776 ~1: F:/personelapp2/test/unit/database_test.dart: Database tables insert and query test
+00:42 +777 ~1: F:/personelapp2/test/unit/database_test.dart: Database tables insert and query test
+00:42 +778 ~1: F:/personelapp2/test/unit/database_test.dart: Database tables insert and query test
+00:42 +779 ~1: F:/personelapp2/test/unit/database_test.dart: Database tables insert and query test
+00:42 +780 ~1: F:/personelapp2/test/unit/database_test.dart: Database tables insert and query test
+00:43 +781 ~1: F:/personelapp2/test/unit/duty_abbreviation_mapper_test.dart: operational duty codes match the team calendar
+00:43 +782 ~1: F:/personelapp2/test/unit/duty_abbreviation_mapper_test.dart: known duty colors are distinct from generic unknown colors
+00:43 +783 ~1: F:/personelapp2/test/unit/duty_abbreviation_mapper_test.dart: unknown assignment codes retain their original fallback behavior
+00:43 +784 ~1: F:/personelapp2/test/unit/duty_coverage_test.dart: 24 saatlik görev ay sınırında iki takvim gününü kapsar
+00:43 +785 ~1: F:/personelapp2/test/unit/duty_coverage_test.dart: Kule Nöbeti ve genel Nöbetçi tek gün kalır
+00:43 +786 ~1: F:/personelapp2/test/unit/export_file_name_helper_test.dart: formatExportFileName preserves Turkish characters in title
+00:43 +787 ~1: F:/personelapp2/test/unit/export_file_name_helper_test.dart: formatExportFileName replaces invalid filesystem characters and extra spaces
+00:43 +788 ~1: F:/personelapp2/test/unit/export_file_name_helper_test.dart: formatExportFileName does not duplicate date if already present in title
+00:43 +789 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: signed Excel puts centered signatures at left and right edges
+00:43 +790 ~1: F:/personelapp2/test/unit/history_and_ledger_regression_test.dart: month boundary continuation keeps its task team after transfer
+00:43 +791 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: signed Excel includes time range in header when provided
+00:43 +792 ~1: F:/personelapp2/test/unit/history_test.dart: Adding personnel with squad should log history
+00:43 +793 ~1: F:/personelapp2/test/unit/history_test.dart: Adding personnel with squad should log history
+00:43 +794 ~1: F:/personelapp2/test/unit/history_test.dart: Adding personnel with squad should log history
+00:43 +795 ~1: F:/personelapp2/test/unit/history_test.dart: Adding personnel with squad should log history
+00:43 +796 ~1: F:/personelapp2/test/unit/history_test.dart: Adding personnel with squad should log history
+00:43 +797 ~1: F:/personelapp2/test/unit/history_test.dart: Adding personnel with squad should log history
+00:43 +798 ~1: F:/personelapp2/test/unit/history_test.dart: Adding personnel with squad should log history
+00:43 +799 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: Excel prints personnel and signatures but keeps totals outside print area
+00:43 +800 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: Excel prints personnel and signatures but keeps totals outside print area
+00:43 +801 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: Excel prints personnel and signatures but keeps totals outside print area
+00:43 +802 ~1: F:/personelapp2/test/unit/history_test.dart: Deleting personnel assigned to squad should log removal history
+00:43 +803 ~1: F:/personelapp2/test/unit/history_and_ledger_regression_test.dart: daily coverage does not invent a 24 hour duration
+00:43 +804 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: signed Excel expands multiline names and protects signature pagination
+00:43 +805 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: signed Excel expands multiline names and protects signature pagination
+00:43 +806 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: signed Excel expands multiline names and protects signature pagination
+00:43 +807 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: signed Excel expands multiline names and protects signature pagination
+00:43 +808 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: signed Excel expands multiline names and protects signature pagination
+00:43 +809 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: ordinary Excel retains existing output without Heybet signers
+00:43 +810 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: signed Excel renderer fixture 48
+00:43 +811 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: signed Excel renderer fixture 55
+00:43 +812 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: signed Excel renderer fixture 95
+00:43 +813 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: signed Excel renderer fixture 100
+00:43 +814 ~1: F:/personelapp2/test/unit/heybet_print_layout_test.dart: signed PDF long text renderer fixture
+00:43 +815 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +816 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +817 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +818 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +819 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +820 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +821 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +822 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +823 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +824 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +825 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +826 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +827 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +828 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +829 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +830 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +831 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +832 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +833 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +834 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +835 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +836 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +837 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +838 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +839 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +840 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +841 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +842 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +843 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +844 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +845 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +846 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +847 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +848 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +849 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +850 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +851 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +852 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +853 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +854 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +855 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +856 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +857 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +858 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +859 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +860 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog renders empty state and list items correctly
+00:44 +861 ~1: F:/personelapp2/test/unit/learned_aliases_squad_grouping_test.dart: aliases are listed under the official team of their personnel
+00:44 +862 ~1: F:/personelapp2/test/unit/learned_aliases_squad_grouping_test.dart: aliases are listed under the official team of their personnel
+00:44 +863 ~1: F:/personelapp2/test/unit/learned_aliases_squad_grouping_test.dart: aliases are listed under the official team of their personnel
+00:44 +864 ~1: F:/personelapp2/test/unit/learned_aliases_squad_grouping_test.dart: aliases are listed under the official team of their personnel
+00:44 +865 ~1: F:/personelapp2/test/unit/learned_aliases_squad_grouping_test.dart: aliases are listed under the official team of their personnel
+00:44 +866 ~1: F:/personelapp2/test/unit/learned_aliases_squad_grouping_test.dart: aliases are listed under the official team of their personnel
+00:44 +867 ~1: F:/personelapp2/test/unit/learned_aliases_squad_grouping_test.dart: aliases are listed under the official team of their personnel
+00:44 +868 ~1: F:/personelapp2/test/unit/learned_aliases_squad_grouping_test.dart: aliases are listed under the official team of their personnel
+00:44 +869 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog is readable on Size(320.0, 640.0)
+00:44 +870 ~1: F:/personelapp2/test/unit/learned_aliases_dialog_test.dart: LearnedAliasesDialog is readable on Size(320.0, 640.0)
+00:45 +871 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +872 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +873 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +874 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +875 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +876 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +877 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +878 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +879 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +880 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +881 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +882 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +883 ~1: F:/personelapp2/test/unit/pdf_roster_exporter_test.dart: long PDF roster spans pages without generation errors
+00:45 +884 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_hard_cases_test.dart: PersonnelFuzzyMatcher Hard Cases reverse token matching: matches clean name when raw name contains extra rank tokens
+00:45 +885 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_hard_cases_test.dart: PersonnelFuzzyMatcher Hard Cases same name & surname disambiguation: distinguishes by rank when rank differs
+00:45 +886 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_hard_cases_test.dart: PersonnelFuzzyMatcher Hard Cases same name & surname disambiguation: distinguishes by team name when team matches
+00:45 +887 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_hard_cases_test.dart: PersonnelFuzzyMatcher Hard Cases same name & surname disambiguation: refuses random assignment when no rank or team clue exists
+00:45 +888 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_hard_cases_test.dart: PersonnelFuzzyMatcher Hard Cases poisoned alias protection: rejects alias if surname does not match the target personnel
+00:45 +889 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_review_test.dart: exact match is automatic when roster and stored teams agree
+00:45 +890 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_review_test.dart: team mismatch keeps match intact with teamMismatch flag but allows auto save
+00:45 +891 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_review_test.dart: unrelated two-word OCR text is not suggested as personnel
+00:45 +892 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_review_test.dart: minor typo uses the actual fuzzy confidence
+00:45 +893 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_review_test.dart: initial does not suggest a person with an unrelated surname
+00:45 +894 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_review_test.dart: initial and correct surname produces a reviewable suggestion
+00:45 +895 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_review_test.dart: ambiguous Ahmet TINAS is left for manual selection
+00:45 +896 ~1: F:/personelapp2/test/unit/personnel_fuzzy_matcher_review_test.dart: ambiguous TINAS Ahmet is left for manual selection
+00:45 +897 ~1: F:/personelapp2/test/unit/personnel_identity_regression_test.dart: explicit update preserves ID while explicit namesake creates a new ID
+00:45 +898 ~1: F:/personelapp2/test/unit/personnel_identity_regression_test.dart: explicit update preserves ID while explicit namesake creates a new ID
+00:45 +899 ~1: F:/personelapp2/test/unit/personnel_identity_regression_test.dart: explicit update preserves ID while explicit namesake creates a new ID
+00:45 +900 ~1: F:/personelapp2/test/unit/personnel_identity_regression_test.dart: explicit update preserves ID while explicit namesake creates a new ID
+00:45 +901 ~1: F:/personelapp2/test/unit/personnel_identity_regression_test.dart: confirmed aliases are scoped to the parsed team
+00:45 +902 ~1: F:/personelapp2/test/unit/personnel_list_parser_test.dart: BulkTextParser.parsePersonnelList parses numbered and bullet personnel with normalized ranks
+00:45 +903 ~1: F:/personelapp2/test/unit/personnel_list_parser_test.dart: BulkTextParser.parsePersonnelList parses numbered and bullet personnel with normalized ranks
+00:45 +904 ~1: F:/personelapp2/test/unit/personnel_list_parser_test.dart: BulkTextParser.parsePersonnelList parses numbered and bullet personnel with normalized ranks
+00:45 +905 ~1: F:/personelapp2/test/unit/personnel_identity_regression_test.dart: legacy alias from another team is not automatically confirmed
+00:45 +906 ~1: F:/personelapp2/test/unit/personnel_identity_regression_test.dart: legacy alias from another team is not automatically confirmed
+00:45 +907 ~1: F:/personelapp2/test/unit/personnel_list_parser_test.dart: BulkTextParser.parsePersonnelList ignores list headers, comments, and summary lines
+00:45 +908 ~1: F:/personelapp2/test/unit/personnel_list_parser_test.dart: BulkTextParser.parsePersonnelList reports the original line number for an invalid personnel row
+00:45 +909 ~1: F:/personelapp2/test/unit/personnel_list_parser_test.dart: BulkTextParser.parsePersonnelList returns an empty result for whitespace-only input
+00:45 +910 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: persists order without changing membership or history
+00:45 +911 ~1: F:/personelapp2/test/unit/rank_helper_test.dart: Yarbay is normalized to J.Yb.
+00:45 +912 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: rejects omitted duplicate foreign unknown ids atomically
+00:45 +913 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: rejects omitted duplicate foreign unknown ids atomically
+00:45 +914 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: rejects omitted duplicate foreign unknown ids atomically
+00:45 +915 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: rejects omitted duplicate foreign unknown ids atomically
+00:45 +916 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: rejects omitted duplicate foreign unknown ids atomically
+00:45 +917 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: requires current admin role for both operations
+00:45 +918 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: transfer resets order; stale name edits preserve current position
+00:45 +919 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: legacy backup restores order and rejects invalid sort values
+00:45 +920 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: full backup roundtrip and older backup compatibility
+00:45 +921 ~1: F:/personelapp2/test/unit/roster_matrix_x_rule_test.dart: keeps exactly 20 X days, excludes 21, then ranks remaining rows
+00:45 +922 ~1: F:/personelapp2/test/unit/roster_matrix_x_rule_test.dart: keeps exactly 20 X days, excludes 21, then ranks remaining rows
+00:45 +923 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: saved positions survive closing and reopening the database
+00:45 +924 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: saved positions survive closing and reopening the database
+00:45 +925 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: saved positions survive closing and reopening the database
+00:45 +926 ~1: F:/personelapp2/test/unit/personnel_order_repository_test.dart: saved positions survive closing and reopening the database
+00:46 +927 ~1: F:/personelapp2/test/unit/roster_print_gateway_test.dart: Android gets the actual 1-page PDF and page count
+Helvetica has no Unicode support see https://github.com/DavBfr/dart_pdf/wiki/Fonts-Management
+00:46 +928 ~1: F:/personelapp2/test/unit/roster_print_gateway_test.dart: Android gets the actual 2-page PDF and page count
+Helvetica has no Unicode support see https://github.com/DavBfr/dart_pdf/wiki/Fonts-Management
+00:46 +929 ~1: F:/personelapp2/test/unit/roster_print_gateway_test.dart: Android gets the actual 3-page PDF and page count
+Helvetica has no Unicode support see https://github.com/DavBfr/dart_pdf/wiki/Fonts-Management
+00:46 +930 ~1: F:/personelapp2/test/unit/roster_print_gateway_test.dart: non-Android uses the existing printing path
+Helvetica has no Unicode support see https://github.com/DavBfr/dart_pdf/wiki/Fonts-Management
+00:46 +931 ~1: F:/personelapp2/test/unit/roster_print_gateway_test.dart: missing native channel falls back to printing
+Helvetica has no Unicode support see https://github.com/DavBfr/dart_pdf/wiki/Fonts-Management
+00:46 +932 ~1: F:/personelapp2/test/unit/roster_print_gateway_test.dart: unsupported native channel falls back to printing
+Helvetica has no Unicode support see https://github.com/DavBfr/dart_pdf/wiki/Fonts-Management
+00:46 +933 ~1: F:/personelapp2/test/unit/roster_rank_order_test.dart: rank option sorts globally, keeps same-rank order and renumbers only copies
+00:46 +933 ~1: F:/personelapp2/test/unit/roster_print_gateway_test.dart: native print failure propagates without opening a second dialog
+Helvetica has no Unicode support see https://github.com/DavBfr/dart_pdf/wiki/Fonts-Management
+00:46 +934 ~1: F:/personelapp2/test/unit/roster_rank_order_test.dart: rank option sorts globally, keeps same-rank order and renumbers only copies
+00:46 +935 ~1: F:/personelapp2/test/unit/save_all_learning_test.dart: Batch save automatically remembers aliases for matched personnel
+00:46 +936 ~1: F:/personelapp2/test/unit/selected_roster_output_test.dart: date candidates include Heybet but exporting other cards does not include it
+00:46 +937 ~1: F:/personelapp2/test/unit/selected_roster_output_test.dart: card order wins over global name sorting and previous day always follows current day
+00:46 +938 ~1: F:/personelapp2/test/unit/selected_roster_output_test.dart: same name different IDs survive and data is read-only with continuous numbering
+00:46 +939 ~1: F:/personelapp2/test/unit/selected_roster_output_test.dart: pending personnel and foreign teams are excluded
+00:46 +940 ~1: F:/personelapp2/test/unit/selected_roster_output_test.dart: deleted duplicate-only source is rejected even if personnel would be unchanged
+00:46 +941 ~1: F:/personelapp2/test/unit/smart_reimport_test.dart: countActiveAssignments returns 0 after deleting activity
+00:46 +942 ~1: F:/personelapp2/test/unit/smart_reimport_test.dart: countActiveAssignments returns 0 after deleting activity
+00:46 +943 ~1: F:/personelapp2/test/unit/smart_reimport_test.dart: countActiveAssignments returns 0 after deleting activity
+00:46 +944 ~1: F:/personelapp2/test/unit/smart_reimport_test.dart: smart merge adds missing personnel without duplicating existing ones
+00:46 +945 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: special duties map 1'inci Bl. K.H to 1'inci Bl.
+00:46 +946 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: special duties map 1'İNCİ BL. K.H to 1'inci Bl.
+00:46 +947 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: special duties map 1.BL.K.H to 1'inci Bl.
+00:46 +948 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: regular duties preserve 1'inci Bl. K.H
+00:46 +949 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: special duties map 2'nci Bl. K.H to 2'nci Bl.
+00:46 +950 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: special duties map 2'NCİ BL. K.H to 2'nci Bl.
+00:46 +951 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: special duties map 2.BL.K.H to 2'nci Bl.
+00:46 +952 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: regular duties preserve 2'nci Bl. K.H
+00:46 +953 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: special duties map 3'üncü Bl. K.H to 3'üncü Bl.
+00:46 +954 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: special duties map 3'ÜNCÜ BL. K.H to 3'üncü Bl.
+00:46 +955 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: special duties map 3.BL.K.H to 3'üncü Bl.
+00:46 +956 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: regular duties preserve 3'üncü Bl. K.H
+00:46 +957 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: master XLSX merges special duties across companies within each activity
+00:46 +958 ~1: F:/personelapp2/test/unit/special_duty_company_regression_test.dart: master XLSX merges special duties across companies within each activity
+00:46 +959 ~1: F:/personelapp2/test/unit/staged_bulk_import_test.dart: admin draft persists IDs and membership history only on Save
+00:46 +960 ~1: F:/personelapp2/test/unit/staged_bulk_import_test.dart: admin draft persists IDs and membership history only on Save
+00:46 +961 ~1: F:/personelapp2/test/unit/staged_bulk_import_test.dart: admin draft persists IDs and membership history only on Save
+00:46 +962 ~1: F:/personelapp2/test/unit/staged_bulk_import_test.dart: admin draft persists IDs and membership history only on Save
+00:46 +963 ~1: F:/personelapp2/test/unit/staged_bulk_import_test.dart: admin draft persists IDs and membership history only on Save
+00:47 +964 ~1: F:/personelapp2/test/unit/staged_bulk_import_test.dart: admin draft persists IDs and membership history only on Save
+00:47 +965 ~1: F:/personelapp2/test/unit/staged_bulk_import_test.dart: actorless and revoked admin cannot persist staged people
+00:47 +966 ~1: F:/personelapp2/test/unit/user_prompt_bulk_parse_test.dart: parse full user request text cleanly without issues
+00:47 +967 ~1: F:/personelapp2/test/unit/user_prompt_bulk_parse_test.dart: parse full user request text cleanly without issues
+00:47 +968 ~1: F:/personelapp2/test/unit/user_prompt_bulk_parse_test.dart: parse full user request text cleanly without issues
+00:47 +969 ~1: F:/personelapp2/test/unit/user_prompt_bulk_parse_test.dart: parse multi-date bottom-labeled duty list into separate cards
+00:47 +970 ~1: F:/personelapp2/test/unit/user_prompt_bulk_parse_test.dart: parse warrior element heybet list with parenthetical squad notes
+00:47 +971 ~1: F:/personelapp2/test/widget/core/widgets/app_card_test.dart: AppCard & Core Surface Primitives AppCard renders child with standard border and responds to onTap
+00:47 +972 ~1: F:/personelapp2/test/widget/core/widgets/modern_action_menu_test.dart: ModernActionMenu Widget Tests renders ModernMenuHeader correctly
+00:47 +973 ~1: F:/personelapp2/test/widget/features/activity/activity_screens_test.dart: Activity Screens & Forms Widget Tests renders ActivityFormScreen step controls and text inputs
+00:47 +974 ~1: F:/personelapp2/test/widget/features/activity/activity_screens_test.dart: Activity Screens & Forms Widget Tests renders ActivityFormScreen step controls and text inputs
+00:47 +975 ~1: F:/personelapp2/test/widget/features/activity/activity_screens_test.dart: Activity Screens & Forms Widget Tests renders ActivityFormScreen step controls and text inputs
+00:47 +976 ~1: F:/personelapp2/test/widget/features/activity/activity_screens_test.dart: Activity Screens & Forms Widget Tests renders ActivityFormScreen step controls and text inputs
+00:47 +977 ~1: F:/personelapp2/test/widget/features/activity/activity_screens_test.dart: Activity Screens & Forms Widget Tests renders ActivityFormScreen step controls and text inputs
+00:47 +978 ~1: F:/personelapp2/test/widget/features/activity/activity_screens_test.dart: Activity Screens & Forms Widget Tests renders ActivityFormScreen step controls and text inputs
+00:47 +979 ~1: F:/personelapp2/test/widget/features/dashboard/dashboard_widgets_test.dart: Dashboard Components & Menu Cards Widget Tests DashboardMenuCard renders title, icon and responds to tap
+00:47 +980 ~1: F:/personelapp2/test/widget/features/matrix/team_duty_calendar_modal_test.dart: TeamDutyCalendarModal Widget Tests day details show separate duties and pending status
+00:47 +981 ~1: F:/personelapp2/test/widget/features/matrix/team_duty_calendar_modal_test.dart: TeamDutyCalendarModal Widget Tests day details show separate duties and pending status
+00:47 +982 ~1: F:/personelapp2/test/widget/features/matrix/team_duty_calendar_modal_test.dart: TeamDutyCalendarModal Widget Tests day details show separate duties and pending status
+00:48 +983 ~1: F:/personelapp2/test/widget/features/personnel/personnel_dialogs_test.dart: Personnel Dialogs & Form Buttons Widget Tests renders PersonnelFormDialog inputs and action buttons
+00:48 +984 ~1: F:/personelapp2/test/widget/features/personnel/personnel_dialogs_test.dart: Personnel Dialogs & Form Buttons Widget Tests renders PersonnelFormDialog inputs and action buttons
+00:48 +985 ~1: F:/personelapp2/test/widget/features/personnel/personnel_dialogs_test.dart: Personnel Dialogs & Form Buttons Widget Tests renders PersonnelFormDialog inputs and action buttons
+00:48 +986 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests DashboardScreen has zero layout overflow on viewport 360.0x800.0
+00:48 +987 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests DashboardScreen has zero layout overflow on viewport 360.0x800.0
+00:48 +988 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests DashboardScreen has zero layout overflow on viewport 360.0x800.0
+00:48 +989 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests DashboardScreen has zero layout overflow on viewport 360.0x800.0
+00:48 +990 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests DashboardScreen has zero layout overflow on viewport 360.0x800.0
+00:48 +991 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests DashboardScreen has zero layout overflow on viewport 360.0x800.0
+00:48 +992 ~1: F:/personelapp2/test/widget_test.dart: App smoke test
+00:48 +993 ~1: F:/personelapp2/test/widget_test.dart: App smoke test
+00:48 +994 ~1: F:/personelapp2/test/widget_test.dart: App smoke test
+00:48 +995 ~1: F:/personelapp2/test/widget_test.dart: App smoke test
+00:48 +996 ~1: F:/personelapp2/test/widget_test.dart: App smoke test
+00:48 +997 ~1: F:/personelapp2/test/widget_test.dart: App smoke test
+00:48 +998 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests LoginScreen has zero layout overflow on viewport 360.0x800.0
+00:48 +999 ~1: F:/personelapp2/test/widget_test.dart: PersonelApp installs the global notification host
+00:48 +1000 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests DashboardScreen has zero layout overflow on viewport 800.0x360.0
+00:48 +1001 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests PersonnelManagementScreen has zero layout overflow on viewport 800.0x360.0
+00:49 +1002 ~1: F:/personelapp2/test/widget_test.dart: PersonelApp takvimleri Türkçe ve pazartesi başlangıçlı kurar
+00:49 +1003 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests TemgundrapScreen has zero layout overflow on viewport 800.0x360.0
+00:49 +1004 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests ActivityArchiveScreen has zero layout overflow on viewport 800.0x360.0
+00:49 +1005 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests LoginScreen has zero layout overflow on viewport 800.0x360.0
+00:49 +1006 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests DashboardScreen has zero layout overflow on viewport 768.0x1024.0
+00:49 +1007 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests PersonnelManagementScreen has zero layout overflow on viewport 768.0x1024.0
+00:49 +1008 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests TemgundrapScreen has zero layout overflow on viewport 768.0x1024.0
+00:49 +1009 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests ActivityArchiveScreen has zero layout overflow on viewport 768.0x1024.0
+00:49 +1010 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests LoginScreen has zero layout overflow on viewport 768.0x1024.0
+00:49 +1011 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests DashboardScreen has zero layout overflow on viewport 1440.0x900.0
+00:49 +1012 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests PersonnelManagementScreen has zero layout overflow on viewport 1440.0x900.0
+00:49 +1013 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests TemgundrapScreen has zero layout overflow on viewport 1440.0x900.0
+00:49 +1014 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests ActivityArchiveScreen has zero layout overflow on viewport 1440.0x900.0
+00:49 +1015 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests LoginScreen has zero layout overflow on viewport 1440.0x900.0
+00:49 +1016 ~1: F:/personelapp2/test/widget/responsive/responsive_layout_overflow_test.dart: Responsive Layout & Overflow Prevention Tests PersonnelFormDialog renders cleanly with 1.5x large text scaling without overflow
+00:49 +1017 ~1: All tests passed!
