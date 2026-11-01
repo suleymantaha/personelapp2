@@ -17,6 +17,8 @@ void main() {
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    await db.into(db.kullaniciTable).insert(KullaniciTableCompanion.insert(
+        kullaniciAdi: 'admin', rol: UserRole.admin.storageValue));
     activities = ActivityRepository(db);
     matrix = MatrixRepository(db);
     team = await db.into(db.timTable).insert(TimTableCompanion.insert(

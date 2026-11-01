@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'staged_bulk_import.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
-import '../task_team_confirmation.dart';
+import 'staged_task_team_confirmation.dart';
 import 'package:personelapp2/features/activity/domain/bulk_activity_import_preparer.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
@@ -84,7 +85,6 @@ class BulkImportSaveHandler {
 
     final activeCount = await learningService.countActiveAssignments(blocks);
     if (activeCount == 0) {
-      await learningService.deleteImportRecord(fingerprint);
       return true;
     }
 
@@ -127,6 +127,8 @@ class BulkImportSaveHandler {
     required String rawText,
     required int deduplicatedPersonnelCount,
     bool skipPreflight = false,
+    StagedBulkImport? staged,
+    UserSessionState? Function()? currentActor,
   }) async {
     final l10n = context.l10n;
     final preparation = BulkActivityImportPreparer.prepare(blocks);
@@ -149,12 +151,13 @@ class BulkImportSaveHandler {
     final requests = <ActivityCreateRequest>[];
     for (final request in preparation.requests) {
       if (!context.mounted) return null;
-      final confirmed = await confirmTaskTeams(
+      final confirmed = await confirmBulkTaskTeams(
           context: context,
           repository: activityRepository,
           date: request.tarih,
           assignments: request.personnelAssignments,
-          actor: actor);
+          actor: actor,
+          staged: staged ?? StagedBulkImport());
       if (confirmed == null) return null;
       requests.add(ActivityCreateRequest(
           faaliyetAdi: request.faaliyetAdi,
@@ -164,20 +167,32 @@ class BulkImportSaveHandler {
     }
 
     final learningService = BulkImportLearningService(database);
-    final fingerprint = BulkImportLearningService.fingerprint(blocks);
-    final result = await activityRepository.createActivitiesWithAssignments(
-      requests,
-      actor: actor,
-    );
-
-    await learningService.rememberBlockAliases(blocks);
-
-    await learningService.recordImport(
-      fingerprint: fingerprint,
-      blocks: blocks,
-      actor: actor.username,
-      rawText: keepAuditText ? rawText : null,
-    );
+    final result = await database.transaction(() async {
+      final freshActor = currentActor == null ? actor : currentActor();
+      if (freshActor != actor) throw StateError('Oturum değişti.');
+      await StagedBulkImport.requireActor(database, freshActor);
+      final ids =
+          await (staged ?? StagedBulkImport()).persist(database, actor, blocks);
+      final savedBlocks = StagedBulkImport.remapBlocks(blocks, ids);
+      final result = await activityRepository.createActivitiesWithAssignments([
+        for (final r in requests)
+          ActivityCreateRequest(
+              faaliyetAdi: r.faaliyetAdi,
+              tarih: r.tarih,
+              olusturanKullanici: r.olusturanKullanici,
+              personnelAssignments: [
+                for (final a in r.personnelAssignments)
+                  StagedBulkImport.remapAssignment(a, ids)
+              ])
+      ], actor: actor);
+      await learningService.rememberBlockAliases(savedBlocks);
+      await learningService.recordImport(
+          fingerprint: BulkImportLearningService.fingerprint(savedBlocks),
+          blocks: savedBlocks,
+          actor: actor.username,
+          rawText: keepAuditText ? rawText : null);
+      return result;
+    });
 
     if (context.mounted) {
       if (result.skippedAssignmentCount > 0) {

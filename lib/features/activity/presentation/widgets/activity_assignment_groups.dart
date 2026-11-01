@@ -1,7 +1,8 @@
+import 'team_selection_toolbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:personelapp2/core/database/database.dart';
-import 'package:personelapp2/core/theme/app_theme.dart';
+
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
@@ -20,9 +21,16 @@ class ActivityAssignmentGroups extends StatefulWidget {
     this.onDeleteSelected,
     this.onReassignSelected,
     this.onTransferSquad,
+    this.onCreateReportSelected,
+    this.usePersistentToolbar = false,
+    this.leadingAction,
     super.key,
   });
 
+  final bool usePersistentToolbar;
+  final Widget? leadingAction;
+  final Future<void> Function(List<FaaliyetPersonelAtamaTableData>)?
+      onCreateReportSelected;
   final List<FaaliyetPersonelAtamaTableData> assignments;
   final Map<int, PersonelTableData> personnelById;
   final Map<int, String> squadNames;
@@ -48,6 +56,8 @@ class ActivityAssignmentGroups extends StatefulWidget {
 }
 
 class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
+  bool _selectionMode = false;
+  String _toolbarFingerprint = '';
   int? _expandedSquadId;
   bool _hasExpandedTimDisi = false;
   final Set<int?> _selectedSquadIds = {};
@@ -55,6 +65,7 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
   void _toggleSquadSelection(int? squadId) {
     HapticFeedback.selectionClick();
     setState(() {
+      _selectionMode = true;
       if (_selectedSquadIds.contains(squadId)) {
         _selectedSquadIds.remove(squadId);
       } else {
@@ -77,6 +88,9 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
   @override
   void didUpdateWidget(covariant ActivityAssignmentGroups oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final hadSelection = _selectedSquadIds.isNotEmpty;
+    _selectedSquadIds.retainAll(widget.assignments.map((a) => a.gorevTimId));
+    if (hadSelection && _selectedSquadIds.isEmpty) _selectionMode = false;
     if (oldWidget.selectedSquadId != widget.selectedSquadId) {
       _expandedSquadId = widget.selectedSquadId;
       _hasExpandedTimDisi = false;
@@ -128,84 +142,79 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
         return name != 0 ? name : a.compareTo(b);
       });
 
-    final isSelectionMode = _selectedSquadIds.isNotEmpty;
+    final isSelectionMode = _selectionMode || _selectedSquadIds.isNotEmpty;
+    final selectedRows = [for (final id in _selectedSquadIds) ...?grouped[id]];
+    void cancel() => setState(() {
+          _selectedSquadIds.clear();
+          _selectionMode = false;
+        });
+    final toolbar = isSelectionMode
+        ? TeamSelectionToolbar(
+            teamCount: _selectedSquadIds.length,
+            personCount: selectedRows.map((r) => r.personelId).toSet().length,
+            onCancel: cancel,
+            onSelectAll: () =>
+                setState(() => _selectedSquadIds.addAll(grouped.keys)),
+            onReassign: widget.onReassignSelected == null
+                ? null
+                : () => widget.onReassignSelected!(selectedRows),
+            onExport: widget.onExportSelected == null
+                ? null
+                : () => widget.onExportSelected!(selectedRows),
+            onDelete: widget.onDeleteSelected == null
+                ? null
+                : () => widget.onDeleteSelected!(selectedRows),
+            onReport: widget.onCreateReportSelected == null
+                ? null
+                : () => widget.onCreateReportSelected!(selectedRows),
+          )
+        : null;
+    final fingerprint =
+        '$isSelectionMode|${widget.onDeleteSelected != null}|${widget.onReassignSelected != null}|${_selectedSquadIds.join(',')}|${widget.assignments.map((a) => '${a.id}:${a.gorevTimId}:${a.durum}:${a.gorevVeyaIzin}').join(',')}';
+    if (widget.usePersistentToolbar && fingerprint != _toolbarFingerprint) {
+      _toolbarFingerprint = fingerprint;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) TeamSelectionNotification(toolbar).dispatch(context);
+      });
+    }
 
-    return Column(
-      children: [
-        if (isSelectionMode)
+    return PopScope(
+      canPop: !isSelectionMode,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) cancel();
+      },
+      child: Column(children: [
+        if (!isSelectionMode &&
+            (widget.leadingAction != null || squadIds.isNotEmpty))
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(children: [
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 20),
-                    tooltip: context.l10n.cancelSelectionTooltip,
-                    onPressed: () => setState(_selectedSquadIds.clear),
-                  ),
-                  Expanded(
-                      child: Text(
-                    context.l10n
-                        .activitySelectedSquadCount(_selectedSquadIds.length),
-                    style: TextStyle(
-                        color: context.accentOrOlive,
-                        fontWeight: FontWeight.bold),
-                  )),
-                ]),
-                Wrap(spacing: 6, runSpacing: 6, children: [
-                  if (widget.onReassignSelected != null)
-                    Tooltip(
-                      message: 'Görev Değiştir',
-                      child: FilledButton.tonalIcon(
-                        key: const Key('reassign-selected-teams'),
-                        onPressed: () => widget.onReassignSelected!([
-                          for (final id in _selectedSquadIds) ...?grouped[id],
-                        ]),
-                        icon: const Icon(Icons.edit_note, size: 18),
-                        label: const Text('Görev Değiştir'),
-                      ),
+            padding: const EdgeInsets.only(bottom: 10),
+            child: SizedBox(
+              width: double.infinity,
+              child: Row(
+                children: [
+                  if (widget.leadingAction != null)
+                    Expanded(
+                        child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: widget.leadingAction!))
+                  else
+                    const Spacer(),
+                  if (squadIds.isNotEmpty)
+                    TextButton.icon(
+                      key: const Key('team-selection-start'),
+                      onPressed: () => setState(() => _selectionMode = true),
+                      icon: const Icon(Icons.checklist),
+                      label: const Text('Tim seç'),
                     ),
-                  if (widget.onExportSelected != null)
-                    FilledButton.tonalIcon(
-                      key: const Key('export-selected-teams'),
-                      onPressed: () => widget.onExportSelected!([
-                        for (final id in _selectedSquadIds) ...?grouped[id],
-                      ]),
-                      icon: const Icon(Icons.print_outlined, size: 18),
-                      label: Text(context.l10n.commonPrint),
-                    ),
-                  if (widget.onDeleteSelected != null) ...[
-                    const SizedBox(width: 6),
-                    IconButton.filledTonal(
-                      key: const Key('delete-selected-teams'),
-                      tooltip: context.l10n.activityDeleteSelectedSquadsTooltip,
-                      onPressed: () async {
-                        final selectedAssignments = [
-                          for (final id in _selectedSquadIds) ...?grouped[id],
-                        ];
-                        await widget.onDeleteSelected!(selectedAssignments);
-                        if (mounted) {
-                          setState(_selectedSquadIds.clear);
-                        }
-                      },
-                      icon: Icon(
-                        Icons.delete_outline,
-                        color: context.rejectedColor,
-                      ),
-                    ),
-                  ],
-                ]),
-              ],
+                ],
+              ),
             ),
           ),
+        if (!widget.usePersistentToolbar && toolbar != null) toolbar,
         ...squadIds.map((squadId) {
           final assignments = grouped[squadId]!;
-          final teamName = squadId == null
-              ? grouped[squadId]!.first.gorevTimAdi ??
-                  context.l10n.activityDetailUnknownSquadHistory
-              : (widget.squadNames[squadId] ??
-                  context.l10n.activityDetailUnknownSquad);
+          final teamName = assignments.first.gorevTimAdi ??
+              context.l10n.activityDetailUnknownSquadHistory;
           final expanded = squadId == null
               ? _hasExpandedTimDisi
               : _expandedSquadId == squadId;
@@ -214,6 +223,7 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
           return CollapsibleSquadCard(
             cardKey: Key('activity-team-card-$squadId'),
             headerKey: Key('activity-team-header-$squadId'),
+            expandKey: Key('activity-team-expand-$squadId'),
             title: teamName,
             personCount: assignments.length,
             expanded: expanded,
@@ -249,7 +259,7 @@ class _ActivityAssignmentGroupsState extends State<ActivityAssignmentGroups> {
                 .toList(growable: false),
           );
         }),
-      ],
+      ]),
     );
   }
 }

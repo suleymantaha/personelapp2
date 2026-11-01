@@ -30,6 +30,8 @@ void main() {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
     await tester.runAsync(() async {
+      await db.into(db.kullaniciTable).insert(KullaniciTableCompanion.insert(
+          kullaniciAdi: 'admin', rol: 'yönetici'));
       await db.into(db.personelTable).insert(PersonelTableCompanion.insert(
             adSoyad: 'Test Personel',
             rutbe: 'J.Uzm.Çvş.',
@@ -108,6 +110,8 @@ void main() {
       final db = AppDatabase(NativeDatabase.memory());
       addTearDown(db.close);
       await tester.runAsync(() async {
+        await db.into(db.kullaniciTable).insert(KullaniciTableCompanion.insert(
+            kullaniciAdi: 'admin', rol: 'yönetici'));
         for (final name in ['Heybet personeli', 'Z Personel', 'A Personel']) {
           await db.into(db.personelTable).insert(
                 PersonelTableCompanion.insert(
@@ -200,7 +204,7 @@ void main() {
               .data,
           '2');
       await tester.tap(find.byKey(const Key('roster-preview')));
-      await waitFor(tester, find.text('Birleşik Çıktı'));
+      await waitFor(tester, find.text('Çıktı Hazırlığı'));
       // Preparation must finish independently of the preview route's lifetime.
       // Browser history can restore this screen without completing push's Future.
       expect(
@@ -245,7 +249,7 @@ void main() {
       expect(find.byKey(const ValueKey('current-activity-2')), findsOneWidget);
 
       await tester.tap(find.byKey(const Key('roster-preview')));
-      await waitFor(tester, find.text('Birleşik Çıktı'));
+      await waitFor(tester, find.text('Çıktı Hazırlığı'));
       await tester.ensureVisible(
         find.byKey(const Key('roster-preview-people-toggle')),
       );
@@ -266,6 +270,8 @@ void main() {
       final db = AppDatabase(NativeDatabase.memory());
       addTearDown(db.close);
       await tester.runAsync(() async {
+        await db.into(db.kullaniciTable).insert(KullaniciTableCompanion.insert(
+            kullaniciAdi: 'admin', rol: 'yönetici'));
         for (final name in ['Ortak Kişi', 'Bugünün Kişisi']) {
           await db.into(db.personelTable).insert(
                 PersonelTableCompanion.insert(

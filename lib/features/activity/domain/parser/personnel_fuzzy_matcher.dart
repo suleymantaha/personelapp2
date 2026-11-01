@@ -7,16 +7,19 @@ import 'package:personelapp2/features/activity/domain/models/parsed_activity_blo
 import 'package:personelapp2/features/activity/domain/parser/personnel_search_service.dart';
 
 class PersonnelFuzzyMatcher {
-  PersonnelFuzzyMatcher(this.database);
+  PersonnelFuzzyMatcher(this.database, {this.personnel, this.teams});
+  final List<PersonelTableData>? personnel;
+  final List<TimTableData>? teams;
   final AppDatabase database;
 
   Future<List<ParsedActivityBlock>> matchBlocks(
     List<ParsedActivityBlock> blocks,
   ) async {
-    final allPersonnel = await (database.select(database.personelTable)
-          ..where((p) => p.aktif.equals(true) & p.isDemo.equals(false)))
-        .get();
-    final allTeams = await database.select(database.timTable).get();
+    final allPersonnel = personnel ??
+        await (database.select(database.personelTable)
+              ..where((p) => p.aktif.equals(true) & p.isDemo.equals(false)))
+            .get();
+    final allTeams = teams ?? await database.select(database.timTable).get();
     final aliases = await BulkImportLearningService(database).loadAliases();
     final teamNames = {for (final team in allTeams) team.id: team.timAdi};
 

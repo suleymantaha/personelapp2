@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,8 @@ void main() {
 
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
+    await database.into(database.kullaniciTable).insert(
+        KullaniciTableCompanion.insert(kullaniciAdi: 'admin', rol: 'yönetici'));
     final teamId = await database.into(database.timTable).insert(
           TimTableCompanion.insert(
               timAdi: '6-B Timi', olusturmaTarihi: '2026-01-01'),
@@ -45,6 +48,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(
@@ -81,6 +88,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(
@@ -130,6 +141,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(
@@ -185,6 +200,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(
@@ -229,6 +248,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin))
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: BulkImportDialog(
@@ -266,6 +289,10 @@ Veli SAĞLAM
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(
         ProviderScope(
+          overrides: [
+            userSessionProvider.overrideWith((ref) =>
+                const UserSessionState(username: 'admin', role: UserRole.admin))
+          ],
           child: MaterialApp(
             home: Scaffold(
               body: BulkImportDialog(
@@ -289,7 +316,8 @@ Veli SAĞLAM
       await tester.ensureVisible(select);
       await tester.tap(select);
       await tester.pumpAndSettle();
-      await tester.enterText(find.byKey(const Key('personnel-search-field')), 'Ali');
+      await tester.enterText(
+          find.byKey(const Key('personnel-search-field')), 'Ali');
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('personnel-option-1')));
       await tester.pumpAndSettle();

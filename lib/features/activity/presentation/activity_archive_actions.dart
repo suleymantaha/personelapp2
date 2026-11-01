@@ -2,50 +2,48 @@ part of 'activity_archive_screen.dart';
 
 extension _ActivityArchiveActions on _ActivityArchiveScreenState {
   Future<void> _showConflictAudit() async {
-    final conflicts =
-        await ref
-            .read(activityRepositoryProvider)
-            .auditExistingDailyConflicts();
+    final conflicts = await ref
+        .read(activityRepositoryProvider)
+        .auditExistingDailyConflicts();
     if (!mounted) return;
     await showDialog<void>(
       context: context,
-      builder:
-          (dialogContext) => AlertDialog(
-            title: Text(context.l10n.activityArchiveConflictAuditTitle),
-            content: SizedBox(
-              width: 600,
-              child:
-                  conflicts.isEmpty
-                      ? Text(context.l10n.activityArchiveConflictAuditNone)
-                      : SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              context.l10n.activityArchiveConflictAuditReadOnly,
-                            ),
-                            const SizedBox(height: 12),
-                            for (final conflict in conflicts)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Text('• $conflict'),
-                              ),
-                          ],
-                        ),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.activityArchiveConflictAuditTitle),
+        content: SizedBox(
+          width: 600,
+          child: conflicts.isEmpty
+              ? Text(context.l10n.activityArchiveConflictAuditNone)
+              : SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.l10n.activityArchiveConflictAuditReadOnly,
                       ),
-            ),
-            actions: [
-              FilledButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: Text(context.l10n.commonClose),
-              ),
-            ],
+                      const SizedBox(height: 12),
+                      for (final conflict in conflicts)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text('• $conflict'),
+                        ),
+                    ],
+                  ),
+                ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(context.l10n.commonClose),
           ),
+        ],
+      ),
     );
   }
 
   void _startSelection(int activityId) {
     _updateState(() {
+      _reorderMode = false;
       _selectionMode = true;
       _selectedActivityIds.add(activityId);
     });
@@ -81,8 +79,8 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
   }
 
   String _buildExportDateTitle(List<GunlukFaaliyetTableData> activities) {
-    final dates =
-        activities.map((activity) => activity.tarih).toSet().toList()..sort();
+    final dates = activities.map((activity) => activity.tarih).toSet().toList()
+      ..sort();
     if (dates.isEmpty) {
       return DateFormat('dd.MM.yyyy').format(_selectedDateFilter);
     }
@@ -95,54 +93,38 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     return '${display(dates.first)} - ${display(dates.last)}';
   }
 
+  Future<ActivityOutputSnapshot> _loadMasterSnapshot(
+    List<GunlukFaaliyetTableData> activities,
+    List<int> selectedAssignmentIds,
+  ) async {
+    final actor = ref.read(userSessionProvider);
+    if (actor == null) throw StateError(context.l10n.authSessionUnverified);
+    return ref.read(activityRepositoryProvider).loadOutputSnapshot(
+          actor: actor,
+          sources: activities,
+          selectedAssignmentIds: selectedAssignmentIds,
+          selectedSquadId: _selectedSquadFilter,
+        );
+  }
+
   Future<List<MilitaryRosterRow>> _buildRosterRowsForMasterExport(
     List<GunlukFaaliyetTableData> activities,
-    List<PersonelTableData> personnelList,
-  ) async {
+    List<PersonelTableData> personnelList, {
+    required List<int> selectedAssignmentIds,
+  }) async {
     final l10n = context.l10n;
-    final db = ref.read(databaseProvider);
-    final session = ref.read(userSessionProvider);
-    if (session == null) throw StateError(l10n.authSessionUnverified);
-    final authorizedTeam = session.isAdmin ? null :
-      await ref.read(personnelRepositoryProvider).currentCommanderTeam(session.username);
-    if (!session.isAdmin && authorizedTeam == null) throw StateError(l10n.rosterOutputCommanderTeamRevoked);
-    final pMap = {for (final p in personnelList) p.id: p};
+    final snapshot =
+        await _loadMasterSnapshot(activities, selectedAssignmentIds);
+    final pMap = snapshot.personnelMap;
     final squadsList = ref.read(allSquadsProvider).value ?? [];
     final squadMap = {for (final s in squadsList) s.id: s.timAdi};
-
-    final allAssignments = <FaaliyetPersonelAtamaTableData>[];
-    final seenAssignmentIds = <int>{};
-    final allowedPersonnelIds = pMap.keys.toSet();
-    final activityIds = activities.map((act) => act.id).toSet();
-
-    if (activityIds.isNotEmpty) {
-      final assignments =
-          await (db.select(db.faaliyetPersonelAtamaTable)
-            ..where((tbl) => tbl.faaliyetId.isIn(activityIds))).get();
-
-      for (final a in assignments) {
-        final isAllowedTeam =
-            _selectedSquadFilter == null ||
-            a.gorevTimId == _selectedSquadFilter;
-        if (allowedPersonnelIds.contains(a.personelId) &&
-            isAllowedTeam &&
-            (session.isAdmin || a.gorevTimId == authorizedTeam) &&
-            !seenAssignmentIds.contains(a.id) &&
-            DutyOrLeaveType.isApprovedOperationalDuty(
-              a.gorevVeyaIzin,
-              a.durum,
-            )) {
-          seenAssignmentIds.add(a.id);
-          allAssignments.add(a);
-        }
-      }
-    }
+    final allAssignments = snapshot.assignments;
 
     final orderedAssignments = orderAssignmentsForExport(
       allAssignments,
       pMap,
       squadMap,
-        squadOrders: {for (final s in squadsList) s.id: s.sortOrder},
+      squadOrders: {for (final s in squadsList) s.id: s.sortOrder},
     );
 
     final rosterRows = <MilitaryRosterRow>[];
@@ -150,8 +132,10 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
       final atama = orderedAssignments[i];
       final p = pMap[atama.personelId];
       final rutbe = p?.rutbe ?? '';
-      final adSoyad = p?.adSoyad ?? l10n.activityArchiveFallbackPersonnelName(atama.personelId);
-      final timName = atama.gorevTimAdi ?? l10n.activityArchiveUnknownTeamHistory;
+      final adSoyad = p?.adSoyad ??
+          l10n.activityArchiveFallbackPersonnelName(atama.personelId);
+      final timName =
+          atama.gorevTimAdi ?? l10n.activityArchiveUnknownTeamHistory;
       final birligi = MilitaryStructureHelper.getRosterBirlikName(
         timName: timName,
         birlik: p?.birlik ?? '',
@@ -182,8 +166,10 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
 
   Future<void> _exportMasterExcel(
     List<GunlukFaaliyetTableData> activities,
-    List<PersonelTableData> personnelList,
-  ) async {
+    List<PersonelTableData> personnelList, {
+    required List<int> selectedAssignmentIds,
+    String? timeRange,
+  }) async {
     if (activities.isEmpty) {
       AppNotifications.info(context.l10n.activityArchiveNoActivitiesToExport);
       return;
@@ -193,21 +179,23 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     final rows = await _buildRosterRowsForMasterExport(
       activities,
       personnelList,
+      selectedAssignmentIds: selectedAssignmentIds,
     );
     await MilitaryRosterExporter.shareExcelRoster(
       faaliyetAdi:
-          activities.length == 1
-              ? activities.first.faaliyetAdi
-              : defaultTitle,
+          activities.length == 1 ? activities.first.faaliyetAdi : defaultTitle,
       tarih: dateTitle,
       rows: rows,
+      timeRange: timeRange,
     );
   }
 
   Future<void> _exportMasterPdf(
     List<GunlukFaaliyetTableData> activities,
-    List<PersonelTableData> personnelList,
-  ) async {
+    List<PersonelTableData> personnelList, {
+    required List<int> selectedAssignmentIds,
+    String? timeRange,
+  }) async {
     if (activities.isEmpty) {
       AppNotifications.info(context.l10n.activityArchiveNoActivitiesToExport);
       return;
@@ -216,12 +204,11 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     final rows = await _buildRosterRowsForMasterExport(
       activities,
       personnelList,
+      selectedAssignmentIds: selectedAssignmentIds,
     );
     final dateTitle = _buildExportDateTitle(activities);
     final mainActivityName =
-        activities.length == 1
-            ? activities.first.faaliyetAdi
-            : defaultTitle;
+        activities.length == 1 ? activities.first.faaliyetAdi : defaultTitle;
 
     if (mounted) {
       await PdfRosterExporter.showStylePickerAndSharePdf(
@@ -229,15 +216,20 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
         faaliyetAdi: mainActivityName,
         tarih: dateTitle,
         rows: rows,
-        loadRows: () => _buildRosterRowsForMasterExport(activities, personnelList),
+        timeRange: timeRange,
+        loadRows: () => _buildRosterRowsForMasterExport(
+            activities, personnelList,
+            selectedAssignmentIds: selectedAssignmentIds),
       );
     }
   }
 
   Future<void> _exportMasterText(
     List<GunlukFaaliyetTableData> activities,
-    List<PersonelTableData> personnelList,
-  ) async {
+    List<PersonelTableData> personnelList, {
+    required List<int> selectedAssignmentIds,
+    String? timeRange,
+  }) async {
     if (activities.isEmpty) {
       AppNotifications.info(context.l10n.activityArchiveNoActivitiesToExport);
       return;
@@ -246,38 +238,42 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     final rows = await _buildRosterRowsForMasterExport(
       activities,
       personnelList,
+      selectedAssignmentIds: selectedAssignmentIds,
     );
     final dateTitle = _buildExportDateTitle(activities);
     final mainActivityName =
-        activities.length == 1
-            ? activities.first.faaliyetAdi
-            : defaultTitle;
+        activities.length == 1 ? activities.first.faaliyetAdi : defaultTitle;
 
     await MilitaryRosterExporter.shareTextRoster(
       faaliyetAdi: mainActivityName,
       tarih: dateTitle,
       rows: rows,
+      timeRange: timeRange,
     );
   }
 
   Future<void> _printSelectedPdf(
     List<GunlukFaaliyetTableData> activities,
-    List<PersonelTableData> personnelList,
-  ) async {
+    List<PersonelTableData> personnelList, {
+    required List<int> selectedAssignmentIds,
+    String? timeRange,
+  }) async {
     final rows = await _buildRosterRowsForMasterExport(
       activities,
       personnelList,
+      selectedAssignmentIds: selectedAssignmentIds,
     );
     if (!mounted || rows.isEmpty) return;
     await PdfRosterExporter.showStylePickerAndPrintPdf(
       context,
-      faaliyetAdi:
-          activities.length == 1
-              ? activities.first.faaliyetAdi
-              : context.l10n.activityArchiveAllActivitiesDefaultName,
+      faaliyetAdi: activities.length == 1
+          ? activities.first.faaliyetAdi
+          : context.l10n.activityArchiveAllActivitiesDefaultName,
       tarih: _buildExportDateTitle(activities),
       rows: rows,
-      loadRows: () => _buildRosterRowsForMasterExport(activities, personnelList),
+      timeRange: timeRange,
+      loadRows: () => _buildRosterRowsForMasterExport(activities, personnelList,
+          selectedAssignmentIds: selectedAssignmentIds),
     );
   }
 
@@ -291,69 +287,105 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
       return;
     }
 
-    final action = await showArchiveExportSheet(context, subtitle: subtitle);
-    if (!mounted || action == null) return;
     try {
-    switch (action.type) {
-      case ArchiveExportType.excel:
-        await _exportMasterExcel(activities, personnelList);
-        return;
-      case ArchiveExportType.image:
-        final rows = await _buildRosterRowsForMasterExport(activities, personnelList);
-        if (!mounted || rows.isEmpty) return;
-        await saveRosterImage(context,
-          faaliyetAdi: activities.length == 1 ? activities.first.faaliyetAdi
-              : context.l10n.activityArchiveAllActivitiesDefaultName,
-          tarih: _buildExportDateTitle(activities), rows: rows,
-          timeRange: action.timeRange);
-        return;
-      case ArchiveExportType.pdf:
-        await _exportMasterPdf(activities, personnelList);
-        return;
-      case ArchiveExportType.print:
-        await _printSelectedPdf(activities, personnelList);
-        return;
-      case ArchiveExportType.text:
-        await _exportMasterText(activities, personnelList);
-        return;
-      case ArchiveExportType.temgundrap:
-        await _exportToTemgundrap(activities, personnelList);
-        return;
-    }
+      final db = ref.read(databaseProvider);
+      final candidates = await (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((t) => t.faaliyetId.isIn(activities.map((a) => a.id))))
+          .get();
+      final initial = await _loadMasterSnapshot(
+          activities, candidates.map((a) => a.id).toList());
+      final selectedAssignmentIds =
+          initial.assignments.map((a) => a.id).toList();
+      if (!mounted) return;
+      final action = await showArchiveExportSheet(context, subtitle: subtitle);
+      if (!mounted || action == null) return;
+      switch (action.type) {
+        case ArchiveExportType.excel:
+          await _exportMasterExcel(activities, personnelList,
+              selectedAssignmentIds: selectedAssignmentIds,
+              timeRange: action.timeRange);
+          return;
+        case ArchiveExportType.image:
+          final rows = await _buildRosterRowsForMasterExport(
+              activities, personnelList,
+              selectedAssignmentIds: selectedAssignmentIds);
+          if (!mounted || rows.isEmpty) return;
+          await saveRosterImage(context,
+              faaliyetAdi: activities.length == 1
+                  ? activities.first.faaliyetAdi
+                  : context.l10n.activityArchiveAllActivitiesDefaultName,
+              tarih: _buildExportDateTitle(activities),
+              rows: rows,
+              timeRange: action.timeRange);
+          return;
+        case ArchiveExportType.pdf:
+          await _exportMasterPdf(activities, personnelList,
+              selectedAssignmentIds: selectedAssignmentIds,
+              timeRange: action.timeRange);
+          return;
+        case ArchiveExportType.print:
+          await _printSelectedPdf(activities, personnelList,
+              selectedAssignmentIds: selectedAssignmentIds,
+              timeRange: action.timeRange);
+          return;
+        case ArchiveExportType.text:
+          await _exportMasterText(activities, personnelList,
+              selectedAssignmentIds: selectedAssignmentIds,
+              timeRange: action.timeRange);
+          return;
+        case ArchiveExportType.temgundrap:
+          await _exportToTemgundrap(activities, personnelList,
+              selectedAssignmentIds: selectedAssignmentIds,
+              timeRange: action.timeRange);
+          return;
+      }
     } catch (error) {
-      if (mounted) AppNotifications.error(context.l10n.activityArchiveExportFailed('$error'));
+      if (mounted) {
+        AppNotifications.error(
+            context.l10n.activityArchiveExportFailed('$error'));
+      }
     }
   }
 
   Future<void> _exportToTemgundrap(
     List<GunlukFaaliyetTableData> activities,
-    List<PersonelTableData> personnelList,
-  ) async {
+    List<PersonelTableData> personnelList, {
+    List<int>? selectedAssignmentIds,
+    String? timeRange,
+  }) async {
     if (activities.isEmpty) {
       AppNotifications.info(context.l10n.activityArchiveNoActivitiesToExport);
       return;
     }
 
     final db = ref.read(databaseProvider);
-    final actIds = activities.map((a) => a.id).toSet();
-    final assignments = await (db.select(db.faaliyetPersonelAtamaTable)
-          ..where((tbl) => tbl.faaliyetId.isIn(actIds)))
-        .get();
-
-    final pMap = {for (final p in personnelList) p.id: p};
-
+    final ids = selectedAssignmentIds ??
+        (await (db.select(db.faaliyetPersonelAtamaTable)
+                  ..where(
+                      (t) => t.faaliyetId.isIn(activities.map((a) => a.id))))
+                .get())
+            .map((a) => a.id)
+            .toList();
+    final snapshot = await _loadMasterSnapshot(activities, ids);
+    final eligible = snapshot.operationalActivities;
+    if (eligible.isEmpty) {
+      if (mounted) {
+        AppNotifications.info(context.l10n.activityArchiveNoActivitiesToExport);
+      }
+      return;
+    }
     final operations = TemgundrapActivityConverter.convertAll(
-      activities: activities,
-      allAssignments: assignments,
-      personnelMap: pMap,
+      activities: eligible,
+      allAssignments: snapshot.assignments,
+      personnelMap: snapshot.personnelMap,
     );
 
     final repo = TemgundrapRepository();
     final defaults = await repo.getApproverDefaults();
 
     DateTime docDate = _selectedDateFilter;
-    if (activities.isNotEmpty) {
-      final parsed = DateTime.tryParse(activities.first.tarih);
+    if (eligible.isNotEmpty) {
+      final parsed = DateTime.tryParse(eligible.first.tarih);
       if (parsed != null) docDate = parsed;
     }
 
@@ -372,17 +404,17 @@ extension _ActivityArchiveActions on _ActivityArchiveScreenState {
     );
 
     if (!mounted) return;
-    await AppNavigator.toTemgundrapForm(context, document: draft, date: docDate);
+    await AppNavigator.toTemgundrapForm(context,
+        document: draft, date: docDate);
   }
 
   Future<void> _showSelectedExportOptions(
     List<GunlukFaaliyetTableData> activities,
     List<PersonelTableData> personnelList,
   ) async {
-    final selected =
-        activities
-            .where((activity) => _selectedActivityIds.contains(activity.id))
-            .toList();
+    final selected = activities
+        .where((activity) => _selectedActivityIds.contains(activity.id))
+        .toList();
     if (selected.isEmpty) return;
 
     final subtitle = context.l10n.activityArchiveSelectedActivitiesCount(

@@ -10,14 +10,22 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     });
 
     try {
-      final fuzzyMatcher = PersonnelFuzzyMatcher(widget.database);
+      final parsingActor = ref.read(userSessionProvider);
+      await _loadPersonnel();
+      final authorityKey = _authorityKey;
+      final fuzzyMatcher = PersonnelFuzzyMatcher(widget.database,
+          personnel: _allPersonnel, teams: _allSquads);
       final draft = await BulkActivityImportDraft.fromRawText(
         rawText,
         defaultDate: widget.targetActivity?.tarih,
         matchBlocks: fuzzyMatcher.matchBlocks,
       );
       final blocks = _applyTargetActivityDefaults(draft.blocks);
-      if (!mounted) return;
+      if (!mounted ||
+          parsingActor != ref.read(userSessionProvider) ||
+          authorityKey != _authorityKey) {
+        return;
+      }
 
       _updateState(() {
         _focusedIssue = null;
@@ -62,8 +70,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     return [
       for (final block in blocks)
         block.copyWith(
-          parsedDate:
-              block.parsedDate.trim().isEmpty ? target.tarih : block.parsedDate,
+          parsedDate: target.tarih,
           parsedActivityType: block.parsedActivityType.trim().isEmpty
               ? target.faaliyetAdi
               : block.parsedActivityType,
@@ -127,6 +134,8 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         rawText: _textController.text,
         deduplicatedPersonnelCount: _deduplicatedPersonnelCount,
         skipPreflight: true,
+        staged: _staged,
+        currentActor: () => ref.read(userSessionProvider),
       );
     } on Object catch (e) {
       if (mounted) {
@@ -176,12 +185,13 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       return;
     }
     _updateState(() => _isSaving = true);
-    final confirmed = await confirmTaskTeams(
+    final confirmed = await confirmBulkTaskTeams(
         context: context,
         repository: widget.activityRepository,
         date: target.tarih,
         assignments: assignments,
-        actor: actor);
+        actor: actor,
+        staged: _staged);
     if (confirmed == null || !mounted) return;
     assignments = confirmed;
 
@@ -190,16 +200,24 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     });
 
     try {
-      final result = await widget.activityRepository.addAssignmentsToActivity(
-        expectedDate: target.tarih,
-        activityId: target.id,
-        assignments: assignments,
-        actor: actor,
-      );
-
-      await BulkImportLearningService(
-        widget.database,
-      ).rememberBlockAliases(_parsedBlocks);
+      final result = await widget.database.transaction(() async {
+        if (ref.read(userSessionProvider) != actor) {
+          throw StateError('Oturum değişti.');
+        }
+        final ids =
+            await _staged.persist(widget.database, actor, _parsedBlocks);
+        final result = await widget.activityRepository.addAssignmentsToActivity(
+            expectedDate: target.tarih,
+            activityId: target.id,
+            assignments: [
+              for (final a in assignments)
+                StagedBulkImport.remapAssignment(a, ids)
+            ],
+            actor: actor);
+        await BulkImportLearningService(widget.database).rememberBlockAliases(
+            StagedBulkImport.remapBlocks(_parsedBlocks, ids));
+        return result;
+      });
 
       if (!mounted) return;
       final summaryLines = <String>[
@@ -364,12 +382,12 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       availableSquads: _allSquads,
     );
     if (updated != null && mounted && blockIndex < _parsedBlocks.length) {
-      _updateState(() => _parsedBlocks[blockIndex] = updated);
+      _updateState(() => _parsedBlocks[blockIndex] =
+          _applyTargetActivityDefaults([updated]).single);
     }
   }
 
   Future<void> _confirmAllSuggestions() async {
-    final learningService = BulkImportLearningService(widget.database);
     final aliasPairs = <({String rawName, int personnelId})>[];
 
     _updateState(() {
@@ -402,10 +420,6 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       }
     });
 
-    if (aliasPairs.isNotEmpty) {
-      await learningService.rememberBlockAliases(_parsedBlocks);
-    }
-
     if (mounted) {
       AppNotifications.success(
         context.l10n.bulkImportAllSuggestionsConfirmed,
@@ -421,17 +435,13 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     final block = _parsedBlocks[blockIndex];
     final item = block.personnelList[personIndex];
 
-    final normalizedTeam = block.parsedTimName
-        .toLowerCase()
-        .replaceAll('timi', '')
-        .replaceAll(' ', '');
+    final normalizedTeam =
+        BulkImportLearningService.normalizeTeam(block.parsedTimName);
     final timId = _allSquads
         .where(
-          (team) => team.timAdi
-              .toLowerCase()
-              .replaceAll('timi', '')
-              .replaceAll(' ', '')
-              .contains(normalizedTeam),
+          (team) =>
+              BulkImportLearningService.normalizeTeam(team.timAdi) ==
+              normalizedTeam,
         )
         .map((team) => team.id)
         .firstOrNull;
@@ -444,18 +454,21 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
 
     final todayStr = DateTime.now().toIso8601String().split('T').first;
 
-    final newId =
-        await widget.database.into(widget.database.personelTable).insert(
-              PersonelTableCompanion.insert(
-                adSoyad: item.rawName,
-                rutbe: item.rawRank,
-                birlik: block.parsedTimName,
-                timId: Value(timId),
-                kayitTarihi: todayStr,
-              ),
-            );
-
-    await _loadPersonnel();
+    if (ref.read(userSessionProvider)?.isAdmin != true) return;
+    final existingId = _staged.people.entries
+        .where((entry) =>
+            entry.value.adSoyad.value == item.rawName &&
+            entry.value.rutbe.value == item.rawRank &&
+            entry.value.timId.value == timId)
+        .map((entry) => entry.key)
+        .firstOrNull;
+    final newId = existingId ?? -(_staged.people.length + 1);
+    _staged.people[newId] = PersonelTableCompanion.insert(
+        adSoyad: item.rawName,
+        rutbe: item.rawRank,
+        birlik: block.parsedTimName,
+        timId: Value(timId),
+        kayitTarihi: todayStr);
 
     if (!mounted || blockIndex >= _parsedBlocks.length) return;
 
@@ -478,38 +491,27 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       );
     });
 
-    await BulkImportLearningService(widget.database).rememberAlias(
-      rawName: item.rawName,
-      teamName: _parsedBlocks[blockIndex].parsedTimName,
-      personnelId: newId,
-    );
-
     if (mounted) {
       AppNotifications.success(
-        context.l10n.bulkImportPersonnelAddedAndMatched(
-          item.rawRank,
-          item.rawName,
-          timName,
-        ),
+        '${item.rawRank} ${item.rawName} — $timName taslağına eklendi. '
+        'Kaydet ile kalıcı olur.',
         duration: const Duration(seconds: 3),
       );
     }
   }
 
   Future<void> _selectPersonnel(int blockIndex, int personIndex) async {
+    await _loadPersonnel();
+    if (!mounted || blockIndex >= _parsedBlocks.length) return;
     final block = _parsedBlocks[blockIndex];
     final item = block.personnelList[personIndex];
-    final normalizedTeam = block.parsedTimName
-        .toLowerCase()
-        .replaceAll('timi', '')
-        .replaceAll(' ', '');
+    final normalizedTeam =
+        BulkImportLearningService.normalizeTeam(block.parsedTimName);
     final preferredTeamId = _allSquads
         .where(
-          (team) => team.timAdi
-              .toLowerCase()
-              .replaceAll('timi', '')
-              .replaceAll(' ', '')
-              .contains(normalizedTeam),
+          (team) =>
+              BulkImportLearningService.normalizeTeam(team.timAdi) ==
+              normalizedTeam,
         )
         .map((team) => team.id)
         .firstOrNull;
@@ -522,6 +524,8 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         disabledReasons[id] = otherBlock.parsedActivityType;
       }
     }
+    _personnelPickerOpen = true;
+    final pickerActor = ref.read(userSessionProvider);
     final person = await showPersonnelPicker(
       context: context,
       personnel: _allPersonnel,
@@ -530,6 +534,8 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       preferredTimId: item.matchedTimId ?? preferredTeamId,
       disabledReasons: disabledReasons,
     );
+    _personnelPickerOpen = false;
+    if (pickerActor != ref.read(userSessionProvider)) return;
     if (person != null &&
         mounted &&
         blockIndex < _parsedBlocks.length &&
@@ -552,11 +558,6 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
           personnelList: updatedList,
         );
       });
-      await BulkImportLearningService(widget.database).rememberAlias(
-        rawName: item.rawName,
-        teamName: _parsedBlocks[blockIndex].parsedTimName,
-        personnelId: person.id,
-      );
     }
   }
 }

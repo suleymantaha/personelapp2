@@ -1,4 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:personelapp2/core/providers/providers.dart';
+import 'staged_bulk_import.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -8,7 +12,7 @@ import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/rank_helper.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 
-class LearnedAliasesDialog extends StatefulWidget {
+class LearnedAliasesDialog extends ConsumerStatefulWidget {
   const LearnedAliasesDialog({
     required this.database,
     super.key,
@@ -24,14 +28,16 @@ class LearnedAliasesDialog extends StatefulWidget {
   }
 
   @override
-  State<LearnedAliasesDialog> createState() => _LearnedAliasesDialogState();
+  ConsumerState<LearnedAliasesDialog> createState() =>
+      _LearnedAliasesDialogState();
 }
 
-class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
+class _LearnedAliasesDialogState extends ConsumerState<LearnedAliasesDialog> {
   final TextEditingController _searchController = TextEditingController();
   late BulkImportLearningService _learningService;
   List<LearnedAliasItem> _allAliases = [];
   bool _isLoading = true;
+  StreamSubscription<dynamic>? _authoritySubscription;
   String _searchQuery = '';
 
   /// Teams the user opened. Every group starts collapsed so the dialog opens
@@ -43,17 +49,31 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
     super.initState();
     _learningService = BulkImportLearningService(widget.database);
     _loadData();
+    _authoritySubscription = widget.database.tableUpdates().listen((_) {
+      if (mounted) unawaited(_loadData());
+    });
   }
 
   @override
   void dispose() {
+    unawaited(_authoritySubscription?.cancel());
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    final list = await _learningService.getAliasList();
+    final actor = ref.read(userSessionProvider);
+    var list = <LearnedAliasItem>[];
+    if (actor?.isAdmin == true) {
+      try {
+        await StagedBulkImport.requireActor(widget.database, actor);
+        list = await _learningService.getAliasList();
+      } on StateError {
+        list = [];
+      }
+    }
+    if (actor != ref.read(userSessionProvider)) list = [];
     if (mounted) {
       setState(() {
         _allAliases = list;
@@ -91,7 +111,15 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
     );
 
     if (confirmed == true) {
-      await _learningService.deleteAlias(item.id);
+      final actor = ref.read(userSessionProvider);
+      if (actor?.isAdmin != true) return;
+      await widget.database.transaction(() async {
+        await StagedBulkImport.requireActor(widget.database, actor);
+        if (actor != ref.read(userSessionProvider)) {
+          throw StateError('Oturum değişti.');
+        }
+        await _learningService.deleteAlias(item.id);
+      });
       await _loadData();
       if (mounted) {
         AppNotifications.info(
@@ -104,7 +132,10 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _allAliases.where((item) {
+    final filtered = (ref.watch(userSessionProvider)?.isAdmin == true
+            ? _allAliases
+            : <LearnedAliasItem>[])
+        .where((item) {
       if (_searchQuery.trim().isEmpty) return true;
       final q = BulkImportLearningService.normalizeName(_searchQuery);
       final rawNorm =
@@ -250,8 +281,10 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                     const SizedBox(height: 12),
                                     Text(
                                       _searchQuery.isNotEmpty
-                                          ? context.l10n.bulkImportNoMatchingAliasFound
-                                          : context.l10n.bulkImportNoLearnedAliasesDesc,
+                                          ? context.l10n
+                                              .bulkImportNoMatchingAliasFound
+                                          : context.l10n
+                                              .bulkImportNoLearnedAliasesDesc,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         color: context.textMuted,
@@ -346,7 +379,8 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                             ),
                                             const SizedBox(height: 8),
                                             Text(
-                                              context.l10n.bulkImportMatchedPersonnelLabel,
+                                              context.l10n
+                                                  .bulkImportMatchedPersonnelLabel,
                                               style: TextStyle(
                                                 color: context.textMuted,
                                                 fontSize: 11,
@@ -367,7 +401,8 @@ class _LearnedAliasesDialogState extends State<LearnedAliasesDialog> {
                                         ),
                                       ),
                                       IconButton(
-                                        tooltip: context.l10n.bulkImportDeleteAliasTooltip,
+                                        tooltip: context
+                                            .l10n.bulkImportDeleteAliasTooltip,
                                         icon: Icon(
                                           Icons.delete_outline_rounded,
                                           color: context.rejectedColor,

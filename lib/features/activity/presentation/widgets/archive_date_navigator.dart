@@ -31,7 +31,8 @@ class ArchiveDateNavigator extends StatelessWidget {
               icon: Icons.chevron_left_rounded,
               tooltip: context.l10n.archivePreviousDayTooltip,
               onPressed: () => onDateSelected(
-                selectedDate.subtract(const Duration(days: 1)),
+                DateTime(selectedDate.year, selectedDate.month,
+                    selectedDate.day - 1),
               ),
             ),
             const SizedBox(width: 8),
@@ -67,7 +68,8 @@ class ArchiveDateNavigator extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  DateFormat('d MMMM', 'tr_TR').format(selectedDate),
+                                  DateFormat('d MMMM yyyy', 'tr_TR')
+                                      .format(selectedDate),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -77,7 +79,8 @@ class ArchiveDateNavigator extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  context.l10n.archiveActivityCount(activityCount),
+                                  context.l10n
+                                      .archiveActivityCount(activityCount),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -107,7 +110,8 @@ class ArchiveDateNavigator extends StatelessWidget {
               icon: Icons.chevron_right_rounded,
               tooltip: context.l10n.archiveNextDayTooltip,
               onPressed: () => onDateSelected(
-                selectedDate.add(const Duration(days: 1)),
+                DateTime(selectedDate.year, selectedDate.month,
+                    selectedDate.day + 1),
               ),
             ),
           ],

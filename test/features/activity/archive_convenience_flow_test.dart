@@ -77,6 +77,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Test Kart'));
     await settle();
+    expect(find.byKey(const Key('activity-detail-screen')), findsOneWidget);
     await tester
         .longPress(find.byKey(Key('activity-team-header-${teams.first}')));
     await tester.pumpAndSettle();

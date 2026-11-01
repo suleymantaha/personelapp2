@@ -11,7 +11,6 @@ import 'package:personelapp2/core/theme/responsive_layout.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/domain/activity_assignment_order.dart';
-import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_summary_card.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_date_navigator.dart';
@@ -182,18 +181,15 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
     final isAdmin = session?.isAdmin ?? false;
 
     final activitiesAsync = ref.watch(filteredActivitiesProvider);
-    final squadsAsync = ref.watch(allSquadsProvider);
+    ref.watch(allSquadsProvider);
     final personnelAsync = ref.watch(historicalPersonnelProvider);
-    final squads = squadsAsync.value ?? [];
     final allPersonnel = personnelAsync.value ?? [];
-    final personnelList = session == null
-        ? <PersonelTableData>[]
-        : allPersonnel;
+    final personnelList =
+        session == null ? <PersonelTableData>[] : allPersonnel;
 
     final dateFilterStr = DateFormat('yyyy-MM-dd').format(_selectedDateFilter);
     final now = DateTime.now();
-    final isSelectedToday =
-        _selectedDateFilter.year == now.year &&
+    final isSelectedToday = _selectedDateFilter.year == now.year &&
         _selectedDateFilter.month == now.month &&
         _selectedDateFilter.day == now.day;
 
@@ -201,34 +197,23 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
       final picked = await showDatePicker(
         context: context,
         initialDate: _selectedDateFilter,
-        firstDate: DateTime(2020),
-        lastDate: DateTime(2030),
+        firstDate: DateTime(
+            _selectedDateFilter.year < 2020 ? _selectedDateFilter.year : 2020),
+        lastDate: DateTime(
+            _selectedDateFilter.year > 2100 ? _selectedDateFilter.year : 2100,
+            12,
+            31),
       );
       if (!mounted || picked == null) return;
       _changeSelectedDate(picked);
     }
 
     void exportCurrentArchive() {
-      final filteredForDate = (activitiesAsync.value ?? [])
-          .where((activity) => activity.tarih == dateFilterStr)
-          .toList();
-      final hasSelectedSquad =
-          _selectedSquadFilter != null &&
-          squads.any((squad) => squad.id == _selectedSquadFilter);
-      final selectedSquadName = hasSelectedSquad
-          ? squads
-                .firstWhere((squad) => squad.id == _selectedSquadFilter)
-                .timAdi
-          : null;
-      final squadText = selectedSquadName == null
-          ? ''
-          : ' • $selectedSquadName';
-      final subtitle = context.l10n.activityArchiveExportSubtitle(
-        DateFormat('dd.MM.yyyy').format(_selectedDateFilter),
-        filteredForDate.length,
-        squadText,
-      );
-      _exportWithSheet(filteredForDate, personnelList, subtitle: subtitle);
+      setState(() {
+        _reorderMode = false;
+        _selectionMode = true;
+        _selectedActivityIds.clear();
+      });
     }
 
     return Scaffold(
@@ -249,13 +234,23 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
             : const AppBackButton(),
         title: Text(
           _selectionMode
-              ? context.l10n.activityArchiveSelectedCount(_selectedActivityIds.length)
-              : (isAdmin ? context.l10n.activityArchiveTitle : context.l10n.activityArchiveTeamTitle),
+              ? context.l10n
+                  .activityArchiveSelectedCount(_selectedActivityIds.length)
+              : (isAdmin
+                  ? context.l10n.activityArchiveTitle
+                  : context.l10n.activityArchiveTeamTitle),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
         ),
         actions: [
+          if (_reorderMode && context.isMobile)
+            IconButton(
+              key: const Key('archive-reorder-close'),
+              icon: const Icon(Icons.close),
+              tooltip: context.l10n.activityArchiveFinishReorder,
+              onPressed: () => setState(() => _reorderMode = false),
+            ),
           if (_selectionMode) ...[
             if (context.isMobile)
               IconButton(
@@ -290,11 +285,13 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                 personnelList,
               ),
             ),
-          ]
-          else if (!context.isMobile)
+          ] else if (!context.isMobile)
             TextButton.icon(
               key: const Key('activity-selection-start'),
-              onPressed: () => setState(() => _selectionMode = true),
+              onPressed: () => setState(() {
+                _selectionMode = true;
+                _reorderMode = false;
+              }),
               icon: const Icon(Icons.checklist),
               label: Text(context.l10n.activityArchiveSelectButton),
             ),
@@ -318,7 +315,10 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                   case 'export':
                     exportCurrentArchive();
                   case 'select':
-                    setState(() => _selectionMode = true);
+                    setState(() {
+                      _selectionMode = true;
+                      _reorderMode = false;
+                    });
                   case 'today':
                     _changeSelectedDate(DateTime.now());
                   case 'reorder':
@@ -445,14 +445,20 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
             ),
           if (!_selectionMode && !context.isMobile)
             IconButton(
-              key: const Key('activity-reorder-toggle'),
+              key: Key(_reorderMode
+                  ? 'archive-reorder-close'
+                  : 'activity-reorder-toggle'),
               icon: Icon(
-                _reorderMode ? Icons.check_rounded : Icons.swap_vert_rounded,
+                _reorderMode ? Icons.close : Icons.swap_vert_rounded,
               ),
               tooltip: _reorderMode
                   ? context.l10n.activityArchiveFinishReorder
                   : context.l10n.activityArchiveMoveCards,
-              onPressed: () => setState(() => _reorderMode = !_reorderMode),
+              onPressed: () => setState(() {
+                _reorderMode = !_reorderMode;
+                _selectionMode = false;
+                _selectedActivityIds.clear();
+              }),
             ),
           if (!_selectionMode && !context.isMobile && isAdmin)
             IconButton(
@@ -479,6 +485,46 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
           ),
         ),
       ),
+      bottomNavigationBar: !_reorderMode
+          ? SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (_selectionMode)
+                      FilledButton.icon(
+                        key: const Key('archive-export-selected'),
+                        onPressed: _selectedActivityIds.isEmpty
+                            ? null
+                            : () => _showSelectedExportOptions(
+                                activitiesAsync.value ?? [], personnelList),
+                        icon: const Icon(Icons.ios_share),
+                        label: const Text('Seçilenlerin çıktısını al'),
+                      )
+                    else ...[
+                      FilledButton.icon(
+                          key: const Key('archive-export-day'),
+                          onPressed: (activitiesAsync.value ?? [])
+                                  .any((a) => a.tarih == dateFilterStr)
+                              ? exportCurrentArchive
+                              : null,
+                          icon: const Icon(Icons.ios_share),
+                          label: const Text('Günün çıktısını al')),
+                      OutlinedButton.icon(
+                          key: const Key('archive-prepare-cards'),
+                          onPressed: () => AppNavigator.toRosterOutput(context,
+                              initialDate: dateFilterStr),
+                          icon: const Icon(Icons.playlist_add_check),
+                          label: const Text('Kartları birleştir')),
+                    ],
+                  ],
+                ),
+              ),
+            )
+          : null,
       body: TurkishFlagWatermarkBackground(
         child: ResponsiveCenter(
           maxWidth: AppSpacing.readableContentWidth,
@@ -497,11 +543,12 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                     );
 
                     if (filtered.isEmpty) {
-                      final formattedDate = DateFormat('dd.MM.yyyy')
-                          .format(_selectedDateFilter);
+                      final formattedDate =
+                          DateFormat('dd.MM.yyyy').format(_selectedDateFilter);
                       return Center(
                         child: Text(
-                          context.l10n.activityArchiveNoRecordsFound(formattedDate),
+                          context.l10n
+                              .activityArchiveNoRecordsFound(formattedDate),
                           style: TextStyle(
                             color: context.textSecondary,
                             fontSize: 14,
@@ -524,6 +571,29 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        if (!_selectionMode && !_reorderMode)
+                          Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Wrap(spacing: 8, children: [
+                                TextButton.icon(
+                                    key: const Key('archive-select-visible'),
+                                    onPressed: () => setState(() {
+                                          _selectionMode = true;
+                                          _reorderMode = false;
+                                        }),
+                                    icon: const Icon(Icons.checklist),
+                                    label: const Text('Faaliyet seç')),
+                                TextButton.icon(
+                                    key: const Key('archive-reorder-visible'),
+                                    onPressed: () => setState(() {
+                                          _reorderMode = true;
+                                          _selectionMode = false;
+                                          _selectedActivityIds.clear();
+                                        }),
+                                    icon: const Icon(Icons.swap_vert),
+                                    label: const Text('Sırala')),
+                              ])),
                         if (_reorderMode)
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -544,11 +614,11 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                                   itemCount: ordered.length,
                                   onReorderItem: (oldIndex, newIndex) =>
                                       _handleReorder(
-                                        ordered,
-                                        dateFilterStr,
-                                        oldIndex,
-                                        newIndex,
-                                      ),
+                                    ordered,
+                                    dateFilterStr,
+                                    oldIndex,
+                                    newIndex,
+                                  ),
                                   itemBuilder: (context, index) {
                                     final act = ordered[index];
                                     return Row(
@@ -601,4 +671,3 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
     );
   }
 }
-

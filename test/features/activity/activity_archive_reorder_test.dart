@@ -64,7 +64,8 @@ void main() {
           filteredActivitiesProvider.overrideWith(
             (ref) => Stream.value(activities),
           ),
-          historicalPersonnelProvider.overrideWith((ref) => Stream.value(const [])),
+          historicalPersonnelProvider
+              .overrideWith((ref) => Stream.value(const [])),
           allSquadsProvider.overrideWith((ref) => Stream.value(const [])),
           pendingAssignmentsProvider.overrideWith(
             (ref) => Stream.value(const []),
@@ -88,6 +89,19 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('activity-reorder-list')), findsOneWidget);
     expect(find.byIcon(Icons.drag_indicator_rounded), findsNWidgets(2));
+    await tester.tap(find.byKey(const Key('archive-reorder-close')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('activity-reorder-list')), findsNothing);
+    expect(await preferences.loadOrder(todayStr), [1, 2]);
+    tester.view.physicalSize = const Size(390, 844);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('archive-reorder-visible')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('archive-reorder-close')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('archive-reorder-close')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('activity-reorder-list')), findsNothing);
+    expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();

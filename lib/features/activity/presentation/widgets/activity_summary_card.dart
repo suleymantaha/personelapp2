@@ -1,3 +1,4 @@
+import 'package:personelapp2/features/activity/presentation/activity_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:personelapp2/core/database/database.dart';
@@ -8,7 +9,6 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/widgets/app_card.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
-import 'package:personelapp2/features/activity/presentation/widgets/activity_detail_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_date_change_action.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_copy_action.dart';
 import 'package:personelapp2/core/widgets/modern_action_menu.dart';
@@ -58,7 +58,7 @@ class ActivityCard extends ConsumerWidget {
     }
   }
 
-  Future<void> _deleteActivity(BuildContext context, AppDatabase db) async {
+  Future<void> _deleteActivity(BuildContext context, WidgetRef ref) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -83,10 +83,15 @@ class ActivityCard extends ConsumerWidget {
     );
 
     if (confirm == true) {
-      await (db.delete(
-        db.gunlukFaaliyetTable,
-      )..where((tbl) => tbl.id.equals(activity.id)))
-          .go();
+      final actor = ref.read(userSessionProvider);
+      if (actor == null) return;
+      try {
+        await ref
+            .read(activityRepositoryProvider)
+            .deleteActivity(activityId: activity.id, actor: actor);
+      } catch (error) {
+        if (context.mounted) AppNotifications.error('$error');
+      }
     }
   }
 
@@ -153,7 +158,7 @@ class ActivityCard extends ConsumerWidget {
               );
               return;
             case _ActivityAdminAction.delete:
-              await _deleteActivity(context, db);
+              await _deleteActivity(context, ref);
               return;
           }
         },
@@ -243,7 +248,7 @@ class ActivityCard extends ConsumerWidget {
         IconButton(
           icon: Icon(Icons.delete_outline, color: context.rejectedColor),
           tooltip: context.l10n.activityDeleteOptionTitle,
-          onPressed: () => _deleteActivity(context, db),
+          onPressed: () => _deleteActivity(context, ref),
         ),
       ],
     );
@@ -305,133 +310,100 @@ class ActivityCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final session = ref.watch(userSessionProvider);
-    final isAdmin = session?.isAdmin ?? false;
     final db = ref.watch(databaseProvider);
-
+    final session = ref.watch(userSessionProvider);
+    final authority = ref.watch(commanderAuthorityProvider).valueOrNull;
     return StreamBuilder<List<FaaliyetPersonelAtamaTableData>>(
-      stream: (db.select(
-        db.faaliyetPersonelAtamaTable,
-      )..where((tbl) => tbl.faaliyetId.equals(activity.id)))
+      stream: (db.select(db.faaliyetPersonelAtamaTable)
+            ..where((t) => t.faaliyetId.equals(activity.id)))
           .watch(),
       builder: (context, snapshot) {
-        final assignments = snapshot.data ?? [];
-        if (selectedSquadId != null &&
-            snapshot.hasData &&
-            !assignments.any(
-              (assignment) => assignment.gorevTimId == selectedSquadId,
-            )) {
+        final rows = (snapshot.data ?? [])
+            .where((row) =>
+                (session?.isAdmin == true ||
+                    authority != null && row.gorevTimId == authority) &&
+                (selectedSquadId == null || row.gorevTimId == selectedSquadId))
+            .toList();
+        if (selectedSquadId != null && snapshot.hasData && rows.isEmpty) {
           return const SizedBox.shrink();
         }
-        final hasPending = assignments.any(
-          (a) => a.durum == AssignmentStatus.beklemede,
-        );
-        final hasRejected = assignments.any(
-          (a) => a.durum == AssignmentStatus.reddedildi,
-        );
-
-        var statusLabel = context.l10n.activityStatusApproved;
-        var statusColor = context.approvedColor;
-        var statusIcon = Icons.check_circle_outline;
-
-        if (hasPending) {
-          statusLabel = context.l10n.activityStatusPendingAdmin;
-          statusColor = context.pendingColor;
-          statusIcon = Icons.hourglass_top;
-        } else if (hasRejected) {
-          statusLabel = context.l10n.activityStatusConflictOrRejected;
-          statusColor = context.rejectedColor;
-          statusIcon = Icons.cancel_outlined;
-        }
-
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final compact = constraints.maxWidth < 520;
-            return AppCard(
-              key: Key('activity-card-${activity.id}'),
-              elevation: isSelected ? 3 : 1.5,
-              padding: EdgeInsets.zero,
-              margin: const EdgeInsets.only(bottom: 10),
-              borderRadius: BorderRadius.circular(18),
-              backgroundColor: isSelected
-                  ? context.accentOrOlive.withValues(alpha: 0.12)
-                  : context.colorScheme.surface,
-              borderColor: isSelected
-                  ? context.accentOrOlive
-                  : (hasPending || hasRejected
-                      ? statusColor.withValues(alpha: 0.38)
-                      : context.cardBorderColor),
-              onLongPress: onLongPress,
-              onTap: selectionMode ? onSelectionToggle : null,
-              child: IgnorePointer(
-                ignoring: selectionMode,
-                child: ExpansionTile(
-                  tilePadding: const EdgeInsets.fromLTRB(12, 2, 6, 2),
-                  childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                  shape: const Border(),
-                  collapsedShape: const Border(),
-                  leading: CircleAvatar(
-                    radius: 22,
-                    backgroundColor: statusColor,
-                    child: Icon(statusIcon, color: Colors.white, size: 23),
+        final pending =
+            rows.where((r) => r.durum == AssignmentStatus.beklemede).length;
+        final rejected =
+            rows.where((r) => r.durum == AssignmentStatus.reddedildi).length;
+        final color =
+            pending > 0 ? context.pendingColor : context.accentOrOlive;
+        return AppCard(
+          key: Key('activity-card-${activity.id}'),
+          padding: EdgeInsets.zero,
+          margin: const EdgeInsets.only(bottom: 6),
+          borderRadius: BorderRadius.circular(14),
+          borderColor:
+              isSelected ? context.accentOrOlive : context.cardBorderColor,
+          onLongPress: onLongPress,
+          onTap: selectionMode
+              ? onSelectionToggle
+              : () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(
+                        builder: (_) => ActivityDetailScreen(
+                              activityId: activity.id,
+                              selectedSquadId: selectedSquadId,
+                              actionsBuilder: (ctx, r, current, assignments) =>
+                                  ActivityCard(
+                                activity: current,
+                                onDateChanged: onDateChanged,
+                              )._buildAdminActions(ctx, r, db, assignments,
+                                      hasPending: assignments.any((a) =>
+                                          a.durum ==
+                                          AssignmentStatus.beklemede),
+                                      compact: true),
+                            )),
                   ),
-                  title: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          activity.faaliyetAdi,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: compact ? 16 : 17,
-                          ),
-                        ),
-                      ),
-                      if (isAdmin && !selectionMode)
-                        _buildAdminActions(
-                          context,
-                          ref,
-                          db,
-                          assignments,
-                          hasPending: hasPending,
-                          compact: true,
-                        ),
-                    ],
-                  ),
-                  subtitle: hasPending || hasRejected
-                      ? Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: _buildStatusBadge(
-                              label: statusLabel,
-                              color: statusColor,
-                            ),
-                          ),
-                        )
-                      : null,
-                  trailing: selectionMode
-                      ? Icon(
-                          isSelected
-                              ? Icons.check_circle
-                              : Icons.radio_button_unchecked,
-                          color: isSelected
-                              ? context.accentOrOlive
-                              : context.textSecondary,
-                        )
-                      : null,
-                  children: [
-                    ActivityAssignmentDetails(
-                      activity: activity,
-                      assignments: assignments,
-                      selectedSquadId: selectedSquadId,
-                    ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(children: [
+              Icon(
+                  selectionMode
+                      ? isSelected
+                          ? Icons.check_box
+                          : Icons.check_box_outline_blank
+                      : pending > 0
+                          ? Icons.schedule
+                          : Icons.fact_check_outlined,
+                  color: color,
+                  size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                  child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(activity.faaliyetAdi,
+                      style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 3),
+                  Text('${rows.map((r) => r.gorevTimId).toSet().length} tim · '
+                      '${rows.map((r) => r.personelId).toSet().length} personel'),
+                  if (pending > 0 || rejected > 0) ...[
+                    const SizedBox(height: 4),
+                    Wrap(spacing: 8, children: [
+                      if (pending > 0)
+                        _buildStatusBadge(
+                            label: '$pending bekleyen',
+                            color: context.pendingColor),
+                      if (rejected > 0)
+                        _buildStatusBadge(
+                            label: '$rejected reddedilen',
+                            color: context.rejectedColor),
+                    ]),
                   ],
-                ),
-              ),
-            );
-          },
+                ],
+              )),
+              if (!selectionMode && session?.isAdmin == true)
+                _buildAdminActions(context, ref, db, rows,
+                    hasPending: pending > 0, compact: true),
+              if (!selectionMode) const Icon(Icons.chevron_right),
+            ]),
+          ),
         );
       },
     );

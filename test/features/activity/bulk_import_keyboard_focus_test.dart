@@ -1,3 +1,4 @@
+import 'package:personelapp2/core/providers/providers.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,10 +21,17 @@ void main() {
       addTearDown(tester.view.resetViewInsets);
 
       final database = AppDatabase(NativeDatabase.memory());
+      await database.into(database.kullaniciTable).insert(
+          KullaniciTableCompanion.insert(
+              kullaniciAdi: 'admin', rol: 'yönetici'));
       addTearDown(database.close);
 
       await tester.pumpWidget(
         ProviderScope(
+          overrides: [
+            userSessionProvider.overrideWith((ref) =>
+                const UserSessionState(username: 'admin', role: UserRole.admin))
+          ],
           child: MaterialApp(
             home: Scaffold(
               body: BulkImportDialog(

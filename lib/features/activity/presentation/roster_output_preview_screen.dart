@@ -1,11 +1,12 @@
+import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:personelapp2/core/navigation/app_navigator.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/archive_export_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/roster_preview_overview.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/roster_preview_people_sheet.dart';
@@ -20,10 +21,6 @@ import 'package:personelapp2/features/activity/services/pdf_roster_exporter.dart
 import 'package:personelapp2/features/activity/services/roster_signature.dart';
 import 'package:personelapp2/features/activity/services/roster_signature_store.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/roster_signer_dialog.dart';
-import 'package:personelapp2/features/temgundrap/data/temgundrap_repository.dart';
-import 'package:personelapp2/features/temgundrap/domain/services/temgundrap_activity_converter.dart';
-import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart';
-import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/features/matrix/domain/matrix_day_cell.dart';
 
 class RosterOutputPreviewScreen extends ConsumerStatefulWidget {
@@ -120,19 +117,11 @@ class _RosterOutputPreviewScreenState
 
   Future<Map<int, Map<int, MatrixDayCell>>> _matrixForMonth() async {
     if (widget.loadMatrix != null) return widget.loadMatrix!();
-    final teamRevokedMsg = context.l10n.rosterOutputCommanderTeamRevoked;
     final session = ref.read(userSessionProvider);
     if (session == null) {
       throw StateError(context.l10n.commonSessionNotVerified);
     }
-    if (!session.isAdmin) {
-      final team = await ref
-          .read(personnelRepositoryProvider)
-          .currentCommanderTeam(session.username);
-      if (team == null) {
-        throw StateError(teamRevokedMsg);
-      }
-    }
+    await ref.read(activityRepositoryProvider).requireOutputAuthority(session);
     return ref
         .read(matrixRepositoryProvider)
         .watchMonthlyMatrix(
@@ -234,7 +223,7 @@ class _RosterOutputPreviewScreenState
           widget.date,
           rule ? _ruleResult?.rows.length ?? 0 : widget.rows.length,
         ),
-        showTemgundrap: !rankOrdered && !rule,
+        showTemgundrap: false,
       );
       if (!mounted || action == null) return;
       final title = context.l10n.rosterOutputSelectedCardsTitle;
@@ -300,41 +289,7 @@ class _RosterOutputPreviewScreenState
             timeRange: action.timeRange,
           );
         case ArchiveExportType.temgundrap:
-          final db = ref.read(databaseProvider);
-          final actIds = widget.sources.map((a) => a.id).toSet();
-          final assignments = await (db.select(db.faaliyetPersonelAtamaTable)
-                ..where((tbl) => tbl.faaliyetId.isIn(actIds)))
-              .get();
-          final personnel = await db.select(db.personelTable).get();
-          final pMap = {for (final p in personnel) p.id: p};
-          final operations = TemgundrapActivityConverter.convertAll(
-            activities: widget.sources,
-            allAssignments: assignments,
-            personnelMap: pMap,
-          );
-          final repo = TemgundrapRepository();
-          final defaults = await repo.getApproverDefaults();
-          final docDate = DateTime.tryParse(widget.date) ?? DateTime.now();
-          final draft = TemgundrapDocument(
-            id: DateTime.now().microsecondsSinceEpoch.toString(),
-            date: docDate,
-            unitTitle: defaults.unitTitle.isNotEmpty
-                ? defaults.unitTitle
-                : defaultTemgundrapUnitTitle,
-            approverName: defaults.name,
-            approverRank: defaults.rank,
-            approverDuty: defaults.duty,
-            operations: operations,
-            isDraft: true,
-            updatedAt: DateTime.now(),
-          );
-          if (mounted) {
-            await AppNavigator.toTemgundrapForm(
-              context,
-              document: draft,
-              date: docDate,
-            );
-          }
+          throw StateError('TEMGÜNDRAP ayrı rapor akışından açılmalıdır.');
       }
     } catch (error) {
       if (mounted) {
@@ -359,7 +314,7 @@ class _RosterOutputPreviewScreenState
       child: Scaffold(
         appBar: AppBar(
           leading: const AppBackButton(),
-          title: Text(context.l10n.rosterOutputPreviewTitle),
+          title: const Text('Çıktı Hazırlığı'),
         ),
         body: Center(
           child: ConstrainedBox(

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/providers/providers.dart';
+import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/temgundrap/domain/services/temgundrap_activity_converter.dart';
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 
@@ -26,9 +28,10 @@ class _TemgundrapImportActivitiesDialogState
     extends ConsumerState<TemgundrapImportActivitiesDialog> {
   late DateTime _selectedDate;
   bool _loading = true;
+  int _loadRevision = 0;
   List<GunlukFaaliyetTableData> _activities = [];
   List<FaaliyetPersonelAtamaTableData> _assignments = [];
-  Map<int, PersonelTableData> _personnelMap = {};
+  bool _submitting = false;
   final Set<int> _selectedActivityIds = {};
 
   bool _isActivityAlreadyAdded(GunlukFaaliyetTableData act) =>
@@ -46,7 +49,13 @@ class _TemgundrapImportActivitiesDialogState
   }
 
   Future<void> _loadActivities() async {
-    setState(() => _loading = true);
+    final revision = ++_loadRevision;
+    setState(() {
+      _loading = true;
+      _activities = [];
+      _assignments = [];
+      _selectedActivityIds.clear();
+    });
     final db = ref.read(databaseProvider);
     final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
@@ -63,22 +72,23 @@ class _TemgundrapImportActivitiesDialogState
             .get();
       }
 
-      final personnelIds = assignments.map((a) => a.personelId).toSet();
-      final personnel = personnelIds.isEmpty
-          ? <PersonelTableData>[]
-          : await (db.select(db.personelTable)
-                ..where((tbl) => tbl.id.isIn(personnelIds)))
-              .get();
-      final pMap = {for (final p in personnel) p.id: p};
-
       if (!mounted) return;
+      final actor = ref.read(userSessionProvider);
+      if (actor == null) throw StateError(context.l10n.authSessionUnverified);
+      final snapshot =
+          await ref.read(activityRepositoryProvider).loadOutputSnapshot(
+                actor: actor,
+                sources: activities,
+                selectedAssignmentIds: assignments.map((a) => a.id),
+              );
+
+      if (!mounted || revision != _loadRevision) return;
       setState(() {
-        _activities = activities;
-        _assignments = assignments;
-        _personnelMap = pMap;
+        _activities = snapshot.operationalActivities;
+        _assignments = snapshot.assignments;
         _selectedActivityIds.clear();
         // Default: only select activities that have NOT been imported yet
-        for (final act in activities) {
+        for (final act in _activities) {
           if (!_isActivityAlreadyAdded(act)) {
             _selectedActivityIds.add(act.id);
           }
@@ -86,7 +96,9 @@ class _TemgundrapImportActivitiesDialogState
         _loading = false;
       });
     } catch (_) {
-      if (mounted) setState(() => _loading = false);
+      if (mounted && revision == _loadRevision) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -113,7 +125,8 @@ class _TemgundrapImportActivitiesDialogState
     });
   }
 
-  void _submit() {
+  Future<void> _submit() async {
+    if (_submitting || _loading) return;
     final selectedActivities = _availableActivities
         .where((a) => _selectedActivityIds.contains(a.id))
         .toList();
@@ -123,13 +136,28 @@ class _TemgundrapImportActivitiesDialogState
         .where((a) => _selectedActivityIds.contains(a.faaliyetId))
         .toList();
 
-    final operations = TemgundrapActivityConverter.convertAll(
-      activities: selectedActivities,
-      allAssignments: selectedAssignments,
-      personnelMap: _personnelMap,
-    );
-
-    Navigator.pop(context, operations);
+    setState(() => _submitting = true);
+    try {
+      if (!mounted) return;
+      final actor = ref.read(userSessionProvider);
+      if (actor == null) throw StateError(context.l10n.authSessionUnverified);
+      final snapshot =
+          await ref.read(activityRepositoryProvider).loadOutputSnapshot(
+                actor: actor,
+                sources: selectedActivities,
+                selectedAssignmentIds: selectedAssignments.map((a) => a.id),
+              );
+      final operations = TemgundrapActivityConverter.convertAll(
+        activities: snapshot.operationalActivities,
+        allAssignments: snapshot.assignments,
+        personnelMap: snapshot.personnelMap,
+      );
+      if (mounted) Navigator.pop(context, operations);
+    } catch (error) {
+      if (mounted) AppNotifications.error('$error');
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
   }
 
   @override
@@ -150,7 +178,7 @@ class _TemgundrapImportActivitiesDialogState
           TextButton.icon(
             icon: const Icon(Icons.calendar_month, size: 18),
             label: Text(dateDisplay),
-            onPressed: _pickDate,
+            onPressed: _submitting ? null : _pickDate,
           ),
         ],
       ),
@@ -257,7 +285,9 @@ class _TemgundrapImportActivitiesDialogState
         ),
         FilledButton(
           key: const Key('submit-import-activities'),
-          onPressed: _selectedActivityIds.isEmpty ? null : _submit,
+          onPressed: _loading || _selectedActivityIds.isEmpty || _submitting
+              ? null
+              : _submit,
           child: Text(
             l10n.temgundrapImportDialogSubmit(_selectedActivityIds.length),
           ),

@@ -18,7 +18,8 @@ void main() {
     );
   }
 
-  testWidgets('OCR uses image-specific title in shared import header', (tester) async {
+  testWidgets('OCR uses image-specific title in shared import header',
+      (tester) async {
     await render(tester, imageImport: true);
     expect(find.text('Görselden Toplu Aktar'), findsOneWidget);
     expect(find.text('Metinden Toplu Aktarım'), findsNothing);

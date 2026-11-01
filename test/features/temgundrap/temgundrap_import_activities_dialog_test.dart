@@ -15,11 +15,30 @@ void main() {
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
     await db.ensureSeeded();
+    await db.into(db.kullaniciTable).insert(KullaniciTableCompanion.insert(
+        kullaniciAdi: 'report-admin', rol: 'yönetici'));
   });
 
   tearDown(() async {
     await db.close();
   });
+
+  Future<void> approveActivities() async {
+    for (final activity in await db.select(db.gunlukFaaliyetTable).get()) {
+      final person = await db.into(db.personelTable).insert(
+          PersonelTableCompanion.insert(
+              adSoyad: 'Report Person ${activity.id}',
+              rutbe: 'J.Er',
+              birlik: '1/B',
+              kayitTarihi: activity.tarih));
+      await db.into(db.faaliyetPersonelAtamaTable).insert(
+          FaaliyetPersonelAtamaTableCompanion.insert(
+              faaliyetId: activity.id,
+              personelId: person,
+              gorevVeyaIzin: 'HEYBET',
+              durum: 'onaylandi'));
+    }
+  }
 
   testWidgets('select all skips imported source but keeps same-name activity',
       (tester) async {
@@ -52,8 +71,13 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    await approveActivities();
     await tester.pumpWidget(ProviderScope(
-      overrides: [databaseProvider.overrideWithValue(db)],
+      overrides: [
+        userSessionProvider.overrideWith((ref) => const UserSessionState(
+            username: 'report-admin', role: UserRole.admin)),
+        databaseProvider.overrideWithValue(db)
+      ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -94,9 +118,12 @@ void main() {
           ),
         );
 
+    await approveActivities();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          userSessionProvider.overrideWith((ref) => const UserSessionState(
+              username: 'report-admin', role: UserRole.admin)),
           databaseProvider.overrideWithValue(db),
         ],
         child: MaterialApp(
@@ -135,9 +162,12 @@ void main() {
 
     List<TemgundrapOperation>? result;
 
+    await approveActivities();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          userSessionProvider.overrideWith((ref) => const UserSessionState(
+              username: 'report-admin', role: UserRole.admin)),
           databaseProvider.overrideWithValue(db),
         ],
         child: MaterialApp(

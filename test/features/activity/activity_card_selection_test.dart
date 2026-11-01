@@ -26,6 +26,8 @@ void main() {
       ProviderScope(
         overrides: [
           databaseProvider.overrideWithValue(database),
+          userSessionProvider.overrideWith((ref) =>
+              const UserSessionState(username: 'admin', role: UserRole.admin)),
           allPersonnelProvider.overrideWith((ref) => Stream.value(const [])),
           allSquadsProvider.overrideWith((ref) => Stream.value(const [])),
         ],
@@ -48,7 +50,7 @@ void main() {
 
     final card = find.byKey(const Key('activity-card-42'));
     expect(card, findsOneWidget);
-    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+    expect(find.byIcon(Icons.check_box), findsOneWidget);
 
     await tester.longPress(card);
     await tester.pump();
@@ -77,31 +79,36 @@ void main() {
     );
     await database.into(database.gunlukFaaliyetTable).insert(activity);
     final personnelId = await database.into(database.personelTable).insert(
-      PersonelTableCompanion.insert(
-        adSoyad: 'Test Personeli',
-        rutbe: 'J.Uzm.Çvş.',
-        birlik: 'K.H',
-        kayitTarihi: '2026-10-15',
-      ),
-    );
+          PersonelTableCompanion.insert(
+            adSoyad: 'Test Personeli',
+            rutbe: 'J.Uzm.Çvş.',
+            birlik: 'K.H',
+            kayitTarihi: '2026-10-15',
+          ),
+        );
     await database.into(database.faaliyetPersonelAtamaTable).insert(
-      FaaliyetPersonelAtamaTableCompanion.insert(
-        faaliyetId: activity.id,
-        personelId: personnelId,
-        gorevVeyaIzin: 'GÖREVLİ',
-        durum: 'onaylandi',
-      ),
-    );
+          FaaliyetPersonelAtamaTableCompanion.insert(
+            faaliyetId: activity.id,
+            personelId: personnelId,
+            gorevVeyaIzin: 'GÖREVLİ',
+            durum: 'onaylandi',
+          ),
+        );
 
     await tester.pumpWidget(ProviderScope(
       overrides: [
         databaseProvider.overrideWithValue(database),
+        userSessionProvider.overrideWith((ref) =>
+            const UserSessionState(username: 'admin', role: UserRole.admin)),
         allPersonnelProvider.overrideWith((ref) => Stream.value(const [])),
         allSquadsProvider.overrideWith((ref) => Stream.value(const [])),
       ],
       child: MaterialApp(
         home: Scaffold(
-          body: ActivityCard(activity: activity, onDateChanged: (_) {}),
+          body: Align(
+            alignment: Alignment.topCenter,
+            child: ActivityCard(activity: activity, onDateChanged: (_) {}),
+          ),
         ),
       ),
     ));
@@ -110,7 +117,10 @@ void main() {
 
     expect(find.text('GÖREVLİ'), findsOneWidget);
     expect(find.text('ONAYLANDI'), findsNothing);
-    expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
+    expect(find.text('1 onaylı'), findsNothing);
+    expect(tester.getSize(find.byKey(const Key('activity-card-91'))).height,
+        lessThanOrEqualTo(80));
+    expect(find.byIcon(Icons.fact_check_outlined), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     // Dispose Drift listeners and flush their zero-duration close timers.
@@ -140,9 +150,7 @@ void main() {
         olusturmaTarihi: '',
       );
       await database.into(database.gunlukFaaliyetTable).insert(activity);
-      final personId = await database
-          .into(database.personelTable)
-          .insert(
+      final personId = await database.into(database.personelTable).insert(
             PersonelTableCompanion.insert(
               adSoyad: 'Uzun İsimli Test Personeli',
               rutbe: 'Astsubay',
@@ -150,9 +158,7 @@ void main() {
               kayitTarihi: '2026-07-31',
             ),
           );
-      await database
-          .into(database.faaliyetPersonelAtamaTable)
-          .insert(
+      await database.into(database.faaliyetPersonelAtamaTable).insert(
             FaaliyetPersonelAtamaTableCompanion.insert(
               faaliyetId: activity.id,
               personelId: personId,
@@ -186,10 +192,13 @@ void main() {
 
       expect(tester.takeException(), isNull);
       final title = tester.widget<Text>(find.text(activity.faaliyetAdi));
-      expect(title.maxLines, 2);
-      expect(title.overflow, TextOverflow.ellipsis);
-      expect(find.text('ADMIN ONAYI BEKLİYOR'), findsOneWidget);
-      expect(find.byIcon(Icons.expand_more), findsOneWidget);
+      expect(title.softWrap, isNot(false));
+      expect(title.maxLines, isNull);
+      expect(tester.getSize(find.text(activity.faaliyetAdi)).width,
+          lessThan(width));
+      expect(find.text('1 bekleyen'), findsOneWidget);
+      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      expect(find.byType(ExpansionTile), findsNothing);
 
       // Compact action menus stay accessible at all responsive widths.
       expect(find.byKey(const Key('activity-actions-81')), findsOneWidget);

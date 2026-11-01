@@ -18,6 +18,8 @@ void main() {
 
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
+    await database.into(database.kullaniciTable).insert(
+        KullaniciTableCompanion.insert(kullaniciAdi: 'admin', rol: 'yönetici'));
     final teamId = await database.into(database.timTable).insert(
           TimTableCompanion.insert(
             timAdi: '6-B Timi',

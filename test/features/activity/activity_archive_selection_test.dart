@@ -35,7 +35,7 @@ void main() {
       'Aralık',
     ];
     final now = DateTime.now();
-    final headerDateStr = '${now.day} ${months[now.month - 1]}';
+    final headerDateStr = '${now.day} ${months[now.month - 1]} ${now.year}';
 
     final activities = [
       GunlukFaaliyetTableData(
@@ -54,6 +54,30 @@ void main() {
       ),
     ];
 
+    await database.into(database.kullaniciTable).insert(
+          KullaniciTableCompanion.insert(
+              kullaniciAdi: 'admin', rol: 'yönetici'),
+        );
+    final personnelId = await database.into(database.personelTable).insert(
+          PersonelTableCompanion.insert(
+            adSoyad: 'Synthetic archive person',
+            rutbe: 'Er',
+            birlik: 'Test',
+            kayitTarihi: todayStr,
+          ),
+        );
+    for (final activity in activities) {
+      await database.into(database.gunlukFaaliyetTable).insert(activity);
+      await database.into(database.faaliyetPersonelAtamaTable).insert(
+            FaaliyetPersonelAtamaTableCompanion.insert(
+              faaliyetId: activity.id,
+              personelId: personnelId,
+              gorevVeyaIzin: 'GÖREVLİ',
+              durum: 'onaylandi',
+            ),
+          );
+    }
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -67,7 +91,8 @@ void main() {
           filteredActivitiesProvider.overrideWith(
             (ref) => Stream.value(activities),
           ),
-          historicalPersonnelProvider.overrideWith((ref) => Stream.value(const [])),
+          historicalPersonnelProvider
+              .overrideWith((ref) => Stream.value(const [])),
           allSquadsProvider.overrideWith(
             (ref) => Stream.value(const [
               TimTableData(id: 1, timAdi: 'K.H', olusturmaTarihi: ''),
@@ -84,7 +109,8 @@ void main() {
 
     expect(find.text(headerDateStr), findsOneWidget);
     expect(find.text('2 faaliyet'), findsOneWidget);
-    expect(find.byKey(const Key('archive-calendar-date-button')), findsOneWidget);
+    expect(
+        find.byKey(const Key('archive-calendar-date-button')), findsOneWidget);
     expect(find.text('KONTROL MERKEZİ'), findsNothing);
     expect(find.text('Tüm Timler'), findsNothing);
     expect(find.text('K.H'), findsNothing);
@@ -96,10 +122,25 @@ void main() {
 
     await tester.tap(find.text('Dışa Aktar / Yazdır'));
     await tester.pumpAndSettle();
+    expect(find.text('PDF Belgesi Paylaş'), findsNothing);
+    final continueButton = find.byKey(const Key('archive-export-selected'));
+    expect(tester.widget<FilledButton>(continueButton).onPressed, isNull);
+    await tester.tap(find.byKey(const Key('activity-card-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(continueButton);
+    await tester.pumpAndSettle();
     expect(find.text('PDF Belgesi Paylaş'), findsOneWidget);
     expect(find.text('Doğrudan Yazdır'), findsOneWidget);
 
     Navigator.of(tester.element(find.text('PDF Belgesi Paylaş'))).pop();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('activity-selection-close')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('archive-export-day')));
+    await tester.pumpAndSettle();
+    expect(find.text('PDF Belgesi Paylaş'), findsNothing);
+    expect(tester.widget<FilledButton>(continueButton).onPressed, isNull);
+    await tester.tap(find.byKey(const Key('activity-selection-close')));
     await tester.pumpAndSettle();
 
     await tester.longPress(find.byKey(const Key('activity-card-1')));
@@ -110,7 +151,8 @@ void main() {
     await tester.pump();
     expect(find.text('2 faaliyet seçildi'), findsOneWidget);
 
-    expect(find.byKey(const Key('activity-selection-temgundrap')), findsOneWidget);
+    expect(
+        find.byKey(const Key('activity-selection-temgundrap')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('activity-selection-export')));
     await tester.pumpAndSettle();

@@ -24,25 +24,22 @@ void main() {
   setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
     repository = ActivityRepository(database);
-    await database
-        .into(database.timTable)
-        .insert(
+    await database.into(database.kullaniciTable).insert(
+        KullaniciTableCompanion.insert(
+            kullaniciAdi: 'admin', rol: UserRole.admin.storageValue));
+    await database.into(database.timTable).insert(
           TimTableCompanion.insert(
             timAdi: 'Komutan Takımı',
             olusturmaTarihi: '2026-07-28',
           ),
         );
-    await database
-        .into(database.timTable)
-        .insert(
+    await database.into(database.timTable).insert(
           TimTableCompanion.insert(
             timAdi: 'Diğer Takım',
             olusturmaTarihi: '2026-07-28',
           ),
         );
-    final commanderId = await database
-        .into(database.kullaniciTable)
-        .insert(
+    final commanderId = await database.into(database.kullaniciTable).insert(
           KullaniciTableCompanion.insert(
             kullaniciAdi: 'komutan',
             rol: 'tim_komutani',
@@ -51,9 +48,7 @@ void main() {
         );
     await (database.update(database.timTable)..where((t) => t.id.equals(1)))
         .write(TimTableCompanion(timKomutaniId: Value(commanderId)));
-    personId = await database
-        .into(database.personelTable)
-        .insert(
+    personId = await database.into(database.personelTable).insert(
           PersonelTableCompanion.insert(
             adSoyad: 'Yetki Testi',
             rutbe: 'J.Uzm.Çvş.',
@@ -62,9 +57,7 @@ void main() {
             kayitTarihi: '2026-07-28',
           ),
         );
-    activityId = await database
-        .into(database.gunlukFaaliyetTable)
-        .insert(
+    activityId = await database.into(database.gunlukFaaliyetTable).insert(
           GunlukFaaliyetTableCompanion.insert(
             faaliyetAdi: 'Yetki',
             tarih: '2026-07-28',
@@ -72,16 +65,15 @@ void main() {
             olusturmaTarihi: '2026-07-28T00:00:00',
           ),
         );
-    assignmentId = await database
-        .into(database.faaliyetPersonelAtamaTable)
-        .insert(
-          FaaliyetPersonelAtamaTableCompanion.insert(
-            faaliyetId: activityId,
-            personelId: personId,
-            gorevVeyaIzin: 'GÖREVLİ',
-            durum: AssignmentStatus.beklemede,
-          ),
-        );
+    assignmentId =
+        await database.into(database.faaliyetPersonelAtamaTable).insert(
+              FaaliyetPersonelAtamaTableCompanion.insert(
+                faaliyetId: activityId,
+                personelId: personId,
+                gorevVeyaIzin: 'GÖREVLİ',
+                durum: AssignmentStatus.beklemede,
+              ),
+            );
   });
 
   tearDown(() => database.close());
@@ -100,7 +92,8 @@ void main() {
 
     final row = await (database.select(
       database.faaliyetPersonelAtamaTable,
-    )..where((table) => table.id.equals(assignmentId))).getSingle();
+    )..where((table) => table.id.equals(assignmentId)))
+        .getSingle();
     expect(row.durum, AssignmentStatus.beklemede);
   });
 
@@ -156,7 +149,8 @@ void main() {
       expect(updated, 1);
       final activity = await (database.select(
         database.gunlukFaaliyetTable,
-      )..where((table) => table.id.equals(activityId))).getSingle();
+      )..where((table) => table.id.equals(activityId)))
+          .getSingle();
       expect(activity.faaliyetAdi, 'Gece Nöbeti');
     },
   );

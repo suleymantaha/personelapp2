@@ -403,9 +403,12 @@ extension ActivityRepositoryConflictOperations on ActivityRepository {
     required UserSessionState actor,
   }) {
     _requireAdmin(actor);
-    return (db.delete(db.faaliyetPersonelAtamaTable)
-          ..where((tbl) => tbl.id.equals(assignmentId)))
-        .go();
+    return db.transaction(() async {
+      await requireOutputAuthority(actor);
+      return (db.delete(db.faaliyetPersonelAtamaTable)
+            ..where((tbl) => tbl.id.equals(assignmentId)))
+          .go();
+    });
   }
 
   /// Delete multiple personnel assignments from the same activity.
@@ -417,6 +420,7 @@ extension ActivityRepositoryConflictOperations on ActivityRepository {
     final ids = assignmentIds.toSet();
     if (ids.isEmpty) return Future.value(0);
     return db.transaction(() async {
+      await requireOutputAuthority(actor);
       var deleted = 0;
       for (final id in ids) {
         deleted += await (db.delete(db.faaliyetPersonelAtamaTable)

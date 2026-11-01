@@ -30,7 +30,8 @@ void main() {
     expect(BulkImportConfirmSection.displayDate(''), 'Tarih belirtilmedi');
   });
 
-  testWidgets('every source card shows its own team, count and date', (tester) async {
+  testWidgets('every source card shows its own team, count and date',
+      (tester) async {
     tester.view.physicalSize = const Size(390, 850);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -56,7 +57,8 @@ void main() {
         ),
       ),
     );
-    expect(find.byKey(const Key('bulk-import-confirm-record-list')), findsOneWidget);
+    expect(find.byKey(const Key('bulk-import-confirm-record-list')),
+        findsOneWidget);
     expect(find.text('1-B'), findsOneWidget);
     expect(find.text('2-A'), findsOneWidget);
     expect(find.text('KH-4'), findsOneWidget);
@@ -71,7 +73,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('blocking parse issue prevents committing source cards', (tester) async {
+  testWidgets('blocking parse issue prevents committing source cards',
+      (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -96,7 +99,10 @@ void main() {
       ),
     );
     expect(
-      tester.widget<FilledButton>(find.byKey(const Key('bulk-import-save-button'))).onPressed,
+      tester
+          .widget<FilledButton>(
+              find.byKey(const Key('bulk-import-save-button')))
+          .onPressed,
       isNull,
     );
     expect(find.text('Kaydedilemiyor'), findsOneWidget);
@@ -115,8 +121,7 @@ void main() {
           home: Scaffold(
             body: BulkImportConfirmSection(
               blocks: [
-                for (var i = 0; i < 16; i++)
-                  record('Tim $i', '2026-10-16', 3),
+                for (var i = 0; i < 16; i++) record('Tim $i', '2026-10-16', 3),
               ],
               issues: const [],
               unresolvedPersonnelCount: 0,
@@ -130,7 +135,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final scrollable = find.byKey(const Key('bulk-import-confirm-record-list'));
+      final scrollable =
+          find.byKey(const Key('bulk-import-confirm-record-list'));
       final back = find.byKey(const Key('bulk-import-confirm-back-button'));
       final save = find.byKey(const Key('bulk-import-save-button'));
       final heading = find.text('Kayda Hazır');

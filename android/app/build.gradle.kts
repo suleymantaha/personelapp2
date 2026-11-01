@@ -46,6 +46,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Keep local integration tests separate from the installed release/data.
+            if (project.findProperty("target")?.toString()?.replace("\\", "/")
+                    ?.endsWith("integration_test/archive_flow_android_test.dart") == true) {
+                applicationIdSuffix = ".qa"
+            }
+        }
         release {
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
