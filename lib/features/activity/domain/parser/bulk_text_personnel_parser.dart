@@ -62,17 +62,14 @@ PersonnelListParseResult _parsePersonnelList(String rawText) {
 Iterable<({String text, int lineNumber})> _personnelSourceLines(
   String rawText,
 ) sync* {
-  final lines = rawText
-      .replaceAll('\r\n', '\n')
-      .replaceAll('\r', '\n')
-      .split('\n');
+  final lines =
+      rawText.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
   for (var i = 0; i < lines.length; i++) {
     final originalLineNumber = i + 1;
     final line = _normalizeLine(lines[i]);
     final candidate = _personnelCandidate(line);
-    final rank = candidate == null
-        ? null
-        : _rankPattern.firstMatch(candidate.content);
+    final rank =
+        candidate == null ? null : _rankPattern.firstMatch(candidate.content);
     final rankOnly =
         rank != null && candidate!.content.substring(rank.end).trim().isEmpty;
     if (rankOnly) {
@@ -84,8 +81,7 @@ Iterable<({String text, int lineNumber})> _personnelSourceLines(
       if (nextIndex < lines.length) {
         final next = _normalizeLine(lines[nextIndex]);
         final nextCandidate = _personnelCandidate(next);
-        final isNameContinuation =
-            nextCandidate != null &&
+        final isNameContinuation = nextCandidate != null &&
             nextCandidate.index == null &&
             !_rankPattern.hasMatch(next) &&
             !_isHeader(next) &&
@@ -158,6 +154,24 @@ bool _looksLikePersonnel(String line) {
   if (numbered != null) {
     final after = numbered.group(3)?.trim() ?? '';
     if (_rankPattern.hasMatch(after)) return true;
+    final name = _withoutTrailingMetiCells(after);
+    final folded = _fold(name);
+    if ((name != after || RegExp(r'\bmeti\b').hasMatch(folded)) &&
+        _isPlainPersonnelName(name) &&
+        !_activityDisplayNames.keys.any(folded.contains) &&
+        !folded.split(RegExp(r'\s+')).any(
+              const {
+                'tim',
+                'timi',
+                'isim',
+                'liste',
+                'listesi',
+                'görev',
+                'gorev'
+              }.contains,
+            )) {
+      return true;
+    }
   }
   return false;
 }
@@ -255,11 +269,35 @@ String? _extractTeam(String line) {
 
 (String, bool) _extractActivity(String line) {
   final folded = _fold(line);
+  final hasMeti = RegExp(r'\bmeti\b').hasMatch(folded);
   for (final entry in _activityDisplayNames.entries) {
+    if (hasMeti && (entry.key == 'görev' || entry.key == 'gorev')) {
+      continue;
+    }
     if (folded.contains(entry.key)) return (entry.value, true);
   }
+  if (hasMeti) return (DutyOrLeaveType.meti, true);
   return (_extractUnknownActivity(line), false);
 }
+
+String _withoutTrailingMetiCells(String content) {
+  final clean = content.replaceFirst(
+    RegExp(r'(?:\s+MET[İI])+\s*$', caseSensitive: false),
+    '',
+  );
+  if (clean == content) return content;
+  // Only detach table cells after a complete name, never a lone name/token.
+  final withoutRank =
+      MilitaryRankNormalizer.extractRankAndName(clean).cleanName;
+  if (!_isPlainPersonnelName(withoutRank)) {
+    return content;
+  }
+  return clean;
+}
+
+bool _isPlainPersonnelName(String value) => RegExp(
+      r"^[A-Za-zÇĞİÖŞÜçğıöşü][A-Za-zÇĞİÖŞÜçğıöşü'’-]*(?:\s+[A-Za-zÇĞİÖŞÜçğıöşü][A-Za-zÇĞİÖŞÜçğıöşü'’-]*){1,3}$",
+    ).hasMatch(value);
 
 String _extractUnknownActivity(String line) => line
     .replaceAll(_datePattern, '')
@@ -354,7 +392,9 @@ bool _looksLikeBrokenPersonnel(String line) =>
   int index,
   int lineNumber,
 ) {
-  final extracted = MilitaryRankNormalizer.extractRankAndName(content);
+  final extracted = MilitaryRankNormalizer.extractRankAndName(
+    _withoutTrailingMetiCells(content),
+  );
   final rankKnown = extracted.hasRank;
   final rank = extracted.standardRank ?? '';
   final name = extracted.cleanName.trim();

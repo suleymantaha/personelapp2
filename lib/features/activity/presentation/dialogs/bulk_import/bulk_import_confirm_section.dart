@@ -16,6 +16,8 @@ class BulkImportConfirmSection extends StatelessWidget {
     required this.isMobile,
     required this.onSave,
     required this.onReturnToPreview,
+    this.targetActivityName,
+    this.targetActivityDate,
     super.key,
   });
 
@@ -26,6 +28,8 @@ class BulkImportConfirmSection extends StatelessWidget {
   final bool isMobile;
   final VoidCallback onSave;
   final VoidCallback onReturnToPreview;
+  final String? targetActivityName;
+  final String? targetActivityDate;
 
   static String displayDate(String rawDate) {
     final date = DateTime.tryParse(rawDate.trim());
@@ -63,7 +67,10 @@ class BulkImportConfirmSection extends StatelessWidget {
             slivers: [
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(
-                  horizontalPadding, 14, horizontalPadding, 12,
+                  horizontalPadding,
+                  14,
+                  horizontalPadding,
+                  12,
                 ),
                 sliver: SliverToBoxAdapter(
                   child: Column(
@@ -84,8 +91,15 @@ class BulkImportConfirmSection extends StatelessWidget {
                       Text(
                         hasBlocking
                             ? context.l10n.bulkImportConfirmResolveIssues
-                            : 'Hangi takımın hangi tarihe ekleneceğini kontrol edin.',
-                        style: TextStyle(color: context.textSecondary, fontSize: 13),
+                            : targetActivityName == null
+                                ? 'Tarih ve göreve göre kart oluşturulur. Aynı tarih ve '
+                                    'görevde kart varsa mevcut kart tamamlanır.'
+                                : 'Mevcut karta eklenecek: $targetActivityName • '
+                                    '${displayDate(targetActivityDate ?? '')}. '
+                                    'Yeni kart oluşturulmaz. Kaynak tarihleri aşağıdadır; '
+                                    'farklıysa kaydetmeden önce onayınız istenir.',
+                        style: TextStyle(
+                            color: context.textSecondary, fontSize: 13),
                       ),
                       const SizedBox(height: 12),
                       Container(
@@ -124,7 +138,10 @@ class BulkImportConfirmSection extends StatelessWidget {
                           Expanded(
                             child: Text(
                               'Eklenecek kayıtlar',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
                                     fontWeight: FontWeight.w800,
                                   ),
                             ),
@@ -144,7 +161,10 @@ class BulkImportConfirmSection extends StatelessWidget {
               ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(
-                  horizontalPadding, 0, horizontalPadding, 16,
+                  horizontalPadding,
+                  0,
+                  horizontalPadding,
+                  16,
                 ),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
@@ -217,7 +237,8 @@ class _ConfirmRecordRow extends StatelessWidget {
                   hasTeam ? block.parsedTimName : 'Takım belirtilmedi',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w800, fontSize: 15),
                 ),
                 const SizedBox(height: 3),
                 Text(
@@ -266,7 +287,8 @@ class _ConfirmationActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(horizontalPadding, 10, horizontalPadding, 12),
+      padding:
+          EdgeInsets.fromLTRB(horizontalPadding, 10, horizontalPadding, 12),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(top: BorderSide(color: context.cardBorderColor)),
@@ -340,7 +362,8 @@ class _ConfirmationActions extends StatelessWidget {
                               context.l10n.bulkImportConfirmSaveButton,
                               maxLines: 1,
                               softWrap: false,
-                              style: const TextStyle(fontWeight: FontWeight.w800),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w800),
                             ),
                           ],
                         ),

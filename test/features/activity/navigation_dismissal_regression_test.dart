@@ -452,6 +452,14 @@ void main() {
         try {
           await tester.tap(saveButton);
           await tester.pump();
+          if (surface == 'activity-import') {
+            await tester.pump(const Duration(milliseconds: 300));
+            expect(
+                find.byKey(const Key('import-date-approve')), findsOneWidget);
+            await tester.tap(find.byKey(const Key('import-date-approve')));
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 300));
+          }
           if (dismiss == 'back') {
             await tester.binding.handlePopRoute();
           } else if (dismiss == 'barrier') {
