@@ -8,10 +8,18 @@
 - Initial changes: four activity ordering source/test files from current task; existing untracked .playwright-cli/, .serena/, output/ preserved.
 - Other worktrees: main at F:/personelapp2-archive-flow (tracked clean; untracked output and old task preserved); safe-team-history already ancestor. No branch deletion.
 - Contract: N/A, existing shared display ordering and package identity retained.
-- State: RUNNING. Merge/push: PENDING.
+- State: DONE. Main fast-forward/push completed at 5468313; final documentation commit follows with [skip ci].
 - Plan: compare refs, review, bump version, commit with [skip ci], fast-forward main, local checks/build/upgrade, push main and verify no workflow run.
 - Source ownership: coordinator only. Reviewer read-only. Max total agents 3; same-error limit 3; checkpoint 15 minutes.
 - Version evidence: local/distributed APK actual 10328; latest successful Actions artifact actual 10327; candidate 10329 / 1.0.14.
 - Checks: prior full suite 1028 PASS / 1 SKIP and analyze PASS; final ordering suite 12 PASS including search/filter. Final package/build/upgrade/review NOT_RUN.
 - Recovery: preserve all existing refs/data; task commits reversible; no uninstall, clear-data or downgrade.
 - Physical-device testing NOT_RUN; CI intentionally NOT_RUN.
+
+## Completion
+
+- Full suite 1028 PASS / 1 SKIP; analyze, release build, signer, alignment and retained-data upgrade PASS.
+- Independent source/artifact review PASS. Main remote matched source SHA; zero Actions runs.
+- APK copied to Downloads with matching SHA-256. User changes preserved.
+- [Verification report](../../docs/verification/release-10329-2026-11-03.md).
+- Physical-device test and CI NOT_RUN; no task processes remain.
