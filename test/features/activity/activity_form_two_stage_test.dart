@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,7 +15,8 @@ void main() {
 
   const personnel = [
     PersonelTableData(
-      aktif: true, isDemo: false,
+      aktif: true,
+      isDemo: false,
       id: 1,
       adSoyad: 'Ahmet Yılmaz',
       rutbe: 'J.Bnb.',
@@ -23,7 +25,8 @@ void main() {
       kayitTarihi: '2026-01-01',
     ),
     PersonelTableData(
-      aktif: true, isDemo: false,
+      aktif: true,
+      isDemo: false,
       id: 2,
       adSoyad: 'Mehmet Demir',
       rutbe: 'J.Asb.',
@@ -32,7 +35,8 @@ void main() {
       kayitTarihi: '2026-01-01',
     ),
     PersonelTableData(
-      aktif: true, isDemo: false,
+      aktif: true,
+      isDemo: false,
       id: 3,
       adSoyad: 'Hasan Şahin',
       rutbe: 'J.Uzm.Çvş.',
@@ -44,6 +48,7 @@ void main() {
 
   Widget buildSubject({
     bool isAdmin = true,
+    bool savedOrder = false,
     Widget? home,
   }) {
     return ProviderScope(
@@ -55,11 +60,27 @@ void main() {
             timId: isAdmin ? null : 1,
           ),
         ),
-        allPersonnelProvider.overrideWith((ref) => Stream.value(personnel)),
+        allPersonnelProvider.overrideWith((ref) => Stream.value(
+              savedOrder
+                  ? personnel
+                      .map((p) => p.copyWith(
+                            sortOrder: Value(p.id == 2 ? 0 : 1),
+                          ))
+                      .toList()
+                  : personnel,
+            )),
         allSquadsProvider.overrideWith(
-          (ref) => Stream.value(const [
-            TimTableData(id: 1, timAdi: 'K.H', olusturmaTarihi: ''),
-            TimTableData(id: 2, timAdi: '2-B Timi', olusturmaTarihi: ''),
+          (ref) => Stream.value([
+            TimTableData(
+                id: 1,
+                timAdi: 'K.H',
+                olusturmaTarihi: '',
+                sortOrder: savedOrder ? 1 : null),
+            TimTableData(
+                id: 2,
+                timAdi: '2-B Timi',
+                olusturmaTarihi: '',
+                sortOrder: savedOrder ? 0 : null),
           ]),
         ),
       ],
@@ -78,6 +99,74 @@ void main() {
     await tester.pumpWidget(buildSubject());
     await tester.pumpAndSettle();
   }
+
+  testWidgets('saved display order survives selection and details',
+      (tester) async {
+    tester.view.physicalSize = const Size(600, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(buildSubject(savedOrder: true));
+    await tester.pumpAndSettle();
+
+    final kh = find.byKey(const ValueKey('squad-select-K.H'));
+    final second = find.byKey(const ValueKey('squad-select-2-B Timi'));
+    expect(tester.getTopLeft(second).dy, lessThan(tester.getTopLeft(kh).dy));
+    await tester.tap(find.text('K.H').first);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('personnel-select-2'))).dy,
+      lessThan(tester
+          .getTopLeft(find.byKey(const ValueKey('personnel-select-1')))
+          .dy),
+    );
+    await tester.tap(kh);
+    await tester.tap(second);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.byKey(const Key('personnel-search-field')), 'K.H');
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Seçilenler'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('squad-select-2-B Timi')), findsNothing);
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('personnel-select-2'))).dy,
+      lessThan(tester
+          .getTopLeft(find.byKey(const ValueKey('personnel-select-1')))
+          .dy),
+    );
+    await tester.enterText(find.byKey(const Key('personnel-search-field')), '');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('continue-to-details-button')));
+    await tester.pumpAndSettle();
+    final khGroup = find.byKey(const ValueKey('selected-squad-group-K.H'));
+    final secondGroup =
+        find.byKey(const ValueKey('selected-squad-group-2-B Timi'));
+    expect(tester.getTopLeft(secondGroup).dy,
+        lessThan(tester.getTopLeft(khGroup).dy));
+    await tester.tap(khGroup);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('selected-personnel-2'))).dy,
+      lessThan(tester
+          .getTopLeft(find.byKey(const ValueKey('selected-personnel-1')))
+          .dy),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('commander uses saved personnel order within own team',
+      (tester) async {
+    await tester.pumpWidget(buildSubject(isAdmin: false, savedOrder: true));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('personnel-select-3')), findsNothing);
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('personnel-select-2'))).dy,
+      lessThan(tester
+          .getTopLeft(find.byKey(const ValueKey('personnel-select-1')))
+          .dy),
+    );
+  });
 
   testWidgets('starts with personnel-only first stage', (tester) async {
     await pumpAtSize(tester, const Size(412, 915));

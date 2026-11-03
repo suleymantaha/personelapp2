@@ -79,3 +79,5 @@ Bu boş tablo tamamlanmış görev veya uygulama kanıtı değildir.
 - 2026-11-01-archive-compact-selection: DONE — compact cards, reorder X, select-before-output;1013PASS/1SKIP/analyzePASS; tasks/active/2026-11-01-archive-compact-selection.md; no APK/commit/push.
 
 - 2026-11-01-release-10327: DONE — signed1.0.12+10327, retained-data upgrade and independent acceptance PASS, verified local Downloads copy; no commit/push/upload.
+
+- 2026-11-03 | Main integration / local APK10329 without CI | RUNNING | [Task](active/2026-11-03-main-local-apk.md) | Existing audit/hardening + shared activity ordering; local verification pending.

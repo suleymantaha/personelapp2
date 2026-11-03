@@ -8,7 +8,7 @@ import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/core/theme/spacing.dart';
-import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/features/personnel/domain/personnel_display_order.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import_dialog.dart';
@@ -206,11 +206,11 @@ class _ActivityFormScreenState extends ConsumerState<ActivityFormScreen> {
       );
     }
 
-    final selectedPersonnel = personnel
-        .where((person) => _draft.selectedPersonnelIds.contains(person.id))
-        .toList()
-      ..sort(
-          (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)));
+    final selectedPersonnel = orderDisplayPersonnel(
+      personnel
+          .where((person) => _draft.selectedPersonnelIds.contains(person.id)),
+      squads,
+    );
     final availableDuties = DutyOrLeaveType.dutiesForRole(isAdmin: isAdmin);
 
     return ActivityDetailsStep(

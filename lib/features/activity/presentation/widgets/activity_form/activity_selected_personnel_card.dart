@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
-import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/features/activity/presentation/view_models/activity_form_draft.dart';
 import 'activity_selected_squad_group.dart';
 
@@ -33,18 +32,8 @@ class ActivitySelectedPersonnelCard extends StatelessWidget {
     for (final person in personnel) {
       grouped.putIfAbsent(person.timId, () => []).add(person);
     }
-    final groupIds = grouped.keys.toList()
-      ..sort((a, b) {
-        if (a == null) return 1;
-        if (b == null) return -1;
-        final nameA = squadNames[a] ?? '';
-        final nameB = squadNames[b] ?? '';
-        final weightA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
-        final weightB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
-        return weightA != weightB
-            ? weightA.compareTo(weightB)
-            : nameA.compareTo(nameB);
-      });
+    // Preserve the shared display order supplied by the activity form.
+    final groupIds = grouped.keys.toList();
 
     return Card(
       elevation: 0,
@@ -64,7 +53,8 @@ class ActivitySelectedPersonnelCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    context.l10n.activitySelectedPersonnelCount(personnel.length),
+                    context.l10n
+                        .activitySelectedPersonnelCount(personnel.length),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -83,7 +73,8 @@ class ActivitySelectedPersonnelCard extends StatelessWidget {
               ActivitySelectedSquadGroup(
                 squadName: timId == null
                     ? context.l10n.bulkImportUnassignedOrOtherPersonnel
-                    : (squadNames[timId] ?? context.l10n.personnelPickerUnknownTeam),
+                    : (squadNames[timId] ??
+                        context.l10n.personnelPickerUnknownTeam),
                 personnel: grouped[timId]!,
                 draft: draft,
                 onRemovePersonnel: onRemovePersonnel,
@@ -91,7 +82,8 @@ class ActivitySelectedPersonnelCard extends StatelessWidget {
                 onAssignDuty: () => onAssignSquad(
                   timId == null
                       ? context.l10n.bulkImportUnassignedOrOtherPersonnel
-                      : (squadNames[timId] ?? context.l10n.personnelPickerUnknownTeam),
+                      : (squadNames[timId] ??
+                          context.l10n.personnelPickerUnknownTeam),
                   grouped[timId]!,
                 ),
               ),

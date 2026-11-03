@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
-import 'package:personelapp2/core/utils/military_structure_helper.dart';
-import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/features/personnel/domain/personnel_display_order.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/activity_form/activity_form_controls.dart';
 
 class ActivityPersonnelSelectionStep extends StatelessWidget {
@@ -53,13 +52,13 @@ class ActivityPersonnelSelectionStep extends StatelessWidget {
     final query = searchController.text.trim().toLowerCase();
     final squadNames = {for (final squad in squads) squad.id: squad.timAdi};
 
+    final orderedPersonnel = orderDisplayPersonnel(personnel, squads);
+
     if (!isAdmin) {
-      final visible = personnel
+      final visible = orderedPersonnel
           .where(_matchesFilter)
           .where((person) => _matchesQuery(person, person.birlik, query))
-          .toList()
-        ..sort(
-            (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)));
+          .toList();
       return _SelectionScrollView(
         controls: _buildControls(),
         children: visible
@@ -75,30 +74,17 @@ class ActivityPersonnelSelectionStep extends StatelessWidget {
     }
 
     final grouped = <int?, List<PersonelTableData>>{};
-    for (final person in personnel) {
+    for (final person in orderedPersonnel) {
       grouped.putIfAbsent(person.timId, () => []).add(person);
     }
-    final timIds = grouped.keys.toList()
-      ..sort((a, b) {
-        if (a == null) return 1;
-        if (b == null) return -1;
-        final nameA = squadNames[a] ?? '';
-        final nameB = squadNames[b] ?? '';
-        final weightA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
-        final weightB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
-        return weightA != weightB
-            ? weightA.compareTo(weightB)
-            : nameA.compareTo(nameB);
-      });
+    final timIds = grouped.keys.toList();
 
     final tiles = <Widget>[];
     for (final timId in timIds) {
       final squadName = timId == null
           ? context.l10n.bulkImportUnassignedOrOtherPersonnel
           : (squadNames[timId] ?? context.l10n.personnelPickerUnknownTeam);
-      final allMembers = grouped[timId]!
-        ..sort(
-            (a, b) => getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe)));
+      final allMembers = grouped[timId]!;
       final visibleMembers = allMembers
           .where(_matchesFilter)
           .where((person) => _matchesQuery(person, squadName, query))
