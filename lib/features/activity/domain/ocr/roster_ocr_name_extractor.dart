@@ -63,6 +63,7 @@ class RosterOcrExtractionResult {
   static String? _activityFor(String? hint) {
     final folded = RosterOcrNameExtractor.fold(hint ?? '');
     if (folded == 'meti') return 'METİ';
+    if (folded == 'kazanci') return 'KAZANCI';
     if (folded.contains('garaj')) return 'GARAJ NÖB.';
     if (folded.contains('ttza')) return 'TTZA NÖB.';
     if (folded.contains('mebs')) return 'MEBS NÖB.';
@@ -195,6 +196,7 @@ class RosterOcrNameExtractor {
     ];
     if (labels.any((label) => folded == fold(label))) return true;
     if (folded.startsWith('sayfa ')) return true;
+    if (RegExp(r'^kazanci(?: gorevi)?$').hasMatch(folded)) return true;
     if (_isActivityOnlyLine(line)) return true;
     return false;
   }
@@ -252,6 +254,15 @@ class RosterOcrNameExtractor {
     if (withoutMetiCells != working && _looksLikePersonName(withoutMetiCells)) {
       working = withoutMetiCells;
       activityHint ??= 'METİ';
+    }
+
+    final withoutKazanciCells = working
+        .replaceFirst(RegExp(r'(?:\s+KAZANCI)+\s*$', caseSensitive: false), '')
+        .trim();
+    if (withoutKazanciCells != working &&
+        _looksLikePersonName(withoutKazanciCells)) {
+      working = withoutKazanciCells;
+      activityHint ??= 'KAZANCI';
     }
 
     working = working
@@ -313,6 +324,7 @@ class RosterOcrNameExtractor {
     if (folded.contains('guluskur')) return 'GÜLÜŞKÜR';
     if (folded.contains('nobet')) return 'NÖBETÇİ';
     if (_metiPattern.hasMatch(line)) return 'METİ';
+    if (RegExp(r'\bkazanci\b').hasMatch(folded)) return 'KAZANCI';
     if (folded.contains('gorev')) return 'GÖREVLİ';
     return null;
   }

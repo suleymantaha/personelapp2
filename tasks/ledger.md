@@ -4,6 +4,7 @@ Tek yazıcı: koordinatör. Henüz bu paketle başlatılmış proje görevi yokt
 
 | Görev ID | Hedef | Durum | Aktif kayıt / kanıt |
 |---|---|---|---|
+| 2026-11-03-kazanci | Kazancı iki günlük X ve nöbet heyeti gruplaması | DONE | [Kayıt](active/2026-11-03-kazanci.md) |
 | 2026-11-03-bulk-import-repair | OCR ve tarih/kart aktarım onarımı | DONE | [Kayıt](active/2026-11-03-bulk-import-repair.md) |
 | 2026-11-01-audit-hardening-apk | Audit düzeltmeleri ve veri koruyan imzalı APK | DONE | [Kayıt](active/2026-11-01-audit-hardening-apk.md) |
 | 2026-11-01-codebase-audit | Kod değişmeden rapor/test ve Android audit | DONE | [Kayıt](active/2026-11-01-codebase-audit.md) |

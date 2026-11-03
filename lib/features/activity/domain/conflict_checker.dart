@@ -19,6 +19,7 @@ class DutyOrLeaveType {
   static const String guluskur = 'GÜLÜŞKÜR';
   static const String heybet = 'HEYBET';
   static const String meti = 'METİ';
+  static const String kazanci = 'KAZANCI';
   static const String gorevli = 'GÖREVLİ';
   static const String nobetci = 'NÖBETÇİ';
   static const String izinli = 'İZİNLİ';
@@ -34,6 +35,7 @@ class DutyOrLeaveType {
     garajNob,
     ttzaNob,
     kuleNob,
+    kazanci,
   ];
 
   static const List<String> generalDuties = [
@@ -63,6 +65,7 @@ class DutyOrLeaveType {
     meti,
     gorevli,
     nobetci,
+    kazanci,
     izinli,
     istirahatli,
     raporlu,
