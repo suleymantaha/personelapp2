@@ -114,13 +114,13 @@ void main() {
     expect(find.text('KONTROL MERKEZİ'), findsNothing);
     expect(find.text('Tüm Timler'), findsNothing);
     expect(find.text('K.H'), findsNothing);
-    expect(find.text('Dışa Aktar / Yazdır'), findsNothing);
+    expect(find.text('Günün çıktısını al'), findsNothing);
 
     await tester.tap(find.byTooltip('Arşiv işlemleri'));
     await tester.pumpAndSettle();
-    expect(find.text('Dışa Aktar / Yazdır'), findsOneWidget);
+    expect(find.text('Günün çıktısını al'), findsOneWidget);
 
-    await tester.tap(find.text('Dışa Aktar / Yazdır'));
+    await tester.tap(find.text('Günün çıktısını al'));
     await tester.pumpAndSettle();
     expect(find.text('PDF Belgesi Paylaş'), findsNothing);
     final continueButton = find.byKey(const Key('archive-export-selected'));
@@ -135,6 +135,8 @@ void main() {
     Navigator.of(tester.element(find.text('PDF Belgesi Paylaş'))).pop();
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('activity-selection-close')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Arşiv işlemleri'));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('archive-export-day')));
     await tester.pumpAndSettle();

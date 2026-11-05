@@ -81,3 +81,5 @@ Bu boş tablo tamamlanmış görev veya uygulama kanıtı değildir.
 - 2026-11-01-release-10327: DONE — signed1.0.12+10327, retained-data upgrade and independent acceptance PASS, verified local Downloads copy; no commit/push/upload.
 
 - 2026-11-03 | Main integration / local APK10329 without CI | DONE | [Task](active/2026-11-03-main-local-apk.md) | Main push, 1028 PASS / 1 SKIP, analyze/build/signature/upgrade and independent review PASS; no CI.
+
+- 2026-11-05 archive-actions-personnel-order: DONE — [task](active/2026-11-05-archive-actions-personnel-order.md); top archive actions and shared personnel picker ordering; 1035 PASS / 1 SKIP, analyze and independent review PASS; no commit/push/APK.

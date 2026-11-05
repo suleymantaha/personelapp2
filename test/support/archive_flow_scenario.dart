@@ -106,7 +106,16 @@ void archiveFlowScenario(
     await tester.pumpAndSettle();
     await tester.pageBack();
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('archive-export-day')));
+    if (find
+        .byKey(const Key('activity-archive-export'))
+        .evaluate()
+        .isNotEmpty) {
+      await tester.tap(find.byKey(const Key('activity-archive-export')));
+    } else {
+      await tester.tap(find.byTooltip('Arşiv işlemleri'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('archive-export-day')));
+    }
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(Key('activity-card-$activity')));
     await tester.pumpAndSettle();

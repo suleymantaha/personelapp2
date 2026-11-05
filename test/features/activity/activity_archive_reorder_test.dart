@@ -95,6 +95,27 @@ void main() {
     expect(await preferences.loadOrder(todayStr), [1, 2]);
     tester.view.physicalSize = const Size(390, 844);
     await tester.pumpAndSettle();
+    final select = find.byKey(const Key('archive-select-visible'));
+    final combine = find.byKey(const Key('archive-prepare-cards'));
+    final reorder = find.byKey(const Key('archive-reorder-visible'));
+    expect(
+        tester
+            .widget<Scaffold>(find.byType(Scaffold).first)
+            .bottomNavigationBar,
+        isNull);
+    expect(tester.getCenter(select).dy, tester.getCenter(combine).dy);
+    expect(tester.getCenter(combine).dy, tester.getCenter(reorder).dy);
+    expect(tester.getCenter(select).dx, lessThan(tester.getCenter(combine).dx));
+    expect(
+        tester.getCenter(combine).dx, lessThan(tester.getCenter(reorder).dx));
+    expect(find.text('Günün çıktısını al'), findsNothing);
+    await tester.tap(find.byType(PopupMenuButton<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Günün çıktısını al'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('archive-export-selected')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('activity-selection-close')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('archive-reorder-visible')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('archive-reorder-close')), findsOneWidget);

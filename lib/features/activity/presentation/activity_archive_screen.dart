@@ -26,6 +26,8 @@ import 'package:personelapp2/features/temgundrap/domain/temgundrap_defaults.dart
 import 'package:personelapp2/features/temgundrap/domain/temgundrap_models.dart';
 import 'package:personelapp2/core/widgets/turkish_flag_watermark_background.dart';
 
+import 'widgets/archive_action_bar.dart';
+
 part 'activity_archive_actions.dart';
 
 class ActivityArchiveScreen extends ConsumerStatefulWidget {
@@ -353,9 +355,10 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                   ),
                 ),
                 ModernPopupMenuItem(
+                  key: const Key('archive-export-day'),
                   option: ModernActionOption(
                     value: 'export',
-                    title: context.l10n.activityArchiveExportPrintTitle,
+                    title: 'Günün çıktısını al',
                     subtitle: context.l10n.activityArchiveExportPrintSubtitle,
                     icon: Icons.ios_share_rounded,
                   ),
@@ -485,7 +488,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
           ),
         ),
       ),
-      bottomNavigationBar: !_reorderMode
+      bottomNavigationBar: _selectionMode && !_reorderMode
           ? SafeArea(
               top: false,
               child: Padding(
@@ -494,32 +497,15 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (_selectionMode)
-                      FilledButton.icon(
-                        key: const Key('archive-export-selected'),
-                        onPressed: _selectedActivityIds.isEmpty
-                            ? null
-                            : () => _showSelectedExportOptions(
-                                activitiesAsync.value ?? [], personnelList),
-                        icon: const Icon(Icons.ios_share),
-                        label: const Text('Seçilenlerin çıktısını al'),
-                      )
-                    else ...[
-                      FilledButton.icon(
-                          key: const Key('archive-export-day'),
-                          onPressed: (activitiesAsync.value ?? [])
-                                  .any((a) => a.tarih == dateFilterStr)
-                              ? exportCurrentArchive
-                              : null,
-                          icon: const Icon(Icons.ios_share),
-                          label: const Text('Günün çıktısını al')),
-                      OutlinedButton.icon(
-                          key: const Key('archive-prepare-cards'),
-                          onPressed: () => AppNavigator.toRosterOutput(context,
-                              initialDate: dateFilterStr),
-                          icon: const Icon(Icons.playlist_add_check),
-                          label: const Text('Kartları birleştir')),
-                    ],
+                    FilledButton.icon(
+                      key: const Key('archive-export-selected'),
+                      onPressed: _selectedActivityIds.isEmpty
+                          ? null
+                          : () => _showSelectedExportOptions(
+                              activitiesAsync.value ?? [], personnelList),
+                      icon: const Icon(Icons.ios_share),
+                      label: const Text('Seçilenlerin çıktısını al'),
+                    ),
                   ],
                 ),
               ),
@@ -572,28 +558,22 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         if (!_selectionMode && !_reorderMode)
-                          Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: Wrap(spacing: 8, children: [
-                                TextButton.icon(
-                                    key: const Key('archive-select-visible'),
-                                    onPressed: () => setState(() {
-                                          _selectionMode = true;
-                                          _reorderMode = false;
-                                        }),
-                                    icon: const Icon(Icons.checklist),
-                                    label: const Text('Faaliyet seç')),
-                                TextButton.icon(
-                                    key: const Key('archive-reorder-visible'),
-                                    onPressed: () => setState(() {
-                                          _reorderMode = true;
-                                          _selectionMode = false;
-                                          _selectedActivityIds.clear();
-                                        }),
-                                    icon: const Icon(Icons.swap_vert),
-                                    label: const Text('Sırala')),
-                              ])),
+                          ArchiveActionBar(
+                            onSelect: () => setState(() {
+                              _selectionMode = true;
+                              _reorderMode = false;
+                            }),
+                            onCombine: () => AppNavigator.toRosterOutput(
+                              context,
+                              initialDate: dateFilterStr,
+                              selectedSquadId: _selectedSquadFilter,
+                            ),
+                            onReorder: () => setState(() {
+                              _reorderMode = true;
+                              _selectionMode = false;
+                              _selectedActivityIds.clear();
+                            }),
+                          ),
                         if (_reorderMode)
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),

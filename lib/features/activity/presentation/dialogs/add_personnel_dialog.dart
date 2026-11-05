@@ -11,6 +11,7 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'task_team_confirmation.dart';
+import 'package:personelapp2/features/personnel/domain/personnel_display_order.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/widgets/personnel_picker_sheet.dart';
 import 'package:personelapp2/features/activity/presentation/view_models/activity_form_draft.dart';
@@ -163,9 +164,10 @@ class _AddPersonnelToActivityDialogState
     final squads = (squadsAsync.value ?? <TimTableData>[])
         .where((s) => widget.isAdmin || s.id == session?.timId)
         .toList();
-    final selected = people
-        .where((p) => _draft.selectedPersonnelIds.contains(p.id))
-        .toList();
+    final selected = orderDisplayPersonnel(
+      people.where((p) => _draft.selectedPersonnelIds.contains(p.id)),
+      squads,
+    );
     final duties = DutyOrLeaveType.dutiesForRole(isAdmin: widget.isAdmin);
     final colorScheme = Theme.of(context).colorScheme;
     return PopScope<bool>(

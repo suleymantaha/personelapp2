@@ -185,7 +185,7 @@ void main() {
         } else {
           await tester.tap(find.byTooltip('Arşiv işlemleri'));
           await tester.pumpAndSettle();
-          await tester.tap(find.text('Dışa Aktar / Yazdır'));
+          await tester.tap(find.text('Günün çıktısını al'));
           await tester.pumpAndSettle();
           expect(find.text('PDF Belgesi Paylaş'), findsNothing);
           await tester.tap(find.byKey(Key('activity-card-$activity')));

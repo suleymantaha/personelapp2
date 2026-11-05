@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/theme/app_theme.dart';
-import 'package:personelapp2/core/utils/military_structure_helper.dart';
-import 'package:personelapp2/core/utils/rank_helper.dart';
+import 'package:personelapp2/features/personnel/domain/personnel_display_order.dart';
 
 Future<PersonelTableData?> showPersonnelPicker({
   required BuildContext context,
@@ -114,12 +113,14 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final orderedSquads = orderDisplaySquads(widget.squads);
     final squadNames = {
-      for (final squad in widget.squads) squad.id: squad.timAdi,
+      for (final squad in orderedSquads) squad.id: squad.timAdi,
     };
     final normalizedQuery = _normalize(_query);
     final unassignedTeamName = context.l10n.personnelPickerUnassignedTeam;
-    final filtered = widget.personnel.where((person) {
+    final filtered =
+        orderDisplayPersonnel(widget.personnel, orderedSquads).where((person) {
       if (_filterTimId != null && person.timId != _filterTimId) return false;
       if (normalizedQuery.isEmpty) return true;
       final teamName = squadNames[person.timId] ?? unassignedTeamName;
@@ -133,7 +134,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
 
     final grouped = <int?, List<PersonelTableData>>{};
     if (normalizedQuery.isEmpty) {
-      for (final squad in widget.squads
+      for (final squad in orderedSquads
           .where((s) => _filterTimId == null || s.id == _filterTimId)) {
         grouped[squad.id] = <PersonelTableData>[];
       }
@@ -141,26 +142,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
     for (final person in filtered) {
       grouped.putIfAbsent(person.timId, () => []).add(person);
     }
-    for (final group in grouped.values) {
-      group.sort((a, b) {
-        final rankComparison =
-            getRankWeight(a.rutbe).compareTo(getRankWeight(b.rutbe));
-        if (rankComparison != 0) return rankComparison;
-        return a.adSoyad.compareTo(b.adSoyad);
-      });
-    }
-
-    final groupIds = grouped.keys.toList()
-      ..sort((a, b) {
-        if (a == null) return 1;
-        if (b == null) return -1;
-        final nameA = squadNames[a] ?? '';
-        final nameB = squadNames[b] ?? '';
-        final weightA = MilitaryStructureHelper.getSquadOrderWeight(nameA);
-        final weightB = MilitaryStructureHelper.getSquadOrderWeight(nameB);
-        if (weightA != weightB) return weightA.compareTo(weightB);
-        return nameA.compareTo(nameB);
-      });
+    final groupIds = grouped.keys.toList();
 
     final recent = _recentPersonnelIds
         .map(
@@ -257,7 +239,7 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                                 selected: _filterTimId == null,
                                 onSelected: (_) =>
                                     setState(() => _filterTimId = null))),
-                        for (final squad in widget.squads)
+                        for (final squad in orderedSquads)
                           Padding(
                               padding: const EdgeInsets.only(right: 8),
                               child: ChoiceChip(
@@ -280,8 +262,10 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                             child: Text(
                               widget.onSelected == null
                                   ? context.l10n.personnelPickerSuggestedMatch
-                                  : context.l10n.personnelPickerSelectedPersonnel,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                                  : context
+                                      .l10n.personnelPickerSelectedPersonnel,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                           Card(
@@ -289,8 +273,8 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                             margin: EdgeInsets.zero,
                             child: _PersonnelTile(
                               person: suggested,
-                              teamName:
-                                  squadNames[suggested.timId] ?? unassignedTeamName,
+                              teamName: squadNames[suggested.timId] ??
+                                  unassignedTeamName,
                               selected: true,
                               disabledReason:
                                   widget.disabledReasons[suggested.id],
@@ -306,13 +290,15 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                             padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
                             child: Text(
                               context.l10n.personnelPickerRecent,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                           ...recent.map(
                             (person) => _PersonnelTile(
                               person: person,
-                              teamName: squadNames[person.timId] ?? unassignedTeamName,
+                              teamName: squadNames[person.timId] ??
+                                  unassignedTeamName,
                               selected: _isSelected(person),
                               disabledReason: widget.disabledReasons[person.id],
                               onTap: () => _select(person),
@@ -327,7 +313,8 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                               .toList();
                           final teamName = timId == null
                               ? unassignedTeamName
-                              : (squadNames[timId] ?? context.l10n.personnelPickerUnknownTeam);
+                              : (squadNames[timId] ??
+                                  context.l10n.personnelPickerUnknownTeam);
                           final expanded = normalizedQuery.isNotEmpty ||
                               _expandedTimIds.contains(timId);
                           final selectedCount = members
@@ -374,7 +361,8 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                                   subtitle: selectedCount == 0
                                       ? null
                                       : Text(
-                                          context.l10n.personnelPickerSelectedCount(
+                                          context.l10n
+                                              .personnelPickerSelectedCount(
                                             selectedCount,
                                           ),
                                         ),
@@ -401,12 +389,13 @@ class _PersonnelPickerSheetState extends State<PersonnelPickerSheet> {
                                 if (expanded)
                                   if (members.isEmpty)
                                     Padding(
-                                      padding:
-                                          const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                                      padding: const EdgeInsets.fromLTRB(
+                                          16, 0, 16, 14),
                                       child: Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          context.l10n.personnelPickerNoMorePersonnel,
+                                          context.l10n
+                                              .personnelPickerNoMorePersonnel,
                                           style: TextStyle(
                                               color: context.textMuted),
                                         ),
