@@ -18,6 +18,7 @@ void main() {
       'METİ',
       'GÖREVLİ',
       'NÖBETÇİ',
+      'KAZANCI',
       'İZİNLİ',
       'İSTİRAHATLİ',
       'RAPORLU',
@@ -39,6 +40,7 @@ void main() {
       'GARAJ NÖB.',
       'TTZA NÖB.',
       'KULE NÖB.',
+      'KAZANCI',
     ]);
     expect(DutyOrLeaveType.allDuties.toSet().length,
         DutyOrLeaveType.allDuties.length);

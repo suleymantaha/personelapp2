@@ -10,6 +10,7 @@ import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'bulk_import/staged_task_team_confirmation.dart';
+import 'bulk_import/import_date_consent.dart';
 import 'package:personelapp2/features/activity/domain/bulk_activity_import_preparer.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
@@ -71,6 +72,7 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
   List<TimTableData> _allSquads = [];
   bool _isParsing = false;
   bool _isSaving = false;
+  bool _saveInProgress = false;
   int _deduplicatedPersonnelCount = 0;
   int _ignoredLineCount = 0;
   bool _keepAuditText = false;
@@ -687,6 +689,8 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
       unresolvedPersonnelCount: _unresolvedPersonnelCount,
       isSaving: _isSaving,
       isMobile: isMobile,
+      targetActivityName: widget.targetActivity?.faaliyetAdi,
+      targetActivityDate: widget.targetActivity?.tarih,
       onSave: _saveAllToFaaliyet,
       onReturnToPreview: () {
         // Back-navigation must not activate the next issue implicitly.

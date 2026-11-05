@@ -7,6 +7,7 @@ import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'staged_task_team_confirmation.dart';
+import 'import_date_consent.dart';
 import 'package:personelapp2/features/activity/domain/bulk_activity_import_preparer.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
@@ -147,6 +148,12 @@ class BulkImportSaveHandler {
     if (actor == null) {
       throw StateError(l10n.authSessionFailed);
     }
+    if (!context.mounted) return null;
+    final dateConfirmed = await confirmImportDates(
+      context: context,
+      dates: blocks.map((block) => block.parsedDate),
+    );
+    if (!dateConfirmed || !context.mounted) return null;
 
     final requests = <ActivityCreateRequest>[];
     for (final request in preparation.requests) {
@@ -224,8 +231,10 @@ class BulkImportSaveHandler {
       await showDialog<void>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: Text(context.l10n.bulkImportCompletedTitle),
-          content: Text(summaryLines.join('\n')),
+          title: Text(result.addedAssignmentCount == 0
+              ? 'Yeni personel eklenmedi'
+              : context.l10n.bulkImportCompletedTitle),
+          content: SingleChildScrollView(child: Text(summaryLines.join('\n'))),
           actions: [
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext),
@@ -235,15 +244,20 @@ class BulkImportSaveHandler {
         ),
       );
       if (!context.mounted) return null;
-      Navigator.pop(context, true);
-      AppNotifications.success(
-        context.l10n.bulkImportSuccessMessage(
-          blocks.length,
-          preparation.requests.length,
-          result.addedAssignmentCount,
-        ),
+      final added = result.addedAssignmentCount > 0;
+      final message = context.l10n.bulkImportSuccessMessage(
+        blocks.length,
+        preparation.requests.length,
+        result.addedAssignmentCount,
       );
-      return true;
+      Navigator.pop(context, added);
+      if (added) {
+        AppNotifications.success(message);
+      } else {
+        AppNotifications.warning('Yeni personel eklenmedi. '
+            'Zaten kayıtlı ve çakışan personelleri kontrol edin.');
+      }
+      return added;
     }
     return null;
   }

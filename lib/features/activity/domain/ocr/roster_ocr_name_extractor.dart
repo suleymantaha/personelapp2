@@ -62,6 +62,8 @@ class RosterOcrExtractionResult {
 
   static String? _activityFor(String? hint) {
     final folded = RosterOcrNameExtractor.fold(hint ?? '');
+    if (folded == 'meti') return 'METİ';
+    if (folded == 'kazanci') return 'KAZANCI';
     if (folded.contains('garaj')) return 'GARAJ NÖB.';
     if (folded.contains('ttza')) return 'TTZA NÖB.';
     if (folded.contains('mebs')) return 'MEBS NÖB.';
@@ -96,15 +98,16 @@ class RosterOcrNameExtractor {
       }
 
       defaultDate ??= _extractDate(normalized);
-      titleActivity ??= _extractTitleActivity(normalized);
 
       if (_isNonPersonnelLine(normalized)) {
+        titleActivity ??= _extractTitleActivity(normalized);
         ignored++;
         continue;
       }
 
       final candidate = _extractNameCandidate(normalized, lineNumber);
       if (candidate == null) {
+        titleActivity ??= _extractTitleActivity(normalized);
         if (names.isNotEmpty && _isPotentialSurnameLine(normalized)) {
           final prev = names.removeLast();
           names.add(
@@ -186,18 +189,24 @@ class RosterOcrNameExtractor {
       'nobet',
       'nöbet',
       'isim listesi',
+      'isim cizelgesi',
       'sayfa',
       'whatsapp image',
       'excel',
     ];
     if (labels.any((label) => folded == fold(label))) return true;
     if (folded.startsWith('sayfa ')) return true;
+    if (RegExp(r'^kazanci(?: gorevi)?$').hasMatch(folded)) return true;
     if (_isActivityOnlyLine(line)) return true;
     return false;
   }
 
   static bool _isActivityOnlyLine(String line) {
     final folded = fold(line).replaceAll(RegExp(r'[^a-z0-9 ]'), ' ').trim();
+    if (folded.isNotEmpty &&
+        folded.split(RegExp(r'\s+')).every((word) => word == 'meti')) {
+      return true;
+    }
     const activityWords = {
       'sabah',
       'aksam',
@@ -222,7 +231,7 @@ class RosterOcrNameExtractor {
     var working = line;
     working = working.replaceFirst(RegExp(r'^\s*\d+\s*[.)\-:]?\s*'), '');
 
-    final activityHint = _extractActivityHint(working);
+    var activityHint = _extractActivityHint(working);
     if (activityHint != null) {
       working = working
           .replaceFirst(_activityHintPattern, ' ')
@@ -238,6 +247,22 @@ class RosterOcrNameExtractor {
     if (rankMatch != null) {
       rank = MilitaryRankNormalizer.normalizeRank(rankMatch.group(0)!);
       working = working.substring(rankMatch.end).trim();
+    }
+
+    final withoutMetiCells =
+        working.replaceFirst(_trailingMetiCellsPattern, '').trim();
+    if (withoutMetiCells != working && _looksLikePersonName(withoutMetiCells)) {
+      working = withoutMetiCells;
+      activityHint ??= 'METİ';
+    }
+
+    final withoutKazanciCells = working
+        .replaceFirst(RegExp(r'(?:\s+KAZANCI)+\s*$', caseSensitive: false), '')
+        .trim();
+    if (withoutKazanciCells != working &&
+        _looksLikePersonName(withoutKazanciCells)) {
+      working = withoutKazanciCells;
+      activityHint ??= 'KAZANCI';
     }
 
     working = working
@@ -258,7 +283,7 @@ class RosterOcrNameExtractor {
   }
 
   static final RegExp _rankPattern = RegExp(
-    r'^(J\s*[.]?\s*(?:(?:Per|İkm|Ikm|Mu|Mhb|Bkm|Asyş|Asys|İst|Ist|Uls|Mly|Tbp|Sağ|Sag|Hrk)\s*[.]?\s*)?'
+    r'^(J\s*[.]?\s*(?:(?:Per|İkm|Ikm|Mu|Mhb|Bkm|Asyş|Asys|İst|Ist|İs|Is|Uls|Mly|Tbp|Sağ|Sag|Hrk)\s*[.]?\s*)?'
     r'(?:(?:Asb|Uzm)\s*[.]?\s*(?:Kd\s*[.]?\s*)?'
     r'(?:Ü[.]?Çvş|U[.]?Cv[sş]|Üçvş|Ucv[sş]?|Çvş|Cv[sş]?|Bçvş|Bcvs)|'
     r'Ütğm|Utgm|Tğm|Tgm|Astğm|Astgm|Yzb)\s*[.]?)\s*',
@@ -282,12 +307,24 @@ class RosterOcrNameExtractor {
     caseSensitive: false,
   );
 
+  static final RegExp _metiPattern = RegExp(
+    r'(?<![A-Za-zÇĞİÖŞÜçğıöşü])MET[İI](?![A-Za-zÇĞİÖŞÜçğıöşü])',
+    caseSensitive: false,
+  );
+
+  static final RegExp _trailingMetiCellsPattern = RegExp(
+    r'(?:\s+MET[İI])+\s*$',
+    caseSensitive: false,
+  );
+
   static String? _extractTitleActivity(String line) {
     final folded = fold(line);
     if (folded.contains('heybet')) return 'HEYBET';
     if (folded.contains('hazir kita')) return 'HAZIR KITA';
     if (folded.contains('guluskur')) return 'GÜLÜŞKÜR';
     if (folded.contains('nobet')) return 'NÖBETÇİ';
+    if (_metiPattern.hasMatch(line)) return 'METİ';
+    if (RegExp(r'\bkazanci\b').hasMatch(folded)) return 'KAZANCI';
     if (folded.contains('gorev')) return 'GÖREVLİ';
     return null;
   }
@@ -329,6 +366,9 @@ class RosterOcrNameExtractor {
       'whatsapp',
       'image',
       'excel',
+      'cizelgesi',
+      'listesi',
+      'tarihli',
       'sabah',
       'aksam',
       'gece',
@@ -354,11 +394,14 @@ class RosterOcrNameExtractor {
 
   static bool _isPotentialSurnameLine(String line) {
     if (_isNonPersonnelLine(line)) return false;
-    final cleaned = MilitaryRankNormalizer.cleanOcrDigits(line.trim()).replaceAll(RegExp(r'^\d+[.)\-:]?\s*'), '');
-    final words = cleaned.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    final cleaned = MilitaryRankNormalizer.cleanOcrDigits(line.trim())
+        .replaceAll(RegExp(r'^\d+[.)\-:]?\s*'), '');
+    final words =
+        cleaned.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
     if (words.length == 1) {
       final word = words.first;
-      return word.length >= 2 && RegExp(r'^[A-Za-zÇĞİÖŞÜçğıöşü]+$').hasMatch(word);
+      return word.length >= 2 &&
+          RegExp(r'^[A-Za-zÇĞİÖŞÜçğıöşü]+$').hasMatch(word);
     }
     return false;
   }

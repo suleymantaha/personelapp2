@@ -65,6 +65,7 @@ final RegExp _shiftWordPattern = RegExp(
 );
 
 const Map<String, String> _activityTypes = {
+  'kazanci': DutyOrLeaveType.kazanci,
   'gülüşkür': DutyOrLeaveType.guluskur,
   'guluskur': DutyOrLeaveType.guluskur,
   'hazır kıta': DutyOrLeaveType.hazirKita,
@@ -91,6 +92,7 @@ const Map<String, String> _activityTypes = {
 };
 
 const Map<String, String> _activityDisplayNames = {
+  'kazanci': 'Kazancı',
   'gülüşkür': 'Gülüşkür',
   'guluskur': 'Gülüşkür',
   'hazır kıta': 'Hazır Kıta',

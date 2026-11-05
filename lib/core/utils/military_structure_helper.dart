@@ -159,7 +159,8 @@ class MilitaryStructureHelper {
     return d.contains('NÖB') ||
         d.contains('NÖBET') ||
         d.contains('NOBET') ||
-        d.contains('HEYBET KOMUTANI');
+        d.contains('HEYBET KOMUTANI') ||
+        d == 'KAZANCI';
   }
 
   /// Maps raw squad/tim or birlik text to its official standardized Jandarma squad name

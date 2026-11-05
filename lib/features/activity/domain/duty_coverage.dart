@@ -10,6 +10,7 @@ class DutyCoverage {
     'GARAJ NÖB.',
     'TTZA NÖB.',
     'MEBS NÖB.',
+    'KAZANCI',
   };
 
   static bool spansTwoDays(String duty) =>

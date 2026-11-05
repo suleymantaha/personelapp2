@@ -70,7 +70,8 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     return [
       for (final block in blocks)
         block.copyWith(
-          parsedDate: target.tarih,
+          parsedDate:
+              block.parsedDate.trim().isEmpty ? target.tarih : block.parsedDate,
           parsedActivityType: block.parsedActivityType.trim().isEmpty
               ? target.faaliyetAdi
               : block.parsedActivityType,
@@ -79,6 +80,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
   }
 
   Future<void> _saveAllToFaaliyet() async {
+    if (_saveInProgress) return;
     if (_parsedBlocks.isEmpty) {
       AppNotifications.warning(context.l10n.bulkImportNoCardsToSave);
       return;
@@ -104,6 +106,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       return;
     }
 
+    _saveInProgress = true;
     try {
       final actor = ref.read(userSessionProvider);
       if (widget.targetActivity != null) {
@@ -142,6 +145,7 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         AppNotifications.error(context.l10n.bulkImportError(e.toString()));
       }
     } finally {
+      _saveInProgress = false;
       if (mounted) {
         _updateState(() {
           _isSaving = false;
@@ -156,6 +160,12 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
     if (actor == null) {
       throw StateError(context.l10n.authSessionFailed);
     }
+    final dateConfirmed = await confirmImportDates(
+      context: context,
+      dates: _parsedBlocks.map((block) => block.parsedDate),
+      targetDate: target.tarih,
+    );
+    if (!dateConfirmed || !mounted) return;
 
     var assignments = <PersonnelAssignmentInput>[];
     for (final block in _parsedBlocks) {
@@ -229,12 +239,15 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         if (result.conflictSkippedCount > 0)
           context.l10n
               .bulkImportSummarySkippedConflict(result.conflictSkippedCount),
+        ...result.conflictDescriptions,
       ];
       await showDialog<void>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: Text(context.l10n.bulkImportCompletedTitle),
-          content: Text(summaryLines.join('\n')),
+          title: Text(result.addedCount == 0
+              ? 'Yeni personel eklenmedi'
+              : context.l10n.bulkImportCompletedTitle),
+          content: SingleChildScrollView(child: Text(summaryLines.join('\n'))),
           actions: [
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext),
@@ -244,11 +257,15 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         ),
       );
       if (!mounted) return;
-      Navigator.pop(context, true);
-      AppNotifications.success(
-        context.l10n.bulkImportSuccessNotification(
-            target.faaliyetAdi, result.addedCount),
-      );
+      final message = context.l10n
+          .bulkImportSuccessNotification(target.faaliyetAdi, result.addedCount);
+      Navigator.pop(context, result.addedCount > 0);
+      if (result.addedCount > 0) {
+        AppNotifications.success(message);
+      } else {
+        AppNotifications.warning('Yeni personel eklenmedi. '
+            'Zaten kayıtlı ve çakışan personelleri kontrol edin.');
+      }
     } finally {
       if (mounted) {
         _updateState(() {

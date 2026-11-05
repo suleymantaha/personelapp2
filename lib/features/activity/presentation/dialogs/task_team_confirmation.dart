@@ -72,6 +72,15 @@ class _TaskTeamConfirmation extends StatefulWidget {
 
 class _TaskTeamConfirmationState extends State<_TaskTeamConfirmation> {
   final Map<int, int> _choices = {};
+  int? _commonChoice;
+
+  List<DropdownMenuItem<int>> get _teamItems => [
+        for (final team in widget.teams)
+          DropdownMenuItem(value: team.id, child: Text(team.timAdi)),
+        if (widget.allowOutside)
+          const DropdownMenuItem(value: -1, child: Text('Tim dışı')),
+      ];
+
   @override
   Widget build(BuildContext context) => AlertDialog(
         title: const Text('Görev tarihindeki timi doğrula'),
@@ -82,26 +91,42 @@ class _TaskTeamConfirmationState extends State<_TaskTeamConfirmation> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${widget.date} tarihindeki görev timini seçin. '
+                Text('${widget.date} tarihindeki görev timi doğrulanamadı '
+                    'veya yeniden doğrulama gerekiyor. '
                     'Bu seçim yalnızca görev kaydına uygulanır; '
                     'personelin bağlı olduğu tim değişmez.'),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<int>(
+                  key: const Key('task-team-common-choice'),
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                      labelText: 'Tümüne uygulanacak görev timi'),
+                  items: _teamItems,
+                  onChanged: (value) => setState(() => _commonChoice = value),
+                ),
+                TextButton.icon(
+                  key: const Key('task-team-apply-all'),
+                  onPressed: _commonChoice == null
+                      ? null
+                      : () => setState(() {
+                            for (final id in widget.names.keys) {
+                              _choices[id] = _commonChoice!;
+                            }
+                          }),
+                  icon: const Icon(Icons.done_all_rounded),
+                  label: const Text('Bu timi tümüne uygula'),
+                ),
                 const SizedBox(height: 12),
                 for (final entry in widget.names.entries)
                   Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: DropdownButtonFormField<int>(
                         key: ValueKey('task-team-choice-${entry.key}'),
+                        initialValue: _choices[entry.key],
                         isExpanded: true,
                         decoration: InputDecoration(labelText: entry.value),
                         hint: const Text('Görev timini seçin'),
-                        items: [
-                          for (final team in widget.teams)
-                            DropdownMenuItem(
-                                value: team.id, child: Text(team.timAdi)),
-                          if (widget.allowOutside)
-                            const DropdownMenuItem(
-                                value: -1, child: Text('Tim dışı')),
-                        ],
+                        items: _teamItems,
                         onChanged: (value) {
                           if (value != null) {
                             setState(() => _choices[entry.key] = value);

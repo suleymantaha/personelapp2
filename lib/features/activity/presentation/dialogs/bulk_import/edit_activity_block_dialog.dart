@@ -150,6 +150,13 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
     final selectedDate = _selectedDate;
     final canSave =
         selectedDate != null && _activityController.text.trim().isNotEmpty;
+    final suggestedTeam = !_teamWasEdited && widget.block.taskTeamId == null
+        ? widget.availableSquads
+            .where((team) =>
+                BulkImportLearningService.normalizeTeam(team.timAdi) ==
+                BulkImportLearningService.normalizeTeam(_teamController.text))
+            .singleOrNull
+        : null;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -271,6 +278,23 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
           const SizedBox(height: 12),
 
           // Takım / Tim Seçin Dropdown
+          if (suggestedTeam != null) ...[
+            Text(
+              'Önerilen tim: ${suggestedTeam.timAdi}. '
+              'Görev tarihindeki tim henüz doğrulanmadı.',
+              style: TextStyle(color: context.pendingColor),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                key: const Key('bulk-edit-confirm-team'),
+                onPressed: () => _selectTeam(suggestedTeam.timAdi),
+                icon: const Icon(Icons.check_rounded),
+                label: const Text('Bu timi görev için doğrula'),
+              ),
+            ),
+            const SizedBox(height: 6),
+          ],
           DropdownButtonFormField<String>(
             key: const Key('bulk-edit-team-dropdown'),
             initialValue: _teamDropdownOptions.contains(_selectedTeamOption)
@@ -305,7 +329,7 @@ class _EditActivityBlockDialogState extends State<EditActivityBlockDialog> {
           TextField(
             key: const Key('bulk-edit-team'),
             controller: _teamController,
-            onChanged: (_) => _teamWasEdited = true,
+            onChanged: (_) => setState(() => _teamWasEdited = true),
             decoration: InputDecoration(
               labelText: context.l10n.bulkImportCustomTeamName,
               prefixIcon: const Icon(Icons.edit_note_rounded),

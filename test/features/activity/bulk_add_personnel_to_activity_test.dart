@@ -286,6 +286,12 @@ void main() {
       await tester.tap(find.byKey(const Key('bulk-import-save-button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byKey(const Key('import-date-approve')), findsOneWidget);
+      expect(await database.select(database.faaliyetPersonelAtamaTable).get(),
+          isEmpty);
+      await tester.tap(find.byKey(const Key('import-date-approve')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('TAMAM'), findsOneWidget);
       await tester.tap(find.text('TAMAM'));
       await tester.pumpAndSettle();

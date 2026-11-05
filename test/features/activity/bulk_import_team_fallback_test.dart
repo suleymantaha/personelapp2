@@ -107,6 +107,13 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
+      expect(find.byKey(const Key('import-date-approve')), findsOneWidget);
+      expect(
+          await database.select(database.gunlukFaaliyetTable).get(), isEmpty);
+      await tester.tap(find.byKey(const Key('import-date-approve')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
       final list = await database.select(database.gunlukFaaliyetTable).get();
       expect(list, isNotEmpty);
     },

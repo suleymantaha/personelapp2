@@ -62,7 +62,7 @@ void main() {
     expect(await db.select(db.personelIsimTakmaAdTable).get(), isEmpty);
   });
   testWidgets(
-      'all target cards use target date and session logout clears matches',
+      'target preview keeps source dates and session logout clears matches',
       (tester) async {
     final id = await db.into(db.gunlukFaaliyetTable).insert(
         GunlukFaaliyetTableCompanion.insert(
@@ -86,7 +86,8 @@ void main() {
     final preview = tester.widget<BulkImportPreviewSection>(
         find.byType(BulkImportPreviewSection));
     expect(preview.blocks.length, 2);
-    expect(preview.blocks.map((b) => b.parsedDate), everyElement(target.tarih));
+    expect(
+        preview.blocks.map((b) => b.parsedDate), ['2026-07-25', '2026-07-26']);
     expect(preview.blocks.first.personnelList.single.matchedPersonnelId,
         isNotNull);
     container.read(userSessionProvider.notifier).state = null;

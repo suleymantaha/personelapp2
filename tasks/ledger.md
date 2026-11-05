@@ -4,6 +4,9 @@ Tek yazıcı: koordinatör. Henüz bu paketle başlatılmış proje görevi yokt
 
 | Görev ID | Hedef | Durum | Aktif kayıt / kanıt |
 |---|---|---|---|
+| 2026-11-03-kazanci-apk10331 | CI APK10331; statik PASS, update kabulü BLOCKED | IN_REVIEW | [Kayıt](active/2026-11-03-kazanci-apk10331.md) |
+| 2026-11-03-kazanci | Kazancı iki günlük X ve nöbet heyeti gruplaması | DONE | [Kayıt](active/2026-11-03-kazanci.md) |
+| 2026-11-03-bulk-import-repair | OCR ve tarih/kart aktarım onarımı | DONE | [Kayıt](active/2026-11-03-bulk-import-repair.md) |
 | 2026-11-01-audit-hardening-apk | Audit düzeltmeleri ve veri koruyan imzalı APK | DONE | [Kayıt](active/2026-11-01-audit-hardening-apk.md) |
 | 2026-11-01-codebase-audit | Kod değişmeden rapor/test ve Android audit | DONE | [Kayıt](active/2026-11-01-codebase-audit.md) |
 | 2026-10-30-release-10324 | APK 1.0.9+10324, özel Drive ve CI'sız GitHub | DONE | [Kayıt](active/2026-10-30-release-10324.md) |
