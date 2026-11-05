@@ -149,9 +149,9 @@ void main() {
       await tester.drag(scrollable, const Offset(0, -360));
       await tester.pumpAndSettle();
 
-      // The header scrolls completely out of the sliver viewport; it is
-      // intentionally no longer mounted while the rows occupy that space.
-      expect(heading, findsNothing);
+      // The heading must leave the viewport even while the longer summary
+      // keeps its parent sliver mounted.
+      expect(heading.hitTestable(), findsNothing);
       expect(tester.getTopLeft(back).dy, closeTo(backTopBefore, 1));
       expect(tester.getSize(back).height, 52);
       expect(tester.getSize(save).height, 52);
@@ -195,7 +195,7 @@ void main() {
     expect(tester.getSize(back).height, 52);
     expect(tester.getSize(save).height, 52);
     expect(find.text('Önizlemeye Dön'), findsOneWidget);
-    expect(find.text('TÜMÜNÜ KAYDET'), findsOneWidget);
+    expect(find.text('Onayla ve Kaydet'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

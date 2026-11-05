@@ -17,7 +17,7 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
       snap: true,
       toolbarHeight: 56,
       titleSpacing: 4,
-      leading: _isMobileSearchOpen ? null : const AppBackButton(),
+      leading: const AppBackButton(),
       title: _isMobileSearchOpen
           ? TextField(
               key: const ValueKey('matrix-personnel-search'),
@@ -110,8 +110,11 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
               ? context.l10n.matrixCloseSearchTooltip
               : context.l10n.matrixSearchPersonnelTooltip,
           onPressed: () {
-            FocusScope.of(context).unfocus();
-            _updateState(() => _isMobileSearchOpen = !_isMobileSearchOpen);
+            if (_isMobileSearchOpen) {
+              _dismissSearch();
+            } else {
+              _updateState(() => _isMobileSearchOpen = true);
+            }
           },
           icon: Icon(
             _isMobileSearchOpen
@@ -270,20 +273,25 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
   }
 
   List<PersonelTableData> _personnelAvailableToSession(
-    List<PersonelTableData> personnel, UserSessionState? session,
+    List<PersonelTableData> personnel,
+    UserSessionState? session,
     Map<int, Map<int, MatrixDayCell>> matrixData,
   ) {
     return personnel.where((person) {
       if (!person.aktif && !matrixData.containsKey(person.id)) return false;
       if (session == null || session.isAdmin) return true;
       return session.timId != null &&
-        (person.timId == session.timId || matrixData.containsKey(person.id));
+          (person.timId == session.timId || matrixData.containsKey(person.id));
     }).map((person) {
-      final taskTeams = (matrixData[person.id]?.values ?? const <MatrixDayCell>[])
-        .expand((cell) => cell.entries).map((entry) => entry.taskTeamId)
-        .whereType<int>().toSet();
+      final taskTeams =
+          (matrixData[person.id]?.values ?? const <MatrixDayCell>[])
+              .expand((cell) => cell.entries)
+              .map((entry) => entry.taskTeamId)
+              .whereType<int>()
+              .toSet();
       return taskTeams.length == 1
-        ? person.copyWith(timId: Value(taskTeams.single)) : person;
+          ? person.copyWith(timId: Value(taskTeams.single))
+          : person;
     }).toList();
   }
 
@@ -327,27 +335,46 @@ extension _MonthlyMatrixAppBar on _MonthlyMatrixScreenState {
     try {
       final session = ref.read(userSessionProvider);
       if (session == null) throw StateError(l10n.commonSessionNotVerified);
-      final team = session.isAdmin ? null :
-        await ref.read(personnelRepositoryProvider).currentCommanderTeam(session.username);
-      if (!session.isAdmin && team == null) throw StateError(l10n.rosterOutputCommanderTeamRevoked);
+      final team = session.isAdmin
+          ? null
+          : await ref
+              .read(personnelRepositoryProvider)
+              .currentCommanderTeam(session.username);
+      if (!session.isAdmin && team == null) {
+        throw StateError(l10n.rosterOutputCommanderTeamRevoked);
+      }
       final month = DateFormat('yyyy-MM').format(_selectedMonth);
-      final currentMatrix = await ref.read(matrixRepositoryProvider)
-        .watchMonthlyMatrix(month, commanderUsername: session.isAdmin ? null : session.username).first;
-      final latestPeople = await ref.read(personnelRepositoryProvider)
-        .watchAllPersonnelSorted(includeInactive: true).first;
-      final currentSession = session.isAdmin ? session :
-        UserSessionState(username: session.username, role: session.role, timId: team);
+      final currentMatrix = await ref
+          .read(matrixRepositoryProvider)
+          .watchMonthlyMatrix(month,
+              commanderUsername: session.isAdmin ? null : session.username)
+          .first;
+      final latestPeople = await ref
+          .read(personnelRepositoryProvider)
+          .watchAllPersonnelSorted(includeInactive: true)
+          .first;
+      final currentSession = session.isAdmin
+          ? session
+          : UserSessionState(
+              username: session.username, role: session.role, timId: team);
       final selectedIds = personnel.map((person) => person.id).toSet();
-      final currentPeople = _personnelAvailableToSession(latestPeople, currentSession, currentMatrix)
-        .where((person) => selectedIds.contains(person.id)).toList();
-      if (currentPeople.isEmpty) throw StateError(l10n.matrixNoAuthorizedRecordsForExport);
+      final currentPeople = _personnelAvailableToSession(
+              latestPeople, currentSession, currentMatrix)
+          .where((person) => selectedIds.contains(person.id))
+          .toList();
+      if (currentPeople.isEmpty) {
+        throw StateError(l10n.matrixNoAuthorizedRecordsForExport);
+      }
       await ExcelXmlGenerator.exportAndShareXml(
-        personnel: orderMatrixPersonnel(currentPeople, ref.read(allSquadsProvider).valueOrNull ?? []),
-        matrixData: currentMatrix, year: _selectedMonth.year, month: _selectedMonth.month);
+          personnel: orderMatrixPersonnel(
+              currentPeople, ref.read(allSquadsProvider).valueOrNull ?? []),
+          matrixData: currentMatrix,
+          year: _selectedMonth.year,
+          month: _selectedMonth.month);
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.matrixExportFailed('$error'))));
+            SnackBar(content: Text(context.l10n.matrixExportFailed('$error'))));
       }
     }
   }

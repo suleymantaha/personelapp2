@@ -1505,7 +1505,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Varsayılan kapalıdır; veri yalnızca bu cihazda tutulur.';
 
   @override
-  String get bulkImportParseButton => 'Metni Ayrıştır ve Kartları Oluştur';
+  String get bulkImportParseButton => 'Metni Ayrıştır ve Önizle';
 
   @override
   String get bulkImportParsingButton => 'Ayrıştırılıyor...';
@@ -1832,8 +1832,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Mesaj metnini buraya yapıştırın…';
 
   @override
-  String get bulkImportParseAndCreateCards =>
-      'Metni Ayrıştır ve Kartları Oluştur';
+  String get bulkImportParseAndCreateCards => 'Metni Ayrıştır ve Önizle';
 
   @override
   String get bulkImportEmptyNoCardIssues => 'Kartlara bağlı sorun kalmadı';

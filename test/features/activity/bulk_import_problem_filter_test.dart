@@ -113,7 +113,7 @@ void main() {
 1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     // Stat kartları görünmeli (Faz 2)
@@ -156,7 +156,7 @@ void main() {
 1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     // Kompakt hata özeti "Kaydedilemiyor" metnini göstermeli (Faz 3)
@@ -209,7 +209,7 @@ void main() {
 1- J.Uzm.Çvş. Ali DENEME
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     expect(find.text('Doğruluk Paneli'), findsOneWidget);
@@ -265,7 +265,7 @@ void main() {
 1- J.Uzm.Çvş. Ali DENEME
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Hazır'));
@@ -310,7 +310,7 @@ HEYBET
 1- J.Uzm.Çvş. Ali DENEME
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Sorunlar'));
@@ -358,7 +358,7 @@ HEYBET
 1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('bulk-goto-problem')));
@@ -412,7 +412,7 @@ HEYBET
 1- J.Uzm.Çvş. Ali DENEME
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     // Ali DENEME is matched (100% confidence), but KARAKEÇİ team differs from 6-B Timi in DB

@@ -232,19 +232,24 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
       final reports = await _loadDomainReports();
       final existingAssignments = await _loadExistingAssignments();
       final seenPersonnelIds = <int>{};
+      final decisions = <_ImportDecision>[];
       final conflictDescriptions = <String>[];
       var addedCount = 0;
       var alreadyAssignedCount = 0;
       var conflictSkippedCount = 0;
 
       for (final assignment in assignments) {
-        if (!seenPersonnelIds.add(assignment.personnelId) ||
-            existingPersonnelIds.contains(assignment.personnelId)) {
-          alreadyAssignedCount++;
-          continue;
-        }
         final duty = assignment.duty.trim();
         if (duty.isEmpty) continue;
+        if (existingPersonnelIds.contains(assignment.personnelId)) {
+          alreadyAssignedCount++;
+          decisions.add((
+            assignment: assignment,
+            status: ActivityImportStatus.alreadyAssigned
+          ));
+          continue;
+        }
+        if (!seenPersonnelIds.add(assignment.personnelId)) continue;
 
         var status = ConflictChecker.evaluateAssignmentStatus(
           personelId: assignment.personnelId,
@@ -255,6 +260,8 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
         );
         if (status == AssignmentStatus.beklemede) {
           conflictSkippedCount++;
+          decisions.add(
+              (assignment: assignment, status: ActivityImportStatus.conflict));
           conflictDescriptions.add(
             'Personel #${assignment.personnelId}: '
             '${activity.tarih} tarihinde başka bir kayıt bulunuyor.',
@@ -287,6 +294,8 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
         );
         existingPersonnelIds.add(assignment.personnelId);
         addedCount++;
+        decisions
+            .add((assignment: assignment, status: ActivityImportStatus.added));
       }
 
       return ActivityAssignmentBatchResult(
@@ -294,6 +303,12 @@ extension ActivityRepositoryAssignmentOperations on ActivityRepository {
         alreadyAssignedCount: alreadyAssignedCount,
         conflictSkippedCount: conflictSkippedCount,
         conflictDescriptions: conflictDescriptions,
+        outcomes: await _buildImportOutcomes(
+          activityName: activity.faaliyetAdi,
+          date: activity.tarih,
+          decisions: decisions,
+          targetActivityId: activityId,
+        ),
       );
     });
   }

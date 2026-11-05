@@ -84,7 +84,7 @@ Ali DENEME
 6/B Hazır Kıta Listesi
 Veli SAĞLAM
 ''');
-      await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+      await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
       await tester.pumpAndSettle();
 
       // Initial state: 2 cards with missing dates => "2 kritik hata"
@@ -152,7 +152,7 @@ Veli SAĞLAM
         find.byType(TextField).first,
         "6/B Heybet Listesi\n25.07.2026\n25:00-08:00\n1- J.Uzm.Çvş. Ali DENEME",
       );
-      await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+      await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
       await tester.pumpAndSettle();
       expect(find.textContaining('1 kritik hata'), findsOneWidget);
       expect(find.text('Tüm kontroller tamam'), findsNothing);
@@ -163,7 +163,7 @@ Veli SAĞLAM
         find.byType(TextField).first,
         "6/B Heybet Listesi\n25.07.2026\n08:00-19:00\n1- J.Uzm.Çvş. Ali DENEME",
       );
-      await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+      await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
       await tester.pumpAndSettle();
       expect(find.textContaining('kritik hata'), findsNothing);
       expect(find.text('Tüm kontroller tamam'), findsOneWidget);

@@ -92,9 +92,10 @@ class BulkImportConfirmSection extends StatelessWidget {
                         hasBlocking
                             ? context.l10n.bulkImportConfirmResolveIssues
                             : targetActivityName == null
-                                ? 'Tarih ve göreve göre kart oluşturulur. Aynı tarih ve '
+                                ? 'Bu kartlar henüz kaydedilmemiş önizlemedir. Onayınızla tarih ve göreve göre kart oluşturulur. Aynı tarih ve '
                                     'görevde kart varsa mevcut kart tamamlanır.'
-                                : 'Mevcut karta eklenecek: $targetActivityName • '
+                                : 'Bu kartlar henüz kaydedilmemiş önizlemedir. '
+                                    'Mevcut karta eklenecek: $targetActivityName • '
                                     '${displayDate(targetActivityDate ?? '')}. '
                                     'Yeni kart oluşturulmaz. Kaynak tarihleri aşağıdadır; '
                                     'farklıysa kaydetmeden önce onayınız istenir.',
@@ -359,7 +360,7 @@ class _ConfirmationActions extends StatelessWidget {
                             const Icon(Icons.check_rounded, size: 20),
                             const SizedBox(width: 6),
                             Text(
-                              context.l10n.bulkImportConfirmSaveButton,
+                              'Onayla ve Kaydet',
                               maxLines: 1,
                               softWrap: false,
                               style:

@@ -86,18 +86,43 @@ class ActivityMergeResult {
   final List<int> skippedPersonnelIds;
 }
 
+enum ActivityImportStatus { added, alreadyAssigned, conflict }
+
+class ActivityImportOutcome {
+  const ActivityImportOutcome({
+    required this.personnelId,
+    required this.name,
+    required this.rank,
+    required this.activityName,
+    required this.date,
+    required this.duty,
+    required this.status,
+    this.existingDescription,
+  });
+  final int personnelId;
+  final String name;
+  final String rank;
+  final String activityName;
+  final String date;
+  final String duty;
+  final ActivityImportStatus status;
+  final String? existingDescription;
+}
+
 class ActivityBatchCreateResult {
   const ActivityBatchCreateResult({
     required this.activityIds,
     required this.addedAssignmentCount,
     required this.alreadyAssignedCount,
     required this.skippedAssignmentCount,
+    this.outcomes = const [],
     this.conflictDescriptions = const [],
   });
   final List<int> activityIds;
   final int addedAssignmentCount;
   final int alreadyAssignedCount;
   final int skippedAssignmentCount;
+  final List<ActivityImportOutcome> outcomes;
   final List<String> conflictDescriptions;
 }
 
@@ -138,11 +163,13 @@ class ActivityAssignmentBatchResult {
     required this.addedCount,
     required this.alreadyAssignedCount,
     required this.conflictSkippedCount,
+    this.outcomes = const [],
     this.conflictDescriptions = const [],
   });
   final int addedCount;
   final int alreadyAssignedCount;
   final int conflictSkippedCount;
+  final List<ActivityImportOutcome> outcomes;
   final List<String> conflictDescriptions;
 }
 

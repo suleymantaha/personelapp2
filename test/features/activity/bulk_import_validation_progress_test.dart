@@ -204,7 +204,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, text);
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
   }
 
@@ -252,7 +252,7 @@ void main() {
         await tester.ensureVisible(fix);
         await tester.tap(fix);
         await tester.pumpAndSettle();
-        expect(find.text('Metni Ayrıştır ve Kartları Oluştur'), findsOneWidget);
+        expect(find.text('Metni Ayrıştır ve Önizle'), findsOneWidget);
         expect(
           tester
               .widget<TextField>(find.byType(TextField).first)

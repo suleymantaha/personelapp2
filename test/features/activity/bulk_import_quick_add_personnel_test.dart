@@ -61,7 +61,7 @@ void main() {
 1- J.Uzm.Çvş. Hakan KAYA
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     // Personel DB'de olmadığı için eşleşmemiş görünmeli ve "+ 6-B Timi'ne Ekle" butonu olmalı

@@ -183,7 +183,11 @@ void main() {
       ),
     ], actor: admin);
 
-    expect(result.activityIds, hasLength(2));
+    expect(result.activityIds, hasLength(1));
+    final retainedCards =
+        await database.select(database.gunlukFaaliyetTable).get();
+    expect(retainedCards, hasLength(1));
+    expect(retainedCards.single.faaliyetAdi, 'Birinci');
     expect(result.addedAssignmentCount, 1);
     expect(result.skippedAssignmentCount, 1);
     expect(result.conflictDescriptions.single, contains('Ali Deneme'));

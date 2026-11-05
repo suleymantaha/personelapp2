@@ -88,3 +88,5 @@ Bu boş tablo tamamlanmış görev veya uygulama kanıtı değildir.
 - 2026-11-05 archive-actions-personnel-order: DONE — [task](active/2026-11-05-archive-actions-personnel-order.md); top archive actions and shared personnel picker ordering; 1035 PASS / 1 SKIP, analyze and independent review PASS; no commit/push/APK.
 
 - 2026-11-05-local-release-10332: DONE — [task](active/2026-11-05-local-release-10332.md); local integration/build/private Drive PASS;1079PASS/1SKIP, same signer, retained-data upgrade and independent acceptance PASS; no CI/push/main update.
+
+- 2026-11-06-import-back-release-10333: RUNNING — [task](active/2026-11-06-import-back-release-10333.md); approved import result/back/emptycard fixes, local signedAPK/privateDrive; CI forbidden.

@@ -18,6 +18,7 @@ part 'activity_repository_dates.dart';
 part 'activity_repository_date_teams.dart';
 part 'activity_repository_queries.dart';
 part 'activity_repository_conflicts.dart';
+part 'activity_repository_import_outcomes.dart';
 part 'activity_repository_assignments.dart';
 part 'activity_repository_transfers.dart';
 part 'activity_repository_task_teams.dart';

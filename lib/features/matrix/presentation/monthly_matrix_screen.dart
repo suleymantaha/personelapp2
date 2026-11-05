@@ -49,6 +49,25 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
     super.dispose();
   }
 
+  bool get _hasSearch => _isMobileSearchOpen || _searchQuery.isNotEmpty;
+
+  void _dismissSearch() {
+    FocusScope.of(context).unfocus();
+    _searchController.clear();
+    setState(() {
+      _isMobileSearchOpen = false;
+      _searchQuery = '';
+    });
+  }
+
+  Widget _guardSearchBack(Widget child) => PopScope(
+        canPop: !_hasSearch,
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop && _hasSearch) _dismissSearch();
+        },
+        child: child,
+      );
+
   @override
   Widget build(BuildContext context) {
     final yearMonthStr = DateFormat('yyyy-MM').format(_selectedMonth);
@@ -57,16 +76,22 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
     final matrixAsync = ref.watch(monthlyMatrixProvider(yearMonthStr));
     final storedSession = ref.watch(userSessionProvider);
     final authorizedTeam = storedSession?.isAdmin == false
-      ? ref.watch(commanderAuthorityProvider).valueOrNull : null;
+        ? ref.watch(commanderAuthorityProvider).valueOrNull
+        : null;
     final session = storedSession != null && !storedSession.isAdmin
-      ? UserSessionState(username: storedSession.username,
-          role: storedSession.role, timId: authorizedTeam) : storedSession;
+        ? UserSessionState(
+            username: storedSession.username,
+            role: storedSession.role,
+            timId: authorizedTeam)
+        : storedSession;
     final matrixData = matrixAsync.isLoading
-      ? <int, Map<int, MatrixDayCell>>{} : matrixAsync.valueOrNull ?? {};
+        ? <int, Map<int, MatrixDayCell>>{}
+        : matrixAsync.valueOrNull ?? {};
 
     final availablePersonnel = personnelAsync.valueOrNull == null
         ? <PersonelTableData>[]
-        : _personnelAvailableToSession(personnelAsync.valueOrNull!, session, matrixData);
+        : _personnelAvailableToSession(
+            personnelAsync.valueOrNull!, session, matrixData);
     final visiblePersonnelCount =
         availablePersonnel.where(_matchesPersonnelSearch).length;
 
@@ -125,11 +150,12 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, st) => Center(child: Text('${context.l10n.commonError}: $err')),
+      error: (err, st) =>
+          Center(child: Text('${context.l10n.commonError}: $err')),
     );
 
     if (MediaQuery.sizeOf(context).width < 680) {
-      return Scaffold(
+      return _guardSearchBack(Scaffold(
         body: TurkishFlagWatermarkBackground(
           child: NestedScrollView(
             floatHeaderSlivers: true,
@@ -144,10 +170,10 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
             body: body,
           ),
         ),
-      );
+      ));
     }
 
-    return Scaffold(
+    return _guardSearchBack(Scaffold(
       appBar: _buildMatrixAppBar(
         context: context,
         totalPersonnelCount: availablePersonnel.length,
@@ -157,6 +183,6 @@ class _MonthlyMatrixScreenState extends ConsumerState<MonthlyMatrixScreen> {
       body: TurkishFlagWatermarkBackground(
         child: body,
       ),
-    );
+    ));
   }
 }

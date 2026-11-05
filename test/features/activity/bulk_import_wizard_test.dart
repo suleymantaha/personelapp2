@@ -72,7 +72,7 @@ void main() {
 1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     // "Soruna Git" butonu (Key: bulk-goto-problem) görünmeli
@@ -115,7 +115,7 @@ void main() {
 1- J.Uzm.Çvş. Ahmet KAYIP
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     // "Soruna Git" butonuna tıkla ile wizard başlat
@@ -168,7 +168,7 @@ void main() {
 1- J.Uzm.Cvs. Ahmet YOK
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('bulk-goto-problem')));
@@ -224,7 +224,7 @@ void main() {
 1- J.Uzm.Çvş. Mehmet BİLİNMEYEN
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     // Kompakt hata özeti "Kaydedilemiyor" göstermeli
@@ -273,7 +273,7 @@ Veli SAĞLAM
 03 AĞUSTOS 2026
 ''',
     );
-    await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+    await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
     await tester.pumpAndSettle();
 
     // Tarih 2026-08-03 atanmış olmalı ve Kaydedilemiyor engelleyici mesajı çıkmamalı
@@ -308,7 +308,7 @@ Veli SAĞLAM
         find.byType(TextField).first,
         "6/B Heybet Listesi\n25.07.2026\n1- J.Uzm.Çvş. Mehmet BİLİNMEYEN\n6/B Devriye Listesi\n25.07.2026\n1- J.Uzm.Çvş. Veli SAĞLAM",
       );
-      await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+      await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('bulk-goto-problem')));
       await tester.pumpAndSettle();

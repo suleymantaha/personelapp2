@@ -57,6 +57,16 @@ class _PersonnelManagementScreenState
           FocusScope.of(context).unfocus();
         }
       });
+  bool get _hasTransientView => _searchVisible || _expandedTeamIds.isNotEmpty;
+
+  void _dismissTransientView() {
+    if (_searchVisible) {
+      _toggleSearch();
+    } else if (_expandedTeamIds.isNotEmpty) {
+      setState(() => _expandedTeamIds.remove(_expandedTeamIds.last));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_ordering) return _buildOrderScaffold();
@@ -64,33 +74,39 @@ class _PersonnelManagementScreenState
     final isAdmin = session?.isAdmin ?? false;
     final personnel = ref.watch(allPersonnelProvider);
     final squads = ref.watch(allSquadsProvider);
-    return Scaffold(
-      appBar: _buildPersonnelAppBar(context: context, isAdmin: isAdmin),
-      body: SingleChildScrollView(
-          child: ResponsiveCenter(
-              maxWidth: AppSpacing.readableContentWidth,
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ..._buildPersonnelFilters(
-                        context: context,
-                        isAdmin: isAdmin,
-                        session: session,
-                        squadsAsync: squads),
-                    personnel.when(
-                        data: (people) => squads.when(
-                            data: (teams) =>
-                                _buildTeamList(people, teams, session),
-                            loading: () => const Center(
-                                child: CircularProgressIndicator()),
-                            error: (error, stack) => Text(context.l10n
-                                .commonErrorWithDetails(error.toString()))),
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
-                        error: (error, stack) => Text(context.l10n
-                            .commonErrorWithDetails(error.toString()))),
-                    const SizedBox(height: 24),
-                  ]))),
+    return PopScope(
+      canPop: !_hasTransientView,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _dismissTransientView();
+      },
+      child: Scaffold(
+        appBar: _buildPersonnelAppBar(context: context, isAdmin: isAdmin),
+        body: SingleChildScrollView(
+            child: ResponsiveCenter(
+                maxWidth: AppSpacing.readableContentWidth,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ..._buildPersonnelFilters(
+                          context: context,
+                          isAdmin: isAdmin,
+                          session: session,
+                          squadsAsync: squads),
+                      personnel.when(
+                          data: (people) => squads.when(
+                              data: (teams) =>
+                                  _buildTeamList(people, teams, session),
+                              loading: () => const Center(
+                                  child: CircularProgressIndicator()),
+                              error: (error, stack) => Text(context.l10n
+                                  .commonErrorWithDetails(error.toString()))),
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                          error: (error, stack) => Text(context.l10n
+                              .commonErrorWithDetails(error.toString()))),
+                      const SizedBox(height: 24),
+                    ]))),
+      ),
     );
   }
 }

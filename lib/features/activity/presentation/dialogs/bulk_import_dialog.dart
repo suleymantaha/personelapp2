@@ -11,6 +11,7 @@ import 'package:personelapp2/core/providers/providers.dart';
 import 'package:personelapp2/features/activity/data/activity_repository.dart';
 import 'bulk_import/staged_task_team_confirmation.dart';
 import 'bulk_import/import_date_consent.dart';
+import 'bulk_import/bulk_import_result_sheet.dart';
 import 'package:personelapp2/features/activity/domain/bulk_activity_import_preparer.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
@@ -453,7 +454,12 @@ class _BulkImportDialogState extends ConsumerState<BulkImportDialog> {
     final isKeyboardVisible = mediaQuery.viewInsets.bottom > 0;
 
     return PopScope(
-      canPop: !_isSaving,
+      canPop: !_isSaving && _currentStep == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !_isSaving && _currentStep > 0) {
+          _updateState(() => _currentStep--);
+        }
+      },
       child: AbsorbPointer(
         absorbing: _isSaving,
         child: LayoutBuilder(

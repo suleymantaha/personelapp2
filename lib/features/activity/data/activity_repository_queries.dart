@@ -424,11 +424,14 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
         );
       }
       final ids = <int>[];
+      final outcomes = <ActivityImportOutcome>[];
       final skipped = <({int personelId, String date, String activity})>[];
       var addedCount = 0;
       var alreadyAssignedCount = 0;
 
       for (final request in requests) {
+        await _requirePersonnelScope(actor, request.personnelAssignments);
+        final decisions = <_ImportDecision>[];
         final sameDayActivities = await (db.select(db.gunlukFaaliyetTable)
               ..where((tbl) => tbl.tarih.equals(request.tarih)))
             .get();
@@ -447,6 +450,9 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
 
         if (existingActivity != null) {
           ids.add(existingActivity.id);
+          final previous = await (db.select(db.faaliyetPersonelAtamaTable)
+                ..where((t) => t.faaliyetId.equals(existingActivity.id)))
+              .get();
           final mergeResult = await mergeAssignmentsIntoActivity(
             activityId: existingActivity.id,
             personnelAssignments: request.personnelAssignments,
@@ -464,6 +470,20 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
               ),
             ),
           );
+          final seen = <int>{};
+          for (final item in request.personnelAssignments) {
+            if (item.duty.trim().isEmpty || !seen.add(item.personnelId)) {
+              continue;
+            }
+            decisions.add((
+              assignment: item,
+              status: mergeResult.skippedPersonnelIds.contains(item.personnelId)
+                  ? ActivityImportStatus.conflict
+                  : previous.any((row) => row.personelId == item.personnelId)
+                      ? ActivityImportStatus.alreadyAssigned
+                      : ActivityImportStatus.added,
+            ));
+          }
         } else {
           final activitySkipped = <int>[];
           final id = await _createActivityWithinTransaction(
@@ -472,10 +492,17 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
             actor: actor,
             skippedPersonnelIds: activitySkipped,
           );
-          ids.add(id);
           final inserted = await (db.select(db.faaliyetPersonelAtamaTable)
                 ..where((table) => table.faaliyetId.equals(id)))
               .get();
+          if (inserted.isEmpty) {
+            // Only this newly created bulk-import card is eligible for cleanup.
+            await (db.delete(db.gunlukFaaliyetTable)
+                  ..where((t) => t.id.equals(id)))
+                .go();
+          } else {
+            ids.add(id);
+          }
           addedCount += inserted.length;
           skipped.addAll(
             activitySkipped.map(
@@ -486,7 +513,25 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
               ),
             ),
           );
+          final seen = <int>{};
+          for (final item in request.personnelAssignments) {
+            if (item.duty.trim().isEmpty || !seen.add(item.personnelId)) {
+              continue;
+            }
+            decisions.add((
+              assignment: item,
+              status: activitySkipped.contains(item.personnelId)
+                  ? ActivityImportStatus.conflict
+                  : ActivityImportStatus.added,
+            ));
+          }
         }
+        outcomes.addAll(await _buildImportOutcomes(
+          activityName: request.faaliyetAdi,
+          date: request.tarih,
+          decisions: decisions,
+          targetActivityId: existingActivity?.id,
+        ));
       }
       final personnelIds = skipped.map((item) => item.personelId).toSet();
       final personnel = personnelIds.isEmpty
@@ -500,6 +545,7 @@ extension ActivityRepositoryQueryOperations on ActivityRepository {
         addedAssignmentCount: addedCount,
         alreadyAssignedCount: alreadyAssignedCount,
         skippedAssignmentCount: skipped.length,
+        outcomes: outcomes,
         conflictDescriptions: [
           for (final item in skipped)
             '${names[item.personelId] ?? 'Personel #${item.personelId}'}: '

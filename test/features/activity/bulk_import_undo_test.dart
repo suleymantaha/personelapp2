@@ -49,7 +49,7 @@ Future<void> pumpBulkImport(
 
 Future<void> parseText(WidgetTester tester, String text) async {
   await tester.enterText(find.byType(TextField).first, text);
-  await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+  await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
   await tester.pumpAndSettle();
 }
 

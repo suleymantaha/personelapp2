@@ -279,7 +279,7 @@ void main() {
         find.byType(TextField).first,
         '05.08.2026\n1. Tim HEYBET 08:00 - 09:00\n1- J.Asb.Cvs. Ahmet YILMAZ\n1. Tim HEYBET 18:00 - 19:00\n1- J.Asb.Cvs. Ahmet YILMAZ',
       );
-      await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+      await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Kaydet'));
       await tester.pumpAndSettle();
@@ -292,8 +292,8 @@ void main() {
       await tester.tap(find.byKey(const Key('import-date-approve')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('TAMAM'), findsOneWidget);
-      await tester.tap(find.text('TAMAM'));
+      expect(find.text('Tamam'), findsOneWidget);
+      await tester.tap(find.text('Tamam'));
       await tester.pumpAndSettle();
 
       final assignments =

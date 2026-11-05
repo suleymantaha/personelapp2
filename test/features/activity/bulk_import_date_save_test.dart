@@ -127,7 +127,7 @@ void main() {
             (await db.select(db.faaliyetPersonelAtamaTable).get()).length,
             1,
           );
-          await tester.tap(find.text('TAMAM'));
+          await tester.tap(find.text('Tamam'));
           await tester.pumpAndSettle();
           await tester.pumpWidget(const SizedBox());
           await tester.pumpAndSettle();

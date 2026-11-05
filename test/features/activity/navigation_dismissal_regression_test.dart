@@ -435,7 +435,7 @@ void main() {
             find.byType(TextField).first,
             '03.10.2026\n1. Tim HEYBET\n1- J.Asb. Ahmet YILMAZ',
           );
-          await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+          await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
           await tester.pumpAndSettle();
           await tester.tap(find.text('Kaydet'));
           await tester.pumpAndSettle();
@@ -488,11 +488,10 @@ void main() {
           release.complete();
           await transaction;
           if (surface == 'activity-import') {
-            // The import stays busy until its result dialog is acknowledged.
-            // Settling an intentionally running progress indicator would hang.
+            // Wait for the transaction result, then settle the sheet entrance
+            // after the committed callback stops the saving indicator.
             for (var frame = 0;
-                frame < 50 &&
-                    find.text('Aktarım Tamamlandı').evaluate().isEmpty;
+                frame < 50 && find.text('Aktarım sonucu').evaluate().isEmpty;
                 frame++) {
               await tester.pump(const Duration(milliseconds: 20));
             }
@@ -501,8 +500,9 @@ void main() {
           }
         }
         if (surface == 'activity-import') {
-          expect(find.text('Aktarım Tamamlandı'), findsOneWidget);
-          await tester.tap(find.text('TAMAM'));
+          await tester.pumpAndSettle();
+          expect(find.text('Aktarım sonucu'), findsOneWidget);
+          await tester.tap(find.text('Tamam'));
           await tester.pumpAndSettle();
           expect(
             await db.select(db.faaliyetPersonelAtamaTable).get(),

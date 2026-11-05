@@ -180,58 +180,62 @@ class ActivityAssignmentDetails extends ConsumerWidget {
                 context: context,
                 showDragHandle: true,
                 builder: (sheetContext) => SafeArea(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        key: const Key(
-                          'activity-add-single-personnel-option',
-                        ),
-                        leading: const Icon(
-                          Icons.person_add_alt_1_rounded,
-                        ),
-                        title: Text(context.l10n.activityDetailAddSingleOption),
-                        subtitle: Text(
-                          context.l10n.activityDetailAddSingleOptionSubtitle,
-                        ),
-                        onTap: () => Navigator.of(sheetContext).pop('single'),
-                      ),
-                      if (isAdmin && filteredAssignments.isNotEmpty)
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                         ListTile(
-                          key: const Key('activity-reassign-existing-option'),
-                          leading: const Icon(Icons.assignment_ind_outlined),
-                          title: const Text('Mevcut personele görev ata'),
-                          subtitle: const Text(
-                            'Eklenmiş personeli seçerek görevini değiştir',
+                          key: const Key(
+                            'activity-add-single-personnel-option',
                           ),
-                          onTap: () =>
-                              Navigator.of(sheetContext).pop('reassign'),
+                          leading: const Icon(
+                            Icons.person_add_alt_1_rounded,
+                          ),
+                          title:
+                              Text(context.l10n.activityDetailAddSingleOption),
+                          subtitle: Text(
+                            context.l10n.activityDetailAddSingleOptionSubtitle,
+                          ),
+                          onTap: () => Navigator.of(sheetContext).pop('single'),
                         ),
-                      ListTile(
-                        key: const Key(
-                          'activity-add-bulk-personnel-option',
+                        if (isAdmin && filteredAssignments.isNotEmpty)
+                          ListTile(
+                            key: const Key('activity-reassign-existing-option'),
+                            leading: const Icon(Icons.assignment_ind_outlined),
+                            title: const Text('Mevcut personele görev ata'),
+                            subtitle: const Text(
+                              'Eklenmiş personeli seçerek görevini değiştir',
+                            ),
+                            onTap: () =>
+                                Navigator.of(sheetContext).pop('reassign'),
+                          ),
+                        ListTile(
+                          key: const Key(
+                            'activity-add-bulk-personnel-option',
+                          ),
+                          leading: const Icon(
+                            Icons.content_paste_go_rounded,
+                          ),
+                          title: Text(context.l10n.activityDetailAddBulkOption),
+                          subtitle: Text(
+                            context.l10n.activityDetailAddBulkOptionSubtitle,
+                          ),
+                          onTap: () => Navigator.of(sheetContext).pop('bulk'),
                         ),
-                        leading: const Icon(
-                          Icons.content_paste_go_rounded,
+                        ListTile(
+                          key: const Key(
+                            'activity-add-image-personnel-option',
+                          ),
+                          leading: const Icon(Icons.image_search_rounded),
+                          title:
+                              Text(context.l10n.activityDetailAddImageOption),
+                          subtitle: Text(
+                            context.l10n.activityDetailAddImageOptionSubtitle,
+                          ),
+                          onTap: () => Navigator.of(sheetContext).pop('image'),
                         ),
-                        title: Text(context.l10n.activityDetailAddBulkOption),
-                        subtitle: Text(
-                          context.l10n.activityDetailAddBulkOptionSubtitle,
-                        ),
-                        onTap: () => Navigator.of(sheetContext).pop('bulk'),
-                      ),
-                      ListTile(
-                        key: const Key(
-                          'activity-add-image-personnel-option',
-                        ),
-                        leading: const Icon(Icons.image_search_rounded),
-                        title: Text(context.l10n.activityDetailAddImageOption),
-                        subtitle: Text(
-                          context.l10n.activityDetailAddImageOptionSubtitle,
-                        ),
-                        onTap: () => Navigator.of(sheetContext).pop('image'),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );

@@ -139,6 +139,9 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
         skipPreflight: true,
         staged: _staged,
         currentActor: () => ref.read(userSessionProvider),
+        onCommitted: () {
+          if (mounted) _updateState(() => _isSaving = false);
+        },
       );
     } on Object catch (e) {
       if (mounted) {
@@ -230,42 +233,17 @@ extension _BulkImportDialogActions on _BulkImportDialogState {
       });
 
       if (!mounted) return;
-      final summaryLines = <String>[
-        context.l10n.bulkImportSuccessNotification(
-            target.faaliyetAdi, result.addedCount),
-        if (result.alreadyAssignedCount > 0)
-          context.l10n
-              .bulkImportSummaryAlreadyAssigned(result.alreadyAssignedCount),
-        if (result.conflictSkippedCount > 0)
-          context.l10n
-              .bulkImportSummarySkippedConflict(result.conflictSkippedCount),
-        ...result.conflictDescriptions,
-      ];
-      await showDialog<void>(
+      _updateState(() => _isSaving = false);
+      await showBulkImportResult(
         context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(result.addedCount == 0
-              ? 'Yeni personel eklenmedi'
-              : context.l10n.bulkImportCompletedTitle),
-          content: SingleChildScrollView(child: Text(summaryLines.join('\n'))),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(context.l10n.commonOk.toUpperCase()),
-            ),
-          ],
-        ),
+        outcomes: result.outcomes,
+        addedCount: result.addedCount,
+        skippedCount: result.alreadyAssignedCount + result.conflictSkippedCount,
+        fallbackContext: '${target.faaliyetAdi} · '
+            '${BulkImportConfirmSection.displayDate(target.tarih)}',
       );
       if (!mounted) return;
-      final message = context.l10n
-          .bulkImportSuccessNotification(target.faaliyetAdi, result.addedCount);
       Navigator.pop(context, result.addedCount > 0);
-      if (result.addedCount > 0) {
-        AppNotifications.success(message);
-      } else {
-        AppNotifications.warning('Yeni personel eklenmedi. '
-            'Zaten kayıtlı ve çakışan personelleri kontrol edin.');
-      }
     } finally {
       if (mounted) {
         _updateState(() {

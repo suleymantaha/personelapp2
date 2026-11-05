@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'staged_bulk_import.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
-import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/auth/domain/user_session.dart';
 import 'package:personelapp2/core/database/database.dart';
 import 'package:personelapp2/core/providers/providers.dart';
@@ -12,7 +11,8 @@ import 'package:personelapp2/features/activity/domain/bulk_activity_import_prepa
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/features/activity/domain/models/parsed_activity_block.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/bulk_import/duplicate_personnel_dialog.dart';
-import 'package:personelapp2/features/activity/presentation/dialogs/conflict_personnel_dialog.dart';
+import 'bulk_import_result_sheet.dart';
+import 'bulk_import_confirm_section.dart';
 
 class BulkImportSaveHandler {
   static Map<String, List<String>> findDuplicateAssignments(
@@ -130,6 +130,7 @@ class BulkImportSaveHandler {
     bool skipPreflight = false,
     StagedBulkImport? staged,
     UserSessionState? Function()? currentActor,
+    VoidCallback? onCommitted,
   }) async {
     final l10n = context.l10n;
     final preparation = BulkActivityImportPreparer.prepare(blocks);
@@ -202,61 +203,22 @@ class BulkImportSaveHandler {
     });
 
     if (context.mounted) {
-      if (result.skippedAssignmentCount > 0) {
-        await showDialog<void>(
-          context: context,
-          builder: (_) => ConflictPersonnelDialog(
-            descriptions: result.conflictDescriptions,
-          ),
-        );
-        if (!context.mounted) return null;
-      }
-
-      final summaryLines = <String>[
-        context.l10n
-            .bulkImportSummaryActivitiesProcessed(preparation.requests.length),
-        context.l10n
-            .bulkImportSummaryPersonnelAdded(result.addedAssignmentCount),
-        if (result.alreadyAssignedCount > 0)
-          context.l10n
-              .bulkImportSummaryAlreadyAssigned(result.alreadyAssignedCount),
-        if (deduplicatedPersonnelCount > 0)
-          context.l10n
-              .bulkImportSummaryDeduplicated(deduplicatedPersonnelCount),
-        if (result.skippedAssignmentCount > 0)
-          context.l10n
-              .bulkImportSummarySkippedConflict(result.skippedAssignmentCount),
-      ];
-
-      await showDialog<void>(
+      onCommitted?.call();
+      await showBulkImportResult(
         context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(result.addedAssignmentCount == 0
-              ? 'Yeni personel eklenmedi'
-              : context.l10n.bulkImportCompletedTitle),
-          content: SingleChildScrollView(child: Text(summaryLines.join('\n'))),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(context.l10n.commonOk.toUpperCase()),
-            ),
-          ],
-        ),
+        outcomes: result.outcomes,
+        addedCount: result.addedAssignmentCount,
+        skippedCount:
+            result.alreadyAssignedCount + result.skippedAssignmentCount,
+        fallbackContext: blocks
+            .map((block) => '${block.parsedActivityType} · '
+                '${BulkImportConfirmSection.displayDate(block.parsedDate)}')
+            .toSet()
+            .join(' • '),
       );
       if (!context.mounted) return null;
       final added = result.addedAssignmentCount > 0;
-      final message = context.l10n.bulkImportSuccessMessage(
-        blocks.length,
-        preparation.requests.length,
-        result.addedAssignmentCount,
-      );
       Navigator.pop(context, added);
-      if (added) {
-        AppNotifications.success(message);
-      } else {
-        AppNotifications.warning('Yeni personel eklenmedi. '
-            'Zaten kayıtlı ve çakışan personelleri kontrol edin.');
-      }
       return added;
     }
     return null;

@@ -218,7 +218,7 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
       });
     }
 
-    return Scaffold(
+    final scaffold = Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: context.colorScheme.surface,
@@ -648,6 +648,18 @@ class _ActivityArchiveScreenState extends ConsumerState<ActivityArchiveScreen>
           ),
         ),
       ),
+    );
+    return PopScope(
+      canPop: !_selectionMode && !_reorderMode,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_selectionMode) {
+          _clearSelection();
+        } else if (_reorderMode) {
+          setState(() => _reorderMode = false);
+        }
+      },
+      child: scaffold,
     );
   }
 }

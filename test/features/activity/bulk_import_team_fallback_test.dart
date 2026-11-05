@@ -91,7 +91,7 @@ void main() {
 2. Mehmet TEST
 ''',
       );
-      await tester.tap(find.text('Metni Ayrıştır ve Kartları Oluştur'));
+      await tester.tap(find.text('Metni Ayrıştır ve Önizle'));
       await tester.pumpAndSettle();
 
       expect(find.text('Kaydedilemiyor'), findsNothing);
@@ -170,7 +170,7 @@ void main() {
       await tester.tap(
         find.widgetWithText(
           FilledButton,
-          'Metni Ayrıştır ve Kartları Oluştur',
+          'Metni Ayrıştır ve Önizle',
         ),
       );
       await tester.pumpAndSettle();

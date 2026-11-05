@@ -2726,7 +2726,7 @@ abstract class AppLocalizations {
   /// No description provided for @bulkImportParseButton.
   ///
   /// In tr, this message translates to:
-  /// **'Metni Ayrıştır ve Kartları Oluştur'**
+  /// **'Metni Ayrıştır ve Önizle'**
   String get bulkImportParseButton;
 
   /// No description provided for @bulkImportParsingButton.
@@ -3287,7 +3287,7 @@ abstract class AppLocalizations {
   /// No description provided for @bulkImportParseAndCreateCards.
   ///
   /// In tr, this message translates to:
-  /// **'Metni Ayrıştır ve Kartları Oluştur'**
+  /// **'Metni Ayrıştır ve Önizle'**
   String get bulkImportParseAndCreateCards;
 
   /// No description provided for @bulkImportEmptyNoCardIssues.
