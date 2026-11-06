@@ -115,7 +115,8 @@ List<int> _generateMasterDailyExcelBytes({
     baseStyle: titleStyle,
     outerBorder: _noneBorder,
   );
-  sheet.setRowHeight(0, _rosterTitleRowHeight(title));
+  final titleHeight = _rosterTitleRowHeight(title);
+  sheet.setRowHeight(0, titleHeight);
 
   // Row 1: Common Column Headers
   final headers = ['S. NU', 'BİRLİĞİ', 'RÜTBE', 'ADI SOYADI', 'DİĞER'];
@@ -124,8 +125,16 @@ List<int> _generateMasterDailyExcelBytes({
       ..value = TextCellValue(headers[c])
       ..cellStyle = headerStyle;
   }
-  sheet.setRowHeight(1, 24);
+  sheet.setRowHeight(1, _rosterHeaderHeight);
 
+  final allRows = activities.expand((activity) => activity.rows).toList();
+  const sectionHeight = 28.0;
+  final compactRows = _needsCompactRosterRows(
+    allRows,
+    titleHeight,
+    sectionHeight: sectionHeight * activities.length,
+  );
+  final keepWithSectionHeader = <int>{};
   var currentRow = 2;
 
   for (final act in activities) {
@@ -144,8 +153,9 @@ List<int> _generateMasterDailyExcelBytes({
       endRow: currentRow,
       baseStyle: sectionHeaderStyle,
     );
-    sheet.setRowHeight(currentRow, 28);
+    sheet.setRowHeight(currentRow, sectionHeight);
     currentRow++;
+    if (act.rows.isNotEmpty) keepWithSectionHeader.add(currentRow);
 
     final sectionDataStartRow = currentRow;
     var rowIndex = 0;
@@ -198,7 +208,7 @@ List<int> _generateMasterDailyExcelBytes({
           ..cellStyle = isSpecialGroup ? cellCenterBoldStyle : cellLeftStyle;
         sheet.setRowHeight(
           currentRow,
-          _excelRowHeightFor(r.adSoyad, r.diger, r.rutbe),
+          _rosterRowHeight(r, compact: compactRows),
         );
         currentRow++;
       }
@@ -243,10 +253,15 @@ List<int> _generateMasterDailyExcelBytes({
   }
 
   final lastDataRowNumber = currentRow;
+  final print = _planRosterPrint(
+    sheet,
+    endRow: lastDataRowNumber,
+    fixedScale: compactRows,
+    keepWithPrevious: keepWithSectionHeader,
+  );
 
   currentRow++;
   final summaryStartRow = currentRow;
-  final allRows = activities.expand((activity) => activity.rows).toList();
   _writeThreeBoxSummary(
     sheet: sheet,
     startRow: currentRow,
@@ -255,7 +270,7 @@ List<int> _generateMasterDailyExcelBytes({
     contentStyle: cellLeftStyle,
   );
 
-  final encoded = _encodeRosterLayout(sheet, summaryStartRow);
+  final encoded = _encodeRosterLayout(sheet, summaryStartRow, print.breaks);
   if (encoded == null) return <int>[];
   return _applyPrintSettings(
     encoded,
@@ -263,5 +278,7 @@ List<int> _generateMasterDailyExcelBytes({
     endRow: lastDataRowNumber,
     endColumn: 'G',
     repeatHeaderRange: r'$1:$2',
+    printScale: print.scale,
+    pageBreakRows: print.breaks,
   );
 }

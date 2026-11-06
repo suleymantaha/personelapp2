@@ -8,6 +8,7 @@ List<int> _generateMilitaryExcelBytes({
   bool includeSignatures = false,
   List<RosterSigner> signers = heybetRosterSigners,
   String? timeRange,
+  required bool paginateForPrint,
 }) {
   final excel = Excel.createExcel();
   const sheetName = 'İsim Listesi';
@@ -122,9 +123,10 @@ List<int> _generateMilitaryExcelBytes({
       ..value = TextCellValue(headers[c])
       ..cellStyle = headerStyle;
   }
-  sheet.setRowHeight(1, 24);
+  sheet.setRowHeight(1, _rosterHeaderHeight);
 
-  final signedRowHeights = rows.map(_signedRosterRowHeight).toList();
+  final compactRows = includeSignatures ||
+      (paginateForPrint && _needsCompactRosterRows(rows, titleHeight));
   var currentRow = 2;
   final dataStartRow = currentRow;
   var i = 0;
@@ -179,9 +181,14 @@ List<int> _generateMilitaryExcelBytes({
         ..cellStyle = isSpecialGroup ? cellCenterBoldStyle : cellLeftStyle;
       sheet.setRowHeight(
         rIndex,
-        includeSignatures
-            ? signedRowHeights[i + j]
-            : _excelRowHeightFor(r.adSoyad, r.diger, r.rutbe),
+        !paginateForPrint && !includeSignatures
+            ? _excelRowHeightFor(r)
+            : _rosterRowHeight(
+                r,
+                compact: compactRows,
+                signed: includeSignatures,
+                legacy: !paginateForPrint,
+              ),
       );
     }
 
@@ -230,9 +237,23 @@ List<int> _generateMilitaryExcelBytes({
     sheet.setRowHeight(currentRow, 14);
     currentRow += 1;
     signatureStartRow = currentRow;
-    lastPrintRowNumber = _writeRosterSignatures(sheet, currentRow, signers) + 1;
+    lastPrintRowNumber = _writeRosterSignatures(
+          sheet,
+          currentRow,
+          signers,
+          growRows: paginateForPrint,
+        ) +
+        1;
     currentRow = lastPrintRowNumber;
   }
+  final print = _planRosterPrint(
+    sheet,
+    endRow: lastPrintRowNumber,
+    fixedScale: paginateForPrint && compactRows,
+    // Keep the last two personnel rows with the signature block.
+    lastBreakRow:
+        includeSignatures ? dataStartRow + math.max(0, rows.length - 2) : null,
+  );
 
   currentRow += 1;
   final summaryStartRow = currentRow;
@@ -287,7 +308,7 @@ List<int> _generateMilitaryExcelBytes({
     }
   }
 
-  final encoded = _encodeRosterLayout(sheet, summaryStartRow);
+  final encoded = _encodeRosterLayout(sheet, summaryStartRow, print.breaks);
   if (encoded == null) return <int>[];
   return _applyPrintSettings(
     encoded,
@@ -295,73 +316,7 @@ List<int> _generateMilitaryExcelBytes({
     endRow: lastPrintRowNumber,
     endColumn: 'G',
     repeatHeaderRange: r'$1:$2',
-    printScale: includeSignatures ? 90 : null,
-    pageBreakRows: includeSignatures
-        ? _signedRosterPageBreaks(signedRowHeights, titleHeight: titleHeight)
-        : const [],
+    printScale: print.scale,
+    pageBreakRows: print.breaks,
   );
-}
-
-// Reserve printable A4 height at 90% scale, after repeated title/header rows.
-// The final two personnel rows, gap and all five signature rows form one block.
-List<int> _signedRosterPageBreaks(List<double> heights,
-    {required double titleHeight}) {
-  final pageBodyHeight = 780.0 - (titleHeight - 30.0);
-  final breaks = <int>[];
-  var used = 0.0;
-  final tailStart = heights.length > 2 ? heights.length - 2 : 0;
-  for (var i = 0; i < tailStart; i++) {
-    if (used > 0 && used + heights[i] > pageBodyHeight) {
-      breaks.add(i + 2);
-      used = 0;
-    }
-    used += heights[i];
-  }
-  final tailHeight = heights.skip(tailStart).fold(114.0, (a, b) => a + b);
-  if (used > 0 && used + tailHeight > pageBodyHeight) {
-    breaks.add(tailStart + 2);
-  }
-  return breaks;
-}
-
-double _signedRosterRowHeight(MilitaryRosterRow row) {
-  // Calibri 10pt estimates include word wrapping, explicit newlines and wide
-  // glyphs. Grow rows without a line cap rather than shrinking the type.
-  double glyphWidth(String c) {
-    if ('ilI.,:;!| '.contains(c)) return 2.6;
-    if ('MW@%ĞÖÜ'.contains(c)) return 9;
-    if (c.toUpperCase() == c && c.toLowerCase() != c) return 6.8;
-    return 5.2;
-  }
-
-  int lines(String text, double width) {
-    var count = 0;
-    for (final paragraph in text.split('\n')) {
-      var used = 0.0;
-      count++;
-      for (final word in paragraph.split(' ')) {
-        final wordWidth = word.split('').fold(0.0, (a, c) => a + glyphWidth(c));
-        if (used > 0 && used + 2.6 + wordWidth > width) {
-          count++;
-          used = 0;
-        }
-        if (wordWidth > width) {
-          count += (wordWidth / width).ceil() - 1;
-          used = wordWidth % width;
-        } else {
-          used += (used == 0 ? 0 : 2.6) + wordWidth;
-        }
-      }
-    }
-    return count;
-  }
-
-  final counts = [
-    lines(row.birligi, 114),
-    lines(row.rutbe, 90),
-    lines(row.adSoyad, 153),
-    lines(row.diger, 126),
-  ];
-  final maxLines = counts.reduce((a, b) => a > b ? a : b);
-  return maxLines * 12.0 + 2;
 }

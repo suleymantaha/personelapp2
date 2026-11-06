@@ -5,6 +5,7 @@ import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:personelapp2/features/activity/services/exporter/excel_xlsx_generator.dart';
 import 'package:personelapp2/features/activity/services/military_roster_exporter.dart';
 import 'package:personelapp2/features/activity/services/exporter/spreadsheet_image_layout.dart';
 import 'package:personelapp2/features/activity/services/exporter/spreadsheet_image_workbook.dart';
@@ -26,8 +27,12 @@ void main() {
           groupCode: 'DIGER'));
 
   test('uses actual Excel spans, title colors, all rows and summaries', () {
-    final bytes = MilitaryRosterExporter.generateMilitaryExcelBytes(
-        faaliyetAdi: 'GÜNLÜK LİSTE', tarih: '2026-10-25', rows: rows(120));
+    final bytes = ExcelXlsxGenerator.generateMilitaryExcelBytes(
+      faaliyetAdi: 'GÜNLÜK LİSTE',
+      tarih: '2026-10-25',
+      rows: rows(120),
+      paginateForPrint: false,
+    );
     final sheet = decodeSpreadsheetImageWorkbook(bytes);
     final layout = SpreadsheetImageLayout.fromSheet(sheet);
     expect(layout.cells.any((c) => c.text == 'SON SATIR'), isTrue);
@@ -121,6 +126,23 @@ void main() {
     await Directory('build/roster-image-validation').create(recursive: true);
     await File('build/roster-image-validation/daily-list.png')
         .writeAsBytes(png);
+  });
+
+  test('long ordinary PNG keeps continuous groups without print pagination',
+      () async {
+    final png = await RosterImageExporter.generate(
+      faaliyetAdi: 'GÜNLÜK LİSTE',
+      tarih: '2026-10-25',
+      rows: rows(120),
+    );
+    final unpaginated = ExcelXlsxGenerator.generateMilitaryExcelBytes(
+      faaliyetAdi: 'GÜNLÜK LİSTE',
+      tarih: '2026-10-25',
+      rows: rows(120),
+      paginateForPrint: false,
+    );
+    final expected = await SpreadsheetImageRenderer.render(unpaginated);
+    expect(listEquals(png, expected), isTrue);
   });
 
   test(

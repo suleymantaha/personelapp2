@@ -50,13 +50,73 @@ double _rosterTitleRowHeight(String title) {
   return height < 32 ? 32 : height;
 }
 
-double _excelRowHeightFor(String name, String detail, String rank) {
+double _excelRowHeightFor(MilitaryRosterRow row) {
   final longest = [
-    name.length,
-    detail.length,
-    rank.length,
+    row.adSoyad.length,
+    row.diger.length,
+    row.rutbe.length,
   ].fold<int>(0, (max, length) => length > max ? length : max);
   return longest > 32 ? 32 : 20;
+}
+
+double _rosterRowHeight(
+  MilitaryRosterRow row, {
+  required bool compact,
+  bool signed = false,
+  bool legacy = false,
+}) {
+  final fontRatio = signed ? 1.0 : 1.1;
+  int lines(String text, double width) =>
+      _rosterTextLines(text, width, fontRatio: fontRatio, legacy: legacy);
+  final maxLines = [
+    lines(row.birligi, 114),
+    lines(row.rutbe, 90),
+    lines(row.adSoyad, 153),
+    lines(row.diger, 126),
+  ].reduce(math.max);
+  final wrappedHeight = signed ? maxLines * 12.0 + 2 : maxLines * 13.2 + 1;
+  return compact
+      ? wrappedHeight
+      : math.max(_excelRowHeightFor(row), wrappedHeight);
+}
+
+int _rosterTextLines(
+  String text,
+  double width, {
+  double fontRatio = 1,
+  bool legacy = false,
+}) {
+  // Estimate Calibri widths in points. The logical columns retain the same
+  // widths after structural merges in the seven-column workbook grid.
+  double glyphWidth(String c) {
+    if ('ilI.,:;!| '.contains(c)) return 2.6;
+    if ('MW@%ĞÖÜ'.contains(c)) return 9;
+    if (c.toUpperCase() == c && c.toLowerCase() != c) return 6.8;
+    return 5.2;
+  }
+
+  var count = 0;
+  final space = 2.6 * fontRatio;
+  for (final paragraph in text.split(legacy ? '\n' : RegExp(r'\r\n?|\n'))) {
+    var used = 0.0;
+    count++;
+    for (final word in paragraph.split(' ')) {
+      final wordWidth =
+          word.split('').fold(0.0, (a, c) => a + glyphWidth(c)) * fontRatio;
+      if (used > 0 && used + space + wordWidth > width) {
+        count++;
+        used = 0;
+      }
+      if (wordWidth > width) {
+        final extraLines = (wordWidth / width).ceil() - 1;
+        count += extraLines;
+        used = legacy ? wordWidth % width : wordWidth - extraLines * width;
+      } else {
+        used += (used == 0 ? 0 : space) + wordWidth;
+      }
+    }
+  }
+  return count;
 }
 
 void _mergeAndSetOuterBorders(
@@ -332,7 +392,11 @@ bool _sameBirlik(String first, String second) {
 }
 
 int _writeRosterSignatures(
-    Sheet sheet, int startRow, List<RosterSigner> signers) {
+  Sheet sheet,
+  int startRow,
+  List<RosterSigner> signers, {
+  required bool growRows,
+}) {
   final style = CellStyle(
     fontSize: 10,
     fontFamily: getFontFamily(FontFamily.Calibri),
@@ -340,11 +404,17 @@ int _writeRosterSignatures(
     verticalAlign: VerticalAlign.Center,
     textWrapping: TextWrapping.WrapText,
   );
+  final rowHeights = [18.0, 28.0, 18.0, 18.0, 18.0];
   for (var index = 0; index < signers.length; index++) {
     final signer = signers[index];
     final column = index == 0 ? 0 : 4;
+    final width = index == 0 ? 170.0 : 126.0;
     final lines = [signer.title, '', signer.name, signer.rank, signer.role];
     for (var offset = 0; offset < lines.length; offset++) {
+      if (growRows) {
+        final wrappedHeight = _rosterTextLines(lines[offset], width) * 12.0 + 2;
+        rowHeights[offset] = math.max(rowHeights[offset], wrappedHeight);
+      }
       if (index == 0) {
         sheet.merge(
           CellIndex.indexByColumnRow(
@@ -368,7 +438,7 @@ int _writeRosterSignatures(
     }
   }
   for (var offset = 0; offset < 5; offset++) {
-    sheet.setRowHeight(startRow + offset, offset == 1 ? 28 : 18);
+    sheet.setRowHeight(startRow + offset, rowHeights[offset]);
   }
   return startRow + 4;
 }

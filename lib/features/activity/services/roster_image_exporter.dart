@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:personelapp2/core/extensions/l10n_extension.dart';
 import 'package:personelapp2/core/notifications/app_notification.dart';
 import 'package:personelapp2/core/utils/export_file_name_helper.dart';
+import 'exporter/excel_xlsx_generator.dart';
 import 'exporter/spreadsheet_image_renderer.dart';
 import 'military_roster_exporter.dart';
 import 'roster_image_file_gateway.dart';
@@ -19,14 +20,15 @@ class RosterImageExporter {
     String? timeRange,
   }) =>
       SpreadsheetImageRenderer.render(
-          MilitaryRosterExporter.generateMilitaryExcelBytes(
+          ExcelXlsxGenerator.generateMilitaryExcelBytes(
               faaliyetAdi: faaliyetAdi,
               tarih: tarih,
               rows: rows,
               mergeCells: mergeCells,
               includeSignatures: includeSignatures,
               signers: signers,
-              timeRange: timeRange));
+              timeRange: timeRange,
+              paginateForPrint: false));
 
   static int _sequence = 0;
   static Future<bool> save({

@@ -4,6 +4,7 @@ Tek yazıcı: koordinatör. Henüz bu paketle başlatılmış proje görevi yokt
 
 | Görev ID | Hedef | Durum | Aktif kayıt / kanıt |
 |---|---|---|---|
+| 2026-11-06-roster-a4 | PDF ve Excel isim listelerinin A4 yerleşimi | DONE | [Kayıt](active/2026-11-06-roster-a4.md) |
 | 2026-11-03-kazanci-apk10331 | CI APK10331; statik PASS, update kabulü BLOCKED | IN_REVIEW | [Kayıt](active/2026-11-03-kazanci-apk10331.md) |
 | 2026-11-03-kazanci | Kazancı iki günlük X ve nöbet heyeti gruplaması | DONE | [Kayıt](active/2026-11-03-kazanci.md) |
 | 2026-11-03-bulk-import-repair | OCR ve tarih/kart aktarım onarımı | DONE | [Kayıt](active/2026-11-03-bulk-import-repair.md) |

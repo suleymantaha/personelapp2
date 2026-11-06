@@ -15,6 +15,7 @@ import 'package:share_plus/share_plus.dart';
 
 part 'pdf_roster_styles.dart';
 part 'pdf_roster_document.dart';
+part 'pdf_roster_pagination.dart';
 part 'pdf_roster_actions.dart';
 
 enum PdfRosterStyle {

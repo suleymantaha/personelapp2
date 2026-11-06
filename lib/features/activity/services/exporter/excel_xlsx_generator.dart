@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:personelapp2/features/activity/services/roster_signature.dart';
 
@@ -13,6 +14,7 @@ part 'excel_xlsx_military_generator.dart';
 part 'excel_xlsx_master_generator.dart';
 part 'excel_xlsx_support.dart';
 part 'excel_xlsx_layout.dart';
+part 'excel_xlsx_pagination.dart';
 
 /// Generates native XLSX workbooks for military activity rosters.
 class ExcelXlsxGenerator {
@@ -24,6 +26,7 @@ class ExcelXlsxGenerator {
     bool includeSignatures = false,
     List<RosterSigner> signers = heybetRosterSigners,
     String? timeRange,
+    bool paginateForPrint = true,
   }) =>
       _generateMilitaryExcelBytes(
         faaliyetAdi: faaliyetAdi,
@@ -33,6 +36,7 @@ class ExcelXlsxGenerator {
         includeSignatures: includeSignatures,
         signers: signers,
         timeRange: timeRange,
+        paginateForPrint: paginateForPrint,
       );
 
   static List<int> generateMasterDailyExcelBytes({

@@ -4,7 +4,11 @@ part of 'excel_xlsx_generator.dart';
 /// Split only the rank/name fields at the one-third boundaries. Account for
 /// Excel's 5px column padding, so splitting does not widen the original table.
 /// Horizontal field merges are structural, even when vertical merges are off.
-List<int>? _encodeRosterLayout(Sheet source, int summaryStartRow) {
+List<int>? _encodeRosterLayout(
+  Sheet source,
+  int summaryStartRow,
+  List<int> pageBreakRows,
+) {
   source.setDefaultRowHeight(source.defaultRowHeight ?? 15);
   const fieldStarts = [0, 1, 2, 4, 6];
   const fieldEnds = [0, 1, 3, 5, 6];
@@ -75,8 +79,21 @@ List<int>? _encodeRosterLayout(Sheet source, int summaryStartRow) {
         copyCell(cell, r, summaryStarts[index], summaryEnds[index], r);
       } else if (c < fieldStarts.length) {
         final end = spans[(r, c)];
-        copyCell(cell, r, fieldStarts[c], fieldEnds[end?.columnIndex ?? c],
-            end?.rowIndex ?? r);
+        final firstColumn = fieldStarts[c];
+        final lastColumn = fieldEnds[end?.columnIndex ?? c];
+        final lastRow = end?.rowIndex ?? r;
+        var segmentStart = r;
+        // Repeat a merged unit/duty label when its group crosses a page break.
+        if (lastRow > r) {
+          for (final pageStart in pageBreakRows) {
+            if (pageStart > r && pageStart <= lastRow) {
+              copyCell(
+                  cell, segmentStart, firstColumn, lastColumn, pageStart - 1);
+              segmentStart = pageStart;
+            }
+          }
+        }
+        copyCell(cell, segmentStart, firstColumn, lastColumn, lastRow);
       }
     }
   }

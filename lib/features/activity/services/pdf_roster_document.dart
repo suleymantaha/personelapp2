@@ -41,97 +41,95 @@ Future<pw.Document> pdfGenerateRoster({
     timeRange: timeRange,
   );
 
-  if (includeSignatures) {
-    final tailCount = rows.length < 2 ? rows.length : 2;
-    final preceding = rows.sublist(0, rows.length - tailCount);
-    final tail = rows.sublist(rows.length - tailCount);
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(18),
-        header: (_) => pw.Column(
-          children: [
-            _buildPageTitle(titleText, compact: true),
-            pw.SizedBox(height: 4),
-            pdfBuildTable(
-              const [],
-              style: style,
-              compact: true,
-              mergeCells: false,
-            ),
-          ],
-        ),
-        footer: (context) => pw.Align(
-          alignment: pw.Alignment.centerRight,
-          child: pw.Text(
-            'Sayfa ${context.pageNumber} / ${context.pagesCount} • Tarih: $tarih',
-            style: const pw.TextStyle(fontSize: 8),
-          ),
-        ),
-        build: (_) => [
-          if (preceding.isNotEmpty)
-            pdfBuildTable(
-              preceding,
-              style: style,
-              compact: true,
-              mergeCells: false,
-              showHeader: false,
-            ),
-          // A non-spanning container keeps the signatures with the final names.
-          pw.Container(
-            child: pw.Column(
-              children: [
-                if (tail.isNotEmpty)
-                  pdfBuildTable(
-                    tail,
-                    style: style,
-                    compact: true,
-                    mergeCells: false,
-                    showHeader: false,
-                  ),
-                _buildRosterSignatures(signers),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-    return pdf;
-  }
+  _addRosterPages(
+    pdf,
+    rows,
+    style: style,
+    title: titleText,
+    date: tarih,
+    signers: includeSignatures ? signers : null,
+  );
+  return pdf;
+}
 
-  pdf.addPage(
-    pw.MultiPage(
-      pageFormat: PdfPageFormat.a4,
-      margin: const pw.EdgeInsets.all(24),
-      footer: (context) {
-        return pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-          children: [
-            pw.Text(
-              'Düzenleyen: Jandarma Görev Takip',
-              style: pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+pw.Widget pdfBuilderSummaryBox(List<MilitaryRosterRow> rows) {
+  final groups = [
+    ('Hazır Kıta', rows.where((row) => row.groupCode == 'HAZIR_KITA').toList()),
+    ('Gülüşkür', rows.where((row) => row.groupCode == 'GULUSKUR').toList()),
+    (
+      'Diğer Tüm Personel',
+      rows
+          .where(
+            (row) =>
+                row.groupCode != 'HAZIR_KITA' && row.groupCode != 'GULUSKUR',
+          )
+          .toList(),
+    ),
+  ];
+
+  return pw.Row(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      for (var index = 0; index < groups.length; index++) ...[
+        if (index > 0) pw.SizedBox(width: 6),
+        pw.Expanded(
+          child: _buildSummaryColumn(
+            groups[index].$1,
+            RankSummaryCounts.calculate(
+              groups[index].$2.map((row) => row.rutbe).toList(),
             ),
-            pw.Text(
-              'Sayfa ${context.pageNumber} / ${context.pagesCount} • Tarih: $tarih',
-              style: pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
-            ),
-          ],
-        );
-      },
-      build: (context) {
-        return [
-          ..._buildPaginatedTables(rows, style: style, titleText: titleText),
-          if (rows.length > _rowsPerPdfTable) pw.NewPage(),
-          if (rows.length > _rowsPerPdfTable)
-            _buildPageTitle('$titleText - GÖREV VE MEVCUT ÖZETİ'),
-          pw.SizedBox(height: 12),
-          pdfBuilderSummaryBox(rows),
-        ];
-      },
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
+pw.Widget _buildSummaryColumn(String title, RankSummaryCounts counts) {
+  final lines = [
+    if (counts.subayCount > 0) 'SB. ${counts.subayCount}',
+    if (counts.astsubayCount > 0) 'ASB. ${counts.astsubayCount}',
+    if (counts.uzmanJandarmaCount > 0) 'UZM.J. ${counts.uzmanJandarmaCount}',
+    if (counts.uzmanErbasCount > 0) 'J.UZM.ÇVŞ. ${counts.uzmanErbasCount}',
+    if (counts.erCount > 0) 'ER/SÖZ.ER ${counts.erCount}',
+  ];
+  return pw.Container(
+    decoration: pw.BoxDecoration(border: pw.Border.all(width: 0.8)),
+    child: pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+      children: [
+        pw.Container(
+          padding: const pw.EdgeInsets.all(5),
+          color: PdfColors.grey300,
+          child: pw.Text(
+            title,
+            textAlign: pw.TextAlign.center,
+            style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+          ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(6),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              for (final line in lines)
+                pw.Text(line, style: const pw.TextStyle(fontSize: 8.5)),
+              if (lines.isEmpty)
+                pw.Text('-', style: const pw.TextStyle(fontSize: 8.5)),
+              pw.SizedBox(height: 3),
+              pw.Text(
+                'Toplam ${counts.totalCount}',
+                style: pw.TextStyle(
+                  fontSize: 8.5,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     ),
   );
-
-  return pdf;
 }
 
 pw.Widget _buildRosterSignatures(List<RosterSigner> signers) => pw.Padding(
