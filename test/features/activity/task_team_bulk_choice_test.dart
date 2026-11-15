@@ -57,7 +57,7 @@ void main() {
                       result = await confirmTaskTeams(
                           context: context,
                           repository: ActivityRepository(db),
-                          date: '2001-01-02',
+                          date: '1999-12-31',
                           assignments: [
                             for (final id in people)
                               PersonnelAssignmentInput(
