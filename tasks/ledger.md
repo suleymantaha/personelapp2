@@ -91,3 +91,5 @@ Bu boş tablo tamamlanmış görev veya uygulama kanıtı değildir.
 - 2026-11-05-local-release-10332: DONE — [task](active/2026-11-05-local-release-10332.md); local integration/build/private Drive PASS;1079PASS/1SKIP, same signer, retained-data upgrade and independent acceptance PASS; no CI/push/main update.
 
 - 2026-11-06-import-back-release-10333: DONE — [task](active/2026-11-06-import-back-release-10333.md); 1109PASS/1SKIP; signed10333 retained-data upgrade, native import/back and privateDrive PASS; no CI/push.
+
+- 2026-11-15-personnel-team-history-json: [task](active/2026-11-15-personnel-team-history-json.md). Date-based team selection after JSON restore and Android CI for 10336.

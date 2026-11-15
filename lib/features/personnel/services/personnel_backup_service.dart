@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/services/task_team_history.dart';
 
 class PersonnelBackupService {
   PersonnelBackupService(this.db);
@@ -13,10 +14,14 @@ class PersonnelBackupService {
   static const int maxTextLength = 250;
 
   /// Export all personnel and squads into JSON backup string
-  Future<String> exportBackupJson() async {
+  Future<String> exportBackupJson() => db.transaction(_exportBackupJson);
+
+  Future<String> _exportBackupJson() async {
     final personnelList = await db.select(db.personelTable).get();
     final timList = await db.select(db.timTable).get();
     final aliases = await db.select(db.personelIsimTakmaAdTable).get();
+    final membershipHistory = await db.select(db.timUyelikGecmisiTable).get();
+    final personnelIds = personnelList.map((person) => person.id).toSet();
 
     final data = {
       'version': backupVersion,
@@ -57,6 +62,10 @@ class PersonnelBackupService {
             },
           )
           .toList(),
+      'membershipHistory': [
+        for (final event in membershipHistory)
+          if (personnelIds.contains(event.personelId)) event.toJson(),
+      ],
     };
 
     return const JsonEncoder.withIndent('  ').convert(data);
@@ -85,14 +94,40 @@ class PersonnelBackupService {
     final aliases = decoded['aliases'] == null
         ? const <Map<String, Object?>>[]
         : _readObjectList(decoded['aliases'], fieldName: 'aliases');
+    final membershipHistory = decoded['membershipHistory'] == null
+        ? const <Map<String, Object?>>[]
+        : _readObjectList(decoded['membershipHistory'],
+            fieldName: 'membershipHistory');
     if (squads.length > maxSquadCount ||
         personnel.length > maxPersonnelCount ||
-        aliases.length > maxPersonnelCount * 5) {
+        aliases.length > maxPersonnelCount * 5 ||
+        membershipHistory.length > maxPersonnelCount * 5) {
       throw const FormatException('Yedek çok fazla kayıt içeriyor.');
     }
 
     for (final record in [...squads, ...personnel]) {
       _readSortOrder(record);
+    }
+    final exportedAt = decoded['exportedAt'];
+    final snapshotDay =
+        exportedAt is String ? TaskTeamHistory.validDay(exportedAt) : null;
+    final historyByPerson = <int, List<Map<String, Object?>>>{};
+    for (final event in membershipHistory) {
+      final personId = _readNullableInt(event, 'personelId');
+      if (personId == null) {
+        throw const FormatException(
+            'Tim geçmişindeki personel kimliği geçersiz.');
+      }
+      (historyByPerson[personId] ??= []).add(event);
+    }
+    final sourcePersonnelCounts = <String, int>{};
+    for (final person in personnel) {
+      final key = _personnelKey(
+        _readString(person, 'rutbe', fallback: 'J.Uzm.Çvş.'),
+        _readString(person, 'adSoyad'),
+      );
+      sourcePersonnelCounts.update(key, (count) => count + 1,
+          ifAbsent: () => 1);
     }
     var importedCount = 0;
 
@@ -123,55 +158,97 @@ class PersonnelBackupService {
         squadMap[timAdi.toLowerCase()] = newSquadId;
       }
 
+      final targetSquadIds = <int, int>{};
+      for (final squad in squads) {
+        final sourceId = _readNullableInt(squad, 'id');
+        final targetId = squadMap[_readString(squad, 'timAdi').toLowerCase()];
+        if (sourceId != null && targetId != null) {
+          targetSquadIds.putIfAbsent(sourceId, () => targetId);
+        }
+      }
+
       // 2. Restore Personnel
       final existingPersonnel = await db.select(db.personelTable).get();
-      final personnelByKey = {
-        for (final p in existingPersonnel)
-          '${p.rutbe}_${p.adSoyad}'.toLowerCase(): p.id,
-      };
+      final existingByKey = <String, List<PersonelTableData>>{};
+      for (final person in existingPersonnel) {
+        final key = _personnelKey(person.rutbe, person.adSoyad);
+        (existingByKey[key] ??= []).add(person);
+      }
+      final personnelByKey = existingByKey.map(
+        (key, matches) => MapEntry(key, matches.last.id),
+      );
+      final restoredHistory = <TimUyelikGecmisiTableCompanion>[];
 
       for (final p in personnel) {
         final adSoyad = _readString(p, 'adSoyad');
         final rutbe = _readString(p, 'rutbe', fallback: 'J.Uzm.Çvş.');
         final birlik = _readString(p, 'birlik', fallback: '1.J.KÖK.Tug.K.lığı');
-        final key = '${rutbe}_$adSoyad'.toLowerCase();
+        final key = _personnelKey(rutbe, adSoyad);
+        if (adSoyad.isEmpty) continue;
 
-        if (adSoyad.isNotEmpty && !personnelByKey.containsKey(key)) {
-          int? timId;
-          final timIdVal = _readNullableInt(p, 'timId');
-          if (timIdVal != null) {
-            // Find squad name if present
-            final squadObj = _findSquadBySourceId(squads, timIdVal);
-            if (squadObj != null) {
-              final squadName = _readString(squadObj, 'timAdi').toLowerCase();
-              timId = squadMap[squadName];
-            }
+        final timId = targetSquadIds[_readNullableInt(p, 'timId')];
+        final registeredAt = _readString(p, 'kayitTarihi');
+        final registeredDay = TaskTeamHistory.validDay(registeredAt);
+        final hasSnapshotTeam =
+            p.containsKey('timId') && (p['timId'] == null || timId != null);
+        final events = historyByPerson[_readNullableInt(p, 'id')];
+        final baselineDay = snapshotDay != null &&
+                registeredDay != null &&
+                registeredDay.compareTo(snapshotDay) <= 0 &&
+                p['aktif'] != false &&
+                hasSnapshotTeam
+            ? snapshotDay
+            : null;
+
+        final existing = existingByKey[key];
+        if (personnelByKey.containsKey(key)) {
+          if (existing != null &&
+              existing.length == 1 &&
+              sourcePersonnelCounts[key] == 1 &&
+              registeredDay != null &&
+              registeredDay ==
+                  TaskTeamHistory.validDay(existing.single.kayitTarihi) &&
+              existing.single.isDemo == (p['isDemo'] as bool? ?? false) &&
+              (events != null || baselineDay != null)) {
+            final person = existing.single;
+            restoredHistory.addAll(await _historyBeforeLocalRecords(
+              person,
+              _backupHistory(
+                  person.id, events, baselineDay, timId, targetSquadIds),
+              matchesCurrentTeam: hasSnapshotTeam && timId == person.timId,
+            ));
           }
-
-          final newPersonnelId = await db.into(db.personelTable).insert(
-                PersonelTableCompanion.insert(
-                  adSoyad: adSoyad,
-                  sortOrder: Value(_readSortOrder(p)),
-                  aktif: Value(p['aktif'] as bool? ?? true),
-                  isDemo: Value(p['isDemo'] as bool? ?? false),
-                  rutbe: rutbe,
-                  birlik: birlik,
-                  telefon: Value(
-                    _readString(p, 'telefon').trim().isEmpty
-                        ? null
-                        : _readString(p, 'telefon').trim(),
-                  ),
-                  timId: Value(timId),
-                  kayitTarihi: _readString(
-                    p,
-                    'kayitTarihi',
-                    fallback: DateTime.now().toIso8601String(),
-                  ),
-                ),
-              );
-          personnelByKey[key] = newPersonnelId;
-          importedCount++;
+          continue;
         }
+
+        final newPersonnelId = await db.into(db.personelTable).insert(
+              PersonelTableCompanion.insert(
+                adSoyad: adSoyad,
+                sortOrder: Value(_readSortOrder(p)),
+                aktif: Value(p['aktif'] as bool? ?? true),
+                isDemo: Value(p['isDemo'] as bool? ?? false),
+                rutbe: rutbe,
+                birlik: birlik,
+                telefon: Value(
+                  _readString(p, 'telefon').trim().isEmpty
+                      ? null
+                      : _readString(p, 'telefon').trim(),
+                ),
+                timId: Value(timId),
+                kayitTarihi: p['kayitTarihi'] == null
+                    ? DateTime.now().toIso8601String()
+                    : registeredAt,
+              ),
+            );
+        restoredHistory.addAll(_backupHistory(
+            newPersonnelId, events, baselineDay, timId, targetSquadIds));
+        personnelByKey[key] = newPersonnelId;
+        importedCount++;
+      }
+
+      if (restoredHistory.isNotEmpty) {
+        await db.batch((batch) =>
+            batch.insertAll(db.timUyelikGecmisiTable, restoredHistory));
       }
 
       for (final alias in aliases) {
@@ -217,7 +294,8 @@ class PersonnelBackupService {
     final value = record['sortOrder'];
     if (value == null) return null;
     if (value is! int || value < 0) {
-      throw const FormatException('sortOrder negatif olmayan tam sayı olmalıdır.');
+      throw const FormatException(
+          'sortOrder negatif olmayan tam sayı olmalıdır.');
     }
     return value;
   }
@@ -295,16 +373,73 @@ class PersonnelBackupService {
     };
   }
 
-  Map<String, Object?>? _findSquadBySourceId(
-    List<Map<String, Object?>> squads,
-    int sourceId,
-  ) {
-    for (final squad in squads) {
-      if (_readNullableInt(squad, 'id') == sourceId) {
-        return squad;
-      }
-    }
+  String _personnelKey(String rank, String name) =>
+      '${rank}_$name'.toLowerCase();
 
-    return null;
+  Iterable<TimUyelikGecmisiTableCompanion> _backupHistory(
+    int personnelId,
+    List<Map<String, Object?>>? events,
+    String? baselineDay,
+    int? currentTeamId,
+    Map<int, int> targetSquadIds,
+  ) sync* {
+    if (events != null) {
+      yield* events.map(
+          (event) => _restoreHistoryEvent(event, personnelId, targetSquadIds));
+    } else if (baselineDay != null) {
+      // A legacy backup captured the current team on export day.
+      yield TimUyelikGecmisiTableCompanion.insert(
+        personelId: personnelId,
+        timId: Value(currentTeamId),
+        tarih: baselineDay,
+        islem: currentTeamId == null ? 'çıkarıldı' : 'eklendi',
+      );
+    }
+  }
+
+  Future<Iterable<TimUyelikGecmisiTableCompanion>> _historyBeforeLocalRecords(
+    PersonelTableData person,
+    Iterable<TimUyelikGecmisiTableCompanion> backupHistory, {
+    required bool matchesCurrentTeam,
+  }) async {
+    final localHistory = await (db.select(db.timUyelikGecmisiTable)
+          ..where((event) => event.personelId.equals(person.id)))
+        .get();
+    if (localHistory.isEmpty) {
+      return matchesCurrentTeam ? backupHistory : const [];
+    }
+    String? firstDay;
+    for (final event in localHistory) {
+      final day = TaskTeamHistory.validDay(event.tarih);
+      if (day == null) return const [];
+      if (firstDay == null || day.compareTo(firstDay) < 0) firstDay = day;
+    }
+    final cutoff = firstDay!;
+    return backupHistory.where((event) {
+      final day = TaskTeamHistory.validDay(event.tarih.value);
+      return day != null && day.compareTo(cutoff) < 0;
+    });
+  }
+
+  TimUyelikGecmisiTableCompanion _restoreHistoryEvent(
+    Map<String, Object?> event,
+    int personnelId,
+    Map<int, int> targetSquadIds,
+  ) {
+    final date = _readString(event, 'tarih');
+    final action = _readString(event, 'islem');
+    final teamId = targetSquadIds[_readNullableInt(event, 'timId')];
+    // Older personnel records can have an explicitly empty registration date.
+    if ((event['tarih'] != '' && TaskTeamHistory.validDay(date) == null) ||
+        (action != 'eklendi' && action != 'çıkarıldı') ||
+        ((event['timId'] != null || action == 'eklendi') && teamId == null)) {
+      throw const FormatException('Tim geçmişinde geçersiz kayıt var.');
+    }
+    return TimUyelikGecmisiTableCompanion.insert(
+      personelId: personnelId,
+      timId: Value(teamId),
+      tarih: date,
+      islem: action,
+    );
   }
 }

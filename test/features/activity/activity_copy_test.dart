@@ -89,7 +89,7 @@ void main() {
 
   test('unknown past team rolls back destination then accepts confirmation',
       () async {
-    const past = '2000-01-01';
+    const past = '1999-12-31';
     await expectLater(
         f.repo.copyActivityToDate(
             activityId: source, newDate: past, actor: dateChangeAdmin),
