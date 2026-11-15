@@ -25,7 +25,8 @@ class TaskTeamHistory {
     return day;
   }
 
-  Future<TaskTeamSnapshot?> resolve(int personnelId, String date) async {
+  Future<TaskTeamSnapshot?> resolve(int personnelId, String date,
+      {bool useRegistrationFallback = false}) async {
     if (date.length != 10 || validDay(date) == null) return null;
     final rows = await db.customSelect(
       'SELECT h.tarih, h.islem, h.tim_id, t.tim_adi FROM '
@@ -33,10 +34,15 @@ class TaskTeamHistory {
       'WHERE h.personel_id=?',
       variables: [Variable(personnelId)],
     ).get();
+    if (useRegistrationFallback && rows.isEmpty) {
+      return _registrationTeam(personnelId, date);
+    }
     String? latest;
     final states = <String, TaskTeamSnapshot>{};
     for (final row in rows) {
-      final day = validDay(row.read<String>('tarih'));
+      final recordedDate = row.read<String>('tarih');
+      if (useRegistrationFallback && recordedDate.isEmpty) continue;
+      final day = validDay(recordedDate);
       if (day == null) return null;
       final action = row.read<String>('islem');
       final teamId = row.readNullable<int>('tim_id');
@@ -59,5 +65,21 @@ class TaskTeamHistory {
       }
     }
     return states.length == 1 ? states.values.single : null;
+  }
+
+  Future<TaskTeamSnapshot?> _registrationTeam(int personnelId, String date) async {
+    final person = await db.customSelect(
+      'SELECT p.kayit_tarihi, p.tim_id, t.tim_adi FROM personel_table p '
+      'LEFT JOIN tim_table t ON t.id=p.tim_id WHERE p.id=? AND p.aktif=1',
+      variables: [Variable(personnelId)],
+    ).getSingleOrNull();
+    if (person == null) return null;
+    final registeredDay = validDay(person.read<String>('kayit_tarihi'));
+    if (registeredDay == null || registeredDay.compareTo(date) > 0) return null;
+    final teamId = person.readNullable<int>('tim_id');
+    if (teamId == null) return const TaskTeamSnapshot(null, 'Tim dışı');
+    final teamName = person.readNullable<String>('tim_adi');
+    if (teamName == null || teamName.trim().isEmpty) return null;
+    return TaskTeamSnapshot(teamId, teamName);
   }
 }

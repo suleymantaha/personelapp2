@@ -9,8 +9,6 @@ import 'package:personelapp2/core/theme/app_theme.dart';
 import 'package:personelapp2/features/activity/domain/conflict_checker.dart';
 import 'package:personelapp2/features/activity/presentation/dialogs/add_personnel_dialog.dart';
 
-import '../../support/task_team_history_fixture.dart';
-
 void main() {
   for (final width in [320.0, 412.0]) {
     for (final existing in [false, true]) {
@@ -49,7 +47,14 @@ void main() {
                 kayitTarihi: '2026-10-03',
               ),
             );
-        await seedTaskTeamHistory(db);
+        await db.into(db.timUyelikGecmisiTable).insert(
+              TimUyelikGecmisiTableCompanion.insert(
+                personelId: second,
+                timId: Value(team),
+                tarih: '2026-10-03',
+                islem: 'eklendi',
+              ),
+            );
         final activityId = await db.into(db.gunlukFaaliyetTable).insert(
               GunlukFaaliyetTableCompanion.insert(
                 faaliyetAdi: 'Uzun isimli arşiv faaliyeti ve gece nöbeti',
@@ -209,11 +214,13 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.text('Faaliyete Ekle'));
         await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('task-team-confirm')), findsNothing);
         expect(find.text('Arşiv'), findsOneWidget);
         final rows = await db.select(db.faaliyetPersonelAtamaTable).get();
         expect(rows, hasLength(2));
         expect(rows.every((r) => r.faaliyetId == activityId), isTrue);
         expect(rows.map((r) => r.personelId), containsAll([person, second]));
+        expect(rows.map((r) => r.gorevTimId), everyElement(team));
         expect(
           rows.singleWhere((r) => r.personelId == person).aciklama,
           'Kapı nöbeti',

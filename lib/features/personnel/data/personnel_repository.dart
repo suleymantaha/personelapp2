@@ -2,6 +2,7 @@ import 'package:personelapp2/core/utils/password_policy.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:personelapp2/core/database/database.dart';
+import 'package:personelapp2/core/services/task_team_history.dart';
 import 'package:personelapp2/features/activity/domain/bulk_import_learning_service.dart';
 import 'package:personelapp2/core/utils/military_structure_helper.dart';
 import 'package:personelapp2/core/utils/password_hasher.dart';
@@ -254,13 +255,15 @@ class PersonnelRepository {
       final result = await db.update(db.personelTable).replace(updated);
 
       if (oldData.timId != data.timId) {
+        final changeDate =
+            tarih ?? DateTime.now().toIso8601String().split('T').first;
+        await _recordRegistrationTeamIfMissing(oldData, changeDate);
         final islemStr = data.timId == null ? 'çıkarıldı' : 'eklendi';
         await db.into(db.timUyelikGecmisiTable).insert(
               TimUyelikGecmisiTableCompanion.insert(
                 personelId: data.id,
                 timId: Value(data.timId),
-                tarih:
-                    tarih ?? DateTime.now().toIso8601String().split('T').first,
+                tarih: changeDate,
                 islem: islemStr,
               ),
             );
@@ -268,6 +271,31 @@ class PersonnelRepository {
 
       return result;
     });
+  }
+
+  Future<void> _recordRegistrationTeamIfMissing(
+      PersonelTableData person, String changeDate) async {
+    final registrationDay = TaskTeamHistory.validDay(person.kayitTarihi);
+    final changeDay = TaskTeamHistory.validDay(changeDate);
+    if (!person.aktif ||
+        registrationDay == null ||
+        changeDay == null ||
+        registrationDay.compareTo(changeDay) >= 0) {
+      return;
+    }
+    final existing = await (db.select(db.timUyelikGecmisiTable)
+          ..where((event) => event.personelId.equals(person.id))
+          ..limit(1))
+        .getSingleOrNull();
+    if (existing != null) return;
+    await db.into(db.timUyelikGecmisiTable).insert(
+          TimUyelikGecmisiTableCompanion.insert(
+            personelId: person.id,
+            timId: Value(person.timId),
+            tarih: registrationDay,
+            islem: person.timId == null ? 'çıkarıldı' : 'eklendi',
+          ),
+        );
   }
 
   /// Remembers the phone selected for a personnel record so future
@@ -288,12 +316,14 @@ class PersonnelRepository {
 
       if (p == null || !p.aktif) return 0;
       if (p.timId != null) {
+        final changeDate =
+            tarih ?? DateTime.now().toIso8601String().split('T').first;
+        await _recordRegistrationTeamIfMissing(p, changeDate);
         await db.into(db.timUyelikGecmisiTable).insert(
               TimUyelikGecmisiTableCompanion.insert(
                 personelId: id,
                 timId: Value(p.timId),
-                tarih:
-                    tarih ?? DateTime.now().toIso8601String().split('T').first,
+                tarih: changeDate,
                 islem: 'çıkarıldı',
               ),
             );

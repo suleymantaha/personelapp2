@@ -48,9 +48,9 @@ void main() {
       .insert(TimUyelikGecmisiTableCompanion.insert(
           personelId: person, timId: Value(team), tarih: date, islem: action));
 
-  test('past assignment without dated evidence rolls back whole activity',
+  test('past assignment before registration rolls back whole activity',
       () async {
-    await expectLater(create('2001-01-02'), throwsStateError);
+    await expectLater(create('1999-12-31'), throwsStateError);
     expect(await db.select(db.gunlukFaaliyetTable).get(), isEmpty);
     expect(await db.select(db.faaliyetPersonelAtamaTable).get(), isEmpty);
   });
@@ -62,6 +62,25 @@ void main() {
     final row = await db.select(db.faaliyetPersonelAtamaTable).getSingle();
     expect(row.gorevTimId, oldTeam);
     expect(row.gorevTimAdi, 'Old');
+  });
+  test('first transfer preserves the registration team of existing personnel',
+      () async {
+    final personnel = PersonnelRepository(db);
+    final original = await db.select(db.personelTable).getSingle();
+    await personnel.updatePersonnel(original.copyWith(timId: Value(oldTeam)),
+        tarih: '2000-04-01');
+    final before = await create('2000-03-31');
+    final after = await create('2000-04-01');
+    final rows = await db.select(db.faaliyetPersonelAtamaTable).get();
+    expect(rows.singleWhere((row) => row.faaliyetId == before).gorevTimId,
+        newTeam);
+    expect(rows.singleWhere((row) => row.faaliyetId == after).gorevTimId,
+        oldTeam);
+    expect((await db.select(db.personelTable).getSingle()).timId, oldTeam);
+  });
+  test('a known transfer cannot supply a missing earlier team', () async {
+    await history(newTeam, '2000-04-01', 'eklendi');
+    await expectLater(create('2000-03-31'), throwsStateError);
   });
   test('explicit task team is retained even when different from membership',
       () async {

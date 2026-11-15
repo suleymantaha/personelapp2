@@ -16,12 +16,16 @@ extension ActivityRepositoryTaskTeams on ActivityRepository {
   }) async {
     await _requirePersonnelScope(actor, [assignment]);
     return _taskTeamForDate(assignment.personnelId, date, actor,
-        taskTeamId: assignment.teamId, isOutsideTeam: assignment.isOutsideTeam);
+        taskTeamId: assignment.teamId,
+        isOutsideTeam: assignment.isOutsideTeam,
+        useRegistrationFallback: true);
   }
 
   Future<TaskTeamSnapshot> _taskTeamForDate(
       int personId, String date, UserSessionState actor,
-      {int? taskTeamId, bool isOutsideTeam = false}) async {
+      {int? taskTeamId,
+      bool isOutsideTeam = false,
+      bool useRegistrationFallback = false}) async {
     if (!_isValidIsoDate(date)) throw ArgumentError('Görev tarihi geçersiz.');
     if (taskTeamId != null && isOutsideTeam) {
       throw ArgumentError('Görev timi ve Tim dışı birlikte seçilemez.');
@@ -39,7 +43,6 @@ extension ActivityRepositoryTaskTeams on ActivityRepository {
             .compareTo(DateTime.now().toIso8601String().split('T').first) >=
         0) {
       // Current membership is the task team for today's and planned duties.
-      // Past duties still require dated evidence or an explicit choice.
       final person = await (db.select(db.personelTable)
             ..where((p) => p.id.equals(personId)))
           .getSingle();
@@ -52,7 +55,8 @@ extension ActivityRepositoryTaskTeams on ActivityRepository {
         if (team != null) snapshot = TaskTeamSnapshot(team.id, team.timAdi);
       }
     } else {
-      snapshot = await TaskTeamHistory(db).resolve(personId, date);
+      snapshot = await TaskTeamHistory(db).resolve(personId, date,
+          useRegistrationFallback: useRegistrationFallback);
     }
     if (snapshot == null) throw TaskTeamRequiredException(personId, date);
     if (!actor.isAdmin && snapshot.teamId != actor.timId) {
@@ -80,7 +84,9 @@ extension ActivityRepositoryTaskTeams on ActivityRepository {
       }
     }
     final value = await _taskTeamForDate(personId, date, actor,
-        taskTeamId: taskTeamId, isOutsideTeam: isOutsideTeam);
+        taskTeamId: taskTeamId,
+        isOutsideTeam: isOutsideTeam,
+        useRegistrationFallback: source == null);
     return (value.teamId, value.teamName);
   }
 }

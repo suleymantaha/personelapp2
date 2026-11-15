@@ -80,9 +80,16 @@ void main() {
     expect(result, hasLength(1));
   });
 
-  testWidgets('missing dated team starts unselected and cancel writes nothing',
+  testWidgets('registration team needs no confirmation without a transfer',
       (tester) async {
     await open(tester);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(result, hasLength(1));
+  });
+
+  testWidgets('date before registration starts unselected and cancel writes nothing',
+      (tester) async {
+    await open(tester, date: '1999-12-31');
     expect(find.text('Görev tarihindeki timi doğrula'), findsOneWidget);
     final button = tester
         .widget<FilledButton>(find.byKey(const ValueKey('task-team-confirm')));
@@ -94,7 +101,7 @@ void main() {
   });
   testWidgets('explicit outside confirmation returns choice without writing DB',
       (tester) async {
-    await open(tester);
+    await open(tester, date: '1999-12-31');
     await tester.tap(find.byKey(ValueKey('task-team-choice-$person')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tim dışı').last);
