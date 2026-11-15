@@ -415,8 +415,10 @@ class PersonnelBackupService {
       if (firstDay == null || day.compareTo(firstDay) < 0) firstDay = day;
     }
     final cutoff = firstDay!;
-    return backupHistory.where((event) =>
-        TaskTeamHistory.validDay(event.tarih.value)!.compareTo(cutoff) < 0);
+    return backupHistory.where((event) {
+      final day = TaskTeamHistory.validDay(event.tarih.value);
+      return day != null && day.compareTo(cutoff) < 0;
+    });
   }
 
   TimUyelikGecmisiTableCompanion _restoreHistoryEvent(
@@ -427,7 +429,8 @@ class PersonnelBackupService {
     final date = _readString(event, 'tarih');
     final action = _readString(event, 'islem');
     final teamId = targetSquadIds[_readNullableInt(event, 'timId')];
-    if (TaskTeamHistory.validDay(date) == null ||
+    // Older personnel records can have an explicitly empty registration date.
+    if ((event['tarih'] != '' && TaskTeamHistory.validDay(date) == null) ||
         (action != 'eklendi' && action != 'çıkarıldı') ||
         ((event['timId'] != null || action == 'eklendi') && teamId == null)) {
       throw const FormatException('Tim geçmişinde geçersiz kayıt var.');
